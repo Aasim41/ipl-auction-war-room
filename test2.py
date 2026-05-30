@@ -1,29 +1,23 @@
-import pandas as pd
-import backend.engine as engine
+﻿import pandas as pd
+from backend.two_stage_optimizer import optimize_auction
 
-# Mock theme
 theme = {'name': 'CSK', 'bg': '#FFFF00', 'text': 'black', 'accent': '#FFD700'}
-
-# Load data
 df = pd.read_csv("data/filled_ipl_data.csv")
-
-# Run optimizer
-squad_df, xi_df, _, _ = engine.optimize_team('Chennai Super Kings (CSK)', 120.0, df, [])
-
-squad_df['In_XI'] = squad_df['Player'].isin(xi_df['Player']).apply(lambda x: '? Yes' if x else '?? Bench')
+squad_df, xi_df, _, _ = optimize_auction('Chennai Super Kings (CSK)', 120.0, df, [])
+squad_df['In_XI'] = squad_df['Player'].isin(xi_df['Player']).apply(lambda x: '✅ Yes' if x else '🪑 Bench')
 
 roles = ['top order', 'middle order', 'all-rounder', 'bowler']
+def get_role_icon(role): return "🏏"
 for role in roles:
     role_players = squad_df[squad_df['Specific_Role'] == role]
     if not role_players.empty:
         for idx, row in enumerate(role_players.itertuples()):
-            is_starter = row.In_XI == '? Yes'
-            bg_color = "rgba(0, 0, 0, 0.15)" if is_starter else "rgba(0, 0, 0, 0.05)"
+            is_starter = row.In_XI == '✅ Yes'
+            bg_color = "rgba(0, 0, 0, 0.15)"
             muted_color = "#555555"
-            border_color = theme['accent'] if is_starter else muted_color
-            title_color = theme['accent'] if is_starter else theme['text']
-            status_badge = "?? STARTER" if is_starter else "?? BENCH"
-            def get_role_icon(role): return "??"
+            border_color = theme['accent']
+            title_color = theme['accent']
+            status_badge = "🌟 STARTER"
             card_html = f'''
             <div style="background-color: {bg_color}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.4); border-top: 5px solid {border_color}; border-bottom: 5px solid {border_color}; border-radius: 12px; margin-bottom: 20px; padding: 15px; display: flex; flex-direction: column; align-items: center; position: relative;">
                 <div style="position: absolute; top: 10px; left: 15px; text-align: center;">
@@ -39,15 +33,13 @@ for role in roles:
                 <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 10px; display: grid; grid-template-columns: 1fr 1fr; grid-gap: 5px; text-align: center;">
                     <div>
                         <div style="font-size: 10px; color: {theme["text"]}; opacity: 0.7;">PRICE</div>
-                        <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">?{row.Auction_Price:.1f}</div>
+                        <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">₹{row.Auction_Price:.1f}</div>
                     </div>
                     <div>
                         <div style="font-size: 10px; color: {theme["text"]}; opacity: 0.7;">NAT</div>
-                        <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">{"OVS ??" if row.Nationality == "overseas" else "IND ????"}</div>
+                        <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">{"OVS ✈️" if row.Nationality == "overseas" else "IND 🇮🇳"}</div>
                     </div>
                 </div>
             </div>
             '''
-print("Success")
-print('Total squad size:', len(squad_df))
-print('Matched roles:', sum(len(squad_df[squad_df['Specific_Role'] == r]) for r in roles))
+print("Success!")

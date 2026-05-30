@@ -607,6 +607,20 @@ def run_optimization(df, budget_limit, mandatory_xi, mandatory_squad, unavailabl
     
     squad_df = df.loc[squad_indices].sort_values(by=['Auction_Price'], ascending=False).reset_index(drop=True)
     
+    # Assign Archetypes to ALL squad players (needed for FIFA-style cards)
+    def assign_archetype(row):
+        arch = "Balanced"
+        role = row['Specific_Role']
+        if 'order' in role or 'all-rounder' in role:
+            if row['Batting_SR'] >= 140: arch = "Aggressor"
+            elif row['Batting_Avg'] >= 35: arch = "Anchor"
+        if 'bowler' in role:
+            if row['Bowling_Econ'] >= 8.5: arch = "Strike Bowler"
+            elif row['Bowling_Econ'] <= 7.5 and row['Bowling_Econ'] > 0: arch = "Defensive"
+            elif arch == "Balanced": arch = "Balanced Bowler"
+        return arch
+    squad_df['Archetype'] = squad_df.apply(assign_archetype, axis=1)
+    
     # Custom Batting Order sorting
     def get_batting_rank(role):
         role = role.lower()
