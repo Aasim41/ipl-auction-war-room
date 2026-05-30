@@ -171,7 +171,7 @@ def generate_custom_css(bg, accent, text):
     }}
     .stButton > button:hover {{ opacity: 0.8; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }}
     
-    .player-card {
+    .player-card {{
         background-color: {bg_alpha};
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
@@ -179,7 +179,7 @@ def generate_custom_css(bg, accent, text):
         border-left: 5px solid {accent};
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         padding: 15px; border-radius: 12px; margin-bottom: 15px;
-    }
+    }}
     .player-name {{ font-size: 18px; font-weight: bold; color: {accent}; }}
     .player-price {{ font-size: 16px; color: {text}; }}
     
