@@ -1,0 +1,12 @@
+Player,Role,Specific_Role,Nationality,Bowling_Style,Auction_Price,Power_Index,Batting_SR,Batting_Avg,Bw_WPM,Bowling_Econ
+R Shepherd,all-rounder,all-rounder,overseas,pace,8.25,100.0,254.0,25.4,0.5833333333333334,10.80722891566265
+Naman Dhir,batter,all-rounder,indian,spin,6.105,74.2,173.4513274336283,28.0,0.0,8.49056603773585
+PJ Cummins,all-rounder,bowler,overseas,pace,5.335,64.95,148.4076433121019,25.88888888888889,1.1333333333333333,8.663755458515285
+R Ashwin,all-rounder,bowler,indian,spin,4.18,50.48,115.527950310559,12.4,0.8611111111111112,7.613744075829384
+MA Wood,bowler,bowler,overseas,pace,1.4850000000000003,17.86,220.00000000000003,11.0,2.75,7.2941176470588225
+V Suryavanshi,batter,middle order,indian,spin,6.875000000000001,83.52,195.3488372093023,36.0,0.0,0.0
+Urvil Patel,batter,middle order,indian,spin,6.765000000000001,82.07,200.0,22.666666666666668,0.0,0.0
+SA Yadav,batter,middle order,indian,spin,6.38,77.06,168.7246963562753,47.62857142857143,0.0,0.0
+J Fraser-McGurk,batter,top order,overseas,pace,6.545000000000001,79.63,189.6551724137931,27.5,0.0,0.0
+A Mhatre,batter,top order,indian,pace,6.490000000000001,78.97,183.206106870229,34.285714285714285,0.0,0.0
+Priyansh Arya,batter,top order,indian,pace,6.215000000000001,75.52,175.80645161290323,30.27777777777778,0.0,0.0

@@ -479,6 +479,24 @@ def calculate_chemistry(xi_df):
             
     return max(0, score), insights, xi_df
 
+def calculate_longevity_score(squad_df):
+    if 'Age' not in squad_df.columns:
+        return 0, 0.0, "N/A"
+    avg_age = squad_df['Age'].mean()
+    over_34 = len(squad_df[squad_df['Age'] > 33])
+    under_26 = len(squad_df[squad_df['Age'] < 26])
+    
+    score = 100
+    if avg_age > 29: score -= (avg_age - 29) * 5
+    if over_34 > 3: score -= (over_34 - 3) * 5
+    if under_26 < 4: score -= (4 - under_26) * 5
+    
+    risk = "Low Risk (Sustainable & Future-Proof)"
+    if score < 70: risk = "High Risk (Aging Squad, Immediate Overhaul Needed)"
+    elif score < 85: risk = "Medium Risk (Win-Now Mode)"
+    
+    return max(0, min(100, int(score))), round(avg_age, 1), risk
+
 # --- Optimization Logic ---
 def run_optimization(df, budget_limit, mandatory_xi, mandatory_squad, unavailable_players=None, price_overrides=None):
     df = df.copy()
@@ -614,7 +632,7 @@ def get_next_bid(current):
     else: return current + 0.5
 
 # --- Tabs Setup ---
-tab1, tab2, tab3, tab4 = st.tabs([f"🏆 {theme['name']} War Room", "🏟️ Venue Optimizer", "🎯 Rookie Radar", "💰 Mock Auction Simulator"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([f"🏆 {theme['name']} War Room", "🏟️ Venue Optimizer", "🎯 Rookie Radar", "💰 Mock Auction Simulator", "📈 Analytics & Longevity"])
 
 # ================= TAB 1: THE WAR ROOM =================
 with tab1:
@@ -1144,3 +1162,77 @@ with tab4:
                     cols[idx % 4].markdown(card_html, unsafe_allow_html=True)
     else:
         st.write("You haven't drafted any players yet. Start bidding!")
+
+# ================= TAB 5: ANALYTICS & LONGEVITY =================
+with tab5:
+    st.title("📈 Analytics & Franchise Longevity")
+    st.write("Dive deep into your optimal squad's budget allocation, value buys, and long-term sustainability.")
+    
+    if 'squad_df' not in st.session_state:
+        st.warning("⚠️ You must run the Optimizer in the War Room first to generate analytics.")
+    else:
+        squad_df = st.session_state['squad_df']
+        
+        # Dashboard metrics
+        st.markdown("### 🧬 3-Year Franchise Health")
+        score, avg_age, risk = calculate_longevity_score(squad_df)
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Average Squad Age", f"{avg_age} Years")
+        col2.metric("Franchise Longevity Score", f"{score}/100")
+        col3.markdown(f"**Risk Level:**<br><span style='color: {theme['accent']}; font-size: 18px;'>{risk}</span>", unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        col_plot1, col_plot2 = st.columns(2)
+        
+        with col_plot1:
+            st.markdown("### 💰 Budget Allocation by Role")
+            budget_pie = squad_df.groupby('Specific_Role')['Auction_Price'].sum().reset_index()
+            budget_pie['Specific_Role'] = budget_pie['Specific_Role'].str.title()
+            
+            fig1 = px.pie(
+                budget_pie, values='Auction_Price', names='Specific_Role',
+                hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            fig1.update_traces(textposition='inside', textinfo='percent+label')
+            fig1.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color=theme['text']),
+                showlegend=False
+            )
+            st.plotly_chart(fig1, use_container_width=True)
+            
+        with col_plot2:
+            st.markdown("### ⚡ Power Index vs Auction Price")
+            squad_scatter = squad_df.copy()
+            squad_scatter['Specific_Role'] = squad_scatter['Specific_Role'].str.title()
+            
+            fig2 = px.scatter(
+                squad_scatter, x='Auction_Price', y='Power_Index',
+                color='Specific_Role', hover_name='Player', size='Power_Index',
+                labels={'Auction_Price': 'Price (Cr)', 'Power_Index': 'Power Score', 'Specific_Role': 'Role'},
+                template="plotly_dark" if theme['text'] == 'white' else "plotly_white"
+            )
+            fig2.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color=theme['text'])
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+            
+        st.markdown("### 🏆 Top 3 Value Buys (Highest Power per Crore)")
+        value_df = squad_df.copy()
+        value_df['Value_Score'] = value_df['Power_Index'] / value_df['Auction_Price']
+        value_df = value_df.sort_values(by='Value_Score', ascending=False).head(3)
+        
+        val_cols = st.columns(3)
+        for idx, row in enumerate(value_df.itertuples()):
+            val_cols[idx].markdown(f"""
+            <div style="background-color: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid {theme['accent']};">
+                <h4 style="color: {theme['accent']}; margin-top: 0;">{row.Player.title()}</h4>
+                <p style="margin:0;"><b>Price:</b> ₹ {row.Auction_Price:.1f} Cr</p>
+                <p style="margin:0;"><b>Power:</b> {row.Power_Index:.1f}</p>
+                <p style="margin:0; font-size:12px; color:{theme['text']};"><b>Ratio:</b> {row.Value_Score:.1f} Pwr/Cr</p>
+            </div>
+            """, unsafe_allow_html=True)
+
