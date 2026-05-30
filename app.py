@@ -6,7 +6,19 @@ import random
 import json
 import time
 import os
+import requests
+from streamlit_lottie import st_lottie
 from fpdf import FPDF
+
+@st.cache_data
+def load_lottieurl(url: str):
+    try:
+        r = requests.get(url)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except:
+        return None
 
 # --- Configuration & Styling ---
 st.set_page_config(page_title="IPL War Room", layout="wide")
@@ -159,11 +171,15 @@ def generate_custom_css(bg, accent, text):
     }}
     .stButton > button:hover {{ opacity: 0.8; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }}
     
-    .player-card {{
+    .player-card {
         background-color: {bg_alpha};
-        border-left: 4px solid {accent};
-        padding: 15px; border-radius: 5px; margin-bottom: 15px;
-    }}
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-left: 5px solid {accent};
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        padding: 15px; border-radius: 12px; margin-bottom: 15px;
+    }
     .player-name {{ font-size: 18px; font-weight: bold; color: {accent}; }}
     .player-price {{ font-size: 16px; color: {text}; }}
     
@@ -664,6 +680,10 @@ with tab1:
         
         st.success(f"Successfully generated optimal Squad! (Power: {xi_power:.1f} | Synergy: {chem_score}%)")
         
+        lottie_json = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_V9t630.json")
+        if lottie_json:
+            st_lottie(lottie_json, height=120, key="success_lottie")
+        
         # Metrics
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Budget Spent", f"₹ {total_spent:.1f} Cr", delta=f"{budget - total_spent:.1f} Cr Remaining", delta_color="normal")
@@ -701,7 +721,7 @@ with tab1:
                     slog_badge = " 🔥 SLOGGER" if row['Is_Slog_Specialist'] else ""
                     stab_badge = " 🛡️ ANCHOR" if row['Is_PP_Stabilizer'] else ""
                     batting_pos = i + j + 1
-                    card_html = f'<div class="player-card"><div class="player-name"><span style="color: {theme["accent"]}; font-size: 16px; margin-right: 5px;">#{batting_pos}</span>{name}{ovs}{slog_badge}{stab_badge}</div><div class="player-price">{icon} {row["Specific_Role"].title()} ({arch}) | ₹ {price:.1f} Cr</div></div>'
+                    card_html = f'<div class="player-card"><div class="player-name"><span style="color: {theme["accent"]}; font-size: 16px; margin-right: 5px;">#{batting_pos}</span>{name}{ovs}{slog_badge}{stab_badge}</div><div class="player-price">{icon} {row["Specific_Role"].title()} ({arch}) | ₹ {price:.1f} Cr</div><div style="margin-top: 10px; width: 100%; background-color: rgba(255,255,255,0.2); border-radius: 6px; height: 8px;"><div style="width: {row["Power_Index"]}%; background-color: {theme["accent"]}; height: 100%; border-radius: 6px; box-shadow: 0 0 5px {theme["accent"]};"></div></div></div>'
                     cols[j].markdown(card_html, unsafe_allow_html=True)
                     
         st.markdown("---")
@@ -862,7 +882,7 @@ with tab1:
                     status_badge = "🌟 STARTER" if is_starter else "🪑 BENCH"
                     ovs = " ✈️" if row.Nationality == 'overseas' else ""
                     
-                    card_html = f'<div style="background-color: {bg_color}; border-left: 4px solid {border_color}; padding: 12px; border-radius: 5px; margin-bottom: 15px;"><div style="font-size: 16px; font-weight: bold; color: {title_color};">{row.Player.title()}{ovs}</div><div style="font-size: 13px; color: {theme["text"]}; margin-top: 4px;">Price: ₹ {row.Auction_Price:.1f} Cr</div><div style="font-size: 13px; color: {theme["text"]};">Power Score: {row.Power_Index:.1f}</div><div style="font-size: 11px; margin-top: 8px; font-weight: bold; letter-spacing: 1px; color: {border_color};">{status_badge}</div></div>'
+                    card_html = f'<div style="background-color: {bg_color}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); border-left: 5px solid {border_color}; padding: 15px; border-radius: 12px; margin-bottom: 15px;"><div style="font-size: 16px; font-weight: bold; color: {title_color};">{row.Player.title()}{ovs}</div><div style="font-size: 13px; color: {theme["text"]}; margin-top: 4px;">Price: ₹ {row.Auction_Price:.1f} Cr</div><div style="font-size: 13px; color: {theme["text"]};">Power Score: {row.Power_Index:.1f}</div><div style="margin-top: 10px; width: 100%; background-color: rgba(255,255,255,0.2); border-radius: 6px; height: 6px;"><div style="width: {row.Power_Index}%; background-color: {border_color}; height: 100%; border-radius: 6px; box-shadow: 0 0 5px {border_color};"></div></div><div style="font-size: 11px; margin-top: 8px; font-weight: bold; letter-spacing: 1px; color: {border_color};">{status_badge}</div></div>'
                     cols[idx % 4].markdown(card_html, unsafe_allow_html=True)
 
 # ================= TAB 2: VENUE OPTIMIZER =================
@@ -1158,7 +1178,7 @@ with tab4:
                 for idx, row in enumerate(role_players.itertuples()):
                     ovs = " ✈️" if row.Nationality == 'overseas' else ""
                     bg_alpha = "rgba(0,0,0,0.15)" if theme['text'] == "white" else "rgba(255,255,255,0.4)"
-                    card_html = f'<div style="background-color: {bg_alpha}; border-left: 4px solid {theme["accent"]}; padding: 12px; border-radius: 5px; margin-bottom: 15px;"><div style="font-size: 16px; font-weight: bold; color: {theme["accent"]};">{row.Player.title()}{ovs}</div><div style="font-size: 13px; color: {theme["text"]}; margin-top: 4px;">Won For: ₹ {row.Sold_Price:.2f} Cr</div><div style="font-size: 13px; color: {theme["text"]};">Power: {row.Power_Index:.1f}</div></div>'
+                    card_html = f'<div class="player-card"><div class="player-name">{row.Player.title()}{ovs}</div><div class="player-price">Won For: ₹ {row.Sold_Price:.2f} Cr</div><div style="margin-top: 10px; width: 100%; background-color: rgba(255,255,255,0.2); border-radius: 6px; height: 8px;"><div style="width: {row.Power_Index}%; background-color: {theme["accent"]}; height: 100%; border-radius: 6px; box-shadow: 0 0 5px {theme["accent"]};"></div></div></div>'
                     cols[idx % 4].markdown(card_html, unsafe_allow_html=True)
     else:
         st.write("You haven't drafted any players yet. Start bidding!")
