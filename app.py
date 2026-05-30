@@ -1184,41 +1184,21 @@ with tab5:
         
         st.markdown("---")
         
-        col_plot1, col_plot2 = st.columns(2)
+        st.markdown("### 💰 Budget Allocation by Role")
+        budget_pie = squad_df.groupby('Specific_Role')['Auction_Price'].sum().reset_index()
+        budget_pie['Specific_Role'] = budget_pie['Specific_Role'].str.title()
         
-        with col_plot1:
-            st.markdown("### 💰 Budget Allocation by Role")
-            budget_pie = squad_df.groupby('Specific_Role')['Auction_Price'].sum().reset_index()
-            budget_pie['Specific_Role'] = budget_pie['Specific_Role'].str.title()
-            
-            fig1 = px.pie(
-                budget_pie, values='Auction_Price', names='Specific_Role',
-                hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel
-            )
-            fig1.update_traces(textposition='inside', textinfo='percent+label')
-            fig1.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color=theme['text']),
-                showlegend=False
-            )
-            st.plotly_chart(fig1, use_container_width=True)
-            
-        with col_plot2:
-            st.markdown("### ⚡ Power Index vs Auction Price")
-            squad_scatter = squad_df.copy()
-            squad_scatter['Specific_Role'] = squad_scatter['Specific_Role'].str.title()
-            
-            fig2 = px.scatter(
-                squad_scatter, x='Auction_Price', y='Power_Index',
-                color='Specific_Role', hover_name='Player', size='Power_Index',
-                labels={'Auction_Price': 'Price (Cr)', 'Power_Index': 'Power Score', 'Specific_Role': 'Role'},
-                template="plotly_dark" if theme['text'] == 'white' else "plotly_white"
-            )
-            fig2.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color=theme['text'])
-            )
-            st.plotly_chart(fig2, use_container_width=True)
+        fig1 = px.pie(
+            budget_pie, values='Auction_Price', names='Specific_Role',
+            hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        fig1.update_traces(textposition='inside', textinfo='percent+label')
+        fig1.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color=theme['text']),
+            showlegend=False
+        )
+        st.plotly_chart(fig1, use_container_width=True)
             
         st.markdown("### 🏆 Top 3 Value Buys (Highest Power per Crore)")
         value_df = squad_df.copy()
