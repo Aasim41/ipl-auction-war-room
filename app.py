@@ -708,20 +708,40 @@ with tab1:
         
         st.markdown("---")
         st.markdown("## 🏏 The Optimal Starting XI")
-        for i in range(0, len(xi_df), 3):
-            cols = st.columns(3)
-            for j in range(3):
+        for i in range(0, len(xi_df), 4):
+            cols = st.columns(4)
+            for j in range(4):
                 if i + j < len(xi_df):
                     row = xi_df.iloc[i+j]
                     icon = get_role_icon(row['Specific_Role'])
                     ovs = " ✈️" if row['Nationality'] == 'overseas' else ""
                     name = row['Player'].title()
+                    last_name = name.split()[-1] if len(name.split()) > 1 else name
                     price = row['Auction_Price']
                     arch = row['Archetype']
-                    slog_badge = " 🔥 SLOGGER" if row['Is_Slog_Specialist'] else ""
-                    stab_badge = " 🛡️ ANCHOR" if row['Is_PP_Stabilizer'] else ""
-                    batting_pos = i + j + 1
-                    card_html = f'<div class="player-card"><div class="player-name"><span style="color: {theme["accent"]}; font-size: 16px; margin-right: 5px;">#{batting_pos}</span>{name}{ovs}{slog_badge}{stab_badge}</div><div class="player-price">{icon} {row["Specific_Role"].title()} ({arch}) | ₹ {price:.1f} Cr</div><div style="margin-top: 10px; width: 100%; background-color: rgba(255,255,255,0.2); border-radius: 6px; height: 8px;"><div style="width: {row["Power_Index"]}%; background-color: {theme["accent"]}; height: 100%; border-radius: 6px; box-shadow: 0 0 5px {theme["accent"]};"></div></div></div>'
+                    nat_display = "OVS ✈️" if row['Nationality'] == 'overseas' else "IND 🇮🇳"
+                    
+                    card_html = f'''
+                    <div style="background-color: rgba(0,0,0,0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.4); border-top: 5px solid {theme["accent"]}; border-bottom: 5px solid {theme["accent"]}; border-radius: 12px; margin-bottom: 20px; padding: 15px; display: flex; flex-direction: column; align-items: center; position: relative;">
+                        <div style="position: absolute; top: 10px; left: 15px; text-align: center;">
+                            <span style="font-size: 26px; font-weight: 900; color: {theme["accent"]}; line-height: 1;">{int(row["Power_Index"])}</span><br>
+                            <span style="font-size: 10px; font-weight: bold; color: {theme["text"]}; letter-spacing: 1px;">PWR</span>
+                        </div>
+                        <div style="font-size: 45px; margin-top: 15px; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.3);">{icon}</div>
+                        <div style="font-size: 16px; font-weight: 900; color: {theme["text"]}; text-transform: uppercase; letter-spacing: 1px; text-align: center; line-height: 1.2;">{last_name}</div>
+                        <div style="font-size: 10px; color: {theme["accent"]}; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">{arch}</div>
+                        <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 10px; display: grid; grid-template-columns: 1fr 1fr; grid-gap: 5px; text-align: center;">
+                            <div>
+                                <div style="font-size: 10px; color: {theme["text"]}; opacity: 0.7;">PRICE</div>
+                                <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">₹{price:.1f}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 10px; color: {theme["text"]}; opacity: 0.7;">NAT</div>
+                                <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">{nat_display}</div>
+                            </div>
+                        </div>
+                    </div>
+                    '''
                     cols[j].markdown(card_html, unsafe_allow_html=True)
                     
         st.markdown("---")
@@ -882,7 +902,30 @@ with tab1:
                     status_badge = "🌟 STARTER" if is_starter else "🪑 BENCH"
                     ovs = " ✈️" if row.Nationality == 'overseas' else ""
                     
-                    card_html = f'<div style="background-color: {bg_color}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); border-left: 5px solid {border_color}; padding: 15px; border-radius: 12px; margin-bottom: 15px;"><div style="font-size: 16px; font-weight: bold; color: {title_color};">{row.Player.title()}{ovs}</div><div style="font-size: 13px; color: {theme["text"]}; margin-top: 4px;">Price: ₹ {row.Auction_Price:.1f} Cr</div><div style="font-size: 13px; color: {theme["text"]};">Power Score: {row.Power_Index:.1f}</div><div style="margin-top: 10px; width: 100%; background-color: rgba(255,255,255,0.2); border-radius: 6px; height: 6px;"><div style="width: {row.Power_Index}%; background-color: {border_color}; height: 100%; border-radius: 6px; box-shadow: 0 0 5px {border_color};"></div></div><div style="font-size: 11px; margin-top: 8px; font-weight: bold; letter-spacing: 1px; color: {border_color};">{status_badge}</div></div>'
+                    card_html = f'''
+                    <div style="background-color: {bg_color}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.4); border-top: 5px solid {border_color}; border-bottom: 5px solid {border_color}; border-radius: 12px; margin-bottom: 20px; padding: 15px; display: flex; flex-direction: column; align-items: center; position: relative;">
+                        <div style="position: absolute; top: 10px; left: 15px; text-align: center;">
+                            <span style="font-size: 26px; font-weight: 900; color: {border_color}; line-height: 1;">{int(row.Power_Index)}</span><br>
+                            <span style="font-size: 10px; font-weight: bold; color: {theme["text"]}; letter-spacing: 1px;">PWR</span>
+                        </div>
+                        <div style="position: absolute; top: 10px; right: 15px; font-size: 10px; font-weight: bold; padding: 3px 6px; border-radius: 4px; background-color: {border_color}; color: {'#000' if is_starter else '#FFF'}; letter-spacing: 1px;">
+                            {status_badge}
+                        </div>
+                        <div style="font-size: 45px; margin-top: 20px; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.3);">{get_role_icon(row.Specific_Role)}</div>
+                        <div style="font-size: 16px; font-weight: 900; color: {title_color}; text-transform: uppercase; letter-spacing: 1px; text-align: center; line-height: 1.2;">{row.Player.split()[-1] if len(row.Player.split())>1 else row.Player.title()}</div>
+                        <div style="font-size: 10px; color: {theme["text"]}; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; opacity: 0.8;">{row.Archetype}</div>
+                        <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 10px; display: grid; grid-template-columns: 1fr 1fr; grid-gap: 5px; text-align: center;">
+                            <div>
+                                <div style="font-size: 10px; color: {theme["text"]}; opacity: 0.7;">PRICE</div>
+                                <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">₹{row.Auction_Price:.1f}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 10px; color: {theme["text"]}; opacity: 0.7;">NAT</div>
+                                <div style="font-size: 11px; font-weight: bold; color: {theme["text"]};">{"OVS ✈️" if row.Nationality == "overseas" else "IND 🇮🇳"}</div>
+                            </div>
+                        </div>
+                    </div>
+                    '''
                     cols[idx % 4].markdown(card_html, unsafe_allow_html=True)
 
 # ================= TAB 2: VENUE OPTIMIZER =================
