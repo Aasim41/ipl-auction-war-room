@@ -632,7 +632,7 @@ def get_next_bid(current):
     else: return current + 0.5
 
 # --- Tabs Setup ---
-tab1, tab2, tab3, tab4, tab5 = st.tabs([f"🏆 {theme['name']} War Room", "🏟️ Venue Optimizer", "🎯 Rookie Radar", "💰 Mock Auction Simulator", "📈 Analytics & Longevity"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([f"🏆 {theme['name']} War Room", "🏟️ Venue Optimizer", "🎯 Rookie Radar", "💰 Mock Auction Simulator", "📈 Analytics & Longevity", "🔄 Trade Simulator"])
 
 # ================= TAB 1: THE WAR ROOM =================
 with tab1:
@@ -1216,3 +1216,69 @@ with tab5:
             </div>
             """, unsafe_allow_html=True)
 
+# ================= TAB 6: TRADE SIMULATOR =================
+with tab6:
+    st.title("🔄 What-If Trade Simulator")
+    st.write("Manually override the AI. Swap a drafted player for an undrafted player and see how it impacts your franchise.")
+    
+    if 'squad_df' not in st.session_state:
+        st.warning("⚠️ You must run the Optimizer in the War Room first to generate a squad.")
+    else:
+        squad_df = st.session_state['squad_df']
+        drafted_players = squad_df['Player'].tolist()
+        undrafted_df = df[~df['Player'].isin(drafted_players)]
+        undrafted_players = undrafted_df['Player'].tolist()
+        
+        col_drop, col_add = st.columns(2)
+        with col_drop:
+            player_to_drop = st.selectbox("Select Player to DROP:", sorted(drafted_players))
+        with col_add:
+            player_to_add = st.selectbox("Select Player to ACQUIRE:", sorted(undrafted_players))
+            
+        if player_to_drop and player_to_add:
+            drop_data = squad_df[squad_df['Player'] == player_to_drop].iloc[0]
+            add_data = undrafted_df[undrafted_df['Player'] == player_to_add].iloc[0]
+            
+            st.markdown("### ⚖️ Trade Comparison")
+            comp_col1, comp_col2 = st.columns(2)
+            
+            comp_col1.markdown(f"""
+            <div style="background-color: rgba(255,0,0,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #FF4B4B;">
+                <h4 style="color: #FF4B4B; margin-top: 0;">🔻 DROPPING: {drop_data['Player'].title()}</h4>
+                <p style="margin:0;"><b>Role:</b> {drop_data['Specific_Role'].title()}</p>
+                <p style="margin:0;"><b>Power:</b> {drop_data['Power_Index']:.1f}</p>
+                <p style="margin:0;"><b>Salary Saved:</b> ₹ {drop_data['Auction_Price']:.1f} Cr</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            comp_col2.markdown(f"""
+            <div style="background-color: rgba(0,255,0,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #00FF00;">
+                <h4 style="color: #00FF00; margin-top: 0;">🟢 ACQUIRING: {add_data['Player'].title()}</h4>
+                <p style="margin:0;"><b>Role:</b> {add_data['Specific_Role'].title()}</p>
+                <p style="margin:0;"><b>Power:</b> {add_data['Power_Index']:.1f}</p>
+                <p style="margin:0;"><b>Salary Cost:</b> ₹ {add_data['Auction_Price']:.1f} Cr</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Calculate Deltas
+            power_delta = add_data['Power_Index'] - drop_data['Power_Index']
+            budget_delta = add_data['Auction_Price'] - drop_data['Auction_Price']
+            current_spent = squad_df['Auction_Price'].sum()
+            new_spent = current_spent + budget_delta
+            
+            st.markdown("### 📊 Trade Impact")
+            res_col1, res_col2 = st.columns(2)
+            
+            pwr_color = "normal" if power_delta >= 0 else "inverse"
+            res_col1.metric("Net Power Change", f"{power_delta:+.1f}", delta=f"{power_delta:+.1f}", delta_color=pwr_color)
+            
+            res_col2.metric("New Budget Spent", f"₹ {new_spent:.1f} Cr", delta=f"₹ {budget_delta:+.1f} Cr", delta_color="inverse")
+            
+            if new_spent > budget:
+                st.error(f"❌ **TRADE REJECTED:** This trade puts you over the ₹ {budget:.1f} Cr budget limit! You are over budget by ₹ {new_spent - budget:.1f} Cr.")
+            else:
+                st.success("✅ **TRADE APPROVED:** This trade is financially viable within your budget constraint.")
+                if power_delta > 0:
+                    st.info("💡 **Coach Insight:** This is a fantastic trade! You increased your team's total Power Index.")
+                else:
+                    st.warning("⚠️ **Coach Insight:** This trade decreases your team's Power Index. Make sure the synergy is worth it.")
