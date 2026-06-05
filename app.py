@@ -193,7 +193,6 @@ def generate_custom_css(bg, accent, text):
 """
 
 # --- Data Loading ---
-@st.cache_data
 def load_data():
     # Load player database
     df = pd.read_csv('data/filled_ipl_data.csv')
