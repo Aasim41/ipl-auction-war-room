@@ -412,6 +412,8 @@ if live_state['form_boosts']:
 
 st.sidebar.markdown(f"### ⚙️ {theme['name']} War Room Settings")
 
+app_mode = st.sidebar.radio("Optimization Mode", ["🤖 AI Mega Auction", "🏏 Real 2025 Squad"], index=0)
+
 st.sidebar.markdown("### 🏟️ Home Ground")
 selected_venue = st.sidebar.selectbox("Select Home Stadium", list(VENUES.keys()), label_visibility="collapsed")
 venue_info = VENUES[selected_venue]
@@ -419,9 +421,15 @@ venue_info = VENUES[selected_venue]
 # Apply venue boost to the dataframe
 df = apply_venue_boost(df, selected_venue)
 
-budget = st.sidebar.slider("Total Budget (Crores)", min_value=50.0, max_value=120.0, value=100.0, step=1.0)
-mandatory_xi = st.sidebar.multiselect("Lock into Starting XI", [p for p in df['Player'].tolist() if p not in unavailable_players], help="These players will be forced into the 11-man Playing XI. Warning: Ensure they don't violate the rigid XI role constraints!")
-mandatory_squad = st.sidebar.multiselect("Lock into 25-Man Squad (Bench or XI)", [p for p in df['Player'].tolist() if p not in mandatory_xi and p not in unavailable_players], help="These players will be bought in the squad, but the AI decides if they start in the XI.")
+if app_mode == "🤖 AI Mega Auction":
+    budget = st.sidebar.slider("Total Budget (Crores)", min_value=50.0, max_value=120.0, value=100.0, step=1.0)
+    mandatory_xi = st.sidebar.multiselect("Lock into Starting XI", [p for p in df['Player'].tolist() if p not in unavailable_players], help="These players will be forced into the 11-man Playing XI. Warning: Ensure they don't violate the rigid XI role constraints!")
+    mandatory_squad = st.sidebar.multiselect("Lock into 25-Man Squad (Bench or XI)", [p for p in df['Player'].tolist() if p not in mandatory_xi and p not in unavailable_players], help="These players will be bought in the squad, but the AI decides if they start in the XI.")
+else:
+    budget = 100.0
+    mandatory_xi = []
+    mandatory_squad = []
+    st.sidebar.info("Viewing actual drafted 25-man squad. The AI will formulate the Best Starting XI.")
 
 # Helper for Role Icons
 def get_role_icon(role):
@@ -514,6 +522,42 @@ def calculate_longevity_score(squad_df):
     return max(0, min(100, int(score))), round(avg_age, 1), risk
 
 # --- Optimization Logic ---
+def run_real_squad_optimization(squad_df):
+    prob = pulp.LpProblem("IPL_Real_Squad_Optimization", pulp.LpMaximize)
+    squad_df = squad_df.copy().reset_index(drop=True)
+    xi_vars = pulp.LpVariable.dicts("XI", squad_df.index, cat='Binary')
+    
+    prob += pulp.lpSum([squad_df.loc[i, 'Power_Index'] * xi_vars[i] for i in squad_df.index]), "Objective"
+    prob += pulp.lpSum([xi_vars[i] for i in squad_df.index]) == 11, "XI_Size"
+    prob += pulp.lpSum([xi_vars[i] for i in squad_df.index if squad_df.loc[i, 'Nationality'] == 'overseas']) <= 4, "Max_Ovs"
+    prob += pulp.lpSum([xi_vars[i] for i in squad_df.index if 'bowler' in squad_df.loc[i, 'Specific_Role'] or 'all-rounder' in squad_df.loc[i, 'Specific_Role']]) >= 5, "Min_Bowlers"
+    prob += pulp.lpSum([xi_vars[i] for i in squad_df.index if 'order' in squad_df.loc[i, 'Specific_Role'] or 'all-rounder' in squad_df.loc[i, 'Specific_Role']]) >= 4, "Min_Batters"
+    
+    status = prob.solve(pulp.PULP_CBC_CMD(msg=0, threads=1, gapRel=0.05, timeLimit=1))
+    
+    if status != pulp.LpStatusOptimal:
+        xi_indices = squad_df.sort_values(by='Power_Index', ascending=False).head(11).index.tolist()
+    else:
+        xi_indices = [i for i in squad_df.index if xi_vars[i].varValue == 1.0]
+        
+    xi_df = squad_df.loc[xi_indices].sort_values(by=['Specific_Role', 'Auction_Price'], ascending=[True, False]).reset_index(drop=True)
+    
+    def assign_archetype(row):
+        r = row['Specific_Role']
+        b = row['Bowling_Style']
+        if 'top' in r: return 'Anchor/Explosive Opener'
+        if 'mid' in r: return 'Middle Order Finisher'
+        if 'all-rounder' in r: return 'Pace/Spin All-Rounder'
+        if 'pace' in b or 'fast' in b: return 'Express Pace/Death Bowler'
+        if 'spin' in b: return 'Mystery/Wrist Spinner'
+        return 'Impact Player'
+        
+    squad_df['Archetype'] = squad_df.apply(assign_archetype, axis=1)
+    xi_df['Archetype'] = xi_df.apply(assign_archetype, axis=1)
+    squad_df['In_XI'] = squad_df['Player'].isin(xi_df['Player']).apply(lambda x: '✅ Yes' if x else '❌ Bench')
+    
+    return squad_df.sort_values(by=['Auction_Price'], ascending=False).reset_index(drop=True), xi_df
+
 def run_optimization(df, budget_limit, mandatory_xi, mandatory_squad, unavailable_players=None, price_overrides=None):
     df = df.copy()
     if price_overrides:
@@ -676,7 +720,24 @@ with tab1:
 
     if st.sidebar.button("Optimize Team"):
         with st.spinner("Crunching permutations in the War Room (Optimized & Multi-Threaded)..."):
-            squad_df, xi_df = run_optimization(df, budget, mandatory_xi, mandatory_squad, unavailable_players=unavailable_players)
+            if app_mode == "🤖 AI Mega Auction":
+                squad_df, xi_df = run_optimization(df, budget, mandatory_xi, mandatory_squad, unavailable_players=unavailable_players)
+            else:
+                try:
+                    squads_data = pd.read_csv('data/current_squads.csv')
+                    team_match = [t for t in squads_data['Current_Team'].unique() if theme['name'] in t]
+                    if team_match:
+                        real_squad_names = squads_data[squads_data['Current_Team'] == team_match[0]]['Player'].tolist()
+                        real_squad_df = df[df['Player'].isin(real_squad_names)].copy()
+                        if unavailable_players:
+                            real_squad_df = real_squad_df[~real_squad_df['Player'].isin(unavailable_players)]
+                        squad_df, xi_df = run_real_squad_optimization(real_squad_df)
+                    else:
+                        st.error("No real squad data found for this franchise.")
+                        squad_df, xi_df = None, None
+                except Exception as e:
+                    st.error(f"Error loading real squads: {e}")
+                    squad_df, xi_df = None, None
             
             if squad_df is None:
                 st.error("⚠️ Insufficient Budget OR Conflicting Constraints!")
