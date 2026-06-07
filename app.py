@@ -624,705 +624,354 @@ with tab1:
     
 
 # ================= TAB 2: VENUE OPTIMIZER =================
-
 with tab2:
-
-    st.title(f"≡ƒÅƒ∩╕Å Venue Optimizer ΓÇö {selected_venue}")
-
+    st.title(f"🏟️ Venue Optimizer — {selected_venue}")
     
-
     # Venue Header Card
-
     st.markdown(f"""
-
         <div style="background: linear-gradient(135deg, {theme['accent']}22, {theme['accent']}44); border-left: 5px solid {theme['accent']}; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-
             <h2 style="margin-top: 0;">{venue_info['icon']} {selected_venue}</h2>
-
             <p style="font-size: 18px; margin-bottom: 8px;"><b>Pitch Type:</b> {venue_info['pitch']}</p>
-
             <p style="font-size: 16px; margin-bottom: 8px;"><b>Home Team:</b> {venue_info['team']}</p>
-
             <p style="font-size: 15px; font-style: italic; opacity: 0.9;">{venue_info['desc']}</p>
-
         </div>
-
     """, unsafe_allow_html=True)
-
     
-
     # Player Search Bar
-
-    st.markdown("### ≡ƒöì Scout Player at this Venue")
-
+    st.markdown("### 🔍 Scout Player at this Venue")
     search_player = st.selectbox("Look up a specific player's venue-adjusted stats:", [""] + df['Player'].sort_values().tolist(), label_visibility="collapsed")
-
     if search_player:
-
         p_data = df[df['Player'] == search_player].iloc[0]
-
         boost_pct = p_data['Venue_Boost']
-
         boost_color = "#00FF00" if boost_pct > 0 else ("#FF4B4B" if boost_pct < 0 else theme['text'])
-
         st.markdown(f"""
-
             <div style="background-color: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
-
                 <h4 style="margin-top: 0; color: {theme['accent']};">{p_data['Player'].title()} ({p_data['Specific_Role'].title()})</h4>
-
-                <p style="font-size: 16px; margin-bottom: 5px;">Base Power: <b>{p_data['Original_Power_Index']:.1f}</b> Γ₧ö Venue Power: <b>{p_data['Power_Index']:.1f}</b></p>
-
+                <p style="font-size: 16px; margin-bottom: 5px;">Base Power: <b>{p_data['Original_Power_Index']:.1f}</b> ➔ Venue Power: <b>{p_data['Power_Index']:.1f}</b></p>
                 <p style="font-size: 16px; margin-bottom: 0;">Venue Impact: <b style="color: {boost_color};">{boost_pct:+.1f}%</b></p>
-
             </div>
-
         """, unsafe_allow_html=True)
-
     
-
     # Venue Boost Breakdown
-
-    st.markdown("### ≡ƒôè Pitch Multipliers")
-
+    st.markdown("### 📊 Pitch Multipliers")
     st.write("These multipliers adjust each player's Power Index based on how their skill-set matches the venue's pitch characteristics.")
-
     
-
     boosts = venue_info['boosts']
-
     boost_cols = st.columns(5)
-
     boost_labels = [
-
-        ("≡ƒÅÅ Top Order", boosts.get('top order', 1.0)),
-
-        ("≡ƒÅÅ Middle Order", boosts.get('middle order', 1.0)),
-
-        ("≡ƒÅÅΓÜ╛ All-Rounders", boosts.get('all-rounder', 1.0)),
-
-        ("≡ƒÆ¿ Pace Bowlers", boosts.get('bowler_pace', 1.0)),
-
-        ("≡ƒÉì Spin Bowlers", boosts.get('bowler_spin', 1.0)),
-
+        ("🏏 Top Order", boosts.get('top order', 1.0)),
+        ("🏏 Middle Order", boosts.get('middle order', 1.0)),
+        ("🏏⚾ All-Rounders", boosts.get('all-rounder', 1.0)),
+        ("💨 Pace Bowlers", boosts.get('bowler_pace', 1.0)),
+        ("🐍 Spin Bowlers", boosts.get('bowler_spin', 1.0)),
     ]
-
     for col, (label, mult) in zip(boost_cols, boost_labels):
-
         delta_pct = (mult - 1) * 100
-
         delta_str = f"{delta_pct:+.0f}%"
-
         col.metric(label, f"{mult:.2f}x", delta=delta_str, delta_color="normal")
-
     
-
     st.markdown("---")
-
     
-
     # Biggest Winners & Losers
-
-    st.markdown("### ≡ƒÜÇ Biggest Winners at This Venue")
-
+    st.markdown("### 🚀 Biggest Winners at This Venue")
     st.write("Players whose Power Index gets the biggest boost at this ground.")
-
     
-
     winners = df.nlargest(10, 'Venue_Boost')[['Player', 'Specific_Role', 'Bowling_Style', 'Original_Power_Index', 'Power_Index', 'Venue_Boost', 'Auction_Price']].copy()
-
     winners.columns = ['Player', 'Role', 'Bowl Style', 'Base Power', 'Venue Power', 'Boost %', 'Price (Cr)']
-
     winners['Player'] = winners['Player'].str.title()
-
     winners['Role'] = winners['Role'].str.title()
-
     winners['Bowl Style'] = winners['Bowl Style'].str.title()
-
     winners = winners.reset_index(drop=True)
-
     winners.index = winners.index + 1
-
     
-
     st.dataframe(
-
         winners,
-
         use_container_width=True,
-
         column_config={
-
             "Player": st.column_config.TextColumn("Player", width="medium"),
-
             "Role": st.column_config.TextColumn("Role"),
-
             "Bowl Style": st.column_config.TextColumn("Style"),
-
-            "Base Power": st.column_config.NumberColumn("Base Power", format="%.1f ΓÜí"),
-
+            "Base Power": st.column_config.NumberColumn("Base Power", format="%.1f ⚡"),
             "Venue Power": st.column_config.ProgressColumn("Venue Power", format="%.1f", min_value=0, max_value=100),
-
             "Boost %": st.column_config.NumberColumn("Boost", format="%+.1f%%"),
-
-            "Price (Cr)": st.column_config.NumberColumn("Price", format="Γé╣ %.1f Cr")
-
+            "Price (Cr)": st.column_config.NumberColumn("Price", format="₹ %.1f Cr")
         }
-
     )
-
     
-
-    st.markdown("### ≡ƒôë Players Nerfed at This Venue")
-
-    st.write("Players whose Power Index takes the biggest hit at this ground ΓÇö avoid overpaying for them.")
-
+    st.markdown("### 📉 Players Nerfed at This Venue")
+    st.write("Players whose Power Index takes the biggest hit at this ground — avoid overpaying for them.")
     
-
     losers = df.nsmallest(10, 'Venue_Boost')[['Player', 'Specific_Role', 'Bowling_Style', 'Original_Power_Index', 'Power_Index', 'Venue_Boost', 'Auction_Price']].copy()
-
     losers.columns = ['Player', 'Role', 'Bowl Style', 'Base Power', 'Venue Power', 'Boost %', 'Price (Cr)']
-
     losers['Player'] = losers['Player'].str.title()
-
     losers['Role'] = losers['Role'].str.title()
-
     losers['Bowl Style'] = losers['Bowl Style'].str.title()
-
     losers = losers.reset_index(drop=True)
-
     losers.index = losers.index + 1
-
     
-
     st.dataframe(
-
         losers,
-
         use_container_width=True,
-
         column_config={
-
             "Player": st.column_config.TextColumn("Player", width="medium"),
-
             "Role": st.column_config.TextColumn("Role"),
-
             "Bowl Style": st.column_config.TextColumn("Style"),
-
-            "Base Power": st.column_config.NumberColumn("Base Power", format="%.1f ΓÜí"),
-
+            "Base Power": st.column_config.NumberColumn("Base Power", format="%.1f ⚡"),
             "Venue Power": st.column_config.ProgressColumn("Venue Power", format="%.1f", min_value=0, max_value=100),
-
             "Boost %": st.column_config.NumberColumn("Boost", format="%+.1f%%"),
-
-            "Price (Cr)": st.column_config.NumberColumn("Price", format="Γé╣ %.1f Cr")
-
+            "Price (Cr)": st.column_config.NumberColumn("Price", format="₹ %.1f Cr")
         }
-
     )
-
     
-
     st.markdown("---")
-
     
-
     # Venue-Adjusted Scatter Plot
-
-    st.markdown("### ≡ƒö¼ Venue-Adjusted Power Distribution")
-
-    st.write("See how the venue reshapes the power landscape ΓÇö compare base vs. venue-adjusted power for every player.")
-
+    st.markdown("### 🔬 Venue-Adjusted Power Distribution")
+    st.write("See how the venue reshapes the power landscape — compare base vs. venue-adjusted power for every player.")
     
-
     scatter_df = df[['Player', 'Specific_Role', 'Original_Power_Index', 'Power_Index', 'Venue_Boost']].copy()
-
     scatter_df['Player'] = scatter_df['Player'].str.title()
-
     scatter_df['Specific_Role'] = scatter_df['Specific_Role'].str.title()
-
     
-
     fig = px.scatter(
-
         scatter_df, x='Original_Power_Index', y='Power_Index',
-
         color='Specific_Role', hover_name='Player',
-
         hover_data={'Venue_Boost': ':.1f', 'Original_Power_Index': ':.1f', 'Power_Index': ':.1f'},
-
         labels={'Original_Power_Index': 'Base Power Index', 'Power_Index': f'Venue-Adjusted Power ({selected_venue.split(",")[0]})', 'Specific_Role': 'Role'},
-
         template="plotly_dark" if theme['text'] == 'white' else "plotly_white"
-
     )
-
     fig.add_shape(type='line', x0=0, y0=0, x1=scatter_df['Original_Power_Index'].max()*1.1, y1=scatter_df['Original_Power_Index'].max()*1.1, line=dict(color='gray', dash='dash'), name='No Change Line')
-
     fig.update_traces(marker=dict(size=8, line=dict(width=0.5, color='white')))
-
     fig.update_layout(
-
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-
         font=dict(color=theme['text']),
-
         legend=dict(bgcolor='rgba(0,0,0,0.3)'),
-
         height=500
-
     )
-
     st.plotly_chart(fig, use_container_width=True)
-
     st.caption("Players **above** the dashed line are boosted at this venue. Players **below** it are nerfed.")
 
-
-
 # ================= TAB 3: ROOKIE RADAR =================
-
 with tab3:
-
-    st.title(f"≡ƒÄ» {theme['name']} Rookie Radar")
-
-    st.write("Using our elite Moneyball algorithm, a 'True Rookie' is defined strictly as a player with **Γëñ 10 career matches**. Here are the absolute best hidden gems on the market.")
-
+    st.title(f"🎯 {theme['name']} Rookie Radar")
+    st.write("Using our elite Moneyball algorithm, a 'True Rookie' is defined strictly as a player with **≤ 10 career matches**. Here are the absolute best hidden gems on the market.")
     
-
     rookies = df[df['Matches_Played'] <= 10].copy()
-
     rookies = rookies.sort_values(by='Power_Index', ascending=False)
-
     
-
     if not rookies.empty:
-
         col_search, col_plot = st.columns([1, 2])
-
         
-
         with col_search:
-
-            st.markdown("### ≡ƒöì Scout a Rookie")
-
+            st.markdown("### 🔍 Scout a Rookie")
             selected_rookie = st.selectbox("Search Player", rookies['Player'].tolist())
-
             
-
             if selected_rookie:
-
                 r_data = rookies[rookies['Player'] == selected_rookie].iloc[0]
-
                 
-
                 st.markdown(f"""
-
                 <div style="background-color: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px; border-left: 5px solid {theme['accent']}; margin-top: 15px;">
-
                     <h3 style="color: {theme['accent']}; margin-top: 0;">{r_data['Player'].title()}</h3>
-
                     <p style="font-size: 16px; margin-bottom: 5px;"><b>Role:</b> {r_data['Specific_Role'].title()}</p>
-
                     <p style="font-size: 16px; margin-bottom: 5px;"><b>Style:</b> {r_data['Bowling_Style'].title()}</p>
-
                     <p style="font-size: 16px; margin-bottom: 5px;"><b>Matches Played:</b> {int(r_data['Matches_Played'])}</p>
-
                     <hr style="border-color: rgba(255,255,255,0.2);">
-
                     <p style="font-size: 18px; margin-bottom: 5px; color: {theme['text']};"><b>Power Index:</b> {r_data['Power_Index']:.1f}</p>
-
-                    <p style="font-size: 16px; margin-bottom: 0; color: {theme['text']};"><b>Est. Value:</b> Γé╣ {r_data['Auction_Price']:.1f} Cr</p>
-
+                    <p style="font-size: 16px; margin-bottom: 0; color: {theme['text']};"><b>Est. Value:</b> ₹ {r_data['Auction_Price']:.1f} Cr</p>
                 </div>
-
                 """, unsafe_allow_html=True)
-
             
-
         with col_plot:
-
-            st.markdown("### ≡ƒôè Rookie Power vs Experience")
-
+            st.markdown("### 📊 Rookie Power vs Experience")
             fig = px.scatter(
-
                 rookies, x='Matches_Played', y='Power_Index', 
-
                 hover_name='Player',
-
                 hover_data={'Role': True, 'Auction_Price': ':.1f', 'Matches_Played': True, 'Power_Index': ':.1f'},
-
                 color='Power_Index',
-
                 color_continuous_scale='Viridis',
-
                 labels={'Matches_Played': 'Total Career IPL Matches', 'Power_Index': 'Algorithmic Power Score'},
-
                 template="plotly_dark" if theme['text'] == 'white' else "plotly_white"
-
             )
-
             fig.update_traces(marker=dict(size=12, line=dict(width=1, color='White')))
-
             fig.add_hline(y=rookies['Power_Index'].median(), line_dash="dash", line_color=theme['accent'], annotation_text="Average Rookie Power")
-
             fig.add_vline(x=5, line_dash="dash", line_color=theme['accent'], annotation_text="Brand New (<= 5)")
-
             
-
             fig.update_layout(
-
                 paper_bgcolor='rgba(0,0,0,0)', 
-
                 plot_bgcolor='rgba(0,0,0,0)',
-
                 font=dict(color=theme['text'])
-
             )
-
             st.plotly_chart(fig, use_container_width=True)
-
     else:
-
         st.warning("No players found with <= 10 matches.")
 
-
-
 # ================= TAB 4: MOCK AUCTION SIMULATOR =================
-
 with tab4:
-
-    st.title("≡ƒÆ░ Mock Auction Simulator")
-
-    st.write("Test your drafting strategies against aggressive AI franchises. Outbid them to build your ultimate 25-man roster within your Γé╣ 100 Cr budget!")
-
+    st.title("💰 Mock Auction Simulator")
+    st.write("Test your drafting strategies against aggressive AI franchises. Outbid them to build your ultimate 25-man roster within your ₹ 100 Cr budget!")
     
-
     # Dashboard metrics
-
     col1, col2, col3 = st.columns(3)
-
-    col1.metric("Remaining Budget", f"Γé╣ {st.session_state.user_budget:.2f} Cr")
-
+    col1.metric("Remaining Budget", f"₹ {st.session_state.user_budget:.2f} Cr")
     col2.metric("Drafted Players", f"{len(st.session_state.drafted_squad)} / 25")
-
     col3.metric("Players Remaining in Pool", f"{len(st.session_state.auction_pool) - st.session_state.current_player_idx}")
-
     
-
     st.markdown("---")
-
     
-
     if len(st.session_state.drafted_squad) >= 25:
-
-        st.success("≡ƒÄë Roster Full! You have drafted 25 players.")
-
+        st.success("🎉 Roster Full! You have drafted 25 players.")
     elif st.session_state.current_player_idx >= len(st.session_state.auction_pool):
-
         st.success("The auction has concluded! The pool is empty.")
-
     else:
-
         # Get current player
-
         current_row = st.session_state.auction_pool.iloc[st.session_state.current_player_idx]
-
         
-
         if st.session_state.auction_state == 'new_player':
-
             if st.button("Pull Next Player from Hammer", key="pull_next"):
-
                 st.session_state.auction_state = 'bidding'
-
                 st.session_state.current_bid = 0.5
-
                 st.session_state.highest_bidder = 'AI'
-
                 base_price = current_row['Auction_Price']
-
                 # AI is aggressive and can bid above the dataset limit (up to 1.5x)
-
                 st.session_state.ai_max_bid = max(0.5, base_price * random.uniform(0.8, 1.5))
-
                 st.rerun()
-
                 
-
         elif st.session_state.auction_state == 'bidding':
-
             col_player, col_bid = st.columns([1, 1])
-
             
-
             with col_player:
-
                 st.markdown(f"### On the Block: **{current_row['Player'].title()}**")
-
                 st.write(f"**Role:** {current_row['Specific_Role'].title()} | **Style:** {current_row['Bowling_Style'].title()}")
-
                 st.write(f"**Nationality:** {current_row['Nationality'].title()}")
-
                 st.write(f"**Matches Played:** {int(current_row['Matches_Played'])}")
-
                 st.write(f"**Power Index:** {current_row['Power_Index']:.1f}")
-
                 
-
             with col_bid:
-
-                st.markdown(f"<h2 style='color: {theme['accent']};'>Current Bid: Γé╣ {st.session_state.current_bid:.2f} Cr</h2>", unsafe_allow_html=True)
-
+                st.markdown(f"<h2 style='color: {theme['accent']};'>Current Bid: ₹ {st.session_state.current_bid:.2f} Cr</h2>", unsafe_allow_html=True)
                 
-
                 if st.session_state.highest_bidder == 'AI':
-
-                    st.warning("≡ƒÜ¿ The AI Franchise currently holds the highest bid!")
-
+                    st.warning("🚨 The AI Franchise currently holds the highest bid!")
                 else:
-
-                    st.success("Γ£à You hold the highest bid!")
-
+                    st.success("✅ You hold the highest bid!")
                     
-
                 next_bid = get_next_bid(st.session_state.current_bid)
-
                 can_afford = next_bid <= st.session_state.user_budget
-
                 
-
                 col_btn1, col_btn2 = st.columns(2)
-
                 
-
                 if st.session_state.highest_bidder == 'AI':
-
                     with col_btn1:
-
                         if can_afford:
-
-                            if st.button(f"Bid Γé╣ {next_bid:.2f} Cr", type="primary", key="place_bid"):
-
+                            if st.button(f"Bid ₹ {next_bid:.2f} Cr", type="primary", key="place_bid"):
                                 st.session_state.highest_bidder = 'User'
-
                                 st.session_state.current_bid = next_bid
-
                                 
-
                                 # AI Counters
-
                                 if st.session_state.current_bid < st.session_state.ai_max_bid:
-
                                     counter_bid = get_next_bid(st.session_state.current_bid)
-
                                     st.session_state.current_bid = counter_bid
-
                                     st.session_state.highest_bidder = 'AI'
-
                                 st.rerun()
-
                         else:
-
                             st.error("Insufficient Funds to Bid!")
-
                             
-
                     with col_btn2:
-
                         if st.button("Pass / Let AI Buy", key="pass_bid"):
-
                             st.session_state.auction_state = 'sold_to_ai'
-
                             st.rerun()
-
                 else:
-
                     st.success("The room is silent. The AI has backed out.")
-
-                    if st.button("≡ƒö¿ Finalize Purchase!", key="finalize_buy"):
-
+                    if st.button("🔨 Finalize Purchase!", key="finalize_buy"):
                         st.session_state.auction_state = 'sold_to_user'
-
                         st.session_state.user_budget -= st.session_state.current_bid
-
                         player_dict = current_row.to_dict()
-
                         player_dict['Sold_Price'] = st.session_state.current_bid
-
                         st.session_state.drafted_squad.append(player_dict)
-
                         st.rerun()
-
                         
-
         elif st.session_state.auction_state == 'sold_to_user':
-
-            st.success(f"≡ƒÄë SOLD! You drafted {current_row['Player']} for Γé╣ {st.session_state.current_bid:.2f} Cr!")
-
-            if st.button("Next Player Γ₧í∩╕Å", key="next_after_win"):
-
+            st.success(f"🎉 SOLD! You drafted {current_row['Player']} for ₹ {st.session_state.current_bid:.2f} Cr!")
+            if st.button("Next Player ➡️", key="next_after_win"):
                 st.session_state.current_player_idx += 1
-
                 st.session_state.auction_state = 'new_player'
-
                 st.rerun()
-
                 
-
         elif st.session_state.auction_state == 'sold_to_ai':
-
-            st.error(f"Γ¥î Sold to rival AI Franchise for Γé╣ {st.session_state.current_bid:.2f} Cr.")
-
-            if st.button("Next Player Γ₧í∩╕Å", key="next_after_loss"):
-
+            st.error(f"❌ Sold to rival AI Franchise for ₹ {st.session_state.current_bid:.2f} Cr.")
+            if st.button("Next Player ➡️", key="next_after_loss"):
                 st.session_state.current_player_idx += 1
-
                 st.session_state.auction_state = 'new_player'
-
                 st.rerun()
-
-
 
     st.markdown("---")
-
     st.markdown("### Your Live Drafted Roster")
-
     if len(st.session_state.drafted_squad) > 0:
-
         draft_df = pd.DataFrame(st.session_state.drafted_squad)
-
         roles = ['top order', 'middle order', 'all-rounder', 'bowler']
-
         for role in roles:
-
             role_players = draft_df[draft_df['Specific_Role'] == role]
-
             if not role_players.empty:
-
                 st.markdown(f"#### {get_role_icon(role)} {role.title()}s ({len(role_players)})")
-
                 cols = st.columns(4)
-
                 for idx, row in enumerate(role_players.itertuples()):
-
-                    ovs = " Γ£ê∩╕Å" if row.Nationality == 'overseas' else ""
-
+                    ovs = " ✈️" if row.Nationality == 'overseas' else ""
                     bg_alpha = "rgba(0,0,0,0.15)" if theme['text'] == "white" else "rgba(255,255,255,0.4)"
-
-                    card_html = f'<div class="player-card"><div class="player-name">{row.Player.title()}{ovs}</div><div class="player-price">Won For: Γé╣ {row.Sold_Price:.2f} Cr</div><div style="margin-top: 10px; width: 100%; background-color: rgba(255,255,255,0.2); border-radius: 6px; height: 8px;"><div style="width: {row.Power_Index}%; background-color: {theme["accent"]}; height: 100%; border-radius: 6px; box-shadow: 0 0 5px {theme["accent"]};"></div></div></div>'
-
+                    card_html = f'<div class="player-card"><div class="player-name">{row.Player.title()}{ovs}</div><div class="player-price">Won For: ₹ {row.Sold_Price:.2f} Cr</div><div style="margin-top: 10px; width: 100%; background-color: rgba(255,255,255,0.2); border-radius: 6px; height: 8px;"><div style="width: {row.Power_Index}%; background-color: {theme["accent"]}; height: 100%; border-radius: 6px; box-shadow: 0 0 5px {theme["accent"]};"></div></div></div>'
                     cols[idx % 4].markdown(card_html, unsafe_allow_html=True)
-
     else:
-
         st.write("You haven't drafted any players yet. Start bidding!")
 
-
-
 # ================= TAB 5: ANALYTICS & LONGEVITY =================
-
 with tab5:
-
-    st.title("≡ƒôê Analytics & Franchise Longevity")
-
+    st.title("📈 Analytics & Franchise Longevity")
     st.write("Dive deep into your optimal squad's budget allocation, value buys, and long-term sustainability.")
-
     
-
     squad_names = st.session_state.get('retained_players', [])
     if not squad_names:
-
-        st.warning("ΓÜá∩╕Å You must run the Optimizer in the War Room first to generate analytics.")
-
+        st.warning("⚠️ You must retain or buy players in the War Room first to generate analytics.")
     else:
-
         squad_df = df[df['Player'].isin(squad_names)]
-
         
-
         # Dashboard metrics
-
-        st.markdown("### ≡ƒº¼ 3-Year Franchise Health")
-
+        st.markdown("### 🧬 3-Year Franchise Health")
         score, avg_age, risk = calculate_longevity_score(squad_df)
-
         
-
         col1, col2, col3 = st.columns(3)
-
         col1.metric("Average Squad Age", f"{avg_age} Years")
-
         col2.metric("Franchise Longevity Score", f"{score}/100")
-
         col3.markdown(f"**Risk Level:**<br><span style='color: {theme['accent']}; font-size: 18px;'>{risk}</span>", unsafe_allow_html=True)
-
         
-
         st.markdown("---")
-
         
-
-        st.markdown("### ≡ƒÆ░ Budget Allocation by Role")
-
+        st.markdown("### 💰 Budget Allocation by Role")
         budget_pie = squad_df.groupby('Specific_Role')['Auction_Price'].sum().reset_index()
-
         budget_pie['Specific_Role'] = budget_pie['Specific_Role'].str.title()
-
         
-
         fig1 = px.pie(
-
             budget_pie, values='Auction_Price', names='Specific_Role',
-
             hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel
-
         )
-
         fig1.update_traces(textposition='inside', textinfo='percent+label')
-
         fig1.update_layout(
-
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-
             font=dict(color=theme['text']),
-
             showlegend=False
-
         )
-
         st.plotly_chart(fig1, use_container_width=True)
-
             
-
-        st.markdown("### ≡ƒÅå Top 3 Value Buys (Highest Power per Crore)")
-
+        st.markdown("### 🏆 Top 3 Value Buys (Highest Power per Crore)")
         value_df = squad_df.copy()
-
         value_df['Value_Score'] = value_df['Power_Index'] / value_df['Auction_Price']
-
         value_df = value_df.sort_values(by='Value_Score', ascending=False).head(3)
-
         
-
         val_cols = st.columns(3)
-
         for idx, row in enumerate(value_df.itertuples()):
-
             val_cols[idx].markdown(f"""
-
             <div style="background-color: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid {theme['accent']};">
-
                 <h4 style="color: {theme['accent']}; margin-top: 0;">{row.Player.title()}</h4>
-
-                <p style="margin:0;"><b>Price:</b> Γé╣ {row.Auction_Price:.1f} Cr</p>
-
+                <p style="margin:0;"><b>Price:</b> ₹ {row.Auction_Price:.1f} Cr</p>
                 <p style="margin:0;"><b>Power:</b> {row.Power_Index:.1f}</p>
-
                 <p style="margin:0; font-size:12px; color:{theme['text']};"><b>Ratio:</b> {row.Value_Score:.1f} Pwr/Cr</p>
-
             </div>
-
             """, unsafe_allow_html=True)
-
-
 
