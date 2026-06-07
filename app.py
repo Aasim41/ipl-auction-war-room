@@ -373,20 +373,16 @@ theme = FRANCHISES[selected_team]
 
 st.markdown(generate_custom_css(theme['bg'], theme['accent'], theme['text']), unsafe_allow_html=True)
 
-st.sidebar.markdown("### 📡 Live API Sync")
-if st.sidebar.button("🌐 Fetch Live CricAPI Squads"):
-    with st.spinner("Connecting to CricketData.org API..."):
+# Automatic Background Sync
+if 'data_synced' not in st.session_state:
+    with st.spinner("📡 Booting up War Room... Syncing Live Rosters from CricAPI..."):
         try:
             from fetch_live_squads import fetch_and_map_squads
-            success, msg = fetch_and_map_squads()
-            if success:
-                st.sidebar.success(msg)
-                st.session_state.app_phase = 'setup' # Reset to reload data
-                st.rerun()
-            else:
-                st.sidebar.error(msg)
-        except Exception as e:
-            st.sidebar.error(f"Failed: {e}")
+            fetch_and_map_squads()
+        except:
+            pass
+        st.session_state.data_synced = True
+        st.rerun()
 
 st.sidebar.markdown(f"### ⚙️ {theme['name']} War Room Settings")
 st.sidebar.markdown("### 🏟️ Home Ground")
@@ -438,16 +434,21 @@ elif st.session_state.app_phase == 'retention':
         st.subheader("Current 2026 Roster")
         st.write("Select the players you want to **RETAIN**. Unselected players will be released to the auction pool.")
         
-        # We will use an editable dataframe for manual selection
-        current_roster_df['Retain'] = current_roster_df['Player'].isin(st.session_state.get('retained_players', []))
-        
-        edited_df = st.data_editor(
-            current_roster_df[['Retain', 'Player', 'Role', 'Auction_Price', 'Power_Index']],
-            hide_index=True,
-            column_config={"Retain": st.column_config.CheckboxColumn("Retain?", default=False)}
+        from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
+        gb = GridOptionsBuilder.from_dataframe(current_roster_df[['Player', 'Role', 'Auction_Price', 'Power_Index']])
+        gb.configure_selection('multiple', use_checkbox=True)
+        gridOptions = gb.build()
+        response = AgGrid(
+            current_roster_df,
+            gridOptions=gridOptions,
+            columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+            theme='alpine'
         )
-        
-        manual_retained = edited_df[edited_df['Retain']]['Player'].tolist()
+        selected_rows = response['selected_rows']
+        if isinstance(selected_rows, pd.DataFrame):
+            manual_retained = selected_rows['Player'].tolist() if not selected_rows.empty else []
+        else:
+            manual_retained = [row['Player'] for row in selected_rows] if selected_rows else []
         
         if st.button("✅ Confirm Manual Retentions"):
             st.session_state.retained_players = manual_retained
@@ -502,18 +503,24 @@ elif st.session_state.app_phase == 'auction':
     with tabA:
         st.write("Browse the pool and buy players. Note: In this manual mode, players cost their exact estimated value.")
         
-        # Display pool with buy checkboxes
+        from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
         pool_display = pool_df[['Player', 'Role', 'Auction_Price', 'Power_Index']].sort_values(by='Power_Index', ascending=False)
-        pool_display['Buy'] = False
-        
-        manual_buys = st.data_editor(
+        gb = GridOptionsBuilder.from_dataframe(pool_display)
+        gb.configure_selection('multiple', use_checkbox=True)
+        gridOptions = gb.build()
+        response = AgGrid(
             pool_display,
-            hide_index=True,
-            column_config={"Buy": st.column_config.CheckboxColumn("Buy?", default=False)}
+            gridOptions=gridOptions,
+            columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+            theme='alpine'
         )
-        
-        buy_names = manual_buys[manual_buys['Buy']]['Player'].tolist()
-        buy_cost = manual_buys[manual_buys['Buy']]['Auction_Price'].sum()
+        selected_rows = response['selected_rows']
+        if isinstance(selected_rows, pd.DataFrame):
+            buy_names = selected_rows['Player'].tolist() if not selected_rows.empty else []
+            buy_cost = selected_rows['Auction_Price'].sum() if not selected_rows.empty else 0.0
+        else:
+            buy_names = [row['Player'] for row in selected_rows] if selected_rows else []
+            buy_cost = sum([row['Auction_Price'] for row in selected_rows]) if selected_rows else 0.0
         
         if st.button("🛒 Execute Buys"):
             if len(buy_names) > slots_open:
@@ -563,16 +570,22 @@ elif st.session_state.app_phase == 'playing_11':
     
     with tabX:
         st.write("Select your starting 11 manually from your 25-man squad.")
+        from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
         squad_display = squad_df[['Player', 'Role', 'Nationality', 'Power_Index']].copy()
-        squad_display['Start'] = False
-        
-        manual_11 = st.data_editor(
+        gb = GridOptionsBuilder.from_dataframe(squad_display)
+        gb.configure_selection('multiple', use_checkbox=True)
+        gridOptions = gb.build()
+        response = AgGrid(
             squad_display,
-            hide_index=True,
-            column_config={"Start": st.column_config.CheckboxColumn("Start in 11?", default=False)}
+            gridOptions=gridOptions,
+            columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+            theme='alpine'
         )
-        
-        selected_11_names = manual_11[manual_11['Start']]['Player'].tolist()
+        selected_rows = response['selected_rows']
+        if isinstance(selected_rows, pd.DataFrame):
+            selected_11_names = selected_rows['Player'].tolist() if not selected_rows.empty else []
+        else:
+            selected_11_names = [row['Player'] for row in selected_rows] if selected_rows else []
         
         if st.button("✅ Evaluate Manual 11"):
             if len(selected_11_names) != 11:
