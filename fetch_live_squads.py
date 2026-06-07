@@ -20,7 +20,7 @@ TEAM_MAP = {
 }
 
 def fetch_and_map_squads():
-    series_id = "d5a498c8-7596-4b93-8ab0-e0efc3345312" # IPL 2025
+    series_id = "87c62aac-bc3c-4738-ab93-19da0690488f" # IPL 2026
     url = f"https://api.cricapi.com/v1/series_squad?apikey={API_KEY}&id={series_id}"
     print("Fetching squads from CricAPI...")
     response = requests.get(url)
