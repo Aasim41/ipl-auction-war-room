@@ -1,5 +1,25 @@
 import streamlit as st
 import pandas as pd
+
+def calculate_longevity_score(squad_df):
+    if 'Age' not in squad_df.columns:
+        return 0, 0.0, "N/A"
+    avg_age = squad_df['Age'].mean()
+    over_34 = len(squad_df[squad_df['Age'] > 33])
+    under_26 = len(squad_df[squad_df['Age'] < 26])
+    
+    score = 100
+    if avg_age > 29: score -= (avg_age - 29) * 5
+    if over_34 > 3: score -= (over_34 - 3) * 5
+    if under_26 < 4: score -= (4 - under_26) * 5
+    
+    risk = "Low Risk (Sustainable & Future-Proof)"
+    if score < 70: risk = "High Risk (Aging Squad, Immediate Overhaul Needed)"
+    elif score < 85: risk = "Medium Risk (Win-Now Mode)"
+    
+    return max(0, min(100, int(score))), round(avg_age, 1), risk
+
+
 import pulp
 import plotly.express as px
 import random
