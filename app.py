@@ -538,11 +538,12 @@ with tab1:
             st.success("Your squad is full! (25 players maximum)")
             
             st.markdown("### Your Finalized 25-Man Squad")
-            from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
-            final_display = retained_df[['Player', 'Role', 'Auction_Price', 'Power_Index']].sort_values(by='Power_Index', ascending=False)
-            gb_final = GridOptionsBuilder.from_dataframe(final_display)
-            gb_final.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
-            AgGrid(final_display, gridOptions=gb_final.build(), columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS, key='final_squad_display')
+            from ui_helpers import get_fifa_card_html
+            squad_sorted = retained_df.sort_values(by='Power_Index', ascending=False)
+            cols = st.columns(4)
+            for i, (_, row) in enumerate(squad_sorted.iterrows()):
+                with cols[i % 4]:
+                    st.markdown(get_fifa_card_html(row), unsafe_allow_html=True)
             
             st.info("Click the button below to advance to the final phase and ask the AI to select your optimal playing 11 from this roster!")
             if st.button("Proceed to Playing 11 🏏", type="primary"):
@@ -625,18 +626,12 @@ with tab1:
             st.write("Select your starting 11 manually from your 25-man squad.")
             
             # Render as unique CSS Cards instead of tables
+            from ui_helpers import get_fifa_card_html
             selected_11_names = []
-            cols = st.columns(3)
-            for idx, row in squad_df.iterrows():
-                col = cols[idx % 3]
-                with col:
-                    st.markdown(f"""
-                    <div class="player-card" style="padding: 10px; margin-bottom: 10px; border-left: 5px solid {theme['accent']}; background: rgba(0,0,0,0.1); border-radius: 8px;">
-                        <strong style="color: {theme['accent']}">{row['Player']}</strong> {'✈️' if str(row.get('Nationality')).lower() == 'overseas' else ''}<br/>
-                        <small>{str(row['Role']).title()}</small><br/>
-                        <small>Power: {row['Power_Index']:.1f}</small>
-                    </div>
-                    """, unsafe_allow_html=True)
+            cols = st.columns(4)
+            for i, (_, row) in enumerate(squad_df.iterrows()):
+                with cols[i % 4]:
+                    st.markdown(get_fifa_card_html(row), unsafe_allow_html=True)
                     is_starter = st.checkbox(f"Start {row['Player']}", key=f"start_{row['Player']}")
                     if is_starter:
                         selected_11_names.append(row['Player'])
