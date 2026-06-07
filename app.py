@@ -365,6 +365,20 @@ if 'final_squad' not in st.session_state:
     st.session_state.final_squad = pd.DataFrame()
 if 'auction_pool' not in st.session_state:
     st.session_state.auction_pool = pd.DataFrame()
+    
+# --- Mock Auction State Variables ---
+if 'drafted_squad' not in st.session_state:
+    st.session_state.drafted_squad = []
+if 'current_player_idx' not in st.session_state:
+    st.session_state.current_player_idx = 0
+if 'auction_state' not in st.session_state:
+    st.session_state.auction_state = 'new_player' 
+if 'current_bid' not in st.session_state:
+    st.session_state.current_bid = 0.5
+if 'highest_bidder' not in st.session_state:
+    st.session_state.highest_bidder = None
+if 'ai_max_bid' not in st.session_state:
+    st.session_state.ai_max_bid = 0.0
 
 # --- Sidebar ---
 st.sidebar.markdown("### 🎨 Select Your Franchise")
@@ -400,7 +414,7 @@ if st.sidebar.button("🔄 Reset to Setup Phase"):
     st.rerun()
 
 # --- Phase Handlers ---
-tab1, tab2, tab3, tab4, tab5 = st.tabs([f"≡ƒÅå {theme['name']} War Room", "≡ƒÅƒ∩╕Å Venue Optimizer", "≡ƒÄ» Rookie Radar", "≡ƒÆ░ Mock Auction Simulator", "≡ƒôê Analytics & Longevity", "≡ƒöä Trade Simulator"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([f"🏆 {theme['name']} War Room", "🏟️ Venue Optimizer", "🎯 Rookie Radar", "💰 Mock Auction Simulator", "📈 Analytics & Longevity"])
 
 with tab1:
     
