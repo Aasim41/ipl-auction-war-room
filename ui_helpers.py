@@ -27,22 +27,10 @@ def get_fifa_card_html(row):
     if pd.isna(batting) or batting == 'Nan': batting = 'N/A'
     if pd.isna(bowling) or bowling == 'Nan' or bowling == 'None': bowling = 'N/A'
 
-    # Determine Tier colors
-    if power > 400:
-        # Gold
-        bg = "linear-gradient(135deg, #FFDF00, #B8860B)"
-        color = "#111"
-        border = "#FFF8DC"
-    elif power > 300:
-        # Silver
-        bg = "linear-gradient(135deg, #E0E0E0, #A9A9A9)"
-        color = "#111"
-        border = "#F5F5F5"
-    else:
-        # Bronze
-        bg = "linear-gradient(135deg, #CD7F32, #8B4513)"
-        color = "#fff"
-        border = "#DEB887"
+    # Unified premium dark glass style for all cards
+    bg = "linear-gradient(135deg, #0f2027, #203a43, #2c5364)"
+    color = "#ffffff"
+    border = "rgba(255,255,255,0.2)"
 
     html = f"""
     <div style="background: {bg}; color: {color}; border-radius: 10px; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); font-family: 'Arial', sans-serif; height: 100%; border: 2px solid {border}; margin-bottom: 15px;">
