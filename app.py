@@ -407,6 +407,12 @@ venue_info = VENUES[selected_venue]
 df = apply_venue_boost(df, selected_venue)
 
 # Navigation / Phase reset
+
+st.sidebar.markdown("### 💰 Franchise Purse")
+total_budget = st.sidebar.slider("Total Budget (Cr)", min_value=50.0, max_value=150.0, value=120.0, step=1.0)
+if st.session_state.app_phase == 'setup':
+    st.session_state.user_budget = total_budget
+
 if st.sidebar.button("🔄 Reset to Setup Phase"):
     st.session_state.app_phase = 'setup'
     st.session_state.retained_players = []
@@ -487,7 +493,7 @@ with tab1:
             st.write(f"**Purse Remaining:** ₹ {120.0 - cost:.2f} Cr")
             
             if st.button("Proceed to Auction 🔨", type="primary"):
-                st.session_state.user_budget = 120.0 - cost
+                st.session_state.user_budget = total_budget - cost
                 # Generate pool
                 released_names = [p for p in current_roster_names if p not in st.session_state.retained_players]
                 st.session_state.auction_pool = generate_auction_pool(df, squads_df, team_match[0], released_names)
@@ -612,7 +618,7 @@ with tab1:
                 else:
                     xi_df = squad_df[squad_df['Player'].isin(selected_11_names)]
                     from backend.team_evaluator import evaluate_and_render_11
-                    evaluate_and_render_11(squad_df, xi_df, theme, budget_spent=120.0 - st.session_state.user_budget)
+                    evaluate_and_render_11(squad_df, xi_df, theme, budget_spent=total_budget - st.session_state.user_budget)
                     
         with tabY:
             st.write("Let the War Room AI calculate the mathematically optimal 11 based on the venue constraints.")
@@ -620,7 +626,7 @@ with tab1:
                 with st.spinner("Calculating optimal 11..."):
                     from backend.team_evaluator import run_real_squad_optimization, evaluate_and_render_11
                     _, xi_df = run_real_squad_optimization(squad_df)
-                    evaluate_and_render_11(squad_df, xi_df, theme, budget_spent=120.0 - st.session_state.user_budget)
+                    evaluate_and_render_11(squad_df, xi_df, theme, budget_spent=total_budget - st.session_state.user_budget)
     
 
 # ================= TAB 2: VENUE OPTIMIZER =================
@@ -808,7 +814,7 @@ with tab3:
 # ================= TAB 4: MOCK AUCTION SIMULATOR =================
 with tab4:
     st.title("💰 Mock Auction Simulator")
-    st.write("Test your drafting strategies against aggressive AI franchises. Outbid them to build your ultimate 25-man roster within your ₹ 100 Cr budget!")
+    st.write("Test your drafting strategies against aggressive AI franchises. Outbid them to build your ultimate 25-man roster within your total budget!")
     
     # Dashboard metrics
     col1, col2, col3 = st.columns(3)
