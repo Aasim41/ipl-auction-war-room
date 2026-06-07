@@ -1,6 +1,12 @@
 import streamlit as st
 import pandas as pd
 
+
+def get_next_bid(current):
+    if current < 2.0: return current + 0.1
+    elif current < 10.0: return current + 0.25
+    else: return current + 0.5
+
 def calculate_longevity_score(squad_df):
     if 'Age' not in squad_df.columns:
         return 0, 0.0, "N/A"
@@ -429,7 +435,15 @@ df = apply_venue_boost(df, selected_venue)
 # Navigation / Phase reset
 
 st.sidebar.markdown("### 💰 Franchise Purse")
-total_budget = st.sidebar.slider("Total Budget (Cr)", min_value=50.0, max_value=150.0, value=120.0, step=1.0)
+total_budget = st.sidebar.slider("Total Budget (Cr)", min_value=50.0, max_value=150.0, value=st.session_state.get('total_budget', 120.0), step=1.0)
+if 'total_budget' not in st.session_state:
+    st.session_state.total_budget = 120.0
+
+if total_budget != st.session_state.total_budget:
+    diff = total_budget - st.session_state.total_budget
+    st.session_state.total_budget = total_budget
+    st.session_state.user_budget += diff
+
 if st.session_state.app_phase == 'setup':
     st.session_state.user_budget = total_budget
 
