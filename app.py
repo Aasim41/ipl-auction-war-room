@@ -398,6 +398,15 @@ if st.sidebar.button("🔄 Force Live Sync"):
     st.session_state['force_sync'] = True
     st.rerun()
 
+if st.sidebar.button("🌐 Fetch Live CricAPI Squads"):
+    with st.spinner("Connecting to CricketData.org API..."):
+        from fetch_live_squads import fetch_and_map_squads
+        success, msg = fetch_and_map_squads()
+        if success:
+            st.sidebar.success(msg)
+        else:
+            st.sidebar.error(msg)
+
 st.sidebar.markdown("### 🚑 Scenario Engine")
 scenario_injuries = st.sidebar.multiselect("Simulate Injuries/Absences", df['Player'].tolist(), help="Select key players to simulate their absence. The AI must build a winning team without them.")
 unavailable_players = set(live_state['injured']) | set(scenario_injuries)
