@@ -34,12 +34,15 @@ def parse_cricsheet():
     matched_count = 0
     unmatched = []
     
+    # Invert the map: Full Name -> Short Name
+    full_to_short = {v: k for k, v in name_map.items()}
+    
     for idx, row in df.iterrows():
-        player_short = row['Player']
-        player_full = name_map.get(player_short, "")
+        player_full = row['Player']
+        player_short = full_to_short.get(player_full, "")
         
         # Try direct matches
-        if player_short in tallies:
+        if player_short and player_short in tallies:
             df.at[idx, 'Matches_Played'] = tallies[player_short]
             matched_count += 1
         elif player_full in tallies:
@@ -49,17 +52,29 @@ def parse_cricsheet():
             # Try fuzzy / lowercase match
             found = False
             for c_name, c_count in tallies.items():
-                if c_name.lower().replace(" ", "") == player_short.lower().replace(" ", "") or \
-                   c_name.lower().replace(" ", "") == player_full.lower().replace(" ", ""):
+                # Compare without spaces and lowercase
+                if c_name.lower().replace(" ", "") == player_full.lower().replace(" ", ""):
                     df.at[idx, 'Matches_Played'] = c_count
                     matched_count += 1
                     found = True
                     break
+                
+                # Check if c_name might be an initial format like "V Kohli" for "Virat Kohli"
+                # "V Kohli" -> "v", "kohli"
+                c_parts = c_name.split()
+                f_parts = player_full.split()
+                if len(c_parts) >= 2 and len(f_parts) >= 2:
+                    if c_parts[-1].lower() == f_parts[-1].lower() and c_parts[0][0].lower() == f_parts[0][0].lower():
+                        # Very likely a match (e.g. HH Pandya == Hardik Pandya, V Kohli == Virat Kohli)
+                        df.at[idx, 'Matches_Played'] = c_count
+                        matched_count += 1
+                        found = True
+                        break
             
             if not found:
                 # Actual true rookie (0 matches) or name mismatch
                 df.at[idx, 'Matches_Played'] = 0
-                unmatched.append(player_short)
+                unmatched.append(player_full)
                 
     df.to_csv('data/filled_ipl_data.csv', index=False)
     print(f"\nMatched {matched_count}/{len(df)} players.")
