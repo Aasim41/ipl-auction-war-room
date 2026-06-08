@@ -655,16 +655,23 @@ with tab1:
                     st.error(f"You must select exactly 11 players. Currently selected: {len(selected_11_names)}")
                 else:
                     xi_df = squad_df[squad_df['Player'].isin(selected_11_names)]
-                    from backend.team_evaluator import evaluate_and_render_11
-                    evaluate_and_render_11(squad_df, xi_df, theme, budget_spent=total_budget - st.session_state.user_budget)
+                    st.session_state.manual_11 = xi_df
+            
+            if 'manual_11' in st.session_state:
+                from backend.team_evaluator import evaluate_and_render_11
+                evaluate_and_render_11(squad_df, st.session_state.manual_11, theme, budget_spent=total_budget - st.session_state.user_budget)
                     
         with tabY:
             st.write("Let the War Room AI calculate the mathematically optimal 11 based on the venue constraints.")
             if st.button("🧠 Run AI Best 11", type="primary"):
                 with st.spinner("Calculating optimal 11..."):
-                    from backend.team_evaluator import run_real_squad_optimization, evaluate_and_render_11
+                    from backend.team_evaluator import run_real_squad_optimization
                     _, xi_df = run_real_squad_optimization(squad_df)
-                    evaluate_and_render_11(squad_df, xi_df, theme, budget_spent=total_budget - st.session_state.user_budget)
+                    st.session_state.ai_best_11 = xi_df
+            
+            if 'ai_best_11' in st.session_state:
+                from backend.team_evaluator import evaluate_and_render_11
+                evaluate_and_render_11(squad_df, st.session_state.ai_best_11, theme, budget_spent=total_budget - st.session_state.user_budget)
     
 
 # ================= TAB 2: VENUE OPTIMIZER =================

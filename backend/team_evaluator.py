@@ -113,21 +113,29 @@ def evaluate_and_render_11(squad_df, xi_df, theme, budget_spent):
     
     st.markdown("---")
     st.markdown("## 🏏 The Optimal Starting XI")
-    for i in range(0, len(xi_df), 4):
+    
+    # Sort xi_df into proper batting order
+    role_order = {
+        'top order': 1,
+        'top order batter': 1,
+        'middle order': 2,
+        'middle order batter': 2,
+        'all-rounder': 3,
+        'bowler': 4
+    }
+    xi_copy = xi_df.copy()
+    xi_copy['Batting_Order'] = xi_copy['Specific_Role'].str.lower().map(role_order).fillna(5)
+    xi_copy = xi_copy.sort_values(by=['Batting_Order', 'Power_Index'], ascending=[True, False]).drop('Batting_Order', axis=1).reset_index(drop=True)
+
+    from ui_helpers import get_fifa_card_html
+    
+    for i in range(0, len(xi_copy), 4):
         cols = st.columns(4)
         for j in range(4):
-            if i + j < len(xi_df):
-                row = xi_df.iloc[i+j]
-                icon = get_role_icon(row['Specific_Role'])
-                ovs = " ✈️" if row.get('Nationality', '').lower() == 'overseas' else ""
+            if i + j < len(xi_copy):
+                row = xi_copy.iloc[i+j]
                 with cols[j]:
-                    st.markdown(f"""
-                        <div class="player-card">
-                            <div class="player-name">{icon} {row['Player']}{ovs}</div>
-                            <div class="player-price">{str(row['Specific_Role']).title()} | {row.get('Archetype', 'N/A')}</div>
-                            <div style="font-size: 14px; margin-top: 5px; color: {theme['text']}; opacity: 0.8;">Power: {row['Power_Index']:.1f} | ₹ {row['Auction_Price']:.1f} Cr</div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.markdown(get_fifa_card_html(row), unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("## 🔄 Live Game Changer (Impact Player Simulator)")
