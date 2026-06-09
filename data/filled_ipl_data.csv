@@ -9,9 +9,9 @@ SA Yadav,Batter,Middle Order,indian,Spin,11.6,77.06,168.7246963562753,47.6285714
 H Klaasen,Batter,Middle Order,overseas,Spin,11.4,75.85,166.54888103651356,45.61290322580645,0.0,0.0,63.0,32.0
 Priyansh Arya,Batter,Top Order,indian,Pace,11.3,75.52,175.80645161290323,30.27777777777778,0.0,0.0,31.0,25.0
 T Stubbs,Batter,Middle Order,overseas,Spin,11.3,75.4,161.87214611872147,50.642857142857146,0.8,11.027027027027028,47.0,23.0
-JG Bethell,Batter,All-Rounder,indian,Spin,11.2,74.88,171.7948717948718,33.5,0.0,0.0,9.0,22.0
+JG Bethell,Batter,All-Rounder,overseas,Spin,11.2,74.88,171.7948717948718,33.5,0.0,0.0,9.0,22.0
 TM Head,Batter,Top Order,overseas,Spin,11.2,74.73,169.54954954954954,36.19230769230769,0.0,19.200000000000003,52.0,30.0
-PD Salt,Batter,Top Order,indian,Pace,11.2,74.49,169.5024077046549,35.2,0.0,0.0,40.0,27.0
+PD Salt,Batter,Top Order,overseas,Pace,11.2,74.49,169.5024077046549,35.2,0.0,0.0,40.0,27.0
 Naman Dhir,Batter,All-Rounder,indian,Spin,11.1,74.2,173.4513274336283,28.0,0.0,8.49056603773585,37.0,25.0
 Abhishek Sharma,All-Rounder,Top Order,indian,Spin,11.1,74.01,175.15243902439025,30.23684210526316,0.2666666666666666,9.22826086956522,91.0,23.0
 Shashank Singh,Batter,Middle Order,indian,Pace,11.1,73.87,152.05183585313176,58.66666666666666,0.5,10.666666666666666,1.0,26.0
@@ -26,15 +26,15 @@ KK Nair,Batter,Middle Order,indian,Spin,10.6,70.44,162.29508196721312,28.2857142
 V Kohli,Batter,Top Order,indian,Pace,10.5,69.9,141.85236768802227,56.583333333333336,0.0,0.0,280.0,35.0
 JM Bairstow,Batter,Top Order,overseas,Pace,10.5,69.67,155.6910569105691,34.81818181818182,0.0,0.0,52.0,28.0
 B Sai Sudharsan,Batter,Top Order,indian,Spin,10.4,69.56,141.94659776055124,54.93333333333333,0.0,0.0,54.0,25.0
-C Bosch,Batter,All-Rounder,indian,Pace,10.4,69.43,146.875,47.0,0.5,6.933333333333333,9.0,24.0
-TH David,Batter,Middle Order,indian,Spin,10.4,69.25,153.25581395348837,36.61111111111112,0.0,0.0,64.0,28.0
-JP Inglis,Batter,Middle Order,indian,Pace,10.4,69.24,157.06214689265536,30.88888888888889,0.0,0.0,17.0,26.0
+C Bosch,Batter,All-Rounder,overseas,Pace,10.4,69.43,146.875,47.0,0.5,6.933333333333333,9.0,24.0
+TH David,Batter,Middle Order,overseas,Spin,10.4,69.25,153.25581395348837,36.61111111111112,0.0,0.0,64.0,28.0
+JP Inglis,Batter,Middle Order,overseas,Pace,10.4,69.24,157.06214689265536,30.88888888888889,0.0,0.0,17.0,26.0
 D Brevis,Batter,Middle Order,overseas,Spin,10.4,69.13,155.55555555555557,32.666666666666664,0.0,0.0,27.0,23.0
 Aniket Verma,Batter,Middle Order,indian,Pace,10.4,69.0,159.45945945945945,26.22222222222222,0.0,0.0,24.0,26.0
 C Green,All-Rounder,All-Rounder,overseas,Pace,10.3,68.45,149.78813559322032,41.588235294117645,0.5862068965517241,8.233766233766234,43.0,24.0
 Ashutosh Sharma,Batter,Middle Order,indian,Pace,10.3,68.45,153.515625,32.75,0.0,0.0,32.0,37.0
 SB Dubey,Batter,Middle Order,indian,Pace,10.3,68.41,159.77011494252872,23.166666666666668,0.0,0.0,20.0,25.0
-MS Dhoni,Batter,Middle Order,indian,Pace,10.2,68.22,154.18060200668896,30.73333333333333,0.0,0.0,277.0,42.0
+MS Dhoni,Batter,middle order,indian,none,12.0,97.06,135.9,38.8,0.0,0.0,250.0,42.0
 F du Plessis,Batter,Top Order,overseas,Spin,10.2,68.1,147.47039827771798,40.294117647058826,0.0,0.0,154.0,39.0
 RR Rossouw,Batter,Top Order,overseas,Spin,10.2,68.07,155.55555555555557,28.0,0.0,0.0,22.0,24.0
 SP Narine,All-Rounder,All-Rounder,indian,Spin,10.2,67.93,157.29166666666669,25.166666666666668,1.0,7.180110497237568,201.0,36.0
@@ -48,27 +48,27 @@ Dhruv Jurel,Batter,Top Order,indian,Pace,10.0,66.86,149.12280701754386,32.380952
 SV Samson,Batter,Middle Order,indian,Spin,10.0,66.76,145.07389162561577,38.0,0.0,0.0,190.0,29.0
 Rashid Khan,All-Rounder,All-Rounder,overseas,Spin,10.0,66.76,157.22543352601156,20.923076923076923,1.0454545454545454,8.48955223880597,150.0,25.0
 Tilak Varma,Batter,Top Order,indian,Pace,10.0,66.71,142.01030927835052,42.38461538461539,0.0,7.636363636363637,68.0,24.0
-JJ Roy,Batter,Top Order,indian,Pace,9.9,66.33,145.40816326530611,35.625,0.0,0.0,21.0,23.0
+JJ Roy,Batter,Top Order,overseas,Pace,9.9,66.33,145.40816326530611,35.625,0.0,0.0,21.0,23.0
 Abdul Samad,Batter,Middle Order,indian,Pace,9.9,66.16,150.58479532163742,27.105263157894736,0.0,18.0,71.0,22.0
 RK Singh,Batter,Middle Order,indian,Spin,9.9,66.13,143.9728353140917,36.869565217391305,0.0,0.0,72.0,26.0
-WG Jacks,All-Rounder,All-Rounder,indian,Pace,9.9,66.05,151.30718954248366,28.9375,0.6153846153846154,8.648275862068965,28.0,25.0
+WG Jacks,All-Rounder,All-Rounder,overseas,Pace,9.9,66.05,151.30718954248366,28.9375,0.6153846153846154,8.648275862068965,28.0,25.0
 VR Iyer,Batter,Top Order,indian,Pace,9.8,65.43,144.70774091627172,32.714285714285715,0.0,28.0,66.0,24.0
 R Parag,All-Rounder,All-Rounder,indian,Pace,9.8,65.37,145.1523545706371,36.13793103448276,0.2727272727272727,7.63265306122449,95.0,22.0
 S Dube,Batter,Top Order,indian,Pace,9.8,65.37,141.93939393939394,36.59375,0.5,13.263157894736842,92.0,30.0
 MP Stoinis,All-Rounder,All-Rounder,indian,Pace,9.8,65.23,148.4472049689441,30.83870967741936,0.4761904761904761,9.327935222672064,123.0,34.0
-RD Rickelton,Batter,Middle Order,indian,Pace,9.8,65.17,145.86466165413535,29.846153846153847,0.0,0.0,26.0,28.0
+RD Rickelton,Batter,Middle Order,overseas,Pace,9.8,65.17,145.86466165413535,29.846153846153847,0.0,0.0,26.0,28.0
 JM Sharma,Batter,Middle Order,indian,Pace,9.8,65.11,149.3096646942801,24.41935483870968,0.0,0.0,69.0,37.0
 AD Russell,All-Rounder,All-Rounder,overseas,Pace,9.8,65.0,148.79227053140096,26.782608695652176,1.0625,9.860349127182044,139.0,36.0
 PJ Cummins,All-Rounder,Bowler,overseas,Pace,9.7,64.95,148.4076433121019,25.88888888888889,1.1333333333333333,8.663755458515285,79.0,31.0
 SE Rutherford,Batter,Middle Order,overseas,Pace,9.7,64.88,143.34975369458127,32.333333333333336,0.0,0.0,31.0,28.0
-DP Conway,Batter,Top Order,indian,Pace,9.7,64.79,133.98058252427185,46.0,0.0,0.0,29.0,32.0
-GJ Maxwell,All-Rounder,All-Rounder,indian,Spin,9.7,64.75,153.84615384615387,18.51851851851852,0.6842105263157895,7.89344262295082,141.0,35.0
+DP Conway,Batter,Top Order,overseas,Pace,9.7,64.79,133.98058252427185,46.0,0.0,0.0,29.0,32.0
+GJ Maxwell,All-Rounder,All-Rounder,overseas,Spin,9.7,64.75,153.84615384615387,18.51851851851852,0.6842105263157895,7.89344262295082,141.0,35.0
 SD Hope,Batter,Middle Order,overseas,Pace,9.7,64.51,146.4,26.142857142857142,0.0,0.0,9.0,28.0
 RR Pant,Batter,Top Order,indian,Pace,9.7,64.41,141.86507936507937,32.5,0.0,0.0,139.0,26.0
 SO Hetmyer,Batter,Middle Order,overseas,Pace,9.6,64.24,143.13725490196077,29.863636363636363,0.0,0.0,94.0,22.0
 AM Rahane,Batter,Top Order,indian,Spin,9.6,64.14,143.4131736526946,29.03030303030303,0.0,0.0,212.0,35.0
 Abishek Porel,Batter,Middle Order,indian,Pace,9.6,64.07,145.59471365638768,25.423076923076923,0.0,0.0,36.0,25.0
-Ishan Kishan,Batter,Top Order,indian,Spin,9.6,63.89,142.24464060529633,29.68421052631579,0.0,24.0,133.0,25.0
+Ishan Kishan,Batter,top order,indian,none,15.25,93.72,136.63,29.35,0.0,0.0,99.0,26.0
 A Raghuvanshi,Batter,Middle Order,indian,Pace,9.5,63.65,142.0245398773006,28.9375,0.0,0.0,35.0,26.0
 KL Rahul,Batter,Top Order,indian,Spin,9.5,63.53,132.14990138067063,43.2258064516129,0.0,0.0,160.0,32.0
 MK Lomror,Batter,Middle Order,indian,Pace,9.4,62.99,148.57142857142858,16.25,0.0,9.142857142857142,40.0,22.0
@@ -91,41 +91,41 @@ PP Shaw,Batter,Middle Order,indian,Pace,9.2,61.45,141.3953488372093,20.266666666
 S Dhawan,Batter,Top Order,indian,Spin,9.2,61.34,131.25,35.0,0.0,0.0,222.0,38.0
 A Badoni,Batter,Top Order,indian,Pace,9.2,61.14,133.4442595673877,30.846153846153847,0.4,9.91304347826087,66.0,25.0
 SN Thakur,All-Rounder,All-Rounder,indian,Pace,9.1,60.94,144.76190476190476,15.2,0.9642857142857144,9.394594594594594,114.0,24.0
-Sameer Rizvi,Batter,Middle Order,indian,Pace,9.1,60.76,136.5079365079365,24.571428571428573,0.0,0.0,25.0,23.0
+Sameer Rizvi,Batter,middle order,indian,none,8.4,100.0,139.8,49.2,0.0,0.0,0.0,20.0
 DA Warner,Batter,Top Order,overseas,Pace,8.9,59.54,127.61194029850746,32.57142857142857,0.0,0.0,184.0,37.0
 AT Rayudu,Batter,Middle Order,indian,Pace,8.9,59.06,137.3913043478261,15.8,0.0,0.0,204.0,25.0
-AK Markram,All-Rounder,All-Rounder,indian,Pace,8.8,58.82,131.74603174603175,27.666666666666668,0.3846153846153846,8.492307692307692,69.0,28.0
+AK Markram,All-Rounder,All-Rounder,overseas,Pace,8.8,58.82,131.74603174603175,27.666666666666668,0.3846153846153846,8.492307692307692,69.0,28.0
 PN Mankad,Batter,Top Order,indian,Pace,8.8,58.52,125.67567567567568,31.0,0.0,0.0,6.0,22.0
 Q de Kock,Batter,Middle Order,overseas,Pace,8.8,58.5,129.76190476190476,24.77272727272728,0.0,0.0,118.0,31.0
 Arshad Khan,All-Rounder,All-Rounder,indian,Pace,8.7,58.23,132.22222222222223,23.8,0.6666666666666666,9.653979238754324,25.0,27.0
-Anuj Rawat,Batter,Top Order,indian,Pace,8.7,58.18,124.3421052631579,31.5,0.0,0.0,24.0,24.0
+Anuj Rawat,Batter,middle order,indian,none,3.4,79.37,121.28,16.5,0.0,0.0,32.0,24.0
 RV Patel,Batter,Top Order,indian,Pace,8.7,57.73,111.36363636363636,49.0,0.0,0.0,9.0,30.0
-PHKD Mendis,Batter,Middle Order,indian,Pace,8.6,57.41,127.77777777777776,23.0,0.5,8.571428571428571,5.0,26.0
+PHKD Mendis,Batter,Middle Order,overseas,Pace,8.6,57.41,127.77777777777776,23.0,0.5,8.571428571428571,5.0,26.0
 Washington Sundar,All-Rounder,All-Rounder,indian,Spin,8.6,57.4,130.4054054054054,24.125,0.4285714285714285,9.694581280788178,80.0,22.0
 Nithish Kumar Reddy,All-Rounder,All-Rounder,indian,Pace,8.6,57.24,126.96335078534032,28.529411764705884,0.4166666666666667,9.513157894736842,41.0,21.0
-Rahmanullah Gurbaz,Batter,Middle Order,overseas,Pace,8.6,57.21,128.26855123674912,21.352941176470587,0.0,0.0,18.0,28.0
+Rahmanullah Gurbaz,Batter,top order,overseas,none,0.5,88.28,133.56,20.36,0.0,0.0,11.0,22.0
 MA Agarwal,Batter,Middle Order,indian,Pace,8.5,57.0,125.0728862973761,25.23529411764705,0.0,0.0,130.0,28.0
 Sikandar Raza,All-Rounder,All-Rounder,overseas,Pace,8.5,56.86,127.27272727272728,26.0,0.4285714285714285,9.068181818181818,9.0,26.0
 SM Curran,All-Rounder,All-Rounder,overseas,Pace,8.5,56.55,124.29378531073448,27.5,0.84375,9.722488038277511,64.0,25.0
 R Powell,Batter,Middle Order,overseas,Pace,8.4,56.3,132.183908045977,11.5,1.0,6.857142857142857,39.0,26.0
 RA Tripathi,Batter,Middle Order,indian,Pace,8.4,56.26,124.81012658227849,22.40909090909091,0.0,0.0,100.0,23.0
 D Padikkal,Batter,Middle Order,indian,Pace,8.4,55.79,124.373576309795,21.0,0.0,0.0,88.0,28.0
-MG Bracewell,All-Rounder,All-Rounder,indian,Pace,8.3,55.45,118.36734693877553,29.0,1.2,8.636363636363637,5.0,28.0
+MG Bracewell,All-Rounder,All-Rounder,overseas,Pace,8.3,55.45,118.36734693877553,29.0,1.2,8.636363636363637,5.0,28.0
 MK Pandey,Batter,Middle Order,indian,Spin,8.2,54.94,118.07228915662652,26.727272727272727,0.0,0.0,180.0,25.0
 WP Saha,Batter,Top Order,indian,Spin,8.2,54.67,121.58273381294964,20.28,0.0,0.0,169.0,39.0
 Azmatullah Omarzai,All-Rounder,All-Rounder,overseas,Pace,8.2,54.63,128.57142857142858,12.375,0.8,9.02,20.0,27.0
 Anmolpreet Singh,Batter,Middle Order,indian,Pace,8.2,54.45,122.22222222222224,18.33333333333333,0.0,0.0,9.0,26.0
 Harpreet Singh,Batter,Top Order,indian,Pace,8.1,54.17,110.752688172043,34.333333333333336,0.0,0.0,9.0,26.0
-HC Brook,Batter,Middle Order,indian,Pace,8.1,54.15,119.49685534591194,21.11111111111111,0.0,0.0,11.0,26.0
+HC Brook,Batter,Middle Order,overseas,Pace,8.1,54.15,119.49685534591194,21.11111111111111,0.0,0.0,11.0,26.0
 Harpreet Brar,All-Rounder,All-Rounder,indian,Pace,8.1,53.96,121.05263157894736,19.714285714285715,0.8387096774193549,7.924528301886792,51.0,22.0
-MM Ali,All-Rounder,All-Rounder,indian,Pace,8.1,53.87,120.65727699530515,19.76923076923077,0.85,7.809836065573771,73.0,36.0
-MW Short,Batter,Middle Order,indian,Pace,8.0,53.33,118.1818181818182,19.5,0.0,5.76,9.0,27.0
+MM Ali,All-Rounder,All-Rounder,overseas,Pace,8.1,53.87,120.65727699530515,19.76923076923077,0.85,7.809836065573771,73.0,36.0
+MW Short,Batter,Middle Order,overseas,Pace,8.0,53.33,118.1818181818182,19.5,0.0,5.76,9.0,27.0
 KH Pandya,All-Rounder,All-Rounder,indian,Pace,7.9,52.71,115.28150134048258,22.63157894736842,0.8205128205128205,7.465587044534413,156.0,30.0
-JC Archer,All-Rounder,All-Rounder,indian,Pace,7.9,52.63,121.81818181818184,13.4,0.7647058823529411,8.337292161520189,66.0,23.0
+JC Archer,All-Rounder,All-Rounder,overseas,Pace,7.9,52.63,121.81818181818184,13.4,0.7647058823529411,8.337292161520189,66.0,23.0
 SS Prabhudessai,Batter,Middle Order,indian,Pace,7.9,52.51,115.68627450980394,19.666666666666668,0.0,0.0,11.0,25.0
 Shahbaz Ahmed,All-Rounder,All-Rounder,indian,Pace,7.9,52.43,119.8198198198198,19.0,0.391304347826087,10.477272727272728,63.0,23.0
-PBB Rajapaksa,Batter,Middle Order,indian,Pace,7.8,51.8,110.9375,23.666666666666668,0.0,0.0,13.0,23.0
-Vishnu Vinod,Batter,Middle Order,indian,Pace,7.6,50.82,115.625,12.333333333333334,0.0,0.0,7.0,23.0
+PBB Rajapaksa,Batter,Middle Order,overseas,Pace,7.8,51.8,110.9375,23.666666666666668,0.0,0.0,13.0,23.0
+Vishnu Vinod,Batter,top order,indian,none,0.2,93.33,138.88,25.0,0.0,0.0,4.0,30.0
 R Ashwin,All-Rounder,Bowler,indian,Spin,7.6,50.48,115.527950310559,12.4,0.8611111111111112,7.613744075829384,219.0,37.0
 A Manohar,Batter,Middle Order,indian,Pace,7.5,50.06,112.19512195121952,14.153846153846152,0.0,0.0,27.0,23.0
 M Jansen,All-Rounder,All-Rounder,overseas,Pace,7.2,48.1,105.6,16.5,1.08,8.571428571428571,49.0,23.0
@@ -138,39 +138,39 @@ MJ Santner,All-Rounder,All-Rounder,overseas,Pace,6.7,44.88,100.0,11.2,0.78947368
 Lalit Yadav,All-Rounder,All-Rounder,indian,Pace,6.7,44.69,102.7027027027027,10.857142857142858,0.3333333333333333,10.2,27.0,33.0
 Kuldeep Yadav,All-Rounder,Bowler,indian,Spin,6.6,43.7,87.27272727272727,24.0,1.051282051282051,7.42087542087542,111.0,29.0
 T Kohler-Cadmore,Batter,Middle Order,overseas,Pace,6.4,42.5,88.88888888888889,16.0,0.0,0.0,3.0,24.0
-PWH de Silva,All-Rounder,All-Rounder,indian,Pace,6.3,41.99,93.33333333333331,8.4,1.0526315789473684,8.76056338028169,37.0,27.0
+PWH de Silva,All-Rounder,All-Rounder,overseas,Pace,6.3,41.99,93.33333333333331,8.4,1.0526315789473684,8.76056338028169,37.0,27.0
 SN Khan,Batter,Middle Order,indian,Pace,6.1,40.7,85.48387096774194,13.25,0.0,0.0,58.0,22.0
 Tanush Kotian,Batter,Middle Order,indian,Pace,5.9,39.57,75.0,24.0,0.0,0.0,1.0,24.0
 HV Patel,All-Rounder,All-Rounder,indian,Pace,5.4,36.13,76.92307692307693,5.714285714285714,1.35,8.519337016574585,123.0,30.0
 B Kumar,All-Rounder,Bowler,indian,Pace,5.4,35.87,75.23809523809524,8.777777777777779,1.0,8.468812877263582,204.0,34.0
 Ravi Bishnoi,All-Rounder,Bowler,indian,Spin,5.2,34.73,74.0,6.166666666666667,0.8974358974358975,8.444171779141104,86.0,23.0
-MA Wood,Bowler,Bowler,indian,Pace,2.7,17.86,220.00000000000003,11.0,2.75,7.2941176470588225,5.0,26.0
+MA Wood,Bowler,Bowler,overseas,Pace,2.7,17.86,220.00000000000003,11.0,2.75,7.2941176470588225,5.0,26.0
 JJ Bumrah,Bowler,Bowler,indian,Pace,1.8,11.87,92.3076923076923,12.0,1.52,6.087520259319287,158.0,30.0
-E Malinga,Bowler,Bowler,indian,Pace,1.8,11.75,0.0,0.0,1.8571428571428568,8.472727272727273,21.0,40.0
+E Malinga,Bowler,Bowler,overseas,Pace,1.8,11.75,0.0,0.0,1.8571428571428568,8.472727272727273,21.0,40.0
 M Prasidh Krishna,Bowler,Bowler,indian,Pace,1.7,11.19,0.0,0.0,1.6666666666666667,7.862637362637363,75.0,22.0
 M Pathirana,Bowler,Bowler,overseas,Pace,1.6,10.92,0.0,0.0,1.5,7.06359945872801,33.0,21.0
-JR Hazlewood,Bowler,Bowler,indian,Pace,1.6,10.8,33.33333333333333,1.0,1.6666666666666667,8.311926605504587,50.0,26.0
+JR Hazlewood,Bowler,Bowler,overseas,Pace,1.6,10.8,33.33333333333333,1.0,1.6666666666666667,8.311926605504587,50.0,26.0
 CV Varun,Bowler,Bowler,indian,Pace,1.5,10.0,16.666666666666664,2.0,1.4146341463414631,7.563829787234043,94.0,28.0
 MP Yadav,Bowler,Bowler,indian,Pace,1.5,9.92,0.0,0.0,1.5,8.232558139534884,10.0,21.0
 Harsh Dubey,Bowler,Bowler,indian,Pace,1.5,9.75,0.0,0.0,1.6666666666666667,9.540983606557376,11.0,25.0
 N Burger,Bowler,Bowler,overseas,Pace,1.4,9.65,0.0,0.0,1.4,7.885714285714286,16.0,24.0
 Naveen-ul-Haq,Bowler,Bowler,overseas,Pace,1.4,9.59,69.23076923076923,18.0,1.4705882352941178,8.417690417690418,18.0,27.0
-W O'Rourke,Bowler,Bowler,indian,Pace,1.4,9.47,0.0,0.0,2.0,12.09375,3.0,22.0
+W O'Rourke,Bowler,Bowler,overseas,Pace,1.4,9.47,0.0,0.0,2.0,12.09375,3.0,22.0
 Noor Ahmad,Bowler,Bowler,overseas,Spin,1.4,9.46,57.14285714285714,2.857142857142857,1.2972972972972974,7.422007255139057,51.0,24.0
-Mustafizur Rahman,Bowler,Bowler,overseas,Pace,1.3,8.98,50.0,1.0,1.3571428571428572,8.378378378378379,60.0,28.0
+Mustafizur Rahman,Bowler,bowler,overseas,left-arm fast-medium,2.0,46.65,50.0,1.0,1.05,7.92,56.0,29.0
 PP Chawla,Bowler,Bowler,indian,Pace,1.3,8.85,108.10810810810813,8.0,1.2962962962962965,8.119453924914676,192.0,27.0
-Akash Madhwal,Bowler,Bowler,indian,Pace,1.3,8.79,57.14285714285714,8.0,1.411764705882353,8.96808510638298,17.0,23.0
+Akash Madhwal,Bowler,bowler,indian,right-arm medium-fast,0.2,47.17,100.0,1.0,1.11,8.65,18.0,30.0
 Ashwani Kumar,Bowler,Bowler,indian,Pace,1.3,8.7,0.0,0.0,1.5714285714285714,10.136363636363637,10.0,34.0
-TA Boult,Bowler,Bowler,indian,Pace,1.3,8.69,86.48648648648648,16.0,1.2439024390243902,7.9589189189189185,124.0,34.0
+TA Boult,Bowler,Bowler,overseas,Pace,1.3,8.69,86.48648648648648,16.0,1.2439024390243902,7.9589189189189185,124.0,34.0
 Mohammed Shami,Bowler,Bowler,indian,Pace,1.3,8.65,78.94736842105263,5.0,1.3076923076923077,8.430508474576271,132.0,33.0
-Mohammed Siraj,Bowler,Bowler,indian,Pace,1.3,8.62,100.0,8.0,1.162790697674419,7.497131931166348,122.0,30.0
+Mohammed Siraj,Bowler,bowler,indian,right-arm fast,7.0,42.47,40.0,1.4,0.96,8.78,90.0,30.0
 YS Chahal,Bowler,Bowler,indian,Spin,1.3,8.57,0.0,0.0,1.3095238095238095,8.53678756476684,189.0,33.0
 Arshdeep Singh,Bowler,Bowler,indian,Pace,1.3,8.47,66.66666666666666,4.0,1.2954545454545454,8.56047197640118,97.0,25.0
 NT Ellis,Bowler,Bowler,overseas,Pace,1.3,8.36,14.285714285714285,0.5,1.25,8.382978723404255,17.0,23.0
-RP Meredith,Bowler,Bowler,indian,Pace,1.2,8.32,0.0,0.0,1.4,9.428571428571429,18.0,23.0
+RP Meredith,Bowler,Bowler,overseas,Pace,1.2,8.32,0.0,0.0,1.4,9.428571428571429,18.0,23.0
 R Sai Kishore,Bowler,Bowler,indian,Pace,1.2,8.3,112.5,6.0,1.3,8.788732394366198,27.0,22.0
 VG Arora,Bowler,Bowler,indian,Pace,1.2,8.28,36.36363636363637,4.0,1.2222222222222223,8.296551724137931,43.0,27.0
-WD Parnell,Bowler,Bowler,indian,Pace,1.2,8.22,33.33333333333333,2.0,1.2857142857142858,8.789808917197451,33.0,28.0
+WD Parnell,Bowler,Bowler,overseas,Pace,1.2,8.22,33.33333333333333,2.0,1.2857142857142858,8.789808917197451,33.0,28.0
 TU Deshpande,Bowler,Bowler,indian,Pace,1.2,8.02,58.333333333333336,7.0,1.205128205128205,8.480898876404495,52.0,26.0
 N Thushara,Bowler,Bowler,overseas,Pace,1.2,8.0,0.0,0.0,1.125,7.96969696969697,8.0,28.0
 MM Sharma,Bowler,Bowler,indian,Pace,1.2,7.95,15.0,3.0,1.2727272727272727,9.01775147928994,120.0,37.0
@@ -179,7 +179,7 @@ MA Starc,Bowler,Bowler,overseas,Pace,1.2,7.85,68.18181818181817,3.75,1.291666666
 KR Sen,Bowler,Bowler,indian,Pace,1.2,7.81,0.0,0.0,1.2,8.693877551020408,12.0,23.0
 JP Behrendorff,Bowler,Bowler,overseas,Pace,1.2,7.75,66.66666666666666,6.0,1.1666666666666667,8.541984732824428,17.0,23.0
 A Zampa,Bowler,Bowler,overseas,Pace,1.2,7.74,58.82352941176471,10.0,1.25,9.114754098360656,22.0,27.0
-KA Jamieson,Bowler,Bowler,indian,Pace,1.2,7.73,0.0,0.0,1.25,9.127659574468083,15.0,28.0
+KA Jamieson,Bowler,Bowler,overseas,Pace,1.2,7.73,0.0,0.0,1.25,9.127659574468083,15.0,28.0
 V Puthur,Bowler,Bowler,indian,Pace,1.1,7.66,0.0,0.0,1.2,8.876712328767123,5.0,28.0
 M Markande,Bowler,Bowler,indian,Pace,1.1,7.58,150.0,21.0,1.1764705882352942,8.806451612903226,40.0,23.0
 KK Ahmed,Bowler,Bowler,indian,Pace,1.1,7.42,50.0,1.0,1.108108108108108,8.535108958837773,76.0,24.0
@@ -197,162 +197,162 @@ LH Ferguson,Bowler,Bowler,overseas,Pace,1.0,6.78,250.0,5.0,1.1428571428571428,9.
 KV Sharma,Bowler,Bowler,indian,Pace,1.0,6.7,159.0909090909091,8.75,1.1428571428571428,9.612903225806452,90.0,37.0
 G Coetzee,Bowler,Bowler,overseas,Pace,1.0,6.69,93.93939393939394,5.166666666666667,1.0714285714285714,9.143835616438356,14.0,24.0
 DL Chahar,Bowler,Bowler,indian,Spin,1.0,6.69,140.74074074074073,38.0,0.90625,8.048076923076923,103.0,28.0
-Vijaykumar Vyshak,Bowler,Bowler,indian,Pace,1.0,6.55,107.6923076923077,7.0,1.0625,9.252808988764045,26.0,27.0
+Vijaykumar Vyshak,Bowler,bowler,indian,right-arm medium,0.2,48.24,0.0,0.0,1.2,9.8,10.0,27.0
 A Kamboj,Bowler,Bowler,indian,Pace,1.0,6.41,106.66666666666669,8.0,0.9090909090909092,8.393939393939394,25.0,27.0
 M Theekshana,Bowler,Bowler,overseas,Pace,0.9,6.33,37.03703703703704,5.0,0.8275862068965517,7.947826086956521,38.0,26.0
 JD Unadkat,Bowler,Bowler,indian,Pace,0.9,6.32,97.05882352941175,11.0,0.9047619047619048,8.472361809045227,116.0,27.0
 Akash Singh,Bowler,Bowler,indian,Pace,0.9,6.19,0.0,0.0,1.0,9.26086956521739,12.0,26.0
 K Rabada,Bowler,Bowler,overseas,Pace,0.9,6.16,103.57142857142858,14.5,0.9523809523809524,8.969818913480886,98.0,29.0
-Yash Dayal,Bowler,Bowler,indian,Pace,0.9,5.9,50.0,2.0,0.8823529411764706,8.811188811188812,43.0,27.0
+Yash Dayal,Bowler,bowler,indian,left-arm fast-medium,5.0,36.08,40.0,2.0,0.8,9.93,20.0,26.0
 RD Chahar,Bowler,Bowler,indian,Spin,0.9,5.78,84.0,7.0,0.75,8.068548387096774,80.0,25.0
 C Sakariya,Bowler,Bowler,indian,Pace,0.9,5.78,66.66666666666666,4.0,1.0,9.72972972972973,20.0,28.0
 A Nortje,Bowler,Bowler,overseas,Pace,0.9,5.69,107.89473684210526,10.25,1.0,9.839449541284404,49.0,30.0
 Mohsin Khan,Bowler,Bowler,indian,Pace,0.8,5.55,25.0,2.0,0.9285714285714286,9.528239202657808,31.0,24.0
 Rasikh Salam,Bowler,Bowler,indian,Pace,0.8,5.43,93.33333333333331,9.333333333333334,1.0,10.144329896907216,23.0,27.0
 KM Asif,Bowler,Bowler,indian,Pace,0.8,5.41,0.0,0.0,0.75,8.505494505494505,7.0,27.0
-Arjun Tendulkar,Bowler,Bowler,indian,Pace,0.8,5.39,144.44444444444443,13.0,0.6,7.518072289156627,6.0,27.0
+Arjun Tendulkar,All-Rounder,all-rounder,indian,left-arm fast-medium,0.3,76.95,150.0,6.5,0.75,9.36,4.0,24.0
 M Siddharth,Bowler,Bowler,indian,Pace,0.8,5.17,0.0,0.0,0.6,7.782178217821782,9.0,26.0
-AS Joseph,Bowler,Bowler,indian,Pace,0.8,5.12,58.333333333333336,7.0,0.8,9.16822429906542,22.0,25.0
+AS Joseph,Bowler,Bowler,overseas,Pace,0.8,5.12,58.333333333333336,7.0,0.8,9.16822429906542,22.0,25.0
 Suyash Sharma,Bowler,Bowler,indian,Pace,0.8,5.0,0.0,0.0,0.6666666666666666,8.425307557117751,39.0,37.0
 Yudhvir Singh,Bowler,Bowler,indian,Pace,0.7,4.91,137.5,7.333333333333333,0.8888888888888888,10.013793103448275,9.0,26.0
-Swapnil Singh,Bowler,Bowler,indian,Pace,0.7,4.85,150.0,19.5,0.6666666666666666,8.596153846153847,14.0,26.0
+Swapnil Singh,All-Rounder,all-rounder,indian,left-arm orthodox,0.2,59.8,115.38,7.5,0.57,8.78,7.0,33.0
 RJ Gleeson,Bowler,Bowler,overseas,Pace,0.7,4.82,100.0,2.0,0.6666666666666666,8.63013698630137,3.0,28.0
 AS Roy,Bowler,Bowler,indian,Pace,0.7,4.76,113.04347826086956,8.666666666666666,0.5714285714285714,8.072727272727272,25.0,24.0
 K Kartikeya,Bowler,Bowler,indian,Pace,0.7,4.59,75.0,4.5,0.5833333333333334,8.349056603773585,16.0,24.0
-Simarjeet Singh,Bowler,Bowler,indian,Pace,0.7,4.38,42.85714285714285,1.5,0.875,10.531468531468532,14.0,26.0
-RJW Topley,Bowler,Bowler,indian,Pace,0.6,4.25,50.0,3.0,0.8333333333333334,10.416,6.0,23.0
+Simarjeet Singh,Bowler,bowler,indian,right-arm medium-fast,0.2,48.42,0.0,0.0,1.1,7.78,10.0,26.0
+RJW Topley,Bowler,Bowler,overseas,Pace,0.6,4.25,50.0,3.0,0.8333333333333334,10.416,6.0,23.0
 Zeeshan Ansari,Bowler,Bowler,indian,Pace,0.6,3.79,0.0,0.0,0.6,9.38755980861244,10.0,22.0
 UT Yadav,Bowler,Bowler,indian,Pace,0.5,3.57,88.57142857142857,10.333333333333334,0.6,9.648979591836737,148.0,33.0
 Prince Yadav,Bowler,Bowler,indian,Pace,0.5,3.48,45.45454545454545,5.0,0.5,9.083333333333332,20.0,33.0
 SH Johnson,Bowler,Bowler,overseas,Pace,0.5,3.33,72.72727272727273,8.0,0.5555555555555556,9.627906976744184,12.0,22.0
-JO Holder,Bowler,Bowler,indian,Pace,0.5,3.12,100.0,6.0,0.5,9.511363636363637,54.0,27.0
-XC Bartlett,Bowler,Bowler,indian,Pace,0.5,3.04,73.33333333333333,11.0,0.5,9.6,13.0,23.0
-V Viyaskanth,Bowler,Bowler,indian,Pace,0.4,2.95,140.0,7.0,0.3333333333333333,8.6,3.0,23.0
+JO Holder,Bowler,Bowler,overseas,Pace,0.5,3.12,100.0,6.0,0.5,9.511363636363637,54.0,27.0
+XC Bartlett,Bowler,Bowler,overseas,Pace,0.5,3.04,73.33333333333333,11.0,0.5,9.6,13.0,23.0
+V Viyaskanth,Bowler,Bowler,overseas,Pace,0.4,2.95,140.0,7.0,0.3333333333333333,8.6,3.0,23.0
 Umran Malik,Bowler,Bowler,indian,Pace,0.4,2.91,237.5,19.0,0.5555555555555556,10.122137404580153,26.0,23.0
-CJ Jordan,Bowler,Bowler,indian,Pace,0.4,2.89,46.15384615384615,3.0,0.5,9.771428571428572,34.0,24.0
+CJ Jordan,Bowler,Bowler,overseas,Pace,0.4,2.89,46.15384615384615,3.0,0.5,9.771428571428572,34.0,24.0
 HR Shokeen,Bowler,Bowler,indian,Pace,0.4,2.86,121.05263157894736,23.0,0.375,8.974789915966387,13.0,23.0
-Mohammad Nabi,Bowler,Bowler,overseas,Pace,0.4,2.74,112.90322580645164,11.666666666666666,0.3333333333333333,8.837837837837839,24.0,22.0
-Akash Deep,Bowler,Bowler,indian,Pace,0.4,2.57,208.3333333333333,12.5,0.5555555555555556,10.524590163934429,14.0,26.0
-Mayank Dagar,Bowler,Bowler,indian,Pace,0.4,2.46,0.0,0.0,0.25,8.608695652173912,8.0,25.0
+Mohammad Nabi,All-Rounder,all-rounder,overseas,right-arm offbreak,0.5,67.33,118.84,15.3,0.76,7.1,17.0,39.0
+Akash Deep,Bowler,bowler,indian,right-arm fast-medium,0.2,28.92,76.92,5.0,0.57,10.15,14.0,27.0
+Mayank Dagar,All-Rounder,all-rounder,indian,left-arm orthodox,1.8,64.7,125.0,9.0,0.6,9.04,10.0,27.0
 PVD Chameera,Bowler,Bowler,overseas,Pace,0.4,2.34,71.42857142857143,10.0,0.5714285714285714,10.892307692307693,21.0,26.0
-MJ Henry,Bowler,Bowler,indian,Pace,0.4,2.34,0.0,0.0,0.25,8.756756756756756,9.0,23.0
+MJ Henry,Bowler,Bowler,overseas,Pace,0.4,2.34,0.0,0.0,0.25,8.756756756756756,9.0,23.0
 Fazalhaq Farooqi,Bowler,Bowler,overseas,Pace,0.3,2.32,42.85714285714285,3.0,0.4444444444444444,10.073684210526316,12.0,28.0
 R Dhawan,Bowler,Bowler,indian,Pace,0.2,1.63,166.66666666666669,20.0,0.2,9.24590163934426,39.0,38.0
 KT Maphaka,Bowler,Bowler,indian,Pace,0.2,1.28,266.66666666666663,8.0,0.5,11.661971830985916,4.0,22.0
 Kartik Tyagi,Bowler,Bowler,indian,Pace,0.2,0.0,0.0,0.0,0.25,11.485714285714286,34.0,23.0
-Rajat Patidar,Batter,top order,indian,right-arm medium,11.0,400.0,120.0,20.0,0.0,0.0,55.0,24.0
-Hardik Pandya,All-Rounder,all-rounder,indian,right-arm medium,16.35,400.0,120.0,20.0,1.0,8.5,162.0,24.0
+Rajat Patidar,Batter,top order,indian,none,0.2,100.0,151.78,40.4,0.0,0.0,12.0,30.0
+Hardik Pandya,All-Rounder,all-rounder,indian,right-arm fast-medium,15.0,76.57,145.45,29.98,0.47,9.07,129.0,30.0
 Sunil Narine,Bowler,bowler,overseas,right-arm medium,12.0,400.0,0.0,0.0,1.0,8.5,201.0,24.0
 Sanju Samson,Batter,top order,indian,right-arm medium,18.0,400.0,120.0,20.0,0.0,0.0,190.0,24.0
 Yashasvi Jaiswal,All-Rounder,all-rounder,indian,right-arm medium,18.0,400.0,120.0,20.0,1.0,8.5,80.0,24.0
 Harry Brook,Batter,top order,overseas,right-arm medium,6.25,400.0,120.0,20.0,0.0,0.0,11.0,24.0
-Devon Conway,Batter,top order,overseas,right-arm medium,6.25,400.0,120.0,20.0,0.0,0.0,29.0,24.0
+Devon Conway,Batter,top order,overseas,none,1.0,100.0,141.3,47.3,0.0,0.0,23.0,32.0
 Aiden Markram,Batter,top order,overseas,right-arm medium,2.0,400.0,120.0,20.0,0.0,0.0,69.0,24.0
-Glenn Maxwell,All-Rounder,all-rounder,overseas,right-arm medium,4.2,400.0,120.0,20.0,1.0,8.5,141.0,24.0
+Glenn Maxwell,All-Rounder,all-rounder,overseas,right-arm offbreak,11.0,77.87,157.62,25.4,0.36,8.52,133.0,35.0
 Marcus Stoinis,All-Rounder,all-rounder,overseas,right-arm medium,11.0,400.0,120.0,20.0,1.0,8.5,123.0,24.0
 Phil Salt,Batter,top order,overseas,right-arm medium,11.5,400.0,120.0,20.0,0.0,0.0,40.0,24.0
 Trent Boult,Bowler,bowler,overseas,right-arm medium,12.5,400.0,0.0,0.0,1.0,8.5,124.0,24.0
 Wanindu Hasaranga,Bowler,bowler,overseas,right-arm medium,5.25,400.0,0.0,0.0,1.0,8.5,0.0,24.0
 Karun Nair,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,0.0,0.0,86.0,24.0
-Nishant Sindhu,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,5.0,24.0
+Nishant Sindhu,All-Rounder,all-rounder,indian,left-arm orthodox,0.6,70.53,120.4,27.9,0.7,6.9,0.0,19.0
 Aryan Juyal,Batter,top order,indian,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,0.0,24.0
 Robin Minz,Batter,top order,indian,right-arm medium,0.65,400.0,120.0,20.0,0.0,0.0,4.0,24.0
 Luvnith Sisodia,Batter,top order,indian,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,0.0,24.0
-Shreyas Gopal,Bowler,bowler,indian,right-arm medium,0.3,400.0,0.0,0.0,1.0,8.5,52.0,24.0
+Shreyas Gopal,All-Rounder,all-rounder,indian,right-arm legbreak,0.2,77.21,131.78,15.0,1.0,8.01,49.0,30.0
 Manav Suthar,Bowler,bowler,indian,right-arm medium,0.3,400.0,0.0,0.0,1.0,8.5,5.0,24.0
 Glenn Phillips,Batter,top order,overseas,right-arm medium,2.0,400.0,120.0,20.0,0.0,0.0,14.0,24.0
 Krunal Pandya,All-Rounder,all-rounder,indian,right-arm medium,5.75,400.0,120.0,20.0,1.0,8.5,156.0,24.0
 Donovan Ferreira,Batter,top order,overseas,right-arm medium,0.75,400.0,120.0,20.0,0.0,0.0,16.0,24.0
-Deepak Chahar,Bowler,bowler,indian,right-arm medium,9.25,400.0,0.0,0.0,1.0,8.5,103.0,24.0
+Deepak Chahar,All-Rounder,bowler,indian,right-arm medium,14.0,76.5,133.33,11.22,0.99,8.44,76.0,32.0
 AM Ghazanfar,Bowler,bowler,overseas,right-arm medium,4.8,400.0,0.0,0.0,1.0,8.5,11.0,24.0
 Swastik Chikara,Batter,top order,indian,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,0.0,24.0
 Darshan Nalkande,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,6.0,24.0
 Vansh Bedi,Batter,top order,indian,right-arm medium,0.55,400.0,120.0,20.0,0.0,0.0,0.0,24.0
 Gurnoor Brar,Bowler,bowler,indian,right-arm medium,1.3,400.0,0.0,0.0,1.0,8.5,1.0,24.0
-Mukesh Choudhary,Bowler,bowler,indian,right-arm medium,0.3,400.0,0.0,0.0,1.0,8.5,24.0,24.0
+Mukesh Choudhary,Bowler,bowler,indian,left-arm medium-fast,0.2,49.12,50.0,1.0,1.23,9.82,13.0,28.0
 Manish Pandey,Batter,top order,indian,right-arm medium,0.75,400.0,120.0,20.0,0.0,0.0,180.0,24.0
-Will Jacks,All-Rounder,all-rounder,overseas,right-arm medium,5.25,400.0,120.0,20.0,1.0,8.5,28.0,24.0
+Will Jacks,All-Rounder,all-rounder,overseas,right-arm offbreak,3.2,80.26,170.81,33.8,0.09,10.33,11.0,25.0
 Sachin Baby,Batter,top order,indian,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,20.0,24.0
-Rajvardhan Hangargekar,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,2.0,24.0
+Rajvardhan Hangargekar,All-Rounder,all-rounder,indian,right-arm fast-medium,1.5,78.21,112.2,11.1,1.5,9.0,2.0,21.0
 Arshin Kulkarni,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,4.0,24.0
-Matthew Breetzke,Batter,top order,indian,right-arm medium,0.75,400.0,120.0,20.0,0.0,0.0,1.0,24.0
-Kwena Maphaka,Bowler,bowler,overseas,right-arm medium,1.5,400.0,0.0,0.0,1.0,8.5,4.0,24.0
-Reece Topley,Bowler,bowler,overseas,right-arm medium,0.75,400.0,0.0,0.0,1.0,8.5,6.0,24.0
-Lizaad Williams,Bowler,bowler,indian,right-arm medium,0.75,400.0,0.0,0.0,1.0,8.5,2.0,24.0
-Manoj Bhandage,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,1.0,24.0
-Ajay Mandal,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Matthew Breetzke,Batter,top order,overseas,right-arm medium,0.75,400.0,120.0,20.0,0.0,0.0,1.0,24.0
+Kwena Maphaka,Bowler,bowler,overseas,left-arm fast,0.5,25.91,0.0,0.0,0.5,11.0,2.0,18.0
+Reece Topley,Bowler,bowler,overseas,left-arm fast-medium,1.9,43.48,0.0,0.0,1.0,8.9,5.0,30.0
+Lizaad Williams,Bowler,bowler,overseas,right-arm medium,0.75,400.0,0.0,0.0,1.0,8.5,2.0,24.0
+Manoj Bhandage,All-Rounder,all-rounder,indian,left-arm fast-medium,0.2,10.0,0.0,0.0,0.0,0.0,0.0,25.0
+Ajay Mandal,All-Rounder,all-rounder,indian,left-arm orthodox,0.2,75.13,121.4,21.9,1.0,6.8,0.0,27.0
 Krishnan Shrijith,Batter,top order,indian,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,0.0,24.0
 Mohit Rathee,Bowler,bowler,indian,right-arm medium,0.3,400.0,0.0,0.0,1.0,8.5,1.0,24.0
-Jacob Bethell,All-Rounder,all-rounder,indian,right-arm medium,2.6,400.0,120.0,20.0,1.0,8.5,9.0,24.0
-Brydon Carse,All-Rounder,all-rounder,indian,right-arm medium,1.0,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Aaron Hardie,All-Rounder,all-rounder,indian,right-arm medium,1.25,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Kamindu Mendis,All-Rounder,all-rounder,indian,right-arm medium,0.75,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Jacob Bethell,All-Rounder,all-rounder,overseas,right-arm medium,2.6,400.0,120.0,20.0,1.0,8.5,9.0,24.0
+Brydon Carse,All-Rounder,all-rounder,overseas,right-arm medium,1.0,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Aaron Hardie,All-Rounder,all-rounder,overseas,right-arm medium,1.25,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Kamindu Mendis,All-Rounder,all-rounder,overseas,right-arm medium,0.75,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Shamar Joseph,Bowler,bowler,overseas,right-arm medium,0.75,400.0,0.0,0.0,1.0,8.5,1.0,24.0
 Raj Bawa,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,8.0,24.0
 Suryansh Shedge,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,12.0,24.0
 Kulwant Khejroliya,Bowler,bowler,indian,right-arm medium,0.3,400.0,0.0,0.0,1.0,8.5,8.0,24.0
-Jamie Overton,All-Rounder,all-rounder,indian,right-arm medium,1.5,400.0,120.0,20.0,1.0,8.5,13.0,24.0
+Jamie Overton,All-Rounder,all-rounder,overseas,right-arm medium,1.5,400.0,120.0,20.0,1.0,8.5,13.0,24.0
 Lungi Ngidi,Bowler,bowler,overseas,right-arm medium,1.0,400.0,0.0,0.0,1.0,8.5,28.0,24.0
 Yuvraj Chaudhary,All-Rounder,all-rounder,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Kamlesh Nagarkoti,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,12.0,24.0
-Karim Janat,All-Rounder,all-rounder,indian,right-arm medium,0.75,400.0,120.0,20.0,1.0,8.5,1.0,24.0
+Karim Janat,All-Rounder,all-rounder,overseas,right-arm medium,0.75,400.0,120.0,20.0,1.0,8.5,1.0,24.0
 Pyla Avinash,Batter,top order,indian,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,0.0,24.0
 Ramakrishna Ghosh,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,1.0,24.0
 Satyanarayana Raju,Bowler,bowler,indian,right-arm medium,0.3,400.0,0.0,0.0,1.0,8.5,0.0,24.0
-Bevon Jacobs,Batter,top order,indian,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,0.0,24.0
+Bevon Jacobs,Batter,top order,overseas,right-arm medium,0.3,400.0,120.0,20.0,0.0,0.0,0.0,24.0
 Tripurana Vijay,All-Rounder,all-rounder,indian,right-arm medium,0.3,400.0,120.0,20.0,1.0,8.5,1.0,24.0
 Madhav Tiwari,All-Rounder,all-rounder,indian,right-arm medium,0.4,400.0,120.0,20.0,1.0,8.5,5.0,24.0
-Jofra Archer,Bowler,bowler,indian,right-arm medium,12.5,400.0,0.0,0.0,1.0,8.5,66.0,24.0
+Jofra Archer,Bowler,bowler,overseas,right-arm medium,12.5,400.0,0.0,0.0,1.0,8.5,66.0,24.0
 Vaibhav Sooryavanshi,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Dasun Shanaka,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Kusal Mendis,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Mujeeb Ur Rahman,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,20.0,24.0
+Dasun Shanaka,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Kusal Mendis,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Mujeeb Ur Rahman,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,20.0,24.0
 Digvesh,All-Rounder,all-rounder,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Smaran Ravichandran,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Wiaan Mulder,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Pathum Nissanka,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,10.0,24.0
-Ben Duckett,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Wiaan Mulder,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Pathum Nissanka,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,10.0,24.0
+Ben Duckett,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Auqib Nabi Dar,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Sahil Parakh,All-Rounder,all-rounder,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,4.0,24.0
-George Linde,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,3.0,24.0
+George Linde,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,3.0,24.0
 Akshat Raghuwanshi,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,3.0,24.0
 Naman Tiwari,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Vicky Ostwal,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Vihaan Malhotra,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Satvik Deswal,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Jacob Duffy,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,4.0,24.0
+Jacob Duffy,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,4.0,24.0
 Kanishk Chouhan,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Dilshan Madushanka,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,1.0,24.0
 Praful Hinge,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,6.0,24.0
 Sakib Hussain,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,10.0,24.0
 Jack Edwards,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Krains Fuletra,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-David Payne,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
+David Payne,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
 Onkar Tarmale,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Shivam Mavi,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,32.0,24.0
 Salil Arora,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,13.0,24.0
-Finn Allen,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,5.0,24.0
-Blessing Muzarabani,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
+Finn Allen,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,5.0,24.0
+Blessing Muzarabani,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
 Tejasvi Dahiya,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
 Sarthak Ranjan,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Daksh Kamra,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Prashant Solanki,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
+Prashant Solanki,Bowler,bowler,indian,right-arm legbreak,1.2,50.87,0.0,0.0,1.0,5.75,2.0,24.0
 Navdeep Saini,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,28.0,24.0
-Tim Seifert,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,6.0,24.0
+Tim Seifert,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,6.0,24.0
 Danish Malewar,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
 Atharva Ankolekar,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
 Mayank Rawat,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,1.0,24.0
 Prithvi Raj Yarra,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Tom Banton,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
-Luke Wood,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
-Cooper Connolly,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,14.0,24.0
-Ben Dwarshuis,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,1.0,24.0
+Tom Banton,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
+Luke Wood,Bowler,bowler,overseas,left-arm fast-medium,0.5,40.0,0.0,0.0,0.0,0.0,0.0,29.0
+Cooper Connolly,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,14.0,24.0
+Ben Dwarshuis,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,1.0,24.0
 Vishal Nishad,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Zakary Foulkes,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Akeal Hosein,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,8.0,24.0
+Zakary Foulkes,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
+Akeal Hosein,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,8.0,24.0
 Prashant Veer,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,6.0,24.0
 Matt Henry,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,9.0,24.0
 Yash Raj Punja,All-Rounder,all-rounder,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,6.0,24.0
 Aman Rao Perala,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,0.0,24.0
-Lhuan-dre Pretorius,Batter,top order,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
-Adam Milne,Bowler,bowler,indian,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,11.0,24.0
+Lhuan-dre Pretorius,Batter,top order,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,2.0,24.0
+Adam Milne,Bowler,bowler,overseas,right-arm medium,0.5,400.0,120.0,20.0,1.0,8.5,11.0,24.0
