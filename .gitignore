@@ -1,0 +1,27 @@
+# Node dependencies & Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+*.tsbuildinfo
+
+# Python Virtualenv & Cache
+backend/venv/
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+*.pyc
+
+# Android Build Outputs & Gradle Cache
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/.idea/
+frontend/android/*.iml
+frontend/android/local.properties
+
+# Logs & Environment
+*.log
+.env
+.env.local
+.DS_Store

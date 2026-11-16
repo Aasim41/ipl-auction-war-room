@@ -1,0 +1,65 @@
+name: Build Android APK (AuctionXI Capacitor)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: Set up Java 17 (JDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build Next.js Web Assets
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Sync Capacitor Android
+        run: |
+          cd frontend
+          npx cap sync android || npx cap add android
+
+      - name: Make Gradle Executable
+        run: |
+          cd frontend/android
+          chmod +x ./gradlew
+
+      - name: Build Android Debug APK
+        run: |
+          cd frontend/android
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload AuctionXI APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionXI-Android-Debug-APK
+          path: frontend/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
