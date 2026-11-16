@@ -61,7 +61,7 @@ export default function BallByBallMatchSimulator({
           team_a_squad: teamASquad,
           team_b_name: rivalFranchise.short,
           team_b_squad: teamBSquad,
-          venue: `${myFranchise.homeStadium || 'Wankhede Stadium'}`
+          venue: `${myFranchise.stadiumName || 'Wankhede Stadium'}`
         })
       });
       const data = await res.json();

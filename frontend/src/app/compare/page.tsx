@@ -5,7 +5,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import { Search } from 'lucide-react'
 
 type Player = {
-  id: string
+  player_id: string
   name: string
   role: string
   specific_role: string
@@ -117,7 +117,7 @@ export default function ComparePlayers() {
               <div className="absolute z-10 w-full mt-1 bg-[#0d1117] border border-white/10 rounded-lg max-h-48 overflow-y-auto shadow-xl">
                 {players.filter(p => p.name.toLowerCase().includes(searchA.toLowerCase())).slice(0, 10).map((p, i) => (
                   <div 
-                    key={p.player_id || p.id || i} 
+                    key={p.player_id || i}
                     className="p-2 hover:bg-white/10 cursor-pointer text-sm"
                     onClick={() => { setPlayerA(p); setSearchA('') }}
                   >
@@ -176,7 +176,7 @@ export default function ComparePlayers() {
               <div className="absolute z-10 w-full mt-1 bg-[#0d1117] border border-white/10 rounded-lg max-h-48 overflow-y-auto shadow-xl">
                 {players.filter(p => p.name.toLowerCase().includes(searchB.toLowerCase())).slice(0, 10).map((p, i) => (
                   <div 
-                    key={p.player_id || p.id || i} 
+                    key={p.player_id || i}
                     className="p-2 hover:bg-white/10 cursor-pointer text-sm"
                     onClick={() => { setPlayerB(p); setSearchB('') }}
                   >
@@ -235,8 +235,8 @@ export default function ComparePlayers() {
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
                   itemStyle={{ color: '#e2e8f0' }}
-                  formatter={(value: number, name: string) => [
-                    `${value.toFixed(0)} (normalized)`, 
+                  formatter={(value, name) => [
+                    `${Number(value ?? 0).toFixed(0)} (normalized)`,
                     name === 'TeamA' ? playerA.name : playerB.name
                   ]}
                 />

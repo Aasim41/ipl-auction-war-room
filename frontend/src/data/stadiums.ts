@@ -15,7 +15,7 @@ export interface Stadium {
   boundarySize: string
   recordScore: string
   floodlights: string
-  soilType: 'Red Soil' | 'Black Soil' | 'Hybrid Turf'
+  soilType: string
   curatorNote: string
   stands: string[]
   keyBattles: string
