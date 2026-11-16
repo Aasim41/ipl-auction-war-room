@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { Trophy, Users, Zap, Gavel, TrendingUp, Shield, Compass, MapPin, ChevronRight, Sparkles, Activity } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { useCampaignStore } from '../store/useCampaignStore'
 import { getStadiumForTeam } from '../data/stadiums'
 import { StadiumShowcase } from '../components/StadiumShowcase'
 import gsap from 'gsap'
@@ -45,7 +46,9 @@ const broadcastFeatures = [
 
 export default function LandingPage() {
   const { theme, setTheme } = useStore()
-  const activeStadium = getStadiumForTeam(theme)
+  const { getActiveCampaign } = useCampaignStore()
+  const activeCamp = getActiveCampaign()
+  const activeStadium = getStadiumForTeam(activeCamp?.teamId || theme)
   const heroRef = useRef<HTMLDivElement>(null)
   const headlineRef = useRef<HTMLHeadingElement>(null)
   const [mounted, setMounted] = useState(false)
@@ -136,8 +139,8 @@ export default function LandingPage() {
         {/* Cricket Broadcast Badge */}
         <div className="gsap-broadcast-badge inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-950/20 text-amber-300 text-xs font-semibold mb-6 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
           <Trophy size={14} className="text-amber-400" />
-          <span>IPL MEGA AUCTION WAR ROOM & SQUAD OPTIMIZER</span>
-          <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 text-[10px] font-bold">2026 EDITION</span>
+          <span>ROAD TO IPL 2027 • FRANCHISE GM CAMPAIGN</span>
+          <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 text-[10px] font-bold">2027 EDITION</span>
         </div>
 
         {/* Hero Title */}
@@ -152,35 +155,57 @@ export default function LandingPage() {
               textShadow: `0 0 40px ${activeStadium.teamColor}50`,
             }}
           >
-            IPL AUCTION
+            IPL 2027
           </span>
         </h1>
 
         {/* Hero Subtitle */}
         <p className="gsap-hero-subtitle text-base sm:text-xl text-gray-300 max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-          The elite cricket decision room for IPL owners & analysts. Calibrate your 25-man squad against your home ground turf, run mathematical linear programming solvers, and dominate rival franchises.
+          The official 4-phase IPL manager campaign. Trade with rivals, lock in retentions for purse refunds, battle 9 AI franchise bots in the live Mini-Auction, and conquer match day!
         </p>
 
         {/* CTA Buttons */}
         <div className="gsap-cta-group flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-          <Link
-            href="/squad"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-display text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
-            style={{
-              backgroundColor: activeStadium.teamColor,
-              boxShadow: `0 10px 30px ${activeStadium.teamColor}60`,
-            }}
-          >
-            <Gavel size={20} />
-            ENTER SQUAD WAR ROOM
-          </Link>
+          {activeCamp ? (
+            <Link
+              href={
+                activeCamp.currentPhase === 'trade'
+                  ? '/trade'
+                  : activeCamp.currentPhase === 'retain_release'
+                  ? '/squad'
+                  : activeCamp.currentPhase === 'mini_auction'
+                  ? '/auction'
+                  : '/playing-xi'
+              }
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl font-display text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+              style={{
+                backgroundColor: activeStadium.teamColor,
+                boxShadow: `0 10px 30px ${activeStadium.teamColor}60`,
+              }}
+            >
+              <Gavel size={20} />
+              RESUME {activeCamp.teamName.toUpperCase()}
+            </Link>
+          ) : (
+            <Link
+              href="/select-team"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl font-display text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+              style={{
+                backgroundColor: activeStadium.teamColor,
+                boxShadow: `0 10px 30px ${activeStadium.teamColor}60`,
+              }}
+            >
+              <Gavel size={20} />
+              START IPL 2027 CAMPAIGN
+            </Link>
+          )}
 
           <Link
             href="/select-team"
             className="w-full sm:w-auto px-8 py-4 rounded-2xl font-display text-lg font-bold tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
           >
             <MapPin size={20} />
-            SELECT FRANCHISE FORTRESS
+            {activeCamp ? 'SWITCH FRANCHISE SAVE' : 'CHOOSE YOUR TEAM'}
           </Link>
         </div>
 

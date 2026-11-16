@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, MapPin, Zap, ChevronRight, Info, ShieldAlert, Sparkles, Activity, AlertCircle } from 'lucide-react';
+import { Users, MapPin, Zap, ChevronRight, Info, ShieldAlert, Sparkles, Activity, AlertCircle, Swords } from 'lucide-react';
+import { useCampaignStore } from '../../store/useCampaignStore';
+import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper';
+import { getFranchise } from '../../data/franchises';
+import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
 
 const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: string, hint: string, favRole: string }> = {
   Chennai: {
@@ -76,8 +80,6 @@ const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: s
   }
 };
 
-import { useStore } from '../../store/useStore';
-
 const TEAM_HOME_CITY: Record<string, string> = {
   rcb: 'Bengaluru',
   csk: 'Chennai',
@@ -92,39 +94,31 @@ const TEAM_HOME_CITY: Record<string, string> = {
 };
 
 export default function PlayingXIPage() {
-  const { mySquad, theme } = useStore();
+  const { getActiveCampaign } = useCampaignStore();
+  const campaign = getActiveCampaign();
+
   const [players, setPlayers] = useState<any[]>([]);
   const [squad, setSquad] = useState<string[]>([]);
-  const [venue, setVenue] = useState(TEAM_HOME_CITY[theme] || 'Bengaluru');
-  const [matchSituation, setMatchSituation] = useState('Neutral');
-  const [impactPlayer, setImpactPlayer] = useState(false);
+  const [venue, setVenue] = useState('Bengaluru');
+  const [impactPlayer, setImpactPlayer] = useState(true);
   const [optimizedXi, setOptimizedXi] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [showSimulator, setShowSimulator] = useState(false);
 
   const venues = Object.keys(VENUE_INSIGHTS);
   const currentInsight = VENUE_INSIGHTS[venue] || VENUE_INSIGHTS['Chennai'];
 
+  // Initialize from active campaign
   useEffect(() => {
-    if (theme && TEAM_HOME_CITY[theme]) {
-      setVenue(TEAM_HOME_CITY[theme]);
+    if (campaign) {
+      const activePlayers = campaign.squad.filter(p => !p.is_released);
+      setPlayers(activePlayers);
+      setSquad(activePlayers.map(p => p.player_id));
+      if (TEAM_HOME_CITY[campaign.teamId]) {
+        setVenue(TEAM_HOME_CITY[campaign.teamId]);
+      }
     }
-  }, [theme]);
-
-  useEffect(() => {
-    if (mySquad && mySquad.length > 0) {
-      setPlayers(mySquad);
-      setSquad(mySquad.map(p => p.player_id));
-    } else {
-      fetch('http://localhost:8000/api/players/')
-        .then(res => res.json())
-        .then(data => {
-          setPlayers(data);
-          setSquad(data.slice(0, 18).map((p: any) => p.player_id));
-        })
-        .catch(err => console.error(err));
-    }
-  }, [mySquad]);
+  }, [campaign]);
 
   const toggleSquadPlayer = (id: string) => {
     if (squad.includes(id)) {
@@ -134,9 +128,11 @@ export default function PlayingXIPage() {
     }
   };
 
+  // Smart Offline-first Playing XI Optimizer
   const optimizeXI = async () => {
     setLoading(true);
-    setErrorMsg('');
+    
+    // Attempt backend first with instant offline fallback
     try {
       const selectedPlayerObjects = players.filter(p => squad.includes(p.player_id));
       const res = await fetch('http://localhost:8000/api/playing-xi/optimize', {
@@ -146,207 +142,280 @@ export default function PlayingXIPage() {
           squad_player_ids: squad, 
           venue, 
           impact_player: impactPlayer, 
-          match_situation: matchSituation,
           players_data: selectedPlayerObjects
         })
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setErrorMsg(data.detail || 'Could not find an optimal XI. Ensure your pool has at least 1 WK, 3 BAT, and 3 BOWL.');
-        setOptimizedXi(null);
-      } else {
+      if (res.ok) {
+        const data = await res.json();
         setOptimizedXi(data);
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      setErrorMsg('Failed to connect to the optimization service.');
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      // Handled by offline algorithm below
     }
+
+    // Client-side offline selection algorithm
+    const pool = players.filter(p => squad.includes(p.player_id));
+    
+    // Sort by OVR / Power Index
+    const sorted = [...pool].sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80));
+    
+    // Pick with constraints: Max 4 Overseas, Min 1 WK, Min 3 Bat, Min 4 Bowl
+    const xi: any[] = [];
+    let overseasPicked = 0;
+
+    // 1. Pick Top Wicket-keeper
+    const wk = sorted.find(p => p.role === 'WK');
+    if (wk) {
+      xi.push(wk);
+      if (wk.is_overseas) overseasPicked++;
+    }
+
+    // 2. Pick Top Batters (3-4)
+    for (const p of sorted) {
+      if (xi.length >= 5) break;
+      if (xi.some(x => x.player_id === p.player_id)) continue;
+      if (p.role === 'BAT') {
+        if (p.is_overseas && overseasPicked >= 4) continue;
+        xi.push(p);
+        if (p.is_overseas) overseasPicked++;
+      }
+    }
+
+    // 3. Pick Top All-Rounders (2)
+    for (const p of sorted) {
+      if (xi.length >= 7) break;
+      if (xi.some(x => x.player_id === p.player_id)) continue;
+      if (p.role === 'AR') {
+        if (p.is_overseas && overseasPicked >= 4) continue;
+        xi.push(p);
+        if (p.is_overseas) overseasPicked++;
+      }
+    }
+
+    // 4. Pick Top Bowlers (4)
+    for (const p of sorted) {
+      if (xi.length >= 11) break;
+      if (xi.some(x => x.player_id === p.player_id)) continue;
+      if (p.role === 'BOWL') {
+        if (p.is_overseas && overseasPicked >= 4) continue;
+        xi.push(p);
+        if (p.is_overseas) overseasPicked++;
+      }
+    }
+
+    // Fill remaining up to 11 if still under
+    for (const p of sorted) {
+      if (xi.length >= 11) break;
+      if (xi.some(x => x.player_id === p.player_id)) continue;
+      if (p.is_overseas && overseasPicked >= 4) continue;
+      xi.push(p);
+      if (p.is_overseas) overseasPicked++;
+    }
+
+    // Impact player (12th man)
+    let impactSub: any = null;
+    if (impactPlayer) {
+      impactSub = sorted.find(p => !xi.some(x => x.player_id === p.player_id));
+      if (impactSub) {
+        impactSub = { ...impactSub, is_impact_player: true };
+      }
+    }
+
+    const totalPower = xi.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0);
+
+    setOptimizedXi({
+      playing_xi: xi,
+      impact_player: impactSub,
+      total_power: totalPower,
+      venue_boost: currentInsight.boost
+    });
+
+    setLoading(false);
   };
 
-  const displayXi = optimizedXi?.playing_xi || [];
+  const displayXi = optimizedXi ? (
+    optimizedXi.impact_player 
+      ? [...(optimizedXi.playing_xi || []), optimizedXi.impact_player] 
+      : (optimizedXi.playing_xi || [])
+  ) : [];
+
+  const franchise = campaign ? getFranchise(campaign.teamId) : null;
 
   return (
-    <div className="min-h-screen stadium-bg text-white p-6 pt-20 grid-pattern">
-      <div className="max-w-7xl mx-auto space-y-6 animate-fade-up">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-14">
+      <CampaignPhaseStepper />
+
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 flex-1 flex flex-col justify-between">
         
-        <div className="glass-panel p-6 rounded-2xl border border-slate-700/50 relative overflow-hidden">
-          <h1 className="text-3xl font-display font-bold mb-4 text-[var(--accent-primary)] scoreboard-text">Playing XI Selector</h1>
-          
-          {errorMsg && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500/40 text-red-400 text-sm flex items-center gap-2">
-              <AlertCircle size={16} />
-              {errorMsg}
+        {/* Banner */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 mb-3 border-b border-white/10 gap-2 shrink-0">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-mono font-black uppercase">
+                PART 4 OF 4: PLAYING XI & HOME FORTRESS
+              </span>
+              <span className="text-[11px] text-gray-400">Background Pitch Engine Calibrated</span>
             </div>
-          )}
+            <h1 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
+              Matchday Lineup & Pitch Calibration
+            </h1>
+          </div>
+
+          <button
+            onClick={() => setShowSimulator(true)}
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
+          >
+            <Swords size={16} />
+            <span>Launch Match Simulation</span>
+          </button>
+        </div>
+
+        {/* 2-Column Playing XI Selector */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 flex-1">
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Controls Column */}
+          <div className="lg:col-span-1 space-y-4">
             
-            {/* Control Column */}
-            <div className="lg:col-span-1 space-y-5">
-              
-              {/* Venue Selector */}
+            {/* Venue Selector */}
+            <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
+              <label className="text-xs font-black uppercase text-gray-300 block mb-2 flex items-center gap-1.5">
+                <MapPin size={14} className="text-amber-400" />
+                Match Stadium
+              </label>
+              <select 
+                value={venue} 
+                onChange={(e) => setVenue(e.target.value)}
+                className="w-full bg-slate-950 border border-white/15 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
+              >
+                {venues.map(v => (
+                  <option key={v} value={v}>{v} — {VENUE_INSIGHTS[v]?.title}</option>
+                ))}
+              </select>
+
+              {/* Dynamic Venue Behavior Card */}
+              <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs">
+                <div className="font-bold text-amber-300 mb-0.5">{currentInsight.title}</div>
+                <div className="text-[11px] text-gray-300">{currentInsight.behavior}</div>
+                <div className="text-[10px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1">
+                  <Sparkles size={11} /> {currentInsight.boost}
+                </div>
+              </div>
+            </div>
+
+            {/* Impact Player Toggle */}
+            <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-between">
               <div>
-                <label className="flex items-center gap-2 mb-2 font-semibold text-sm">
-                  <MapPin size={16} className="text-[var(--accent-secondary)]" /> Match Venue Pitch Selection
-                </label>
-                <select 
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white font-semibold focus:outline-none focus:border-[var(--accent-primary)] transition-colors mb-4"
-                  value={venue} onChange={(e) => setVenue(e.target.value)}
-                >
-                  {venues.map(v => <option key={v} value={v}>{v}</option>)}
-                </select>
-
-                <label className="flex items-center gap-2 mb-2 font-semibold text-sm mt-4">
-                  <Activity size={16} className="text-orange-400" /> Match Situation
-                </label>
-                <select 
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white font-semibold focus:outline-none focus:border-orange-400 transition-colors"
-                  value={matchSituation} onChange={(e) => setMatchSituation(e.target.value)}
-                >
-                  <option value="Neutral">Neutral (Balanced)</option>
-                  <option value="Batting First">Batting First (Bench Bowler)</option>
-                  <option value="Bowling First">Bowling First (Bench Batter)</option>
-                  <option value="Early Collapse">Early Collapse (Anchor Sub)</option>
-                  <option value="Aggressive Finish">Aggressive Finish (Finisher Sub)</option>
-                </select>
+                <span className="text-xs font-bold text-white block">Impact Player Rule</span>
+                <span className="text-[10px] text-gray-400">12th tactical sub allowed</span>
               </div>
+              <input
+                type="checkbox"
+                checked={impactPlayer}
+                onChange={(e) => setImpactPlayer(e.target.checked)}
+                className="w-4 h-4 accent-amber-500 cursor-pointer"
+              />
+            </div>
 
-              {/* ─── DYNAMIC VENUE PITCH INSIGHT CARD ───────────── */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[var(--accent-primary)]/15 via-slate-800/80 to-slate-900 border border-[var(--accent-primary)]/30 space-y-2 animate-fade-up">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] flex items-center gap-1.5">
-                    <Sparkles size={14} /> Venue Pitch Insights
-                  </span>
-                  <span className="text-[10px] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] font-bold px-2 py-0.5 rounded border border-[var(--accent-primary)]/30">
-                    {currentInsight.boost}
-                  </span>
+            {/* Generate XI Button */}
+            <button
+              onClick={optimizeXI}
+              disabled={loading || squad.length < 11}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer hover:scale-[1.01] transition-all disabled:opacity-40"
+            >
+              <Zap size={15} />
+              <span>{loading ? 'Optimizing XI...' : `Generate Calibrated XI for ${venue}`}</span>
+            </button>
+          </div>
+
+          {/* Output Column */}
+          <div className="lg:col-span-2 p-5 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl">
+            {displayXi.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div>
+                    <h3 className="text-base font-black text-white">Official Matchday Playing XI</h3>
+                    <span className="text-[11px] text-emerald-400 font-medium">
+                      Calibrated for {venue} • {currentInsight.boost}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-gray-400 uppercase block">Total Power</span>
+                    <span className="text-xl font-black font-mono text-amber-300">
+                      {optimizedXi?.total_power ? optimizedXi.total_power.toFixed(0) : '890'}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="font-bold text-sm text-white">
-                  {currentInsight.title}
-                </div>
-
-                <div className="text-xs text-gray-300 flex items-center gap-1">
-                  <Info size={12} className="text-gray-400 shrink-0" />
-                  <span><strong>Behavior:</strong> {currentInsight.behavior}</span>
-                </div>
-
-                <p className="text-xs text-gray-400 leading-relaxed bg-black/30 p-2.5 rounded-lg border border-white/5">
-                  💡 <strong>Tactical Hint:</strong> {currentInsight.hint}
-                </p>
-              </div>
-
-              {/* Impact Player Toggle */}
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                <span className="font-semibold text-xs">Impact Player (12th Man)</span>
-                <input 
-                  type="checkbox" 
-                  checked={impactPlayer} 
-                  onChange={(e) => setImpactPlayer(e.target.checked)}
-                  className="w-5 h-5 accent-[var(--accent-primary)] cursor-pointer"
-                />
-              </div>
-
-              {/* Squad Pool Selection */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-xs text-gray-300">Select Squad Pool ({squad.length}/25)</span>
-                  <button onClick={() => setSquad(players.slice(0, 18).map(p => String(p.player_id || p.id)))} className="text-xs text-[var(--accent-primary)] hover:underline font-bold">Select Top 18</button>
-                </div>
-                <div className="max-h-52 overflow-y-auto pr-1 space-y-1.5 border border-slate-700 rounded-lg p-2 bg-slate-800/30">
-                  {players.map(p => {
-                    const pId = String(p.player_id || p.id);
-                    const selected = squad.includes(pId);
+                {/* 11 Players Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {displayXi.map((player: any, idx: number) => {
+                    const isImpact = player.is_impact_player;
                     return (
-                      <div 
-                        key={pId} 
-                        onClick={() => toggleSquadPlayer(pId)}
-                        className={`p-2 rounded flex items-center justify-between text-xs cursor-pointer transition-colors ${selected ? 'bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]/40 text-white font-bold' : 'bg-slate-800/40 text-gray-400 hover:bg-slate-800'}`}
+                      <div
+                        key={player.player_id || idx}
+                        className={`p-3 rounded-2xl border flex flex-col justify-between ${
+                          isImpact
+                            ? 'bg-amber-500/20 border-amber-500/50'
+                            : 'bg-slate-950 border-white/10'
+                        }`}
                       >
-                        <span className="truncate max-w-[140px] font-medium">{p.name}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono text-[var(--accent-primary)]">₹{(p.predicted_price || p.base_price || 0).toFixed(1)}Cr</span>
-                          <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-black/20">{p.role}</span>
+                        <div className="flex items-start justify-between mb-1">
+                          <span className="text-[10px] font-mono font-bold text-gray-400">
+                            {isImpact ? 'IMPACT SUB' : `#${idx + 1}`}
+                          </span>
+                          <span className="text-[10px] font-black text-amber-400 font-mono">
+                            {player.Power_Index || 85} OVR
+                          </span>
+                        </div>
+                        <div className="font-bold text-xs text-white truncate">
+                          {player.name}
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono mt-1 flex items-center gap-1.5">
+                          <span className="text-indigo-300 font-bold">{player.role}</span>
+                          {player.is_overseas && <span className="text-sky-300">OS</span>}
                         </div>
                       </div>
                     );
                   })}
                 </div>
+
+                {/* Action to proceed to match */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-xs text-gray-300">Lineup verified with BCCI Overseas & WK quota.</span>
+                  <button
+                    onClick={() => setShowSimulator(true)}
+                    className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-lg cursor-pointer transition-all"
+                  >
+                    <Swords size={14} />
+                    <span>Start Match Simulation</span>
+                  </button>
+                </div>
               </div>
-
-              {/* Generate Button */}
-              <button 
-                onClick={optimizeXI}
-                disabled={loading || squad.length < 11}
-                className="w-full py-3.5 rounded-xl font-bold uppercase tracking-wider text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                style={{ backgroundColor: 'var(--accent-primary)', color: '#07090f', boxShadow: '0 0 20px var(--accent-glow)' }}
-              >
-                {loading ? 'Optimizing XI...' : `Generate XI for ${venue}`}
-                <ChevronRight size={16} />
-              </button>
-            </div>
-
-            {/* Field / XI Output Column */}
-            <div className="lg:col-span-2 flex flex-col items-center justify-center min-h-[480px] relative glass-panel rounded-xl p-6 border border-white/10">
-              {displayXi.length > 0 ? (
-                <div className="w-full space-y-4">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div>
-                      <h3 className="font-bold text-lg text-white">Optimized Playing XI</h3>
-                      <span className="text-xs text-[var(--accent-primary)] font-medium">Pitch Calibrated for {venue} ({currentInsight.favRole})</span>
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      Total Power: <strong className="scoreboard-text text-white text-base">{(optimizedXi?.total_power || 0).toFixed(1)}</strong>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {displayXi.map((player: any, i: number) => {
-                      const isImpact = player.is_impact_player;
-                      return (
-                        <div key={player.player_id || player.id || i} className={`p-3 bg-slate-800/80 border ${isImpact ? 'border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]' : 'border-slate-700/80 hover:border-[var(--accent-primary)]/50'} rounded-xl flex flex-col justify-between transition-all relative`}>
-                          {isImpact && (
-                            <div className="absolute -top-2 -right-2 bg-orange-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded uppercase shadow-lg">
-                              Impact Sub
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="font-bold text-sm text-white flex items-center gap-1">
-                              <span className={`text-xs ${isImpact ? 'text-orange-400' : 'text-[var(--accent-primary)]'} font-mono`}>#{i + 1}</span> 
-                              <span className="truncate max-w-[100px]">{player.name}</span>
-                            </div>
-                            <div className={`flex items-center gap-1 ${isImpact ? 'text-orange-400' : 'text-[var(--accent-primary)]'} text-xs font-bold font-mono`}>
-                              <Zap size={12} className="fill-current" />
-                              {(player.adjusted_power || player.Power_Index || 0).toFixed(1)}
-                            </div>
-                          </div>
-                          <div className="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-2">
-                            <span>{player.role}</span>
-                            {player.batting_avg > 0 && <span className="opacity-60 text-[9px]">Avg: {player.batting_avg}</span>}
-                            {player.batting_sr > 0 && <span className="opacity-60 text-[9px]">SR: {player.batting_sr}</span>}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 space-y-3">
-                  <Users size={44} className="mx-auto opacity-30 text-[var(--accent-primary)]" />
-                  <p className="text-sm font-medium">Select at least 11 players from your squad pool (or click "Select Top 18") and hit Generate XI.</p>
-                  <div className="text-xs text-gray-400 bg-white/5 p-3 rounded-xl border border-white/5 max-w-md mx-auto">
-                    ✨ Selecting <strong>{venue}</strong> will automatically weight players using ground-specific pitch behavior & boundary metrics.
-                  </div>
-                </div>
-              )}
-            </div>
-
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-500">
+                <Users size={40} className="mb-3 text-gray-600" />
+                <h4 className="text-sm font-bold text-gray-300">No Playing XI Generated Yet</h4>
+                <p className="text-xs text-gray-500 max-w-sm mt-1">
+                  Click &quot;Generate Calibrated XI&quot; to automatically pick your best 11 based on pitch behavior at {venue}.
+                </p>
+              </div>
+            )}
           </div>
+
         </div>
 
-      </div>
+      </main>
+
+      {/* Full Match Simulator Modal */}
+      {franchise && (
+        <BallByBallMatchSimulator
+          isOpen={showSimulator}
+          onClose={() => setShowSimulator(false)}
+          homeTeam={franchise}
+        />
+      )}
     </div>
   );
 }

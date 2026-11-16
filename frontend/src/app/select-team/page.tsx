@@ -1,6 +1,7 @@
 'use client'
 
 import { useStore } from '../../store/useStore'
+import { useCampaignStore } from '../../store/useCampaignStore'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { ChevronRight, Trophy, MapPin, Users, Compass, Shield, ArrowRight } from 'lucide-react'
@@ -50,12 +51,23 @@ export default function SelectTeamPage() {
   const activeTeam = teams.find(t => t.id === (hoveredTeam || selectedTeam || theme)) || teams[2]
   const activeStadium = STADIUMS[activeTeam.id] || STADIUMS.rcb
 
+  const { createCampaign, switchCampaign, campaigns } = useCampaignStore()
+
   const handleSelect = (teamId: string) => {
     setSelectedTeam(teamId)
     setTheme(teamId)
+    
+    // Find existing campaign for this team or create a new one
+    const existing = Object.values(campaigns).find(c => c.teamId === teamId)
+    if (existing) {
+      switchCampaign(existing.id)
+    } else {
+      createCampaign(teamId)
+    }
+
     setTimeout(() => {
-      router.push('/squad')
-    }, 600)
+      router.push('/trade')
+    }, 500)
   }
 
   if (!mounted) return null
