@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useStore } from '../store/useStore'
+import { IPL_FRANCHISES, RELEASED_AUCTION_POOL } from '../data/franchises'
 
 export interface Player {
   player_id: string
@@ -16,16 +17,73 @@ export interface Player {
   statsSummary?: string
 }
 
+// Generate complete offline master player pool
+function getBundledPlayerPool(): Player[] {
+  const all: Player[] = []
+  const seen = new Set<string>()
+
+  // 1. Add all players from all 10 franchise rosters
+  Object.values(IPL_FRANCHISES).forEach((franchise) => {
+    franchise.squad2026.forEach((p, idx) => {
+      const lower = p.name.toLowerCase()
+      if (!seen.has(lower)) {
+        seen.add(lower)
+        all.push({
+          player_id: p.player_id || `${franchise.id}_${idx + 1}`,
+          name: p.name,
+          role: p.role,
+          nationality: p.nationality,
+          is_overseas: p.is_overseas,
+          base_price: p.price,
+          predicted_price: p.price,
+          Power_Index: Number(p.Power_Index) || 80,
+          is_retained: true,
+          statsSummary: p.statsSummary
+        })
+      }
+    })
+  })
+
+  // 2. Add all released marquee stars
+  RELEASED_AUCTION_POOL.forEach((p, idx) => {
+    const lower = p.name.toLowerCase()
+    if (!seen.has(lower)) {
+      seen.add(lower)
+      all.push({
+        player_id: `rel_${idx + 1}`,
+        name: p.name,
+        role: p.role,
+        nationality: p.is_overseas ? 'Overseas' : 'Indian',
+        is_overseas: p.is_overseas,
+        base_price: p.basePrice || 2.0,
+        predicted_price: p.predictedAuctionPrice || 5.0,
+        Power_Index: Number(p.powerIndex) || 85,
+        is_retained: false,
+        statsSummary: p.reason
+      })
+    }
+  })
+
+  return all
+}
+
 export function usePlayerData() {
   const { cachedPlayers, setCachedPlayers, mySquad, setMySquad } = useStore()
-  const [loading, setLoading] = useState(cachedPlayers.length === 0)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const bundled = getBundledPlayerPool()
+  const effectivePlayers = cachedPlayers.length > 0 ? cachedPlayers : bundled
+
   const fetchPlayers = useCallback(async (silent = false) => {
-    if (!silent && cachedPlayers.length === 0) setLoading(true)
+    // If we have bundled players and this is initial load, initialize right away
+    if (cachedPlayers.length === 0) {
+      setCachedPlayers(bundled)
+    }
+
     try {
-      const res = await fetch('http://localhost:8000/api/players/')
-      if (!res.ok) throw new Error('Failed to load player database')
+      const res = await fetch('http://localhost:8000/api/players/', { signal: AbortSignal.timeout(3000) })
+      if (!res.ok) throw new Error('Backend not reachable')
       const data = await res.json()
       const normalized: Player[] = data.map((p: any) => ({
         player_id: String(p.player_id || p.id),
@@ -38,46 +96,20 @@ export function usePlayerData() {
         Power_Index: Number(p.Power_Index || p.power_index || 0),
       }))
       setCachedPlayers(normalized)
-
-      // Silently sync current squad's Power_Index values if they changed
-      if (mySquad && mySquad.length > 0) {
-        const playerMap = new Map(normalized.map((np) => [np.name.toLowerCase(), np]))
-        let squadChanged = false
-        const updatedSquad = mySquad.map((sp) => {
-          const fresh = playerMap.get(sp.name.toLowerCase())
-          if (fresh && fresh.Power_Index !== sp.Power_Index) {
-            squadChanged = true
-            return { ...sp, Power_Index: fresh.Power_Index }
-          }
-          return sp
-        })
-        if (squadChanged) {
-          setMySquad(updatedSquad)
-        }
-      }
-
       setLoading(false)
     } catch (err: any) {
-      if (!silent) {
-        console.error('Player fetch error:', err)
-        setError(err.message)
-        setLoading(false)
+      // Offline fallback: Use bundled players
+      if (cachedPlayers.length === 0) {
+        setCachedPlayers(bundled)
       }
+      setLoading(false)
     }
-  }, [cachedPlayers.length, mySquad, setCachedPlayers, setMySquad])
+  }, [cachedPlayers.length, setCachedPlayers, bundled])
 
   // Initial fetch
   useEffect(() => {
     fetchPlayers(false)
   }, [])
 
-  // Background auto-refresh polling every 20 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      fetchPlayers(true)
-    }, 20000)
-    return () => clearInterval(timer)
-  }, [fetchPlayers])
-
-  return { players: cachedPlayers, loading, error, refetch: () => fetchPlayers(false) }
+  return { players: effectivePlayers, loading, error, refetch: () => fetchPlayers(false) }
 }

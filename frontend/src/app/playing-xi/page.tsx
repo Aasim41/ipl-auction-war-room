@@ -413,7 +413,13 @@ export default function PlayingXIPage() {
         <BallByBallMatchSimulator
           isOpen={showSimulator}
           onClose={() => setShowSimulator(false)}
-          homeTeam={franchise}
+          myFranchise={franchise}
+          mySquad={campaign.squad.map(p => ({
+            ...p,
+            is_overseas: !!p.is_overseas,
+            base_price: p.price,
+            predicted_price: p.price
+          }))}
         />
       )}
     </div>

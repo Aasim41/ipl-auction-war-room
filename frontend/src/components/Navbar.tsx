@@ -8,12 +8,12 @@ import { useStore } from '../store/useStore'
 import { getStadiumForTeam } from '../data/stadiums'
 
 const navLinks = [
-  { href: '/squad', label: 'Auction War Room', icon: Gavel },
+  { href: '/trade', label: '1. Trade Window', icon: ArrowLeftRight },
+  { href: '/squad', label: '2. Retain & Release', icon: Users },
+  { href: '/auction', label: '3. Mini-Auction', icon: Gavel },
+  { href: '/playing-xi', label: '4. Playing XI & Ground', icon: Crosshair },
   { href: '/hub', label: 'Analytics Hub', icon: Activity },
-  { href: '/stats', label: 'Player Pool', icon: Users },
-  { href: '/playing-xi', label: 'Playing XI', icon: Crosshair },
-  { href: '/compare', label: 'Compare', icon: GitCompare },
-  { href: '/trade', label: 'Trade Desk', icon: ArrowLeftRight },
+  { href: '/stats', label: 'Player Pool', icon: Shield },
   { href: '/win-prob', label: 'Win Matrix', icon: Target },
 ]
 
