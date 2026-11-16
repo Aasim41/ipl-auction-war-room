@@ -1,157 +1,356 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { ArrowRightLeft, Scale, Plus, X, Search, TrendingUp, TrendingDown } from 'lucide-react';
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeftRight, Check, X, Shield, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react'
+import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
+import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper'
+import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
 
-export default function TradeSimulatorPage() {
-  const [players, setPlayers] = useState<any[]>([]);
-  const [teamA, setTeamA] = useState<any[]>([]);
-  const [teamB, setTeamB] = useState<any[]>([]);
-  const [searchA, setSearchA] = useState('');
-  const [searchB, setSearchB] = useState('');
-  const [evaluation, setEvaluation] = useState<any>(null);
+export default function TradeWindowPage() {
+  const router = useRouter()
+  const { getActiveCampaign, executeTrade, advancePhase } = useCampaignStore()
+  const campaign = getActiveCampaign()
 
-  useEffect(() => {
-    fetch('http://localhost:8000/api/players/')
-      .then(res => res.json())
-      .then(data => {
-        const normalized = data.map((p: any) => ({
-          ...p,
-          player_id: String(p.player_id || p.id),
-          Power_Index: Number(p.Power_Index || p.power_index || 0)
-        }));
-        setPlayers(normalized);
-      })
-      .catch(err => console.error(err));
-  }, []);
+  const [selectedRivalId, setSelectedRivalId] = useState<string>('csk')
+  const [playerOut, setPlayerOut] = useState<CampaignPlayer | null>(null)
+  const [playerIn, setPlayerIn] = useState<CampaignPlayer | null>(null)
+  const [cashOffer, setCashOffer] = useState<number>(0) // in Crores
+  const [tradeMessage, setTradeMessage] = useState<string | null>(null)
+  const [searchMy, setSearchMy] = useState('')
+  const [searchRival, setSearchRival] = useState('')
 
-  const evaluateTrade = async () => {
-    try {
-      const res = await fetch('http://localhost:8000/api/trade/evaluate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          team_a_ids: teamA.map(p => p.player_id), 
-          team_b_ids: teamB.map(p => p.player_id) 
-        })
-      });
-      const data = await res.json();
-      setEvaluation(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const renderTeamColumn = (title: string, team: any[], setTeam: any, search: string, setSearch: any) => {
-    const filteredPlayers = players.filter(p => 
-      p.name.toLowerCase().includes(search.toLowerCase()) && 
-      !team.some(tp => tp.player_id === p.player_id)
-    );
-    
+  if (!campaign) {
     return (
-      <div className="flex-1 glass-panel p-6 rounded-2xl border border-slate-700/50 flex flex-col h-[550px]">
-        <h2 className="text-2xl font-display font-bold text-center mb-4 text-[var(--accent-primary)] scoreboard-text">{title}</h2>
-        
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search player name to add..." 
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg pl-10 p-3 text-white focus:outline-none focus:border-[var(--accent-primary)] text-sm"
-            value={search} onChange={(e) => setSearch(e.target.value)}
-          />
-          {search && filteredPlayers.length > 0 && (
-            <div className="absolute z-20 w-full bg-slate-800 border border-slate-600 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-2xl">
-              {filteredPlayers.map(p => (
-                <div 
-                  key={p.player_id} 
-                  className="p-3 hover:bg-slate-700 cursor-pointer flex justify-between items-center text-xs"
-                  onClick={() => { setTeam([...team, p]); setSearch(''); }}
-                >
-                  <span className="font-semibold">{p.name} ({p.role})</span>
-                  <Plus size={16} className="text-[var(--accent-primary)]" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-          {team.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-xs text-gray-500 border border-dashed border-white/10 rounded-xl p-4 text-center">
-              Search & select players to include in trade proposal.
-            </div>
-          ) : (
-            team.map(p => (
-              <div key={p.player_id} className="glass-panel p-3.5 rounded-xl border border-slate-700 flex justify-between items-center animate-fade-up">
-                <div>
-                  <div className="font-bold text-sm text-white">{p.name}</div>
-                  <div className="text-xs text-slate-400">{p.role} • ₹{p.base_price} Cr</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="scoreboard-text text-[var(--accent-secondary)] text-base font-bold">{p.Power_Index.toFixed(1)}</div>
-                  <button onClick={() => setTeam(team.filter(tp => tp.player_id !== p.player_id))} className="text-slate-500 hover:text-red-400">
-                    <X size={18} />
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-white text-center">
+        <div className="p-8 rounded-3xl bg-slate-900 border border-white/10 max-w-md">
+          <AlertCircle size={36} className="mx-auto text-amber-400 mb-3" />
+          <h3 className="text-lg font-black font-display mb-2">No Active Campaign Found</h3>
+          <p className="text-xs text-gray-400 mb-4">Please choose your franchise to start the 2027 IPL cycle.</p>
+          <button
+            onClick={() => router.push('/select-team')}
+            className="px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase cursor-pointer"
+          >
+            Select Franchise
+          </button>
         </div>
       </div>
-    );
-  };
+    )
+  }
+
+  const myFranchise = getFranchise(campaign.teamId)
+  const rivalFranchise = getFranchise(selectedRivalId)
+
+  // Rival players (using franchise.squad2026 as starting base)
+  const rivalSquad: CampaignPlayer[] = rivalFranchise.squad2026.map((p, idx) => ({
+    ...p,
+    player_id: p.player_id || `${selectedRivalId}_${idx + 1}`,
+    currentPrice: p.price,
+    is_retained: true,
+    is_released: false
+  }))
+
+  // Filter squads
+  const filteredMySquad = campaign.squad.filter(p => 
+    !p.is_released && p.name.toLowerCase().includes(searchMy.toLowerCase())
+  )
+
+  const filteredRivalSquad = rivalSquad.filter(p =>
+    p.name.toLowerCase().includes(searchRival.toLowerCase())
+  )
+
+  // AI Trade Evaluation logic (100% offline)
+  const evaluateTrade = () => {
+    if (!playerOut || !playerIn) {
+      return { acceptable: false, reason: 'Select one player from each team to evaluate trade.' }
+    }
+
+    const powerOut = Number(playerOut.Power_Index) || 80
+    const powerIn = Number(playerIn.Power_Index) || 80
+    const priceOut = Number(playerOut.currentPrice || playerOut.price) || 5
+    const priceIn = Number(playerIn.currentPrice || playerIn.price) || 5
+
+    // Effective offer value: Power + cash compensation
+    const netValueDiff = (powerOut - powerIn) + (cashOffer * 1.5)
+
+    // Overseas balance check
+    if (playerIn.is_overseas && !playerOut.is_overseas) {
+      const currentOverseas = campaign.squad.filter(p => !p.is_released && p.is_overseas).length
+      if (currentOverseas >= 8) {
+        return { acceptable: false, reason: 'Cannot acquire overseas player: Your 8-man overseas quota is full!' }
+      }
+    }
+
+    if (netValueDiff >= -4) {
+      return { 
+        acceptable: true, 
+        reason: `${rivalFranchise.short} AI Board Approves: Fair value exchange for ${playerIn.name}.` 
+      }
+    } else {
+      const deficit = Math.abs(Math.round(netValueDiff / 1.5 * 10) / 10)
+      return { 
+        acceptable: false, 
+        reason: `${rivalFranchise.short} demands higher value: Add +₹${deficit} Cr cash or a higher-rated player.` 
+      }
+    }
+  }
+
+  const evaluation = evaluateTrade()
+
+  const handleExecuteTrade = () => {
+    if (!playerOut || !playerIn || !evaluation.acceptable) return
+
+    const success = executeTrade(playerOut.player_id, playerIn, selectedRivalId, -cashOffer)
+    if (success) {
+      setTradeMessage(`✅ Deal Sealed! ${playerIn.name} joined ${myFranchise.short}. ${playerOut.name} moved to ${rivalFranchise.short}.`)
+      setPlayerOut(null)
+      setPlayerIn(null)
+      setCashOffer(0)
+      setTimeout(() => setTradeMessage(null), 5000)
+    } else {
+      setTradeMessage(`❌ Trade Failed: Check purse limits or roster constraints.`)
+    }
+  }
+
+  const handleFinishTradeWindow = () => {
+    advancePhase('retain_release')
+    router.push('/squad')
+  }
 
   return (
-    <div className="min-h-screen bg-slate-900 stadium-bg text-white p-6 pt-20 grid-pattern">
-      <div className="max-w-7xl mx-auto space-y-8 animate-fade-up">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-14">
+      <CampaignPhaseStepper />
+
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 flex-1 flex flex-col justify-between">
         
-        <div className="flex flex-col lg:flex-row gap-6 items-center">
-          {renderTeamColumn('TEAM A TRADES AWAY', teamA, setTeamA, searchA, setSearchA)}
-          
-          <div className="flex flex-col items-center gap-4 shrink-0">
-            <Scale size={36} className="text-[var(--accent-primary)] animate-pulse" />
-            <button 
-              onClick={evaluateTrade}
-              disabled={teamA.length === 0 || teamB.length === 0}
-              className="bg-[var(--accent-primary)] text-slate-900 font-bold px-6 py-3 rounded-full shadow-[var(--accent-glow)] hover:scale-105 transition-all text-sm uppercase tracking-wider cursor-pointer disabled:opacity-50"
-            >
-              Evaluate Trade
-            </button>
+        {/* Banner */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 mb-3 border-b border-white/10 gap-2 shrink-0">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px] font-mono font-black uppercase">
+                PART 1 OF 4: TRADING WINDOW
+              </span>
+              <span className="text-[11px] text-gray-400">All 10 Franchises Open for Bidding</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
+              IPL 2027 Official Player Trading Desk
+            </h1>
           </div>
 
-          {renderTeamColumn('TEAM B TRADES AWAY', teamB, setTeamB, searchB, setSearchB)}
+          <button
+            onClick={handleFinishTradeWindow}
+            className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
+          >
+            <span>Proceed to Part 2: Retain & Release</span>
+            <ArrowRight size={14} />
+          </button>
         </div>
 
-        {/* Evaluation Output */}
-        {evaluation && (
-          <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4 animate-fade-up">
-            <h3 className="text-xl font-bold text-[var(--accent-primary)] flex items-center gap-2">
-              <ArrowRightLeft size={20} /> Trade Analysis Output
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                <div className="text-xs text-gray-400 uppercase">Team A Net Power Index Delta</div>
-                <div className={`text-2xl font-bold scoreboard-text mt-1 ${(evaluation.team_a_delta || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(evaluation.team_a_delta || 0) >= 0 ? '+' : ''}{(evaluation.team_a_delta || 0).toFixed(1)}
-                </div>
-              </div>
-              <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                <div className="text-xs text-gray-400 uppercase">Team B Net Power Index Delta</div>
-                <div className={`text-2xl font-bold scoreboard-text mt-1 ${(evaluation.team_b_delta || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(evaluation.team_b_delta || 0) >= 0 ? '+' : ''}{(evaluation.team_b_delta || 0).toFixed(1)}
-                </div>
-              </div>
-            </div>
-            {evaluation.recommendation && (
-              <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-xs text-gray-300">
-                <strong>Verdict:</strong> {evaluation.recommendation}
-              </div>
-            )}
+        {tradeMessage && (
+          <div className="p-3 mb-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-bold text-center animate-fade-in shrink-0">
+            {tradeMessage}
           </div>
         )}
 
-      </div>
+        {/* 3-Column Trade Interface */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1 min-h-[500px]">
+          
+          {/* Column 1 (Left): Your Squad */}
+          <div className="lg:col-span-5 p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl">
+            <div>
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{myFranchise.emoji}</span>
+                  <div>
+                    <h3 className="text-xs font-black uppercase text-white">{myFranchise.name}</h3>
+                    <span className="text-[10px] text-gray-400">Your Tradeable Squad ({filteredMySquad.length})</span>
+                  </div>
+                </div>
+                {playerOut && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
+                    OFFERING: {playerOut.name}
+                  </span>
+                )}
+              </div>
+
+              <input
+                type="text"
+                placeholder="Search your player..."
+                value={searchMy}
+                onChange={(e) => setSearchMy(e.target.value)}
+                className="w-full mb-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-1.5 max-h-[380px] pr-1">
+              {filteredMySquad.map((p) => {
+                const isSelected = playerOut?.player_id === p.player_id
+                return (
+                  <div
+                    key={p.player_id}
+                    onClick={() => setPlayerOut(isSelected ? null : p)}
+                    className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-rose-500/20 border-rose-500 text-white shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                        : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-bold text-xs text-white flex items-center gap-1.5">
+                        <span>{p.name}</span>
+                        {p.is_overseas && <span className="text-[9px] px-1 rounded bg-sky-500/20 text-sky-300">OS</span>}
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-mono">
+                        {p.role} • Salary: ₹{p.price} Cr
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-black text-amber-300 font-mono">OVR {p.Power_Index}</div>
+                      <span className="text-[9px] text-gray-500">{isSelected ? '✓ SELECTED' : 'Tap to Offer'}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Column 2 (Middle): Trade Negotiation & Cash */}
+          <div className="lg:col-span-2 p-4 rounded-3xl bg-slate-950 border border-white/10 flex flex-col justify-between items-center text-center shadow-2xl">
+            <div className="w-full">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center mx-auto mb-2 font-bold">
+                <ArrowLeftRight size={20} />
+              </div>
+              <h4 className="text-xs font-black uppercase tracking-wider text-white">Deal Room</h4>
+              <p className="text-[10px] text-gray-400 mt-0.5">Player Swap + Cash</p>
+            </div>
+
+            {/* Cash offer adjustment */}
+            <div className="w-full py-3 border-y border-white/10 my-2">
+              <span className="text-[10px] font-bold uppercase text-gray-400 block mb-1">
+                Your Cash Transfer
+              </span>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setCashOffer(Math.max(-5, cashOffer - 0.5))}
+                  className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black text-xs cursor-pointer"
+                >
+                  -
+                </button>
+                <span className="text-sm font-black font-mono text-emerald-400">
+                  {cashOffer >= 0 ? `+₹${cashOffer.toFixed(1)} Cr` : `-₹${Math.abs(cashOffer).toFixed(1)} Cr`}
+                </span>
+                <button
+                  onClick={() => setCashOffer(Math.min(campaign.remainingPurse, cashOffer + 0.5))}
+                  className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black text-xs cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+              <span className="text-[9px] text-gray-500 block mt-1">Adjust to balance deal</span>
+            </div>
+
+            {/* Evaluation Status */}
+            <div className="w-full mb-2">
+              <div className={`p-2.5 rounded-xl border text-[11px] font-bold ${
+                evaluation.acceptable
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                  : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+              }`}>
+                {evaluation.acceptable ? '🟢 DEAL VIABLE' : '🔴 UNBALANCED'}
+                <div className="text-[10px] font-normal text-gray-300 mt-1">
+                  {evaluation.reason}
+                </div>
+              </div>
+            </div>
+
+            {/* Execute Button */}
+            <button
+              onClick={handleExecuteTrade}
+              disabled={!evaluation.acceptable}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer transition-all"
+            >
+              Confirm Trade
+            </button>
+          </div>
+
+          {/* Column 3 (Right): Rival Team Squad */}
+          <div className="lg:col-span-5 p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl">
+            <div>
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{rivalFranchise.emoji}</span>
+                  <div>
+                    {/* Rival Team Selector Dropdown */}
+                    <select
+                      value={selectedRivalId}
+                      onChange={(e) => {
+                        setSelectedRivalId(e.target.value)
+                        setPlayerIn(null)
+                      }}
+                      className="bg-slate-950 border border-white/15 text-xs font-black uppercase text-white rounded-lg px-2 py-0.5 focus:outline-none"
+                    >
+                      {Object.keys(IPL_FRANCHISES)
+                        .filter(tid => tid !== campaign.teamId)
+                        .map(tid => (
+                          <option key={tid} value={tid}>
+                            {IPL_FRANCHISES[tid].name}
+                          </option>
+                        ))}
+                    </select>
+                    <span className="text-[10px] text-gray-400 block mt-0.5">Available for Trade ({filteredRivalSquad.length})</span>
+                  </div>
+                </div>
+                {playerIn && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                    REQUESTING: {playerIn.name}
+                  </span>
+                )}
+              </div>
+
+              <input
+                type="text"
+                placeholder="Search rival player..."
+                value={searchRival}
+                onChange={(e) => setSearchRival(e.target.value)}
+                className="w-full mb-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-1.5 max-h-[380px] pr-1">
+              {filteredRivalSquad.map((p) => {
+                const isSelected = playerIn?.player_id === p.player_id
+                return (
+                  <div
+                    key={p.player_id}
+                    onClick={() => setPlayerIn(isSelected ? null : p)}
+                    className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-emerald-500/20 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                        : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-bold text-xs text-white flex items-center gap-1.5">
+                        <span>{p.name}</span>
+                        {p.is_overseas && <span className="text-[9px] px-1 rounded bg-sky-500/20 text-sky-300">OS</span>}
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-mono">
+                        {p.role} • Salary: ₹{p.price} Cr
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-black text-amber-300 font-mono">OVR {p.Power_Index}</div>
+                      <span className="text-[9px] text-gray-500">{isSelected ? '✓ SELECTED' : 'Tap to Request'}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+        </div>
+
+      </main>
     </div>
-  );
+  )
 }
