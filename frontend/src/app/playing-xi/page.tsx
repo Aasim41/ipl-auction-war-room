@@ -414,7 +414,7 @@ export default function PlayingXIPage() {
           isOpen={showSimulator}
           onClose={() => setShowSimulator(false)}
           myFranchise={franchise}
-          mySquad={campaign.squad.map(p => ({
+          mySquad={(campaign?.squad || []).map(p => ({
             ...p,
             is_overseas: !!p.is_overseas,
             base_price: p.price,
