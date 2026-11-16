@@ -25,7 +25,8 @@ export default function TacticalMatchupModal({
   isOpen,
   onClose,
   defaultBatter = 'Virat Kohli',
-  defaultBowler = 'Mitchell Starc'
+  defaultBowler = 'Mitchell Starc',
+  onProceedToMatch
 }: TacticalMatchupModalProps) {
   const [batter, setBatter] = useState(defaultBatter);
   const [bowler, setBowler] = useState(defaultBowler);
