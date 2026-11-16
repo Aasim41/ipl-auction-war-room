@@ -361,19 +361,15 @@ export default function SquadRetainReleasePage() {
       />
 
       {/* Squad Export Card Modal */}
-      <SquadExportModal
-        isOpen={showExportModal}
-        onClose={() => setShowExportModal(false)}
-        squad={retainedPlayers.map(p => ({
-          player_id: p.player_id,
-          name: p.name,
-          role: p.role,
-          price: p.price,
-          Power_Index: Number(p.Power_Index) || 80,
-          is_overseas: p.is_overseas
-        }))}
-        franchise={franchise}
-      />
+      {showExportModal && (
+        <SquadExportModal
+          franchise={franchise}
+          squad={retainedPlayers}
+          stadiumName={franchise.stadiumName}
+          stadiumCity={franchise.stadiumCity}
+          onClose={() => setShowExportModal(false)}
+        />
+      )}
 
       {/* Ball by Ball Match Simulator Modal */}
       <BallByBallMatchSimulator
