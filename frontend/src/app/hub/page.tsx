@@ -43,12 +43,14 @@ export default function AnalyticsHub() {
       acc[p.role] = (acc[p.role] || 0) + 1
       return acc
     }, {} as Record<string, number>)
-  ).map(([name, value]) => ({ 
+  ).map(([name, value]) => {
+    const count = Number(value)
+    return {
     name: ROLE_NAMES[name] || name, 
     code: name,
-    value,
-    percentage: ((value / totalPlayers) * 100).toFixed(1)
-  }))
+    value: count,
+    percentage: ((count / totalPlayers) * 100).toFixed(1)
+  }})
 
   const avgPriceByRole = Object.entries(
     players.reduce((acc, p) => {
@@ -57,10 +59,13 @@ export default function AnalyticsHub() {
       acc[p.role].count += 1
       return acc
     }, {} as Record<string, {sum: number, count: number}>)
-  ).map(([name, {sum, count}]) => ({ 
-    role: ROLE_NAMES[name] || name, 
-    avgPrice: Number((sum / count).toFixed(2))
-  }))
+  ).map(([name, value]) => {
+    const { sum, count } = value as { sum: number, count: number }
+    return {
+      role: ROLE_NAMES[name] || name,
+      avgPrice: Number((sum / count).toFixed(2))
+    }
+  })
 
   return (
     <div className="max-w-7xl mx-auto px-6 pt-20 pb-8">

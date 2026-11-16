@@ -465,14 +465,7 @@ export default function IntegratedAuctionStage({
         {/* Collapsible Strategy Fallback Tree */}
         <FallbackTreeDrawer
           currentBid={auctionState.current_bid}
-          currentPlayer={p ? {
-            player_id: String(p.id || p.player_id),
-            name: p.name,
-            role: p.role,
-            base_price: p.base_price,
-            Power_Index: p.power_index,
-            is_overseas: p.is_overseas
-          } : null}
+          currentHammerPlayer={p?.name}
           onNominatePlan={handleNominatePlan}
         />
       </div>
