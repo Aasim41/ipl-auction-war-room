@@ -832,32 +832,44 @@ export default function BallByBallMatchSimulator({
   // Last 6 balls trail
   const currentOverTrail = activeInnings.balls.slice(-6);
 
+  const strikerPlayer = currentInnings === 1 ? bat1Squad[strikerIdx] : bowl1Squad[strikerIdx];
+  const nonStrikerPlayer = currentInnings === 1 ? bat1Squad[nonStrikerIdx] : bowl1Squad[nonStrikerIdx];
+  const bowlingSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
+  const bowlerPlayer = bowlingSquad.filter(p => p.role === 'BOWL' || p.role === 'AR')[currentBowlerIdx % 5] || bowlingSquad[0];
+  const keeperPlayer = bowlingSquad.find(p => p.role === 'WK') || bowlingSquad[1] || bowlingSquad[0];
+  const battingTeamColor = activeInnings.teamColor || '#f59e0b';
+  const bowlingTeamColor = currentInnings === 1 ? (bowl1Squad[0]?.teamColor || '#38bdf8') : (bat1Squad[0]?.teamColor || '#38bdf8');
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden select-none">
-      <div className="relative w-full max-w-6xl bg-slate-950 border border-white/20 rounded-3xl flex flex-col h-[94vh] max-h-[860px] shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-3 md:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden select-none">
+      <div 
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="relative w-full max-w-6xl bg-slate-950 border-0 sm:border border-white/20 rounded-none sm:rounded-3xl flex flex-col h-[100dvh] sm:h-[94vh] max-h-none sm:max-h-[860px] shadow-2xl overflow-hidden"
+      >
         
         {/* Top Header & Navigation Bar */}
-        <div className="px-4 py-2.5 bg-slate-900/90 border-b border-white/10 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-900/90 border-b border-white/10 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-1.5 font-display font-black text-xs sm:text-sm">
-              <span className="text-lg">{myFranchise.emoji}</span>
+              <span className="text-base sm:text-lg">{myFranchise.emoji}</span>
               <span className="text-white">{myFranchise.short}</span>
               <span className="text-gray-400 font-sans text-xs">vs</span>
               <span className="text-white">{rivalFranchise.short}</span>
-              <span className="text-lg">{rivalFranchise.emoji}</span>
+              <span className="text-base sm:text-lg">{rivalFranchise.emoji}</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-mono hidden sm:inline">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-mono hidden md:inline">
               📍 {venueName}
             </span>
             <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
               isUserBatting ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
             }`}>
-              {isUserBatting ? '🏏 YOU ARE BATTING' : '🎯 YOU ARE BOWLING'}
+              {isUserBatting ? '🏏 BATTING' : '🎯 BOWLING'}
             </span>
           </div>
 
           {/* Tab selector & Sound Toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Rival AI Strategy Badge */}
             <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[11px] font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
@@ -867,22 +879,64 @@ export default function BallByBallMatchSimulator({
 
             <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
               <button
-                onClick={() => setActiveTab('arena')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                onClick={() => {
+                  setActiveTab('arena');
+                  gameAudio.playUiTap('light');
+                  triggerGameHaptic('light');
+                }}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'arena' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Interactive Arena
+                Arena
               </button>
               <button
-                onClick={() => setActiveTab('scorecard')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                onClick={() => {
+                  setActiveTab('scorecard');
+                  gameAudio.playUiTap('light');
+                  triggerGameHaptic('light');
+                }}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Scorecard & POTM
+                Scorecard
               </button>
             </div>
+
+            {/* Sound Toggle */}
+            <button
+              onClick={() => {
+                const next = gameAudio.toggleMute();
+                setIsMuted(next);
+                triggerGameHaptic('light');
+                if (!next) gameAudio.playUiTap('select');
+              }}
+              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                isMuted
+                  ? 'bg-rose-500/20 border-rose-500/30 text-rose-300 hover:bg-rose-500/30'
+                  : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30'
+              }`}
+              title={isMuted ? 'Game Audio Muted (Click to Unmute)' : 'Game Audio Active (Click to Mute)'}
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="animate-pulse" />}
+            </button>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Mobile Swipe Navigation Bar */}
+        <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/95 border-b border-white/10 text-[10px] text-gray-400 font-mono shrink-0">
+          <span>👈 Swipe for {activeTab === 'arena' ? 'Scorecard' : 'Arena'}</span>
+          <span className="text-amber-400 font-bold">{activeTab === 'arena' ? 'Interactive Arena' : 'Scorecard'}</span>
+          <span>👉</span>
+        </div>
 
             {/* Sound Toggle */}
             <button
