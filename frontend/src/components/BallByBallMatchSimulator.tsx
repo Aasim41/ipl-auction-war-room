@@ -682,9 +682,9 @@ export default function BallByBallMatchSimulator({
 // ─── HIGH-PRECISION REALISTIC 20-OVER CRICKET GENERATOR ───
 function generateRealistic20OverMatch(
   franchiseA: FranchiseData,
-  squadA: Player[],
+  squadA: any[],
   franchiseB: FranchiseData,
-  squadB: Player[],
+  squadB: any[],
   venue: string
 ) {
   // Determine who bats first (Coin Toss)
@@ -766,9 +766,9 @@ function generateRealistic20OverMatch(
 
 function simulateSingleInnings(
   batTeam: FranchiseData,
-  batSquad: Player[],
+  batSquad: any[],
   bowlTeam: FranchiseData,
-  bowlSquad: Player[],
+  bowlSquad: any[],
   target: number | null
 ): InningsData {
   const bowlers = bowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
