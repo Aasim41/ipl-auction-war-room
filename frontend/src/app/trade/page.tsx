@@ -420,8 +420,8 @@ export default function TradeWindowPage() {
                 evaluation.acceptable
                   ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10'
                   : evaluation.isUntouchable
-                  ? 'bg-rose-950/40 border-rose-600/50 text-rose-300'
-                  : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                  ? 'bg-rose-950/40 border-rose-600/50 text-rose-300 animate-shake-reject'
+                  : 'bg-rose-500/10 border-rose-500/30 text-rose-300 animate-shake-reject'
               }`}>
                 <div className="flex items-center justify-between mb-1">
                   <span>{evaluation.acceptable ? '🟢 DEAL APPROVED' : evaluation.status || '🔴 REJECTED'}</span>
@@ -437,13 +437,17 @@ export default function TradeWindowPage() {
 
                 {/* AI Bargaining Counter-Offer */}
                 {evaluation.counterOfferText && evaluation.counterOfferCash && (
-                  <div className="mt-2.5 p-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-left">
+                  <div className="mt-2.5 p-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-left animate-pulse">
                     <span className="text-[10px] font-black text-amber-300 block mb-1">
                       {evaluation.counterOfferText}
                     </span>
                     <button
                       disabled={isTradeLocked}
-                      onClick={() => setCashOffer(evaluation.counterOfferCash!)}
+                      onClick={() => {
+                        gameAudio.playUiTap('select')
+                        triggerGameHaptic('medium')
+                        setCashOffer(evaluation.counterOfferCash!)
+                      }}
                       className="w-full py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
                     >
                       <Sparkles size={11} />
@@ -516,6 +520,8 @@ export default function TradeWindowPage() {
                     key={p.player_id}
                     onClick={() => {
                       if (isTradeLocked) return
+                      gameAudio.playCardSwap()
+                      triggerGameHaptic('light')
                       setPlayerIn(isSelected ? null : p)
                     }}
                     className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${

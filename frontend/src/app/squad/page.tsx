@@ -25,6 +25,7 @@ import { getFranchise } from '../../data/franchises'
 import TacticalMatchupModal from '../../components/TacticalMatchupModal'
 import SquadExportModal from '../../components/SquadExportModal'
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator'
+import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 
 export default function SquadRetainReleasePage() {
   const router = useRouter()
@@ -326,7 +327,11 @@ export default function SquadRetainReleasePage() {
                     </span>
 
                     <button
-                      onClick={() => togglePlayerRetention(player.player_id)}
+                      onClick={() => {
+                        gameAudio.playUiTap('medium')
+                        triggerGameHaptic('light')
+                        togglePlayerRetention(player.player_id)
+                      }}
                       className={`px-2.5 py-1 rounded-xl text-[11px] font-black flex items-center gap-1 cursor-pointer transition-all ${
                         isReleased
                           ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
@@ -427,6 +432,8 @@ export default function SquadRetainReleasePage() {
               <button
                 onClick={() => {
                   setShowConfirmAuction(false)
+                  gameAudio.playPhaseLock()
+                  triggerGameHaptic('lock')
                   advancePhase('mini_auction')
                   router.push('/auction')
                 }}
