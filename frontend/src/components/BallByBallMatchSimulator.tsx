@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, RotateCcw, X, Trophy, Swords, Activity, Zap, TrendingUp } from 'lucide-react';
+import { Play, X, Trophy, Swords, Activity, TrendingUp, Sparkles } from 'lucide-react';
 import { IPL_FRANCHISES, FranchiseData } from '../data/franchises';
 import { Player } from '../lib/usePlayerData';
 
@@ -31,26 +31,18 @@ export default function BallByBallMatchSimulator({
     setIsSimulating(true);
     setMatchResult(null);
 
-    // Format squads for backend
+    // Format squads
     const teamASquad = mySquad.map(p => ({
       name: p.name,
-      role: p.role,
-      Power_Index: p.Power_Index || 75.0
+      role: p.role || 'BAT',
+      Power_Index: Number(p.Power_Index) || 80.0
     }));
 
-    const teamBSquad = [
-      { name: 'Ruturaj Gaikwad', role: 'BAT', Power_Index: 86.0 },
-      { name: 'Devon Conway', role: 'BAT', Power_Index: 84.0 },
-      { name: 'Shivam Dube', role: 'AR', Power_Index: 88.0 },
-      { name: 'Ravindra Jadeja', role: 'AR', Power_Index: 90.0 },
-      { name: 'MS Dhoni', role: 'WK', Power_Index: 85.0 },
-      { name: 'Matheesha Pathirana', role: 'BOWL', Power_Index: 89.0 },
-      { name: 'Tushar Deshpande', role: 'BOWL', Power_Index: 78.0 },
-      { name: 'Shardul Thakur', role: 'BOWL', Power_Index: 79.0 },
-      { name: 'Noor Ahmad', role: 'BOWL', Power_Index: 82.0 },
-      { name: 'Rachin Ravindra', role: 'AR', Power_Index: 83.0 },
-      { name: 'Sameer Rizvi', role: 'BAT', Power_Index: 76.0 }
-    ];
+    const teamBSquad = (rivalFranchise.squad2026 || []).map(p => ({
+      name: p.name,
+      role: p.role,
+      Power_Index: Number(p.Power_Index) || 82.0
+    }));
 
     try {
       const res = await fetch('http://localhost:8000/api/enterprise/simulate-match-balls', {
@@ -64,23 +56,97 @@ export default function BallByBallMatchSimulator({
           venue: `${myFranchise.stadiumName || 'Wankhede Stadium'}`
         })
       });
-      if (!res.ok) throw new Error('Simulation failed');
-      const data = await res.json();
-      setMatchResult(data);
-    } catch (err) {
-      // Offline-first realistic 20-over match simulation engine
-      const avgPowerA = teamASquad.reduce((s, p) => s + p.Power_Index, 0) / (teamASquad.length || 1);
-      const avgPowerB = teamBSquad.reduce((s, p) => s + p.Power_Index, 0) / (teamBSquad.length || 1);
-      
-      const runsA = Math.floor(155 + (avgPowerA - 75) * 2.2 + (Math.random() * 25));
-      const wktsA = Math.floor(4 + Math.random() * 4);
-      const runsB = Math.floor(150 + (avgPowerB - 75) * 2.2 + (Math.random() * 25));
-      const wktsB = Math.floor(4 + Math.random() * 5);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.team_a_innings && data.team_a_innings.batting_card) {
+          setMatchResult(data);
+          return;
+        }
+      }
+    } catch {
+      // Offline-first simulation fallback
+    }
 
-      const aWon = runsA > runsB;
-      const margin = aWon ? `${runsA - runsB} runs` : `${10 - wktsB} wickets`;
-      const winner = aWon ? myFranchise.name : rivalFranchise.name;
+    // ─── High-Fidelity Client-Side 20-Over Simulation ───
+    const avgPowerA = teamASquad.reduce((s, p) => s + p.Power_Index, 0) / (teamASquad.length || 1);
+    const avgPowerB = teamBSquad.reduce((s, p) => s + p.Power_Index, 0) / (teamBSquad.length || 1);
+    
+    const runsA = Math.floor(160 + (avgPowerA - 78) * 2.4 + (Math.random() * 24));
+    const wktsA = Math.min(10, Math.floor(3 + Math.random() * 5));
+    const runsB = Math.floor(155 + (avgPowerB - 78) * 2.4 + (Math.random() * 24));
+    const wktsB = Math.min(10, Math.floor(3 + Math.random() * 5));
 
+    const aWon = runsA > runsB;
+    const margin = aWon ? `${runsA - runsB} runs` : `${10 - wktsB} wickets`;
+    const winner = aWon ? myFranchise.name : rivalFranchise.name;
+
+    // Helper: Generate Batting Card
+    const buildBattingCard = (squad: any[], totalRuns: number, totalWkts: number) => {
+      const activeBatters = squad.slice(0, Math.min(squad.length, 9));
+      let currentAlloc = 0;
+      return activeBatters.map((p, i) => {
+        const isOut = i < totalWkts;
+        const weight = (9 - i) / 45;
+        let r = Math.max(3, Math.floor(totalRuns * weight + (Math.random() * 6 - 3)));
+        if (i === activeBatters.length - 1) {
+          r = Math.max(2, totalRuns - currentAlloc);
+        }
+        currentAlloc += r;
+        const b = Math.max(3, Math.floor(r * (0.6 + Math.random() * 0.25)));
+        const fours = Math.floor(r / 10);
+        const sixes = Math.floor(r / 16);
+        const sr = b > 0 ? ((r / b) * 100).toFixed(1) : '100.0';
+        const dismissal = isOut
+          ? (i % 3 === 0 ? 'c & b Bowler' : i % 2 === 0 ? 'b Bowler' : 'c Deep Midwicket')
+          : 'not out';
+
+        return {
+          name: p.name,
+          dismissal,
+          runs: r,
+          balls: b,
+          fours,
+          sixes,
+          sr
+        };
+      });
+    };
+
+    // Helper: Generate Bowling Card
+    const buildBowlingCard = (bowlingSquad: any[], oppRuns: number, oppWkts: number) => {
+      const bowlers = bowlingSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
+      const selected = bowlers.length >= 5 ? bowlers.slice(0, 5) : bowlingSquad.slice(-5);
+      let assignedWkts = 0;
+
+      return selected.map((bw, i) => {
+        const remainingWkts = oppWkts - assignedWkts;
+        const w = i === 0 ? Math.min(remainingWkts, 2) : (remainingWkts > 0 && Math.random() > 0.4 ? 1 : 0);
+        assignedWkts += w;
+        const runs = Math.floor(oppRuns / 5 + (Math.random() * 8 - 4));
+        return {
+          name: bw.name,
+          overs: '4.0',
+          maidens: Math.random() > 0.85 ? 1 : 0,
+          runs,
+          wickets: w,
+          econ: (runs / 4).toFixed(2)
+        };
+      });
+    };
+
+    // Helper: Key Balls Commentary
+    const buildKeyBalls = (teamShort: string, totalRuns: number) => {
+      return [
+        { ball: '16.4', event: '4', commentary: `${teamShort} batter charges down and pierces extra cover! Boundary!`, score_after: `${Math.floor(totalRuns * 0.80)}/3` },
+        { ball: '17.2', event: '6', commentary: `Pitched up into the slot, launched over long-on for a monster 102m SIX!`, score_after: `${Math.floor(totalRuns * 0.85)}/3` },
+        { ball: '18.1', event: 'W', commentary: `TIMBER! Rapid 146 km/h yorker rattles the stumps! Massive breakthrough!`, score_after: `${Math.floor(totalRuns * 0.88)}/4` },
+        { ball: '18.5', event: '4', commentary: `Edged past the diving keeper and trickles into third-man fence.`, score_after: `${Math.floor(totalRuns * 0.92)}/4` },
+        { ball: '19.2', event: '6', commentary: `Incredible helicopter swat! Clears square leg boundary with sheer power!`, score_after: `${Math.floor(totalRuns * 0.96)}/4` },
+        { ball: '20.0', event: '2', commentary: `Drives hard to deep mid-wicket, running hard for two to close out the innings!`, score_after: `${totalRuns}/4` }
+      ];
+    };
+
+    setTimeout(() => {
       setMatchResult({
         match_winner: winner,
         result_description: `${winner} won by ${margin}!`,
@@ -90,15 +156,9 @@ export default function BallByBallMatchSimulator({
           wickets: wktsA,
           overs: 20.0,
           run_rate: (runsA / 20).toFixed(2),
-          scorecard: (teamASquad.slice(0, 7)).map((p, i) => ({
-            name: p.name,
-            runs: Math.floor((runsA / 6) * (1 - i * 0.12) + (Math.random() * 10)),
-            balls: Math.floor(18 + Math.random() * 12),
-            fours: Math.floor(2 + Math.random() * 4),
-            sixes: Math.floor(1 + Math.random() * 3),
-            strike_rate: (130 + Math.random() * 50).toFixed(1),
-            dismissal: i < wktsA ? 'c & b Bowler' : 'not out'
-          }))
+          batting_card: buildBattingCard(teamASquad, runsA, wktsA),
+          bowling_card: buildBowlingCard(teamBSquad, runsA, wktsA),
+          key_balls: buildKeyBalls(myFranchise.short, runsA)
         },
         team_b_innings: {
           team: rivalFranchise.short,
@@ -106,20 +166,13 @@ export default function BallByBallMatchSimulator({
           wickets: wktsB,
           overs: 20.0,
           run_rate: (runsB / 20).toFixed(2),
-          scorecard: (teamBSquad.slice(0, 7)).map((p, i) => ({
-            name: p.name,
-            runs: Math.floor((runsB / 6) * (1 - i * 0.12) + (Math.random() * 10)),
-            balls: Math.floor(18 + Math.random() * 12),
-            fours: Math.floor(2 + Math.random() * 4),
-            sixes: Math.floor(1 + Math.random() * 3),
-            strike_rate: (130 + Math.random() * 50).toFixed(1),
-            dismissal: i < wktsB ? 'b Bowler' : 'not out'
-          }))
+          batting_card: buildBattingCard(teamBSquad, runsB, wktsB),
+          bowling_card: buildBowlingCard(teamASquad, runsB, wktsB),
+          key_balls: buildKeyBalls(rivalFranchise.short, runsB)
         }
       });
-    } finally {
       setIsSimulating(false);
-    }
+    }, 600);
   };
 
   const inn1 = matchResult?.team_a_innings;
@@ -127,23 +180,24 @@ export default function BallByBallMatchSimulator({
   const activeInn = activeInningsTab === 'inn1' ? inn1 : inn2;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-      <div className="relative w-full max-w-4xl bg-slate-950 border border-white/20 rounded-3xl p-6 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md overflow-x-hidden">
+      <div className="relative w-full max-w-5xl bg-slate-950 border border-white/20 rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+        
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
-              <Swords size={20} />
+        <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+              <Swords size={18} />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white flex items-center gap-2">
-                Cricsheet 120-Ball Match Engine
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                  OVER-BY-OVER
+              <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                20-Over Live Match Simulator
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
+                  OFFLINE READY
                 </span>
               </h3>
-              <p className="text-xs text-gray-400">
-                True 20-over ball-by-ball trajectory simulation with worm progression and scorecards.
+              <p className="text-[11px] text-gray-400">
+                Simulating ball-by-ball performance, batting cards, bowling figures, and death overs.
               </p>
             </div>
           </div>
@@ -156,13 +210,13 @@ export default function BallByBallMatchSimulator({
         </div>
 
         {/* Rival Selection & Run Action */}
-        <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="text-xs font-black uppercase text-gray-400">Challenge Rival:</div>
+        <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xs font-black uppercase text-gray-400">Select Opponent:</span>
             <select
               value={rivalFranchiseKey}
               onChange={(e) => setRivalFranchiseKey(e.target.value)}
-              className="bg-slate-950 border border-white/20 rounded-xl px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-emerald-500"
+              className="bg-slate-950 border border-white/20 rounded-xl px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
             >
               {Object.entries(IPL_FRANCHISES).map(([key, fr]) => {
                 if (fr.short === myFranchise.short) return null;
@@ -178,11 +232,11 @@ export default function BallByBallMatchSimulator({
           <button
             onClick={handleSimulate}
             disabled={isSimulating}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all disabled:opacity-50"
           >
             {isSimulating ? (
               <>
-                <Activity className="animate-spin" size={14} /> Simulating 120 Deliveries...
+                <Activity className="animate-spin" size={14} /> Simulating Match Deliveries...
               </>
             ) : (
               <>
@@ -194,41 +248,41 @@ export default function BallByBallMatchSimulator({
 
         {/* Results Area */}
         {matchResult && (
-          <div className="space-y-5">
+          <div className="space-y-4">
+            
             {/* Match Winner Summary Banner */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/20 border border-amber-500/30 text-center">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold text-xs uppercase mb-2">
-                <Trophy size={14} /> Match Result
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/20 border border-amber-500/30 text-center">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase mb-1">
+                <Trophy size={12} /> Match Result
               </div>
-              <div className="text-xl sm:text-2xl font-black text-white">
+              <div className="text-lg sm:text-2xl font-black text-white">
                 {matchResult.result_description}
               </div>
-              <div className="text-xs text-gray-300 mt-2 flex justify-center items-center gap-6 font-mono font-bold">
-                <span>{myFranchise.short}: <strong className="text-white text-sm">{inn1?.total_runs}/{inn1?.wickets}</strong> ({inn1?.overs} ov)</span>
-                <span>vs</span>
-                <span>{rivalFranchise.short}: <strong className="text-white text-sm">{inn2?.total_runs}/{inn2?.wickets}</strong> ({inn2?.overs} ov)</span>
+              <div className="text-xs text-gray-300 mt-1.5 flex justify-center items-center gap-6 font-mono font-bold">
+                <span>{myFranchise.short}: <strong className="text-emerald-400 text-sm">{inn1?.total_runs}/{inn1?.wickets}</strong> ({inn1?.overs} ov)</span>
+                <span className="text-gray-500">vs</span>
+                <span>{rivalFranchise.short}: <strong className="text-amber-400 text-sm">{inn2?.total_runs}/{inn2?.wickets}</strong> ({inn2?.overs} ov)</span>
               </div>
             </div>
 
             {/* Over-by-Over Worm Progression Bar */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10">
-              <div className="flex items-center justify-between text-xs font-bold text-gray-300 mb-3">
+            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
+              <div className="flex items-center justify-between text-xs font-bold text-gray-300 mb-2">
                 <span className="flex items-center gap-1.5 text-emerald-400 font-black">
-                  <TrendingUp size={14} /> 20-Over Run Rate Progression (Worm Comparison)
+                  <TrendingUp size={13} /> Run Rate Progression
                 </span>
-                <span className="text-[11px] text-gray-400 font-mono">
-                  {myFranchise.short} (Cyan) vs {rivalFranchise.short} (Gold)
+                <span className="text-[10px] text-gray-400 font-mono">
+                  {myFranchise.short} vs {rivalFranchise.short}
                 </span>
               </div>
 
-              {/* Simplified Visual Worm Progress Bars */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div>
-                  <div className="flex justify-between text-[11px] text-cyan-300 font-mono mb-1 font-bold">
+                  <div className="flex justify-between text-[11px] text-cyan-300 font-mono mb-0.5 font-bold">
                     <span>{myFranchise.short}: {inn1?.total_runs} runs</span>
                     <span>RR: {inn1?.run_rate}</span>
                   </div>
-                  <div className="h-2.5 rounded-full bg-slate-950 overflow-hidden flex">
+                  <div className="h-2 rounded-full bg-slate-950 overflow-hidden flex">
                     <div 
                       className="bg-cyan-500 transition-all duration-1000" 
                       style={{ width: `${Math.min(100, (inn1?.total_runs / 230) * 100)}%` }}
@@ -237,11 +291,11 @@ export default function BallByBallMatchSimulator({
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-[11px] text-amber-300 font-mono mb-1 font-bold">
+                  <div className="flex justify-between text-[11px] text-amber-300 font-mono mb-0.5 font-bold">
                     <span>{rivalFranchise.short}: {inn2?.total_runs} runs</span>
                     <span>RR: {inn2?.run_rate}</span>
                   </div>
-                  <div className="h-2.5 rounded-full bg-slate-950 overflow-hidden flex">
+                  <div className="h-2 rounded-full bg-slate-950 overflow-hidden flex">
                     <div 
                       className="bg-amber-400 transition-all duration-1000" 
                       style={{ width: `${Math.min(100, (inn2?.total_runs / 230) * 100)}%` }}
@@ -255,9 +309,9 @@ export default function BallByBallMatchSimulator({
             <div className="flex gap-2 border-b border-white/10 pb-2">
               <button
                 onClick={() => setActiveInningsTab('inn1')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeInningsTab === 'inn1'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -265,9 +319,9 @@ export default function BallByBallMatchSimulator({
               </button>
               <button
                 onClick={() => setActiveInningsTab('inn2')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeInningsTab === 'inn2'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -275,18 +329,20 @@ export default function BallByBallMatchSimulator({
               </button>
             </div>
 
-            {/* Batting Card Table */}
+            {/* Scorecard Tables Grid (Side-by-side in landscape) */}
             {activeInn && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10">
-                  <div className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+                
+                {/* Batting Card */}
+                <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
+                  <div className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2">
                     Batting Scorecard
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="text-gray-400 border-b border-white/10 text-left">
-                          <th className="py-2">Batter</th>
+                        <tr className="text-gray-400 border-b border-white/10 text-left text-[11px]">
+                          <th className="py-1.5">Batter</th>
                           <th>Dismissal</th>
                           <th className="text-right">R</th>
                           <th className="text-right">B</th>
@@ -295,11 +351,11 @@ export default function BallByBallMatchSimulator({
                           <th className="text-right">SR</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5 font-mono">
-                        {activeInn.batting_card.map((b: any) => (
-                          <tr key={b.name} className="hover:bg-white/5">
-                            <td className="py-2 font-sans font-bold text-white">{b.name}</td>
-                            <td className="text-[11px] text-gray-400 font-sans">{b.dismissal}</td>
+                      <tbody className="divide-y divide-white/5 font-mono text-[11px]">
+                        {(activeInn.batting_card || []).map((b: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-white/5">
+                            <td className="py-1 font-sans font-bold text-white">{b.name}</td>
+                            <td className="text-[10px] text-gray-400 font-sans">{b.dismissal}</td>
                             <td className="text-right font-black text-emerald-400">{b.runs}</td>
                             <td className="text-right text-gray-300">{b.balls}</td>
                             <td className="text-right text-gray-300">{b.fours}</td>
@@ -312,59 +368,63 @@ export default function BallByBallMatchSimulator({
                   </div>
                 </div>
 
-                {/* Bowling Card Table */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10">
-                  <div className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">
-                    Bowling Figures
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="text-gray-400 border-b border-white/10 text-left">
-                          <th className="py-2">Bowler</th>
-                          <th className="text-right">O</th>
-                          <th className="text-right">M</th>
-                          <th className="text-right">R</th>
-                          <th className="text-right">W</th>
-                          <th className="text-right">Econ</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 font-mono">
-                        {activeInn.bowling_card.map((bw: any) => (
-                          <tr key={bw.name} className="hover:bg-white/5">
-                            <td className="py-2 font-sans font-bold text-white">{bw.name}</td>
-                            <td className="text-right text-gray-300">{bw.overs}</td>
-                            <td className="text-right text-gray-300">{bw.maidens}</td>
-                            <td className="text-right text-gray-300">{bw.runs}</td>
-                            <td className="text-right font-black text-rose-400">{bw.wickets}</td>
-                            <td className="text-right text-amber-400 font-bold">{bw.econ}</td>
+                {/* Bowling Figures & Death Overs Feed */}
+                <div className="space-y-3.5">
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
+                    <div className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2">
+                      Bowling Figures
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-gray-400 border-b border-white/10 text-left text-[11px]">
+                            <th className="py-1.5">Bowler</th>
+                            <th className="text-right">O</th>
+                            <th className="text-right">M</th>
+                            <th className="text-right">R</th>
+                            <th className="text-right">W</th>
+                            <th className="text-right">Econ</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 font-mono text-[11px]">
+                          {(activeInn.bowling_card || []).map((bw: any, idx: number) => (
+                            <tr key={idx} className="hover:bg-white/5">
+                              <td className="py-1 font-sans font-bold text-white">{bw.name}</td>
+                              <td className="text-right text-gray-300">{bw.overs}</td>
+                              <td className="text-right text-gray-300">{bw.maidens}</td>
+                              <td className="text-right text-gray-300">{bw.runs}</td>
+                              <td className="text-right font-black text-rose-400">{bw.wickets}</td>
+                              <td className="text-right text-amber-400 font-bold">{bw.econ}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
+
+                  {/* Death Overs Feed */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
+                    <div className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-1.5">
+                      Clutch Over-by-Over Highlights
+                    </div>
+                    <div className="space-y-1.5 max-h-36 overflow-y-auto font-mono text-[10px]">
+                      {(activeInn.key_balls || []).map((k: any, i: number) => (
+                        <div key={i} className="p-1 rounded bg-slate-950 flex items-start gap-1.5 border border-white/5">
+                          <span className="font-bold text-amber-400 shrink-0">{k.ball}</span>
+                          <span className={`px-1 rounded text-[9px] font-black shrink-0 ${
+                            k.event === 'W' ? 'bg-rose-500 text-white' : (k.event === '6' ? 'bg-emerald-500 text-black' : (k.event === '4' ? 'bg-blue-500 text-white' : 'bg-gray-800 text-gray-300'))
+                          }`}>
+                            {k.event}
+                          </span>
+                          <span className="text-gray-300 font-sans">{k.commentary}</span>
+                          <span className="text-gray-500 ml-auto shrink-0 font-mono">[{k.score_after}]</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
 
-                {/* Key Over Commentary Highlights */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10">
-                  <div className="text-xs font-black uppercase tracking-wider text-gray-400 mb-2">
-                    Death Overs Ball-by-Ball Feed
-                  </div>
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto font-mono text-[11px]">
-                    {activeInn.key_balls.map((k: any, i: number) => (
-                      <div key={i} className="p-1.5 rounded-lg bg-slate-950 flex items-start gap-2 border border-white/5">
-                        <span className="font-bold text-amber-400 shrink-0">{k.ball}</span>
-                        <span className={`px-1 rounded text-[10px] font-black shrink-0 ${
-                          k.event === 'W' ? 'bg-rose-500 text-white' : (k.event === '6' ? 'bg-emerald-500 text-black' : (k.event === '4' ? 'bg-blue-500 text-white' : 'bg-gray-800 text-gray-300'))
-                        }`}>
-                          {k.event}
-                        </span>
-                        <span className="text-gray-300 font-sans">{k.commentary}</span>
-                        <span className="text-gray-500 ml-auto shrink-0 font-mono">[{k.score_after}]</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             )}
           </div>
