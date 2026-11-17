@@ -19,6 +19,7 @@ import {
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
 import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
 import { getFranchiseAI } from '../../data/franchiseAI'
+import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 
 export default function TradeWindowPage() {
   const router = useRouter()
@@ -205,18 +206,24 @@ export default function TradeWindowPage() {
       const success = executeTrade(playerOut.player_id, playerIn, selectedRivalId, -cashOffer)
       setIsTradingAnimation(false)
       if (success) {
+        gameAudio.playTradeDealSuccess()
+        triggerGameHaptic('trade_success')
         setTradeMessage(`✅ Deal Sealed! ${playerIn.name} joined ${myFranchise.short}. ${playerOut.name} moved to ${rivalFranchise.short}.`)
         setPlayerOut(null)
         setPlayerIn(null)
         setCashOffer(0)
         setTimeout(() => setTradeMessage(null), 5000)
       } else {
+        gameAudio.playTradeReject()
+        triggerGameHaptic('trade_reject')
         setTradeMessage(`❌ Trade Failed: Check purse limits or roster constraints.`)
       }
     }, 800)
   }
 
   const handleFinishTradeWindow = () => {
+    gameAudio.playPhaseLock()
+    triggerGameHaptic('lock')
     advancePhase('retain_release')
     router.push('/squad')
   }
@@ -329,6 +336,8 @@ export default function TradeWindowPage() {
                     key={p.player_id}
                     onClick={() => {
                       if (isTradeLocked) return
+                      gameAudio.playCardSwap()
+                      triggerGameHaptic('light')
                       setPlayerOut(isSelected ? null : p)
                     }}
                     className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
