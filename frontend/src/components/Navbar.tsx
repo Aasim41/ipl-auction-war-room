@@ -237,11 +237,11 @@ export function Navbar() {
                 return (
                   <div
                     key={phase.id}
-                    onClick={() => triggerLockedAlert(phase.label)}
-                    title="Phase finalized and locked by BCCI regulations. You cannot go back."
+                    onClick={() => triggerLockedAlert(phase.label, phase.isConcluded)}
+                    title={phase.isConcluded ? "Phase finalized and locked by BCCI regulations. You cannot go back." : "Complete current phase to unlock."}
                     className="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shrink-0 bg-slate-900/60 text-gray-500 border border-white/5 cursor-not-allowed opacity-60 hover:opacity-80 transition-opacity"
                   >
-                    <Lock size={11} className="text-amber-500/70" />
+                    <Lock size={11} className={phase.isConcluded ? "text-amber-500/70" : "text-gray-500"} />
                     <span>{phase.label}</span>
                   </div>
                 )

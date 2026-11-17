@@ -630,12 +630,6 @@ export default function BallByBallMatchSimulator({
       teamBRuns: fInn2.totalRuns,
       teamBWickets: fInn2.totalWickets,
       teamBOvers: fInn2.oversPlayed,
-      myRuns: aBatsFirst ? fInn1.totalRuns : fInn2.totalRuns,
-      myWickets: aBatsFirst ? fInn1.totalWickets : fInn2.totalWickets,
-      myOvers: aBatsFirst ? fInn1.oversPlayed : fInn2.oversPlayed,
-      rivalRuns: aBatsFirst ? fInn2.totalRuns : fInn1.totalRuns,
-      rivalWickets: aBatsFirst ? fInn2.totalWickets : fInn1.totalWickets,
-      rivalOvers: aBatsFirst ? fInn2.oversPlayed : fInn1.oversPlayed,
       pomPlayer: potmData.player,
       pomStats: potmData.stats
     };
