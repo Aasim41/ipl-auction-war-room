@@ -235,6 +235,18 @@ export default function TradeWindowPage() {
         {/* Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('light')
+                triggerGameHaptic('light')
+                router.push('/')
+              }}
+              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Home Dashboard"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.2 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[9px] font-mono font-black uppercase">

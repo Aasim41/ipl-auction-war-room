@@ -5,6 +5,7 @@
 class ProceduralCricketAudio {
   private ctx: AudioContext | null = null;
   private muted: boolean = false;
+  private isUnlocked: boolean = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -16,6 +17,16 @@ class ProceduralCricketAudio {
       } catch {
         // localStorage unavailable
       }
+
+      // Automatically attach global touch/click gesture listeners to unlock AudioContext on first user interaction
+      const unlockEvents = ['pointerdown', 'touchstart', 'touchend', 'click', 'keydown'];
+      const onUserGesture = () => {
+        this.unlockAudio();
+        unlockEvents.forEach((evt) => window.removeEventListener(evt, onUserGesture));
+      };
+      unlockEvents.forEach((evt) => {
+        window.addEventListener(evt, onUserGesture, { once: true, passive: true });
+      });
     }
   }
 
@@ -28,7 +39,42 @@ class ProceduralCricketAudio {
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
+    }
+  }
+
+  /**
+   * Explicitly unlocks the Web Audio API context upon user gesture
+   */
+  public unlockAudio() {
+    if (typeof window === 'undefined') return;
+    try {
+      this.initContext();
+      if (this.ctx) {
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume().then(() => {
+            this.playSilentBuffer();
+          }).catch(() => {});
+        } else {
+          this.playSilentBuffer();
+        }
+      }
+    } catch {
+      // Audio context restricted
+    }
+  }
+
+  private playSilentBuffer() {
+    if (!this.ctx || this.isUnlocked) return;
+    try {
+      const buf = this.ctx.createBuffer(1, 1, 22050);
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(this.ctx.destination);
+      src.start(0);
+      this.isUnlocked = true;
+    } catch {
+      // ignore
     }
   }
 
@@ -55,6 +101,9 @@ class ProceduralCricketAudio {
   public toggleMute(): boolean {
     const next = !this.muted;
     this.setMuted(next);
+    if (!next) {
+      this.unlockAudio();
+    }
     return next;
   }
 

@@ -41,6 +41,17 @@ export default function SquadRetainReleasePage() {
   const [showSimulator, setShowSimulator] = useState(false)
   const isRetainLocked = campaign?.lockedPhases?.includes('retain_release')
 
+  const squadList = campaign?.squad || []
+
+  // Filtering squad - Top Level Hook (Rules of Hooks Compliance)
+  const filteredSquad = useMemo(() => {
+    return squadList.filter((p) => {
+      const matchesRole = roleFilter === 'ALL' || p.role === roleFilter
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      return matchesRole && matchesSearch
+    })
+  }, [squadList, roleFilter, searchQuery])
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -79,15 +90,6 @@ export default function SquadRetainReleasePage() {
 
   const franchise = getFranchise(campaign.teamId)
 
-  // Filtering squad
-  const filteredSquad = useMemo(() => {
-    return campaign.squad.filter((p) => {
-      const matchesRole = roleFilter === 'ALL' || p.role === roleFilter
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase())
-      return matchesRole && matchesSearch
-    })
-  }, [campaign.squad, roleFilter, searchQuery])
-
   // Squad Metrics
   const retainedPlayers = campaign.squad.filter((p) => !p.is_released)
   const releasedPlayers = campaign.squad.filter((p) => p.is_released)
@@ -117,6 +119,18 @@ export default function SquadRetainReleasePage() {
         {/* Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('light')
+                triggerGameHaptic('light')
+                router.push('/')
+              }}
+              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Home Dashboard"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-black uppercase">
