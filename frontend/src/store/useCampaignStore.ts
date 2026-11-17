@@ -284,6 +284,23 @@ export const useCampaignStore = create<CampaignStoreState>()(
             needsUpdate = true
           }
 
+          // Strict Lockdown Self-Healing: guarantee that if a phase is past, it's locked!
+          const requiredLocks: Array<'trade' | 'retain_release' | 'mini_auction'> = []
+          if (updatedActive.currentPhase === 'retain_release') {
+            requiredLocks.push('trade')
+          } else if (updatedActive.currentPhase === 'mini_auction') {
+            requiredLocks.push('trade', 'retain_release')
+          } else if (updatedActive.currentPhase === 'playing_xi' || updatedActive.currentPhase === 'match') {
+            requiredLocks.push('trade', 'retain_release', 'mini_auction')
+          }
+
+          for (const req of requiredLocks) {
+            if (!updatedActive.lockedPhases.includes(req)) {
+              updatedActive.lockedPhases.push(req)
+              needsUpdate = true
+            }
+          }
+
           if (needsUpdate) {
             get().updateActiveCampaign(() => updatedActive)
             return updatedActive

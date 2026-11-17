@@ -23,6 +23,9 @@ import { getStadiumForTeam } from '../data/stadiums'
 import { getFranchise } from '../data/franchises'
 import { StadiumShowcase } from '../components/StadiumShowcase'
 import { OnboardingAuthModal } from '../components/OnboardingAuthModal'
+import { GameLoadingScreen } from '../components/GameLoadingScreen'
+import { GamerOnboardingModal } from '../components/GamerOnboardingModal'
+import { useRouter } from 'next/navigation'
 import gsap from 'gsap'
 
 const broadcastFeatures = [
@@ -61,6 +64,7 @@ const broadcastFeatures = [
 ]
 
 export default function LandingPage() {
+  const router = useRouter()
   const { theme, setTheme } = useStore()
   const { getActiveCampaign, currentUser } = useCampaignStore()
   const activeCamp = getActiveCampaign()
@@ -70,10 +74,31 @@ export default function LandingPage() {
   const headlineRef = useRef<HTMLHeadingElement>(null)
   const [mounted, setMounted] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showLoading, setShowLoading] = useState(true)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    // Check if the user has already seen loading screen in this session
+    const hasLoaded = sessionStorage.getItem('auctionxi_boot_complete')
+    if (hasLoaded) {
+      setShowLoading(false)
+    }
   }, [])
+
+  const handleLoadingComplete = () => {
+    setShowLoading(false)
+    sessionStorage.setItem('auctionxi_boot_complete', 'true')
+    // If no active campaign, launch onboarding automatically!
+    if (!activeCamp) {
+      setShowOnboarding(true)
+    }
+  }
+
+  const handleCompleteToTeamSelect = () => {
+    setShowOnboarding(false)
+    router.push('/select-team')
+  }
 
   // GSAP Entrance Timeline
   useEffect(() => {
@@ -195,9 +220,9 @@ export default function LandingPage() {
         </h1>
 
         {/* Hero Subtitle */}
-        <p className="gsap-hero-subtitle text-xs sm:text-base text-gray-300 max-w-2xl mx-auto mb-6 font-normal leading-relaxed">
+        <div className="gsap-hero-subtitle text-xs sm:text-base text-gray-300 max-w-2xl mx-auto mb-6 font-normal leading-relaxed">
           The official 4-phase IPL manager campaign. Trade with rivals, lock in retentions for purse refunds, battle 9 AI franchise bots in the live Mini-Auction, and conquer match day!
-        </p>
+        </div>
 
         {/* Saved Career Quick Banner if Active */}
         {mounted && activeCamp && (
@@ -255,9 +280,22 @@ export default function LandingPage() {
             </Link>
           )}
 
+          <button
+            onClick={() => setShowOnboarding(true)}
+            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl font-display text-sm sm:text-base font-bold tracking-wider text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
+          >
+            <Sparkles size={16} className="text-amber-400" />
+            <span>HOW TO PLAY (GUIDE)</span>
+          </button>
+
           <Link
             href="/select-team"
             className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-display text-sm sm:text-base font-bold tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
+          >
+            <MapPin size={18} />
+            {activeCamp ? 'SWITCH FRANCHISE' : 'CHOOSE TEAM'}
+          </Link>
+        </div>
           >
             <MapPin size={18} />
             {activeCamp ? 'SWITCH FRANCHISE SAVE' : 'CHOOSE YOUR TEAM'}
@@ -304,6 +342,20 @@ export default function LandingPage() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
+
+      {/* Game Onboarding Guide Modal */}
+      <GamerOnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onCompleteToTeamSelect={handleCompleteToTeamSelect}
+      />
+
+      {/* Cinematic Game Loading Screen */}
+      {mounted && showLoading && (
+        <GameLoadingScreen
+          onComplete={handleLoadingComplete}
+        />
+      )}
 
     </div>
   )

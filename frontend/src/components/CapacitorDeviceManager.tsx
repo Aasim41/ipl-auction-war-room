@@ -28,13 +28,9 @@ export function CapacitorDeviceManager() {
           const currentPath = window.location.pathname
           if (currentPath === '/' || currentPath === '/select-team') {
             CapApp.exitApp()
-          } else if (currentPath === '/playing-xi') {
-            router.push('/auction')
-          } else if (currentPath === '/auction') {
-            router.push('/squad')
-          } else if (currentPath === '/squad') {
-            router.push('/trade')
-          } else if (currentPath === '/trade') {
+          } else if (currentPath === '/playing-xi' || currentPath === '/auction' || currentPath === '/squad' || currentPath === '/trade') {
+            // Strict cycle lockdown: Never go back into closed auction or trade rooms!
+            // Return to Home Dashboard, preserving campaign state
             router.push('/')
           } else if (canGoBack) {
             window.history.back()
