@@ -578,14 +578,6 @@ export default function MiniAuctionPage() {
             >
               {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
             </button>
-
-            <button
-              onClick={handleFinishAuction}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(168,85,247,0.3)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
-            >
-              <span>Finalize Squad ➔ Playing XI</span>
-              <ArrowRight size={13} />
-            </button>
           </div>
         </div>
 
