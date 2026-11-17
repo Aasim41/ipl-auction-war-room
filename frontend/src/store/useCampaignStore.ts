@@ -306,7 +306,11 @@ export interface UserCampaign {
     cashAdjustment: number
   }>
   playingXI: string[] // player_ids in batting order (0: Opener 1 ... 10: No. 11)
+  batFirstXI?: string[]
+  bowlFirstXI?: string[]
   impactPlayerId?: string
+  batFirstImpactId?: string
+  bowlFirstImpactId?: string
   rulesAcknowledged: boolean
   lastSaved: string
   // Tournament season mode
@@ -356,13 +360,15 @@ interface CampaignStoreState {
   togglePlayerRetention: (playerId: string) => void
   addAuctionPlayerToSquad: (player: CampaignPlayer, bidAmount: number) => boolean
   executeTrade: (playerOutId: string, playerIn: CampaignPlayer, rivalTeamId: string, cashDelta: number) => boolean
-  setPlayingXI: (playerIds: string[], impactPlayerId?: string) => void
-  swapPlayingXISlots: (indexA: number, indexB: number) => void
-  replacePlayingXIPlayer: (slotIndex: number, newPlayerId: string) => void
-  autoOptimizePlayingXI: () => void
+  setPlayingXI: (playerIds: string[], impactPlayerId?: string, mode?: 'bat_first' | 'bowl_first') => void
+  swapPlayingXISlots: (indexA: number, indexB: number, mode?: 'bat_first' | 'bowl_first') => void
+  replacePlayingXIPlayer: (slotIndex: number, newPlayerId: string, mode?: 'bat_first' | 'bowl_first') => void
+  autoOptimizePlayingXI: (venueCity?: string, rivalTeamId?: string, mode?: 'bat_first' | 'bowl_first') => { strategySummary?: string }
   
   // Tournament Season & Match Simulation
   recordMatchResult: (matchNo: number, resultData: TournamentFixture['result']) => void
+  simulateScheduleMatch: (matchNo: number) => void
+  simulateRound: (roundNumber: number) => void
 }
 
 const DEFAULT_USER: UserProfile = {
@@ -833,18 +839,21 @@ export const useCampaignStore = create<CampaignStoreState>()(
         })
       },
 
-      autoOptimizePlayingXI: () => {
+      autoOptimizePlayingXI: (venueCity, rivalTeamId, mode) => {
+        let strategySummary: string | undefined
         get().updateActiveCampaign((prev) => {
           const activePlayers = prev.squad.filter((p) => !p.is_released)
           if (activePlayers.length === 0) return prev
 
-          const optimized = computeOptimalPlayingXI(activePlayers)
+          const optimized = computeOptimalPlayingXI(activePlayers, { venueCity, rivalTeamId, mode })
+          strategySummary = optimized.strategySummary
           return {
             ...prev,
             playingXI: optimized.xiIds,
             impactPlayerId: optimized.impactId
           }
         })
+        return { strategySummary }
       },
 
       recordMatchResult: (matchNo, resultData) => {

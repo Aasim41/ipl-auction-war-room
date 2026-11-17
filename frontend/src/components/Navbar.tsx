@@ -36,7 +36,8 @@ export function Navbar() {
     campaigns, 
     getActiveCampaign, 
     switchCampaign, 
-    resetCampaign 
+    resetCampaign,
+    advancePhase 
   } = useCampaignStore()
 
   const [mounted, setMounted] = useState(false)
