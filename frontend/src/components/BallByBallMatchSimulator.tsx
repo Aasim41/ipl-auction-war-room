@@ -941,33 +941,6 @@ export default function BallByBallMatchSimulator({
           <span>👉</span>
         </div>
 
-            {/* Sound Toggle */}
-            <button
-              onClick={() => {
-                const next = gameAudio.toggleMute();
-                setIsMuted(next);
-                triggerGameHaptic('light');
-                if (!next) gameAudio.playUiTap('select');
-              }}
-              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
-                isMuted
-                  ? 'bg-rose-500/20 border-rose-500/30 text-rose-300 hover:bg-rose-500/30'
-                  : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30'
-              }`}
-              title={isMuted ? 'Game Audio Muted (Click to Unmute)' : 'Game Audio Active (Click to Mute)'}
-            >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="animate-pulse" />}
-            </button>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
         {/* Dynamic Event Banner Overlay */}
         {eventBanner && (
           <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-bounce">
