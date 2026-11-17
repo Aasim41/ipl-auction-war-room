@@ -27,6 +27,7 @@ import { GameLoadingScreen } from '../components/GameLoadingScreen'
 import { GamerOnboardingModal } from '../components/GamerOnboardingModal'
 import { useRouter } from 'next/navigation'
 import gsap from 'gsap'
+import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 const broadcastFeatures = [
   {
@@ -257,6 +258,10 @@ export default function LandingPage() {
           {mounted && activeCamp ? (
             <Link
               href={targetPhaseUrl}
+              onClick={() => {
+                gameAudio.playUiTap('select')
+                triggerGameHaptic('light')
+              }}
               className="w-full sm:w-auto px-7 py-3.5 rounded-2xl font-display text-base sm:text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
               style={{
                 backgroundColor: activeStadium.teamColor,
@@ -269,6 +274,10 @@ export default function LandingPage() {
           ) : (
             <Link
               href="/select-team"
+              onClick={() => {
+                gameAudio.playUiTap('select')
+                triggerGameHaptic('light')
+              }}
               className="w-full sm:w-auto px-7 py-3.5 rounded-2xl font-display text-base sm:text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
               style={{
                 backgroundColor: activeStadium.teamColor,
@@ -281,7 +290,11 @@ export default function LandingPage() {
           )}
 
           <button
-            onClick={() => setShowOnboarding(true)}
+            onClick={() => {
+              gameAudio.playUiTap('medium')
+              triggerGameHaptic('light')
+              setShowOnboarding(true)
+            }}
             className="w-full sm:w-auto px-5 py-3.5 rounded-2xl font-display text-sm sm:text-base font-bold tracking-wider text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
           >
             <Sparkles size={16} className="text-amber-400" />
@@ -290,6 +303,10 @@ export default function LandingPage() {
 
           <Link
             href="/select-team"
+            onClick={() => {
+              gameAudio.playUiTap('light')
+              triggerGameHaptic('light')
+            }}
             className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-display text-sm sm:text-base font-bold tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
           >
             <MapPin size={18} />
