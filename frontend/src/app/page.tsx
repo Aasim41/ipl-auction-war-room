@@ -1,374 +1,386 @@
 'use client'
 
-import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   Trophy, 
+  MapPin, 
   Users, 
-  Zap, 
-  Gavel, 
-  TrendingUp, 
   Shield, 
   Compass, 
-  MapPin, 
-  ChevronRight, 
+  Zap, 
   Sparkles, 
+  Gavel, 
+  ArrowRight,
+  TrendingUp,
   Activity,
-  User,
-  ArrowRight
+  Flame,
+  CheckCircle2
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { useCampaignStore } from '../store/useCampaignStore'
-import { getStadiumForTeam } from '../data/stadiums'
-import { getFranchise } from '../data/franchises'
-import { StadiumShowcase } from '../components/StadiumShowcase'
+import { STADIUMS, getStadiumForTeam } from '../data/stadiums'
+import { getFranchise, IPL_FRANCHISES } from '../data/franchises'
+import { getFranchiseAI } from '../data/franchiseAI'
 import { OnboardingAuthModal } from '../components/OnboardingAuthModal'
 import { GameLoadingScreen } from '../components/GameLoadingScreen'
 import { GamerOnboardingModal } from '../components/GamerOnboardingModal'
-import { useRouter } from 'next/navigation'
-import gsap from 'gsap'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
-const broadcastFeatures = [
-  {
-    title: 'Linear Programming Optimizer',
-    tag: 'Operations Research',
-    desc: 'PuLP CBC solver optimizing 25-man squad within ₹125 Cr salary cap and overseas quota.',
-    icon: Zap,
-    stat: '25 Players • ₹125 Cr',
-    color: '#fbbf24'
-  },
-  {
-    title: 'Live Auction Arena',
-    tag: 'Bidding Engine',
-    desc: 'Broadcast-grade live bidding war room with AI rival franchise counter-bids and paddle wars.',
-    icon: Gavel,
-    stat: '10 Franchises Live',
-    color: '#3b82f6'
-  },
-  {
-    title: 'Home Ground Pitch Engine',
-    tag: 'Stadium Calibration',
-    desc: 'Pitch-calibrated Playing XI tuned for home turf soil, dew factors, and boundary lengths.',
-    icon: Compass,
-    stat: '10 Stadium Fortresses',
-    color: '#10b981'
-  },
-  {
-    title: '357+ Player Power Index',
-    tag: 'Analytics Suite',
-    desc: 'Deep strike rate, economy, phase impact, and historical auction valuation models.',
-    icon: Users,
-    stat: '357 Registered Stars',
-    color: '#a855f7'
-  }
+const TEAMS = [
+  { id: 'csk',  name: 'Chennai Super Kings',         short: 'CSK',  color: '#fbbf24', emoji: '🦁', titles: '5x Champions', stadium: 'Chepauk (M. A. Chidambaram)', city: 'Chennai' },
+  { id: 'mi',   name: 'Mumbai Indians',              short: 'MI',   color: '#2563eb', emoji: '🏏', titles: '5x Champions', stadium: 'Wankhede Stadium', city: 'Mumbai' },
+  { id: 'rcb',  name: 'Royal Challengers Bengaluru', short: 'RCB',  color: '#dc2626', emoji: '👑', titles: 'Bold Army', stadium: 'M. Chinnaswamy Stadium', city: 'Bengaluru' },
+  { id: 'kkr',  name: 'Kolkata Knight Riders',       short: 'KKR',  color: '#7c3aed', emoji: '⚔️', titles: '3x Champions', stadium: 'Eden Gardens', city: 'Kolkata' },
+  { id: 'srh',  name: 'Sunrisers Hyderabad',         short: 'SRH',  color: '#ea580c', emoji: '🌅', titles: '2x Champions', stadium: 'Rajiv Gandhi Stadium', city: 'Hyderabad' },
+  { id: 'rr',   name: 'Rajasthan Royals',            short: 'RR',   color: '#db2777', emoji: '💎', titles: 'Inaugural Champions', stadium: 'Sawai Mansingh Stadium', city: 'Jaipur' },
+  { id: 'dc',   name: 'Delhi Capitals',              short: 'DC',   color: '#0284c7', emoji: '🦅', titles: 'Roar Macha', stadium: 'Arun Jaitley Stadium', city: 'Delhi' },
+  { id: 'pbks', name: 'Punjab Kings',                short: 'PBKS', color: '#b91c1c', emoji: '🗡️', titles: 'Sadda Punjab', stadium: 'Maharaja Yadavindra Stadium', city: 'Mullanpur' },
+  { id: 'lsg',  name: 'Lucknow Super Giants',        short: 'LSG',  color: '#0891b2', emoji: '🐘', titles: 'Adab Se', stadium: 'BRSABV Ekana Stadium', city: 'Lucknow' },
+  { id: 'gt',   name: 'Gujarat Titans',              short: 'GT',   color: '#0d9488', emoji: '🛡️', titles: '2022 Champions', stadium: 'Narendra Modi Arena', city: 'Ahmedabad' },
 ]
 
-export default function LandingPage() {
+export default function UnifiedTeamSelectHomePage() {
   const router = useRouter()
   const { theme, setTheme } = useStore()
-  const { getActiveCampaign, currentUser } = useCampaignStore()
-  const activeCamp = getActiveCampaign()
-  const activeStadium = getStadiumForTeam(activeCamp?.teamId || theme)
-  const activeFranchise = getFranchise(activeCamp?.teamId || theme)
-  const heroRef = useRef<HTMLDivElement>(null)
-  const headlineRef = useRef<HTMLHeadingElement>(null)
+  const { 
+    campaigns, 
+    getActiveCampaign, 
+    createCampaign, 
+    switchCampaign, 
+    currentUser 
+  } = useCampaignStore()
+
   const [mounted, setMounted] = useState(false)
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('rcb')
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showLoading, setShowLoading] = useState(true)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    // Check if the user has already seen loading screen in this session
     const hasLoaded = sessionStorage.getItem('auctionxi_boot_complete')
     if (hasLoaded) {
       setShowLoading(false)
     }
+
+    // Default to active campaign or current theme
+    const activeCamp = getActiveCampaign()
+    if (activeCamp) {
+      setSelectedTeamId(activeCamp.teamId)
+    } else if (theme) {
+      setSelectedTeamId(theme)
+    }
   }, [])
 
-  const handleLoadingComplete = () => {
-    setShowLoading(false)
-    sessionStorage.setItem('auctionxi_boot_complete', 'true')
-    // If no active campaign, launch onboarding automatically!
-    if (!activeCamp) {
-      setShowOnboarding(true)
+  const handleSelectTeamTab = (teamId: string) => {
+    setSelectedTeamId(teamId)
+    setTheme(teamId)
+    gameAudio.playUiTap('select')
+    triggerGameHaptic('light')
+  }
+
+  const handleEnterWarRoom = (teamId: string) => {
+    gameAudio.playTradeDealSuccess()
+    triggerGameHaptic('heavy')
+    setTheme(teamId)
+
+    // Check if an existing campaign exists for this team
+    const existing = Object.values(campaigns).find(c => c.teamId === teamId)
+    if (existing) {
+      switchCampaign(existing.id)
+      const targetUrl = existing.currentPhase === 'playing_xi' || existing.currentPhase === 'match'
+        ? '/playing-xi'
+        : existing.currentPhase === 'mini_auction'
+        ? '/auction'
+        : existing.currentPhase === 'retain_release'
+        ? '/squad'
+        : '/trade'
+      router.push(targetUrl)
+    } else {
+      createCampaign(teamId)
+      router.push('/trade')
     }
   }
 
-  const handleCompleteToTeamSelect = () => {
-    setShowOnboarding(false)
-    router.push('/select-team')
-  }
-
-  // GSAP Entrance Timeline
-  useEffect(() => {
-    if (!mounted) return
-
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-
-      tl.fromTo(
-        '.gsap-broadcast-badge',
-        { opacity: 0, y: -20, scale: 0.95 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.6 }
-      )
-      .fromTo(
-        '.gsap-hero-title',
-        { opacity: 0, y: 30, rotateX: 15 },
-        { opacity: 1, y: 0, rotateX: 0, duration: 0.8, stagger: 0.15 },
-        '-=0.3'
-      )
-      .fromTo(
-        '.gsap-hero-subtitle',
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6 },
-        '-=0.4'
-      )
-      .fromTo(
-        '.gsap-cta-group',
-        { opacity: 0, scale: 0.95, y: 15 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.6 },
-        '-=0.3'
-      )
-      .fromTo(
-        '.gsap-feature-card',
-        { opacity: 0, y: 25 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.08 },
-        '-=0.2'
-      )
-    }, heroRef)
-
-    return () => ctx.revert()
-  }, [mounted])
-
-  const targetPhaseUrl = activeCamp
-    ? activeCamp.currentPhase === 'trade'
-      ? '/trade'
-      : activeCamp.currentPhase === 'retain_release'
-      ? '/squad'
-      : activeCamp.currentPhase === 'mini_auction'
-      ? '/auction'
-      : '/playing-xi'
-    : '/select-team'
+  const activeTeam = TEAMS.find(t => t.id === selectedTeamId) || TEAMS[2]
+  const activeStadium = STADIUMS[activeTeam.id] || STADIUMS.rcb
+  const activeFranchiseAI = getFranchiseAI(activeTeam.id)
+  const activeFranchise = getFranchise(activeTeam.id)
+  const existingCampaign = Object.values(campaigns).find(c => c.teamId === activeTeam.id)
 
   return (
-    <div ref={heroRef} className="min-h-screen relative overflow-x-hidden flex flex-col justify-between text-white">
+    <div className="min-h-screen relative overflow-x-hidden flex flex-col justify-between text-white bg-slate-950 pt-12 sm:pt-14 pb-4">
+      
+      {/* Optional Cinematic Loading Screen */}
+      {showLoading && (
+        <GameLoadingScreen
+          onComplete={() => {
+            setShowLoading(false)
+            sessionStorage.setItem('auctionxi_boot_complete', 'true')
+          }}
+        />
+      )}
 
-      {/* ─── Matchday Stadium Ribbon (Top Broadcast Bar) ─── */}
-      <div className="relative z-20 border-b border-white/10 bg-black/40 backdrop-blur-md px-3 sm:px-6 py-2 text-xs">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          
-          <div className="flex items-center gap-2.5">
-            <span className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px] text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              ARENA ACTIVE
-            </span>
-            <span className="text-gray-500">•</span>
-            <span className="text-gray-300 font-medium text-[11px]">
-              Venue: <span className="text-white font-semibold">{activeStadium.name}</span> ({activeStadium.city})
-            </span>
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
+        
+        {/* Header Broadcast Banner */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-mono font-black uppercase">
+                IPL 2027 FRANCHISE SELECTION & FORTRESS CALIBRATION
+              </span>
+              <span className="text-[10px] text-gray-400">10 Official War Rooms • ₹125 Cr Cap</span>
+            </div>
+            <h1 className="text-base sm:text-lg font-black font-display text-white">
+              Select Your Franchise & Master Your Home Fortress
+            </h1>
           </div>
 
-          {/* User Auth Profile Pill */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('medium')
+                triggerGameHaptic('light')
+                setShowOnboarding(true)
+              }}
+              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-amber-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+            >
+              <Sparkles size={12} className="text-amber-400" />
+              <span>How to Play</span>
+            </button>
             <button
               onClick={() => setShowAuthModal(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-white cursor-pointer transition-all active:scale-95 shadow-sm"
-              title="Change manager profile or PIN"
+              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
             >
-              <span className="text-sm">{currentUser.avatar || '👑'}</span>
-              <span className="font-bold text-[11px]">{currentUser.gamerTag}</span>
-              <span className="text-[10px] text-amber-400 font-mono">GM Auth ▾</span>
+              <span>{currentUser.avatar || '👑'}</span>
+              <span className="truncate max-w-[80px]">{currentUser.gamerTag}</span>
             </button>
-
-            <Link 
-              href="/select-team" 
-              className="text-white text-xs font-bold hover:underline transition-colors flex items-center gap-1"
-              style={{ color: activeStadium.teamColor }}
-            >
-              Change Fortress <ChevronRight size={12} />
-            </Link>
           </div>
-
-        </div>
-      </div>
-
-      {/* ─── Main Hero Section ─── */}
-      <main className="relative z-10 max-w-6xl mx-auto text-center px-3 sm:px-6 pt-3 sm:pt-8 pb-4 w-full flex-1 flex flex-col justify-center">
-        
-        {/* Cricket Broadcast Badge */}
-        <div className="gsap-broadcast-badge inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full border border-amber-500/30 bg-amber-950/20 text-amber-300 text-[11px] font-semibold mb-2 sm:mb-3 mx-auto shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-          <Trophy size={12} className="text-amber-400" />
-          <span>ROAD TO IPL 2027 • FRANCHISE GM CAMPAIGN</span>
-          <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 text-[8px] font-bold">2027 EDITION</span>
         </div>
 
-        {/* Hero Title */}
-        <h1 ref={headlineRef} className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none mb-2 sm:mb-3">
-          <span className="gsap-hero-title block text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
-            CONQUER THE
-          </span>
-          <span 
-            className="gsap-hero-title block tracking-tight transition-colors duration-700"
-            style={{
-              color: activeStadium.teamColor,
-              textShadow: `0 0 35px ${activeStadium.teamColor}50`,
-            }}
-          >
-            IPL 2027
-          </span>
-        </h1>
-
-        {/* Hero Subtitle */}
-        <div className="gsap-hero-subtitle text-[11px] sm:text-sm text-gray-300 max-w-2xl mx-auto mb-3 sm:mb-5 font-normal leading-relaxed">
-          The official 4-phase IPL manager campaign. Trade with rivals, lock in retentions for purse refunds, battle 9 AI franchise bots in the live Mini-Auction, and conquer match day!
+        {/* 10-Team Fast Selector Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 mb-2.5 shrink-0">
+          {TEAMS.map((t) => {
+            const isSelected = t.id === activeTeam.id
+            const hasSave = Object.values(campaigns).some(c => c.teamId === t.id)
+            return (
+              <button
+                key={t.id}
+                onClick={() => handleSelectTeamTab(t.id)}
+                className={`px-2.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border ${
+                  isSelected
+                    ? 'scale-[1.04] shadow-lg text-slate-950 font-black'
+                    : 'bg-slate-900/80 text-gray-300 hover:text-white border-white/10 hover:bg-white/10'
+                }`}
+                style={{
+                  backgroundColor: isSelected ? t.color : undefined,
+                  borderColor: isSelected ? t.color : undefined,
+                  boxShadow: isSelected ? `0 0 16px ${t.color}60` : undefined
+                }}
+              >
+                <span>{t.emoji}</span>
+                <span>{t.short}</span>
+                {hasSave && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-slate-950 animate-ping' : 'bg-emerald-400'}`} />
+                )}
+              </button>
+            )
+          })}
         </div>
 
-        {/* Saved Career Quick Banner if Active */}
-        {mounted && activeCamp && (
-          <div className="max-w-md mx-auto mb-3 sm:mb-5 p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-white/15 flex items-center justify-between shadow-xl backdrop-blur-md">
-            <div className="flex items-center gap-2 text-left">
-              <span className="text-xl sm:text-2xl">{activeFranchise.emoji}</span>
-              <div>
-                <div className="text-[11px] sm:text-xs font-black text-white flex items-center gap-1.5">
-                  <span>{activeCamp.teamName}</span>
-                  <span className="text-[8px] px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 font-black uppercase">
-                    {activeCamp.currentPhase.replace('_', ' ')}
-                  </span>
+        {/* Active Team Showcase: Dual-Pane Stats & Fortress Console */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3.5 flex-1 min-h-[380px]">
+          
+          {/* Left Pane: Franchise Identity, Roster Cap & AI Persona */}
+          <div className="md:col-span-6 p-3 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl relative overflow-hidden">
+            <div 
+              className="absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-20 pointer-events-none"
+              style={{ backgroundColor: activeTeam.color }}
+            />
+
+            <div>
+              <div className="flex items-start justify-between pb-2 mb-2.5 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div 
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg border shrink-0"
+                    style={{
+                      backgroundColor: `${activeTeam.color}25`,
+                      borderColor: `${activeTeam.color}50`
+                    }}
+                  >
+                    {activeTeam.emoji}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <h2 className="text-base sm:text-lg font-black font-display text-white">{activeTeam.name}</h2>
+                      <span 
+                        className="px-1.5 py-0.2 rounded text-[10px] font-black text-slate-950"
+                        style={{ backgroundColor: activeTeam.color }}
+                      >
+                        {activeTeam.short}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-gray-400 font-mono mt-0.5">
+                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <Trophy size={11} /> {activeTeam.titles}
+                      </span>
+                      <span>•</span>
+                      <span>Starting Cap: ₹125.0 Cr</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-[9px] sm:text-[10px] text-gray-400 font-mono">
-                  Manager: <strong className="text-gray-200">{currentUser.gamerTag}</strong> • Purse: ₹{activeCamp.remainingPurse.toFixed(2)} Cr
+
+                {existingCampaign && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-black uppercase">
+                    Active Save ({existingCampaign.currentPhase.replace('_', ' ')})
+                  </span>
+                )}
+              </div>
+
+              {/* Franchise AI & Strategy Profile */}
+              <div className="space-y-2 mb-3">
+                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/5 text-xs">
+                  <div className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Zap size={11} className="text-sky-400" />
+                    <span>Franchise War Room Identity</span>
+                  </div>
+                  <p className="text-[11px] text-gray-200 leading-snug">
+                    {activeFranchiseAI.auctionStyle}
+                  </p>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/5 text-xs">
+                  <div className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Activity size={11} className="text-emerald-400" />
+                    <span>Matchday Playing Style</span>
+                  </div>
+                  <p className="text-[11px] text-gray-200 leading-snug">
+                    {activeFranchiseAI.matchPersonality}
+                  </p>
+                </div>
+
+                {/* Marquee Untouchable Stars */}
+                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+                    <Shield size={11} className="text-amber-400" />
+                    <span>Untouchable Core Icons</span>
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeFranchiseAI.untouchables.map((star, idx) => (
+                      <span 
+                        key={idx}
+                        className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white flex items-center gap-1"
+                      >
+                        <span className="text-amber-400">★</span> {star}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <Link
-              href={targetPhaseUrl}
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] uppercase flex items-center gap-1 shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+            {/* Launch / Resume CTA */}
+            <button
+              onClick={() => handleEnterWarRoom(activeTeam.id)}
+              className="w-full py-2.5 sm:py-3 rounded-2xl font-display text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl cursor-pointer hover:scale-[1.02] active:scale-95 transition-all text-slate-950"
+              style={{
+                backgroundColor: activeTeam.color,
+                boxShadow: `0 0 25px ${activeTeam.color}60`
+              }}
             >
-              <span>Resume</span>
-              <ArrowRight size={12} />
-            </Link>
+              <span>{existingCampaign ? `RESUME ${activeTeam.name.toUpperCase()} CAMPAIGN` : `SELECT ${activeTeam.name.toUpperCase()} & ENTER WAR ROOM`}</span>
+              <ArrowRight size={15} />
+            </button>
           </div>
-        )}
 
-        {/* CTA Buttons */}
-        <div className="gsap-cta-group flex flex-row items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-          {mounted && activeCamp ? (
-            <Link
-              href={targetPhaseUrl}
-              onClick={() => {
-                gameAudio.playUiTap('select')
-                triggerGameHaptic('light')
-              }}
-              className="px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-base font-bold tracking-wider text-black flex items-center justify-center gap-1.5 sm:gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
-              style={{
-                backgroundColor: activeStadium.teamColor,
-                boxShadow: `0 8px 25px ${activeStadium.teamColor}60`,
-              }}
-            >
-              <Gavel size={16} />
-              RESUME {activeCamp.teamName.toUpperCase()}
-            </Link>
-          ) : (
-            <Link
-              href="/select-team"
-              onClick={() => {
-                gameAudio.playUiTap('select')
-                triggerGameHaptic('light')
-              }}
-              className="px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-base font-bold tracking-wider text-black flex items-center justify-center gap-1.5 sm:gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
-              style={{
-                backgroundColor: activeStadium.teamColor,
-                boxShadow: `0 8px 25px ${activeStadium.teamColor}60`,
-              }}
-            >
-              <Gavel size={16} />
-              START IPL 2027 CAMPAIGN
-            </Link>
-          )}
-
-          <button
-            onClick={() => {
-              gameAudio.playUiTap('medium')
-              triggerGameHaptic('light')
-              setShowOnboarding(true)
-            }}
-            className="px-3.5 sm:px-5 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-sm font-bold tracking-wider text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 flex items-center justify-center gap-1.5 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
-          >
-            <Sparkles size={14} className="text-amber-400" />
-            <span>HOW TO PLAY</span>
-          </button>
-
-          <Link
-            href="/select-team"
-            onClick={() => {
-              gameAudio.playUiTap('light')
-              triggerGameHaptic('light')
-            }}
-            className="px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-base font-bold tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center gap-1.5 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
-          >
-            <MapPin size={16} />
-            {activeCamp ? 'SWITCH FRANCHISE' : 'CHOOSE TEAM'}
-          </Link>
-        </div>
-
-        {/* ─── Interactive Home Ground Stadium Showcase ─── */}
-        <div className="max-w-4xl mx-auto w-full mb-6">
-          <StadiumShowcase />
-        </div>
-
-        {/* ─── 4 Broadcast Capabilities Cards ─── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-left my-4">
-          {broadcastFeatures.map((f, i) => (
-            <div
-              key={i}
-              className="gsap-feature-card p-3.5 rounded-2xl border border-white/10 bg-slate-950/60 backdrop-blur-md hover:border-white/20 transition-all duration-300 group hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div 
-                  className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-slate-950 shadow-md"
-                  style={{ backgroundColor: f.color }}
-                >
-                  <f.icon size={16} />
+          {/* Right Pane: Home Ground Fortress, Soil & Pitch Analytics */}
+          <div className="md:col-span-6 p-3 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl relative overflow-hidden">
+            <div>
+              <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <Compass size={16} className="text-emerald-400" />
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-black uppercase text-white">Home Ground Fortress</h3>
+                    <span className="text-[10px] text-gray-400">{activeStadium.name} ({activeStadium.city})</span>
+                  </div>
                 </div>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/5 text-gray-400">
-                  {f.tag}
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-emerald-300 font-bold">
+                  Par: {activeStadium.avgFirstInnings} Runs
                 </span>
               </div>
-              <h4 className="font-bold text-xs text-white group-hover:text-amber-300 transition-colors">
-                {f.title}
-              </h4>
-              <p className="text-[11px] text-gray-400 mt-1 leading-snug line-clamp-2">
-                {f.desc}
-              </p>
+
+              {/* Pitch Characteristics Grid */}
+              <div className="grid grid-cols-2 gap-2 mb-2.5 text-xs">
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Soil Profile</span>
+                  <span className="text-[11px] font-bold text-amber-300">{activeStadium.soilType}</span>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Stadium Capacity</span>
+                  <span className="text-[11px] font-bold text-white">{activeStadium.capacity}</span>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Dew Factor</span>
+                  <span className="text-[11px] font-bold text-sky-300">{activeStadium.dewFactor}</span>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Strategic Advantage</span>
+                  <span className="text-[11px] font-bold text-emerald-400">{activeStadium.pitchProfile}</span>
+                </div>
+              </div>
+
+              {/* Boundary Dimensions */}
+              <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/5 mb-2.5">
+                <div className="flex items-center justify-between text-[10px] font-mono text-gray-400 mb-1">
+                  <span>BOUNDARY LENGTHS</span>
+                  <span className="text-gray-300">Off: {activeStadium.boundaryOff}m • Straight: {activeStadium.boundaryStraight}m • Leg: {activeStadium.boundaryLeg}m</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-900 border border-white/10 overflow-hidden flex">
+                  <div className="h-full bg-sky-500" style={{ width: '33%' }} title="Off" />
+                  <div className="h-full bg-emerald-500" style={{ width: '34%' }} title="Straight" />
+                  <div className="h-full bg-amber-500" style={{ width: '33%' }} title="Leg" />
+                </div>
+              </div>
+
+              {/* Tournament Flow Summary */}
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-gray-300 space-y-1">
+                <span className="text-[10px] font-black uppercase text-amber-300 block">
+                  Official 4-Phase Championship Road
+                </span>
+                <p className="text-[10px] leading-relaxed text-gray-400">
+                  1. Trade Window (Side-by-Side Player Swaps) ➔ 2. Retain & Release (Purse Refunds) ➔ 3. Mini-Auction (Live Bidding vs 9 AI Bots) ➔ 4. 74-Match Tournament & Ball-by-Ball Matchday Operations.
+                </p>
+              </div>
             </div>
-          ))}
+
+            {/* Quick Play Action Button */}
+            <button
+              onClick={() => handleEnterWarRoom(activeTeam.id)}
+              className="w-full py-2.5 sm:py-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer border border-white/15 transition-all mt-2"
+            >
+              <Zap size={14} className="text-amber-400" />
+              <span>Launch {activeTeam.short} Campaign Now</span>
+            </button>
+          </div>
+
         </div>
 
       </main>
 
-      {/* Onboarding Auth Modal */}
-      <OnboardingAuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+      {/* Modals */}
+      <OnboardingAuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
       />
 
-      {/* Game Onboarding Guide Modal */}
       <GamerOnboardingModal
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
-        onCompleteToTeamSelect={handleCompleteToTeamSelect}
+        onComplete={() => setShowOnboarding(false)}
       />
-
-      {/* Cinematic Game Loading Screen */}
-      {mounted && showLoading && (
-        <GameLoadingScreen
-          onComplete={handleLoadingComplete}
-        />
-      )}
-
     </div>
   )
 }

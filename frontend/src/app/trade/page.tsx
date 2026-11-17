@@ -308,11 +308,11 @@ export default function TradeWindowPage() {
           </div>
         )}
 
-        {/* Side-by-Side Dual Franchise Trade Interface */}
-        <div className="grid grid-cols-2 lg:grid-cols-12 gap-2 sm:gap-3.5 flex-1 min-h-[420px]">
+        {/* True 3-Column Side-by-Side Trade Interface (Your Team | Deal Room in Middle | Rival Team) */}
+        <div className="flex flex-row gap-2 sm:gap-3 items-stretch w-full min-h-[440px] flex-1 overflow-hidden">
           
-          {/* Column 1 (Left): Your Squad */}
-          <div className={`col-span-1 lg:col-span-5 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+          {/* Column 1 (Left): Your Franchise Squad */}
+          <div className={`flex-1 min-w-[250px] max-w-[41%] p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
             playerOut ? 'ring-2 ring-rose-500/40 shadow-rose-500/10' : ''
           }`}>
             <div>
@@ -340,7 +340,7 @@ export default function TradeWindowPage() {
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-1 sm:space-y-1.5 max-h-[220px] sm:max-h-[340px] pr-0.5">
+            <div className="flex-1 overflow-y-auto space-y-1 sm:space-y-1.5 max-h-[280px] sm:max-h-[380px] pr-0.5">
               {filteredMySquad.map((p) => {
                 const isSelected = playerOut?.player_id === p.player_id
                 return (
@@ -377,8 +377,131 @@ export default function TradeWindowPage() {
             </div>
           </div>
 
-          {/* Column 2 (Right): Rival Team Squad (Displayed Side-by-Side with Your Squad) */}
-          <div className={`col-span-1 lg:col-span-5 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+          {/* Column 2 (Middle): Trade Negotiation & Deal Room (Placed in the Middle!) */}
+          <div className="w-[220px] sm:w-[260px] shrink-0 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-950 border border-white/15 flex flex-col justify-between items-center text-center shadow-2xl relative overflow-hidden">
+            
+            {/* Animated Swapping Light Beam */}
+            {isTradingAnimation && (
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-500/30 via-amber-500/40 to-emerald-500/30 animate-pulse pointer-events-none flex items-center justify-center">
+                <Sparkles className="animate-spin text-amber-300" size={32} />
+              </div>
+            )}
+
+            <div className="w-full flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1.5">
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center font-bold transition-all ${
+                  isTradingAnimation 
+                    ? 'bg-amber-500 text-slate-950 scale-125 rotate-180 duration-500' 
+                    : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                }`}>
+                  <ArrowLeftRight size={15} />
+                </div>
+                <div>
+                  <h4 className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-white">Deal Room</h4>
+                  <p className="text-[8px] sm:text-[9px] text-gray-400">Player Swap + Cash</p>
+                </div>
+              </div>
+
+              {/* Offer Summary Pills */}
+              <div className="w-full space-y-1 my-1">
+                <div className={`p-1.5 rounded-lg border text-[10px] font-bold truncate ${
+                  playerOut ? 'bg-rose-500/15 border-rose-500/30 text-rose-300' : 'bg-white/5 border-white/10 text-gray-400'
+                }`}>
+                  <span className="text-[8px] text-gray-500 block uppercase">Offering:</span>
+                  <span className="truncate">{playerOut ? `${playerOut.name} (₹${playerOut.price}Cr)` : 'Select from left'}</span>
+                </div>
+
+                <div className={`p-1.5 rounded-lg border text-[10px] font-bold truncate ${
+                  playerIn ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' : 'bg-white/5 border-white/10 text-gray-400'
+                }`}>
+                  <span className="text-[8px] text-gray-500 block uppercase">Requesting:</span>
+                  <span className="truncate">{playerIn ? `${playerIn.name} (₹${playerIn.price}Cr)` : 'Select from right'}</span>
+                </div>
+              </div>
+
+              {/* Cash offer adjustment */}
+              <div className="w-full py-1.5 border-y border-white/10 my-0.5">
+                <span className="text-[9px] font-bold uppercase text-gray-400 block mb-0.5">
+                  Cash Transfer
+                </span>
+                <div className="flex items-center justify-center gap-1.5">
+                  <button
+                    disabled={isTradeLocked}
+                    onClick={() => setCashOffer(Math.max(-5, cashOffer - 0.5))}
+                    className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-xs cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="text-xs sm:text-sm font-black font-mono text-emerald-400 min-w-[65px]">
+                    {cashOffer >= 0 ? `+₹${cashOffer.toFixed(1)}Cr` : `-₹${Math.abs(cashOffer).toFixed(1)}Cr`}
+                  </span>
+                  <button
+                    disabled={isTradeLocked}
+                    onClick={() => setCashOffer(Math.min(campaign.remainingPurse, cashOffer + 0.5))}
+                    className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-xs cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Evaluation Status */}
+            <div className="w-full my-1">
+              <div className={`p-2 rounded-xl border text-[10px] font-bold transition-all ${
+                evaluation.acceptable
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10'
+                  : evaluation.isUntouchable
+                  ? 'bg-rose-950/40 border-rose-600/50 text-rose-300 animate-shake-reject'
+                  : 'bg-rose-500/10 border-rose-500/30 text-rose-300 animate-shake-reject'
+              }`}>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="truncate">{evaluation.acceptable ? '🟢 APPROVED' : evaluation.status || '🔴 REJECTED'}</span>
+                  {evaluation.isUntouchable && (
+                    <span className="px-1 py-0.2 rounded bg-rose-500/30 text-rose-200 text-[8px] font-mono shrink-0">
+                      ICON
+                    </span>
+                  )}
+                </div>
+                <div className="text-[9px] font-normal text-gray-300 leading-snug line-clamp-3">
+                  {evaluation.reason}
+                </div>
+
+                {/* AI Bargaining Counter-Offer */}
+                {evaluation.counterOfferText && evaluation.counterOfferCash && (
+                  <div className="mt-1 p-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-left animate-pulse">
+                    <span className="text-[8px] font-black text-amber-300 block mb-0.5">
+                      {evaluation.counterOfferText}
+                    </span>
+                    <button
+                      disabled={isTradeLocked}
+                      onClick={() => {
+                        gameAudio.playUiTap('select')
+                        triggerGameHaptic('medium')
+                        setCashOffer(evaluation.counterOfferCash!)
+                      }}
+                      className="w-full py-1 rounded bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-[9px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
+                    >
+                      <Sparkles size={10} />
+                      <span>Accept Counter (+₹{evaluation.counterOfferCash.toFixed(1)}Cr)</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Execute Button */}
+            <button
+              onClick={handleExecuteTrade}
+              disabled={!evaluation.acceptable || isTradeLocked || isTradingAnimation}
+              className="w-full py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer transition-all active:scale-95"
+            >
+              {isTradingAnimation ? 'Executing...' : 'Confirm Trade'}
+            </button>
+          </div>
+
+          {/* Column 3 (Right): Rival Team Squad */}
+          <div className={`flex-1 min-w-[250px] max-w-[41%] p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
             playerIn ? 'ring-2 ring-emerald-500/40 shadow-emerald-500/10' : ''
           }`}>
             <div>
@@ -421,7 +544,7 @@ export default function TradeWindowPage() {
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-1 sm:space-y-1.5 max-h-[220px] sm:max-h-[340px] pr-0.5">
+            <div className="flex-1 overflow-y-auto space-y-1 sm:space-y-1.5 max-h-[280px] sm:max-h-[380px] pr-0.5">
               {filteredRivalSquad.map((p) => {
                 const isSelected = playerIn?.player_id === p.player_id
                 return (
@@ -456,112 +579,6 @@ export default function TradeWindowPage() {
                 )
               })}
             </div>
-          </div>
-
-          {/* Trade Negotiation & Evaluation Hub (Spans both columns on mobile/tablet, centered on LG) */}
-          <div className="col-span-2 lg:col-span-2 order-last lg:order-none p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-950 border border-white/10 flex flex-col justify-between items-center text-center shadow-2xl relative overflow-hidden">
-            
-            {/* Animated Swapping Light Beam */}
-            {isTradingAnimation && (
-              <div className="absolute inset-0 bg-gradient-to-r from-rose-500/30 via-amber-500/40 to-emerald-500/30 animate-pulse pointer-events-none flex items-center justify-center">
-                <Sparkles className="animate-spin text-amber-300" size={32} />
-              </div>
-            )}
-
-            <div className="w-full flex lg:flex-col items-center justify-between lg:justify-center gap-1">
-              <div className="flex items-center gap-1.5 lg:flex-col">
-                <div className={`w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl flex items-center justify-center font-bold transition-all ${
-                  isTradingAnimation 
-                    ? 'bg-amber-500 text-slate-950 scale-125 rotate-180 duration-500' 
-                    : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
-                }`}>
-                  <ArrowLeftRight size={15} />
-                </div>
-                <div className="text-left lg:text-center">
-                  <h4 className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-white">Deal Room</h4>
-                  <p className="text-[9px] sm:text-[10px] text-gray-400">Swap + Cash</p>
-                </div>
-              </div>
-
-              {/* Cash offer adjustment */}
-              <div className="py-1 lg:py-2 border-y border-white/10 my-1 flex lg:flex-col items-center gap-1">
-                <span className="text-[9px] sm:text-[10px] font-bold uppercase text-gray-400 hidden sm:inline">
-                  Cash Transfer:
-                </span>
-                <div className="flex items-center justify-center gap-1.5">
-                  <button
-                    disabled={isTradeLocked}
-                    onClick={() => setCashOffer(Math.max(-5, cashOffer - 0.5))}
-                    className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-xs cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <span className="text-xs sm:text-sm font-black font-mono text-emerald-400 min-w-[65px]">
-                    {cashOffer >= 0 ? `+₹${cashOffer.toFixed(1)}Cr` : `-₹${Math.abs(cashOffer).toFixed(1)}Cr`}
-                  </span>
-                  <button
-                    disabled={isTradeLocked}
-                    onClick={() => setCashOffer(Math.min(campaign.remainingPurse, cashOffer + 0.5))}
-                    className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-xs cursor-pointer"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Evaluation Status */}
-            <div className="w-full my-1.5">
-              <div className={`p-2 rounded-xl border text-[10px] sm:text-[11px] font-bold transition-all ${
-                evaluation.acceptable
-                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10'
-                  : evaluation.isUntouchable
-                  ? 'bg-rose-950/40 border-rose-600/50 text-rose-300 animate-shake-reject'
-                  : 'bg-rose-500/10 border-rose-500/30 text-rose-300 animate-shake-reject'
-              }`}>
-                <div className="flex items-center justify-between mb-0.5">
-                  <span>{evaluation.acceptable ? '🟢 DEAL APPROVED' : evaluation.status || '🔴 REJECTED'}</span>
-                  {evaluation.isUntouchable && (
-                    <span className="px-1 py-0.2 rounded bg-rose-500/30 text-rose-200 text-[8px] font-mono">
-                      UNTOUCHABLE
-                    </span>
-                  )}
-                </div>
-                <div className="text-[9px] sm:text-[10px] font-normal text-gray-300 leading-snug">
-                  {evaluation.reason}
-                </div>
-
-                {/* AI Bargaining Counter-Offer */}
-                {evaluation.counterOfferText && evaluation.counterOfferCash && (
-                  <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-left animate-pulse">
-                    <span className="text-[9px] font-black text-amber-300 block mb-1">
-                      {evaluation.counterOfferText}
-                    </span>
-                    <button
-                      disabled={isTradeLocked}
-                      onClick={() => {
-                        gameAudio.playUiTap('select')
-                        triggerGameHaptic('medium')
-                        setCashOffer(evaluation.counterOfferCash!)
-                      }}
-                      className="w-full py-1 rounded bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-[9px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
-                    >
-                      <Sparkles size={10} />
-                      <span>Accept Counter (+₹{evaluation.counterOfferCash.toFixed(1)} Cr)</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Execute Button */}
-            <button
-              onClick={handleExecuteTrade}
-              disabled={!evaluation.acceptable || isTradeLocked || isTradingAnimation}
-              className="w-full py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer transition-all active:scale-95"
-            >
-              {isTradingAnimation ? 'Executing Transfer...' : 'Confirm Trade'}
-            </button>
           </div>
 
         </div>
