@@ -199,6 +199,16 @@ export default function MiniAuctionPage() {
     router.push('/playing-xi')
   }
 
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-slate-950" />
+  }
+
   if (!campaign) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-white text-center">

@@ -7,26 +7,23 @@ import {
   MapPin, 
   Zap, 
   ChevronRight, 
-  Info, 
-  ShieldAlert, 
   Sparkles, 
   Activity, 
   AlertCircle, 
   Swords, 
-  ArrowLeft,
-  Calendar,
-  Trophy,
-  ArrowUp,
-  ArrowDown,
-  RefreshCw,
-  CheckCircle2,
-  Lock,
-  ChevronDown,
-  Flame,
-  Shield
+  Calendar, 
+  Trophy, 
+  ArrowUp, 
+  ArrowDown, 
+  CheckCircle2, 
+  Lock, 
+  Flame, 
+  Shield,
+  Layers,
+  Award
 } from 'lucide-react';
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore';
-import { getFranchise, IPL_FRANCHISES } from '../../data/franchises';
+import { getFranchise } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
 import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
 
@@ -140,15 +137,19 @@ export default function PlayingXIPage() {
     recordMatchResult 
   } = useCampaignStore();
   
-  const campaign = getActiveCampaign();
-
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'xi' | 'schedule'>('xi');
+  const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('my');
   const [venue, setVenue] = useState('Bengaluru');
   const [showSimulator, setShowSimulator] = useState(false);
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
-
-  // Bench Swap Drawer state
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const campaign = mounted ? getActiveCampaign() : null;
 
   useEffect(() => {
     if (campaign && TEAM_HOME_CITY[campaign.teamId]) {
@@ -156,16 +157,28 @@ export default function PlayingXIPage() {
     }
   }, [campaign]);
 
+  // Prevent SSR/Client Hydration Mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="flex items-center gap-2.5 text-xs font-mono text-gray-400">
+          <Activity className="animate-spin text-amber-400" size={18} />
+          <span>Loading IPL War Room & Tournament Arena...</span>
+        </div>
+      </div>
+    );
+  }
+
   if (!campaign) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-white text-center">
-        <div className="p-8 rounded-3xl bg-slate-900 border border-white/10 max-w-md">
+        <div className="p-8 rounded-3xl bg-slate-900 border border-white/10 max-w-md shadow-2xl">
           <AlertCircle size={36} className="mx-auto text-amber-400 mb-3" />
-          <h3 className="text-lg font-black font-display mb-2">No Active Campaign</h3>
+          <h3 className="text-lg font-black font-display mb-2">No Active Campaign Found</h3>
           <p className="text-xs text-gray-400 mb-4">Please select your franchise to enter the war room.</p>
           <button
             onClick={() => router.push('/select-team')}
-            className="px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase cursor-pointer"
+            className="px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase cursor-pointer hover:bg-amber-400 transition-all"
           >
             Select Team
           </button>
@@ -204,10 +217,15 @@ export default function PlayingXIPage() {
 
   const currentInsight = VENUE_INSIGHTS[venue] || VENUE_INSIGHTS['Bengaluru'];
 
-  // Tournament Fixtures & Schedule
+  // Tournament Fixtures & Schedule (70 League Matches + 4 Playoff Matches)
   const schedule = campaign.schedule || [];
-  const currentMatch = schedule.find(f => f.status === 'CURRENT') || schedule[0];
-  const rivalFranchise = currentMatch ? getFranchise(currentMatch.rivalTeamId) : getFranchise('csk');
+  const myFixtures = schedule.filter(f => f.isMyMatch || f.stage !== 'League');
+  const currentMatch = schedule.find(f => f.isMyMatch && f.status === 'CURRENT') || myFixtures.find(f => f.status === 'CURRENT') || myFixtures[0];
+  
+  const rivalTeamId = currentMatch
+    ? (currentMatch.teamAId === campaign.teamId ? currentMatch.teamBId : currentMatch.teamAId)
+    : 'csk';
+  const rivalFranchise = getFranchise(rivalTeamId);
   const pointsTable = campaign.pointsTable || [];
 
   const handleLaunchMatch = (fixture?: TournamentFixture) => {
@@ -228,16 +246,16 @@ export default function PlayingXIPage() {
         
         {/* Banner with View Toggle (Lineup vs Schedule) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-3 border-b border-white/10 gap-2 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: franchise.color }}>
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl flex items-center justify-center text-lg shadow-md shrink-0" style={{ backgroundColor: franchise.color }}>
               {franchise.emoji}
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-mono font-black uppercase">
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-black uppercase">
                   PART 4: TOURNAMENT & MATCH ARENA
                 </span>
-                <span className="text-[10px] text-gray-400">14-Match Official IPL Season</span>
+                <span className="text-xs text-gray-400 font-mono">Official 74-Match IPL Campaign</span>
               </div>
               <h1 className="text-base sm:text-lg font-black font-display text-white">
                 {franchise.name} War Room & Matchday Operations
@@ -254,7 +272,7 @@ export default function PlayingXIPage() {
                   activeTab === 'xi' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <Users size={12} />
+                <Users size={13} />
                 <span>Playing XI & Field</span>
               </button>
               <button
@@ -263,8 +281,8 @@ export default function PlayingXIPage() {
                   activeTab === 'schedule' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <Calendar size={12} />
-                <span>Season Schedule & Table</span>
+                <Calendar size={13} />
+                <span>Tournament Schedule (74 Matches)</span>
               </button>
             </div>
 
@@ -287,14 +305,14 @@ export default function PlayingXIPage() {
               
               {/* Stadium & Venue Calibration */}
               <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
-                <label className="text-xs font-black uppercase text-gray-300 block mb-1.5 flex items-center gap-1.5">
+                <label className="text-xs font-black uppercase text-gray-200 block mb-1.5 flex items-center gap-1.5">
                   <MapPin size={13} className="text-amber-400" />
                   Match Fortress Stadium
                 </label>
                 <select 
                   value={venue} 
                   onChange={(e) => setVenue(e.target.value)}
-                  className="w-full bg-slate-950 border border-white/15 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-amber-400 cursor-pointer"
+                  className="w-full bg-slate-950 border border-white/20 rounded-xl p-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
                 >
                   {Object.keys(VENUE_INSIGHTS).map(v => (
                     <option key={v} value={v}>{v} — {VENUE_INSIGHTS[v]?.title}</option>
@@ -302,40 +320,40 @@ export default function PlayingXIPage() {
                 </select>
 
                 <div className="mt-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
-                  <div className="font-bold text-amber-300 text-[11px]">{currentInsight.title}</div>
-                  <div className="text-[10px] text-gray-300">{currentInsight.behavior}</div>
-                  <div className="text-[10px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
-                    <Sparkles size={11} /> {currentInsight.boost}
+                  <div className="font-bold text-amber-300 text-xs">{currentInsight.title}</div>
+                  <div className="text-[11px] text-gray-300 mt-0.5">{currentInsight.behavior}</div>
+                  <div className="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1">
+                    <Sparkles size={12} /> {currentInsight.boost}
                   </div>
                 </div>
               </div>
 
               {/* BCCI Compliance Status Bar */}
-              <div className="p-3 rounded-2xl bg-slate-900 border border-white/10">
-                <div className="text-[11px] font-black uppercase text-gray-400 tracking-wider mb-2 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10">
+                <div className="text-xs font-black uppercase text-gray-300 tracking-wider mb-2.5 flex items-center justify-between">
                   <span>BCCI Official Rule Validation</span>
                   {isCompliant ? (
-                    <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
                       ✓ Compliant
                     </span>
                   ) : (
-                    <span className="text-[9px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
                       ⚠️ Rule Alert
                     </span>
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] font-mono">
-                  <div className={`p-1.5 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                    <div className="text-[9px] uppercase font-sans text-gray-400">Overseas</div>
+                <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                  <div className={`p-2 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className="text-[10px] uppercase font-sans text-gray-400">Overseas</div>
                     <div className="text-sm font-black mt-0.5">{overseasInXI}/4 Max</div>
                   </div>
-                  <div className={`p-1.5 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                    <div className="text-[9px] uppercase font-sans text-gray-400">Keeper (WK)</div>
+                  <div className={`p-2 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className="text-[10px] uppercase font-sans text-gray-400">Keeper (WK)</div>
                     <div className="text-sm font-black mt-0.5">{wkInXI} in XI</div>
                   </div>
-                  <div className={`p-1.5 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                    <div className="text-[9px] uppercase font-sans text-gray-400">Bowlers/AR</div>
+                  <div className={`p-2 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className="text-[10px] uppercase font-sans text-gray-400">Bowlers/AR</div>
                     <div className="text-sm font-black mt-0.5">{bowlersInXI}/5 Min</div>
                   </div>
                 </div>
@@ -351,21 +369,21 @@ export default function PlayingXIPage() {
               </button>
 
               {/* Impact Player Slot */}
-              <div className="p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1">
-                    <Sparkles size={11} /> Impact Player Sub (12th Man)
+                    <Sparkles size={12} /> Impact Player Sub (12th Man)
                   </span>
                   <div className="text-xs font-black text-white mt-0.5">
                     {impactPlayer ? impactPlayer.name : 'Select Reserve'}
                   </div>
-                  <div className="text-[10px] text-gray-400">
+                  <div className="text-[11px] text-gray-400 font-mono">
                     {impactPlayer?.role} • OVR {impactPlayer?.Power_Index}
                   </div>
                 </div>
                 <button
-                  onClick={() => setBenchDrawerSlotIndex(11)} // slot 11 = impact sub
-                  className="px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-[10px] font-bold border border-indigo-500/30 cursor-pointer"
+                  onClick={() => setBenchDrawerSlotIndex(11)}
+                  className="px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 cursor-pointer"
                 >
                   Change
                 </button>
@@ -374,13 +392,13 @@ export default function PlayingXIPage() {
             </div>
 
             {/* Right 8 Columns: 2D Pitch Lineup in Proper Batting Order */}
-            <div className="lg:col-span-8 p-3 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
+            <div className="lg:col-span-8 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
               <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
-                <div className="text-xs font-black uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                <div className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-2">
                   <span>🏏 Official Matchday 11 (Batting Order 1 to 11)</span>
                   <span className="text-[10px] text-gray-400 font-normal">Use arrows to adjust order</span>
                 </div>
-                <span className="text-[10px] font-mono text-amber-400">
+                <span className="text-xs font-mono font-bold text-amber-400">
                   Total Squad OVR: {Math.round(fullPlayingXI.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0) / 11)}
                 </span>
               </div>
@@ -402,18 +420,18 @@ export default function PlayingXIPage() {
                           <div className="font-bold text-xs text-white flex items-center gap-1.5 truncate">
                             <span className="truncate">{player.name}</span>
                             {player.is_overseas && (
-                              <span className="text-[8px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono shrink-0">
+                              <span className="text-[9px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono shrink-0">
                                 OS ✈
                               </span>
                             )}
                             {player.role === 'WK' && (
-                              <span className="text-[8px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono shrink-0">
+                              <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono shrink-0">
                                 WK 🧤
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-gray-400 font-mono truncate">
-                            <span className="text-amber-300/80 font-bold">{BATTING_ROLES[index]}</span> • {player.role} • OVR {player.Power_Index}
+                          <div className="text-[11px] text-gray-400 font-mono truncate">
+                            <span className="text-amber-300 font-bold">{BATTING_ROLES[index]}</span> • {player.role} • OVR {player.Power_Index}
                           </div>
                         </div>
                       </div>
@@ -421,7 +439,7 @@ export default function PlayingXIPage() {
                       {/* Right: Stats Summary & Re-order Controls */}
                       <div className="flex items-center gap-2 shrink-0">
                         <div className="text-right hidden sm:block">
-                          <div className="text-[10px] font-mono text-gray-300 max-w-[140px] truncate">
+                          <div className="text-[11px] font-mono text-gray-300 max-w-[150px] truncate">
                             {player.statsSummary || `OVR ${player.Power_Index}`}
                           </div>
                         </div>
@@ -434,7 +452,7 @@ export default function PlayingXIPage() {
                             className="p-1 rounded bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
                             title="Move up batting order"
                           >
-                            <ArrowUp size={12} />
+                            <ArrowUp size={13} />
                           </button>
                           <button
                             onClick={() => handleMoveSlot(index, 'down')}
@@ -442,14 +460,14 @@ export default function PlayingXIPage() {
                             className="p-1 rounded bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
                             title="Move down batting order"
                           >
-                            <ArrowDown size={12} />
+                            <ArrowDown size={13} />
                           </button>
                         </div>
 
                         {/* Swap with Bench Button */}
                         <button
                           onClick={() => setBenchDrawerSlotIndex(index)}
-                          className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-[10px] font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
+                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
                         >
                           Swap
                         </button>
@@ -463,30 +481,49 @@ export default function PlayingXIPage() {
           </div>
         )}
 
-        {/* ─── TAB 2: FULL IPL TOURNAMENT SEASON & SCHEDULE ─── */}
+        {/* ─── TAB 2: FULL IPL TOURNAMENT SEASON & SCHEDULE (74 MATCHES) ─── */}
         {activeTab === 'schedule' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
             
-            {/* Left 7 Columns: 14-Match Official Fixtures Schedule */}
+            {/* Left 7 Columns: Fixtures Schedule with My 14 Matches vs All 74 Matches Toggle */}
             <div className="lg:col-span-7 p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+              
+              {/* Filter Tabs: My 14 Matches vs All 74 Matches */}
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2">
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
                     <Calendar size={13} className="text-amber-400" />
-                    IPL 2027 Official Fixture Schedule (14 Matches)
+                    IPL 2027 Tournament Schedule (74 Matches)
                   </h3>
-                  <p className="text-[10px] text-gray-400">Home & Away round-robin campaign</p>
+                  <p className="text-[11px] text-gray-400">14 Rounds of 5 Matches each + 4 Playoff Games</p>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">
-                  {schedule.filter(s => s.status === 'COMPLETED').length} / 14 Played
-                </span>
+
+                <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+                  <button
+                    onClick={() => setScheduleFilter('my')}
+                    className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                      scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    My 14 Matches
+                  </button>
+                  <button
+                    onClick={() => setScheduleFilter('all')}
+                    className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                      scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    All 74 Fixtures
+                  </button>
+                </div>
               </div>
 
               {/* Fixture cards */}
               <div className="space-y-2 overflow-y-auto max-h-[460px] pr-1">
-                {schedule.map((fixture) => {
+                {(scheduleFilter === 'my' ? myFixtures : schedule).map((fixture) => {
                   const isCurrent = fixture.status === 'CURRENT';
                   const isDone = fixture.status === 'COMPLETED';
+                  const isPlayoff = fixture.stage !== 'League';
 
                   return (
                     <div
@@ -495,37 +532,45 @@ export default function PlayingXIPage() {
                         isCurrent
                           ? 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-slate-950 border-amber-500/50 shadow-lg shadow-amber-500/10'
                           : isDone
-                          ? 'bg-slate-950/70 border-white/5 opacity-80'
+                          ? 'bg-slate-950/70 border-white/5 opacity-85'
+                          : isPlayoff
+                          ? 'bg-purple-950/20 border-purple-500/30'
                           : 'bg-slate-950/90 border-white/10'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         {/* Match info */}
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-white/10 text-white font-mono font-black text-xs flex items-center justify-center shrink-0">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-8 h-8 rounded-xl font-mono font-black text-xs flex items-center justify-center shrink-0 ${
+                            isPlayoff ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-white/10 text-white'
+                          }`}>
                             #{fixture.matchNo}
                           </div>
-                          <div>
-                            <div className="text-xs font-black text-white flex items-center gap-2">
-                              <span>{franchise.short}</span>
+                          <div className="min-w-0">
+                            <div className="text-xs font-black text-white flex items-center gap-2 truncate">
+                              <span style={{ color: fixture.teamAColor }}>{fixture.teamAShort} {fixture.teamAEmoji}</span>
                               <span className="text-gray-400 font-normal">vs</span>
-                              <span>{fixture.rivalShort}</span>
-                              <span className="text-base">{fixture.rivalEmoji}</span>
+                              <span style={{ color: fixture.teamBColor }}>{fixture.teamBShort} {fixture.teamBEmoji}</span>
+                              {isPlayoff && (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono uppercase">
+                                  {fixture.stage}
+                                </span>
+                              )}
                             </div>
-                            <div className="text-[10px] text-gray-400 font-mono">
-                              {fixture.isHome ? '🏠 Home' : '✈ Away'} • {fixture.stadiumName}
+                            <div className="text-[11px] text-gray-400 font-mono truncate">
+                              Round {fixture.round} • {fixture.stadiumName}
                             </div>
                           </div>
                         </div>
 
                         {/* Status or Launch Button */}
-                        <div>
+                        <div className="shrink-0">
                           {isCurrent ? (
                             <button
                               onClick={() => handleLaunchMatch(fixture)}
                               className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase flex items-center gap-1 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
                             >
-                              <Swords size={12} />
+                              <Swords size={13} />
                               <span>Play Match</span>
                             </button>
                           ) : isDone ? (
@@ -533,11 +578,11 @@ export default function PlayingXIPage() {
                               <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
                                 fixture.result?.winnerTeamId === franchise.short.toLowerCase()
                                   ? 'bg-emerald-500/20 text-emerald-300'
-                                  : 'bg-rose-500/20 text-rose-300'
+                                  : 'bg-white/10 text-gray-300'
                               }`}>
-                                {fixture.result?.winnerTeamId === franchise.short.toLowerCase() ? 'WON (+2 PTS)' : 'LOST'}
+                                {fixture.result?.winnerName?.split(' ')[0]} Won
                               </span>
-                              <div className="text-[9px] text-gray-400 mt-0.5 font-mono">
+                              <div className="text-[10px] text-gray-400 mt-0.5 font-mono">
                                 by {fixture.result?.margin}
                               </div>
                             </div>
@@ -561,7 +606,7 @@ export default function PlayingXIPage() {
                   <Trophy size={13} className="text-amber-400" />
                   IPL 2027 Championship Standings
                 </h3>
-                <p className="text-[10px] text-gray-400">Top 4 Franchises Qualify for Playoffs</p>
+                <p className="text-[11px] text-gray-400">Top 4 Franchises Qualify for IPL Playoffs</p>
               </div>
 
               {/* Table */}
@@ -586,8 +631,8 @@ export default function PlayingXIPage() {
                       return (
                         <tr 
                           key={row.teamId}
-                          className={`hover:bg-white/5 ${
-                            isMyTeam ? 'bg-amber-500/10 font-bold text-amber-200' : ''
+                          className={`hover:bg-white/5 transition-colors ${
+                            isMyTeam ? 'bg-amber-500/15 font-bold text-amber-200' : ''
                           }`}
                         >
                           <td className="py-1.5">
@@ -602,8 +647,8 @@ export default function PlayingXIPage() {
                             <span className="font-bold truncate">{row.shortName}</span>
                           </td>
                           <td className="py-1.5 text-center text-gray-400">{row.played}</td>
-                          <td className="py-1.5 text-center text-emerald-400">{row.won}</td>
-                          <td className="py-1.5 text-center text-rose-400">{row.lost}</td>
+                          <td className="py-1.5 text-center text-emerald-400 font-bold">{row.won}</td>
+                          <td className="py-1.5 text-center text-rose-400 font-bold">{row.lost}</td>
                           <td className="py-1.5 text-right text-[11px] text-gray-400">
                             {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
                           </td>
@@ -615,7 +660,7 @@ export default function PlayingXIPage() {
                 </table>
               </div>
 
-              <div className="pt-2 border-t border-white/10 text-[10px] text-gray-400 text-center font-sans">
+              <div className="pt-2 border-t border-white/10 text-[11px] text-gray-400 text-center font-sans">
                 Gold positions (1-4) advance to IPL Playoffs (Qualifier 1 & Eliminator).
               </div>
             </div>
@@ -638,7 +683,7 @@ export default function PlayingXIPage() {
                       : `Swap into Slot #${benchDrawerSlotIndex + 1} (${BATTING_ROLES[benchDrawerSlotIndex]})`
                     }
                   </h3>
-                  <p className="text-[11px] text-gray-400">Choose any bench player from your 25-man squad</p>
+                  <p className="text-xs text-gray-400">Choose any bench player from your 25-man squad</p>
                 </div>
                 <button
                   onClick={() => setBenchDrawerSlotIndex(null)}
@@ -660,7 +705,6 @@ export default function PlayingXIPage() {
                       key={bp.player_id}
                       onClick={() => {
                         if (benchDrawerSlotIndex === 11) {
-                          // Impact sub
                           useCampaignStore.getState().setPlayingXI(campaign.playingXI, bp.player_id);
                         } else {
                           replacePlayingXIPlayer(benchDrawerSlotIndex, bp.player_id);
@@ -672,16 +716,16 @@ export default function PlayingXIPage() {
                       <div>
                         <div className="font-bold text-xs text-white flex items-center gap-1.5">
                           <span>{bp.name}</span>
-                          {bp.is_overseas && <span className="text-[8px] px-1 rounded bg-sky-500/20 text-sky-300">OS</span>}
-                          {bp.role === 'WK' && <span className="text-[8px] px-1 rounded bg-amber-500/20 text-amber-300">WK</span>}
+                          {bp.is_overseas && <span className="text-[9px] px-1 rounded bg-sky-500/20 text-sky-300">OS</span>}
+                          {bp.role === 'WK' && <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300">WK</span>}
                         </div>
-                        <div className="text-[10px] text-gray-400 font-mono">
+                        <div className="text-[11px] text-gray-400 font-mono">
                           {bp.role} • Salary: ₹{bp.price} Cr
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-xs font-black text-amber-300 font-mono">OVR {bp.Power_Index}</div>
-                        <span className="text-[9px] text-amber-400 font-bold">Tap to Swap</span>
+                        <span className="text-[10px] text-amber-400 font-bold">Tap to Swap</span>
                       </div>
                     </div>
                   ))
@@ -707,7 +751,7 @@ export default function PlayingXIPage() {
           myFranchise={franchise}
           mySquad={activeSquad}
           myPlayingXIIds={campaign.playingXI}
-          rivalFranchise={selectedFixtureForMatch ? getFranchise(selectedFixtureForMatch.rivalTeamId) : rivalFranchise}
+          rivalFranchise={selectedFixtureForMatch ? getFranchise(rivalTeamId) : rivalFranchise}
           venueName={selectedFixtureForMatch ? selectedFixtureForMatch.stadiumName : currentInsight.title}
           matchFixture={selectedFixtureForMatch || currentMatch}
           onMatchComplete={(res) => {

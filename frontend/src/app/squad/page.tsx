@@ -35,9 +35,18 @@ export default function SquadRetainReleasePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showMatchupModal, setShowMatchupModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [showConfirmAuction, setShowConfirmAuction] = useState(false)
   const [showSimulator, setShowSimulator] = useState(false)
   const isRetainLocked = campaign?.lockedPhases?.includes('retain_release')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-slate-950" />
+  }
 
   if (!campaign) {
     return (

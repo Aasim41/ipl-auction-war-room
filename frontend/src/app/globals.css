@@ -665,3 +665,44 @@ body::after {
   background: #f5e642;
   color: #0a0a0a;
 }
+
+
+/* ─── GAMER CINEMATIC ANIMATIONS ───────────────────────── */
+@keyframes transfer-beam {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes boundary-flare {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+  50% { transform: scale(1.04); box-shadow: 0 0 40px rgba(245, 158, 11, 0.7); }
+  100% { transform: scale(1); box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+}
+
+@keyframes wicket-blast {
+  0% { transform: scale(0.8) rotate(-5deg); filter: brightness(1.8); }
+  50% { transform: scale(1.08) rotate(3deg); filter: brightness(2); }
+  100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+}
+
+@keyframes card-deal-in {
+  0% { opacity: 0; transform: translateY(20px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-transfer-beam {
+  animation: transfer-beam 1.2s ease-in-out infinite;
+}
+
+.animate-boundary-flare {
+  animation: boundary-flare 0.8s ease-out forwards;
+}
+
+.animate-wicket-blast {
+  animation: wicket-blast 0.6s ease-out forwards;
+}
+
+.animate-card-deal {
+  animation: card-deal-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

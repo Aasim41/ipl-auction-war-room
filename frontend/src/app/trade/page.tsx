@@ -31,8 +31,17 @@ export default function TradeWindowPage() {
   const [tradeMessage, setTradeMessage] = useState<string | null>(null)
   const [searchMy, setSearchMy] = useState('')
   const [searchRival, setSearchRival] = useState('')
+  const [mounted, setMounted] = useState(false)
   const [isTradingAnimation, setIsTradingAnimation] = useState(false)
   const [showConfirmLock, setShowConfirmLock] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-slate-950" />
+  }
 
   if (!campaign) {
     return (
