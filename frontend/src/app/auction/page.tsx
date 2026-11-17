@@ -571,6 +571,17 @@ export default function MiniAuctionPage() {
               <span>AI Auto-Complete Auction</span>
             </button>
 
+            {(activeSquadCount >= 18 || currentIndex >= auctionPool.length - 1 || soldLog.length > 0) && (
+              <button
+                onClick={handleFinishAuction}
+                className="px-3.5 sm:px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer hover:scale-[1.03] active:scale-95 transition-all shrink-0 animate-pulse"
+                title="Proceed to Playing XI & Schedule"
+              >
+                <span>Proceed to Playing XI</span>
+                <ArrowRight size={14} />
+              </button>
+            )}
+
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
               className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition-colors"
@@ -1228,28 +1239,72 @@ export default function MiniAuctionPage() {
 
             {/* TAB 4: SALES LEDGER */}
             {sideTab === 'ledger' && (
-              <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-72">
-                {soldLog.length === 0 ? (
-                  <div className="h-40 flex items-center justify-center text-xs text-gray-500 text-center">
-                    No lots sold yet.
-                  </div>
-                ) : (
-                  soldLog.map((s, idx) => (
-                    <div key={idx} className="p-2 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-xs">
-                      <div>
-                        <span className="font-bold text-white block">{s.player.name}</span>
-                        <span className="text-[10px] text-gray-400">Sold to: <strong className="text-amber-300">{s.winner}</strong></span>
+              <div className="flex-1 flex flex-col min-h-0">
+                {(activeSquadCount >= 18 || soldLog.length > 0) && (
+                  <div className="p-2.5 mb-2 rounded-xl bg-emerald-950/70 border border-emerald-500/40 flex items-center justify-between gap-2 shadow-sm shrink-0">
+                    <div>
+                      <div className="text-xs font-bold text-emerald-300 flex items-center gap-1">
+                        <CheckCircle2 size={13} />
+                        <span>Squad Finalized ({activeSquadCount} Players)</span>
                       </div>
-                      <span className="font-mono text-emerald-400 font-black">₹{s.price.toFixed(2)} Cr</span>
+                      <div className="text-[10px] text-gray-300">Reviewed ledger? Ready for Matchday.</div>
                     </div>
-                  ))
+                    <button
+                      onClick={handleFinishAuction}
+                      className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase flex items-center gap-1 cursor-pointer transition-all shadow shrink-0 hover:scale-[1.02] active:scale-95"
+                    >
+                      <span>Proceed</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  </div>
                 )}
+                <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-72">
+                  {soldLog.length === 0 ? (
+                    <div className="h-40 flex items-center justify-center text-xs text-gray-500 text-center">
+                      No lots sold yet.
+                    </div>
+                  ) : (
+                    soldLog.map((s, idx) => (
+                      <div key={idx} className="p-2 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-xs">
+                        <div>
+                          <span className="font-bold text-white block">{s.player.name}</span>
+                          <span className="text-[10px] text-gray-400">Sold to: <strong className="text-amber-300">{s.winner}</strong></span>
+                        </div>
+                        <span className="font-mono text-emerald-400 font-black">₹{s.price.toFixed(2)} Cr</span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
 
           </div>
 
         </div>
+
+        {/* Global Bottom Proceed Floating Bar when squad minimums satisfied */}
+        {activeSquadCount >= 18 && (
+          <div className="mt-2.5 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-slate-900/95 via-slate-900 to-slate-950 border border-emerald-500/40 flex items-center justify-between gap-2 shadow-2xl shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <div>
+                <div className="text-xs font-bold text-white">
+                  Squad Ready for Matchday ({activeSquadCount} Players)
+                </div>
+                <div className="text-[10px] text-gray-400 font-mono">
+                  BCCI Roster Minimums Satisfied • Remaining Purse: ₹{campaign.remainingPurse.toFixed(2)} Cr
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleFinishAuction}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+            >
+              <span>Proceed to Playing XI & Schedule</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        )}
 
       </main>
 
@@ -1599,7 +1654,10 @@ export default function MiniAuctionPage() {
             {/* Bottom Proceed CTA */}
             <div className="pt-3 border-t border-white/10 flex items-center gap-2 shrink-0">
               <button
-                onClick={() => setAutoAuctionSummary(null)}
+                onClick={() => {
+                  setAutoAuctionSummary(null);
+                  setSideTab('ledger');
+                }}
                 className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase cursor-pointer"
               >
                 Review Ledger
