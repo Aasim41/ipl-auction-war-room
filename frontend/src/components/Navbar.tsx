@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { 
@@ -12,34 +12,53 @@ import {
   Target, 
   MapPin, 
   ArrowLeft,
-  Activity
+  Activity,
+  Lock,
+  CheckCircle2,
+  Calendar,
+  RotateCcw,
+  Plus,
+  Coins,
+  ChevronDown
 } from 'lucide-react'
-import { useStore } from '../store/useStore'
 import { useCampaignStore } from '../store/useCampaignStore'
-import { getStadiumForTeam } from '../data/stadiums'
-import { getFranchise } from '../data/franchises'
-
-const navLinks = [
-  { href: '/trade', label: '1. Trade', icon: ArrowLeftRight },
-  { href: '/squad', label: '2. Retain & Release', icon: Users },
-  { href: '/auction', label: '3. Mini-Auction', icon: Gavel },
-  { href: '/playing-xi', label: '4. Playing XI & Ground', icon: Crosshair },
-  { href: '/hub', label: 'Analytics', icon: Activity },
-  { href: '/stats', label: 'Player Pool', icon: Shield },
-  { href: '/win-prob', label: 'Win Matrix', icon: Target },
-]
+import { getFranchise, IPL_FRANCHISES } from '../data/franchises'
+import { OnboardingAuthModal } from './OnboardingAuthModal'
+import { BCCIRulesModal } from './BCCIRulesModal'
 
 export function Navbar() {
-  const theme = useStore((state) => state.theme)
-  const { getActiveCampaign } = useCampaignStore()
-  const activeCamp = getActiveCampaign()
-  const activeTeamId = activeCamp?.teamId || theme
-  const stadium = getStadiumForTeam(activeTeamId)
-  const franchise = getFranchise(activeTeamId)
   const pathname = usePathname()
   const router = useRouter()
+  const { 
+    currentUser, 
+    campaigns, 
+    activeCampaignId, 
+    getActiveCampaign, 
+    switchCampaign, 
+    createCampaign, 
+    resetCampaign 
+  } = useCampaignStore()
 
-  if (pathname === '/' || pathname === '/select-team') return null
+  const [mounted, setMounted] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showRulesModal, setShowRulesModal] = useState(false)
+  const [showTeamSwitcher, setShowTeamSwitcher] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (pathname === '/select-team') return null
+
+  const activeCamp = mounted ? getActiveCampaign() : null
+  const franchise = activeCamp ? getFranchise(activeCamp.teamId) : getFranchise('rcb')
+  const lockedPhases = activeCamp?.lockedPhases || []
+
+  // Compute active roster vitals
+  const activeCount = activeCamp ? activeCamp.squad.filter(p => !p.is_released).length : 0
+  const overseasCount = activeCamp ? activeCamp.squad.filter(p => !p.is_released && p.is_overseas).length : 0
+  const remainingPurse = activeCamp ? activeCamp.remainingPurse : 125.0
 
   const handleBack = () => {
     if (pathname === '/playing-xi') {
@@ -55,88 +74,280 @@ export function Navbar() {
     }
   }
 
+  // The 4 Core Sequential Phases
+  const PHASES = [
+    { 
+      id: 'trade', 
+      label: '1. Trade Window', 
+      href: '/trade', 
+      icon: ArrowLeftRight,
+      isLocked: lockedPhases.includes('trade')
+    },
+    { 
+      id: 'retain_release', 
+      label: '2. Retain & Release', 
+      href: '/squad', 
+      icon: Users,
+      isLocked: lockedPhases.includes('retain_release')
+    },
+    { 
+      id: 'mini_auction', 
+      label: '3. Mini-Auction', 
+      href: '/auction', 
+      icon: Gavel,
+      isLocked: lockedPhases.includes('mini_auction')
+    },
+    { 
+      id: 'playing_xi', 
+      label: '4. Playing XI & Schedule', 
+      href: '/playing-xi', 
+      icon: Calendar,
+      isLocked: false
+    },
+  ]
+
   return (
-    <nav className="fixed top-0 w-full h-12 sm:h-14 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
-      <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-2 sm:px-4 gap-2">
-        
-        {/* Left: Back Button & Brand Logo */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          <button
-            onClick={handleBack}
-            className="px-2 sm:px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 text-xs font-black cursor-pointer transition-all border border-white/15 shadow-sm"
-            title="Go Back to Previous Phase"
-          >
-            <ArrowLeft size={14} className="text-amber-400" />
-            <span className="hidden xs:inline">Back</span>
-          </button>
-
-          <Link href="/" className="flex items-center gap-1.5 group shrink-0">
-            <div
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-black text-xs sm:text-sm tracking-tight transition-all duration-300 group-hover:scale-105 shadow-lg"
-              style={{
-                backgroundColor: franchise.color || 'var(--accent-primary)',
-                color: '#ffffff',
-                boxShadow: '0 0 12px var(--accent-glow)'
-              }}
-            >
-              {franchise.emoji || '🏏'}
-            </div>
-            <span className="font-display text-sm sm:text-base tracking-wider text-white hidden md:inline">
-              AUCTION<span style={{ color: franchise.color || 'var(--accent-primary)' }}>XI</span>
-            </span>
-          </Link>
-        </div>
-
-        {/* Center: Phase Tabs (Scrollable on mobile landscape, always visible!) */}
-        <div className="flex items-center gap-1 overflow-x-auto max-w-[60vw] sm:max-w-none scrollbar-none py-1 px-1">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                prefetch={true}
-                className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-[0_0_15px_rgba(245,158,11,0.6)] scale-[1.03] border border-amber-400'
-                    : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/5'
-                }`}
+    <>
+      <nav className="fixed top-0 left-0 right-0 w-full h-12 sm:h-14 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
+        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-2 sm:px-4 gap-2">
+          
+          {/* Left: Back Button & Franchise Identity */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {pathname !== '/' && (
+              <button
+                onClick={handleBack}
+                className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 text-[11px] font-bold cursor-pointer transition-all border border-white/15"
+                title="Go Back"
               >
-                {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping shrink-0" />
+                <ArrowLeft size={13} className="text-amber-400" />
+                <span className="hidden xs:inline">Back</span>
+              </button>
+            )}
+
+            <Link href="/" className="flex items-center gap-1.5 group shrink-0">
+              <div
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-black text-xs sm:text-sm shadow-lg transition-transform group-hover:scale-105"
+                style={{
+                  backgroundColor: franchise.color || '#e11d48',
+                  color: '#ffffff'
+                }}
+              >
+                {franchise.emoji}
+              </div>
+              <div className="hidden md:block leading-tight text-left">
+                <span className="font-display font-black text-xs sm:text-sm text-white tracking-wide block">
+                  AUCTION<span style={{ color: franchise.color || '#e11d48' }}>XI</span>
+                </span>
+                <span className="text-[9px] text-gray-400 font-mono block">
+                  {franchise.short} WAR ROOM
+                </span>
+              </div>
+            </Link>
+
+            {/* Quick Saves / Switcher Dropdown */}
+            {activeCamp && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowTeamSwitcher(!showTeamSwitcher)}
+                  className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer border border-white/10"
+                  title="Switch franchise campaign save"
+                >
+                  <span className="max-w-[70px] truncate">{franchise.name.split(' ')[0]}</span>
+                  <ChevronDown size={11} className="text-gray-400" />
+                </button>
+
+                {showTeamSwitcher && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900 border border-white/20 rounded-2xl p-2.5 shadow-2xl z-50 text-white backdrop-blur-xl">
+                    <div className="text-[10px] font-black uppercase text-gray-400 tracking-wider mb-2 px-1">
+                      Active Franchise Saves
+                    </div>
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                      {Object.values(campaigns).map((c) => {
+                        const f = getFranchise(c.teamId)
+                        const isSelected = c.id === activeCamp.id
+                        return (
+                          <button
+                            key={c.id}
+                            onClick={() => {
+                              switchCampaign(c.id)
+                              setShowTeamSwitcher(false)
+                            }}
+                            className={`w-full text-left p-1.5 rounded-xl flex items-center justify-between text-xs font-bold cursor-pointer transition-all ${
+                              isSelected ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'hover:bg-white/10 text-gray-300'
+                            }`}
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <span>{f.emoji}</span>
+                              <span>{f.short}</span>
+                            </span>
+                            <span className="text-[9px] font-mono text-gray-400">
+                              ₹{c.remainingPurse.toFixed(1)}Cr
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <div className="pt-2 border-t border-white/10 mt-2 flex items-center justify-between">
+                      <Link
+                        href="/select-team"
+                        onClick={() => setShowTeamSwitcher(false)}
+                        className="text-[10px] font-bold text-amber-400 hover:underline flex items-center gap-1"
+                      >
+                        <Plus size={11} /> New Franchise Save
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setShowTeamSwitcher(false)
+                          setShowResetConfirm(true)
+                        }}
+                        className="text-[10px] text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <RotateCcw size={11} /> Reset Season
+                      </button>
+                    </div>
+                  </div>
                 )}
-                <link.icon size={12} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
-                <span>{link.label}</span>
-              </Link>
-            )
-          })}
-        </div>
-
-        {/* Right: Franchise & Fortress / GM Badge */}
-        <Link
-          href="/select-team"
-          className="flex items-center gap-2 px-2.5 py-1 rounded-xl border transition-all hover:scale-105 group cursor-pointer shrink-0 bg-black/50"
-          style={{
-            borderColor: franchise.color || 'var(--accent-primary)',
-          }}
-          title="Switch franchise campaign"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-          <div className="text-left text-xs leading-tight">
-            <span 
-              className="font-black uppercase tracking-wider block text-[11px]" 
-              style={{ color: franchise.color || 'var(--accent-primary)' }}
-            >
-              {stadium.teamShort}
-            </span>
-            <span className="text-[9px] text-gray-400 group-hover:text-white flex items-center gap-0.5">
-              <MapPin size={8} className="text-emerald-400" />
-              {stadium.shortName}
-            </span>
+              </div>
+            )}
           </div>
-        </Link>
 
-      </div>
-    </nav>
+          {/* Center: The 4 Championship Phases (Single Clean Bar) */}
+          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto max-w-[55vw] sm:max-w-none scrollbar-none py-1 px-1">
+            {PHASES.map((phase) => {
+              const isActive = pathname === phase.href
+              const isLocked = phase.isLocked
+
+              if (isLocked) {
+                return (
+                  <div
+                    key={phase.id}
+                    title="Phase completed and locked for this tournament cycle according to BCCI rules."
+                    className="px-2.5 sm:px-3 py-1 rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1.5 shrink-0 bg-slate-900/60 text-gray-500 border border-white/5 cursor-not-allowed opacity-75"
+                  >
+                    <Lock size={11} className="text-gray-500" />
+                    <span>{phase.label}</span>
+                  </div>
+                )
+              }
+
+              return (
+                <Link
+                  key={phase.id}
+                  href={phase.href}
+                  className={`px-2.5 sm:px-3 py-1 rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                    isActive
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-[0_0_15px_rgba(245,158,11,0.6)] scale-[1.02] border border-amber-400'
+                      : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/10'
+                  }`}
+                >
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping shrink-0" />
+                  )}
+                  <phase.icon size={12} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
+                  <span>{phase.label}</span>
+                </Link>
+              )
+            })}
+
+            {/* Quick Rules Button */}
+            <button
+              onClick={() => setShowRulesModal(true)}
+              className="px-2 py-1 rounded-xl text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer shrink-0 hidden lg:flex items-center gap-1"
+            >
+              <Shield size={11} className="text-amber-400" />
+              <span>Rules</span>
+            </button>
+          </div>
+
+          {/* Right: Live Gaming HUD Stats (Purse + Squad + Profile) */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {activeCamp && (
+              <>
+                {/* Purse Pill */}
+                <div 
+                  className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 text-[11px] font-mono font-black text-amber-300"
+                  title="Remaining Mini-Auction Purse"
+                >
+                  <Coins size={12} className="text-amber-400" />
+                  <span>₹{remainingPurse.toFixed(1)}Cr</span>
+                </div>
+
+                {/* Squad Count Pill */}
+                <div 
+                  className="px-2 py-1 rounded-xl bg-slate-900 border border-white/10 flex items-center gap-1 text-[10px] font-mono font-bold text-gray-300 hidden sm:flex"
+                  title="Active squad size (Max 25) & Overseas count (Max 8)"
+                >
+                  <Users size={11} className="text-sky-400" />
+                  <span>{activeCount}/25</span>
+                  <span className={`text-[9px] px-1 rounded ${overseasCount > 8 ? 'bg-rose-500/30 text-rose-300' : 'bg-white/5 text-gray-400'}`}>
+                    {overseasCount} OS
+                  </span>
+                </div>
+              </>
+            )}
+
+            {/* GM Profile Pill */}
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-2 sm:px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-black cursor-pointer transition-all border border-white/15"
+              title="Manager Profile & Save Slots"
+            >
+              <span className="text-sm">{currentUser?.avatar || '👑'}</span>
+              <span className="hidden sm:inline text-[11px] max-w-[80px] truncate">
+                {currentUser?.gamerTag || 'GM'}
+              </span>
+            </button>
+          </div>
+
+        </div>
+      </nav>
+
+      {/* Profile & Auth Modal */}
+      <OnboardingAuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
+
+      {/* BCCI Official Rules Modal */}
+      <BCCIRulesModal
+        isOpen={showRulesModal}
+        onClose={() => setShowRulesModal(false)}
+      />
+
+      {/* Reset Season Confirmation Modal */}
+      {showResetConfirm && activeCamp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-slate-950 border border-rose-500/30 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto mb-3">
+              <RotateCcw size={24} />
+            </div>
+            <h3 className="text-base font-black text-white mb-1">
+              Reset {franchise.name} Season?
+            </h3>
+            <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+              This will restart the IPL 2027 cycle for this franchise back to the Trade Window with the original 2026 squad and full purse.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  resetCampaign(activeCamp.id)
+                  setShowResetConfirm(false)
+                  router.push('/trade')
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-black text-white cursor-pointer shadow-lg shadow-rose-600/30"
+              >
+                Confirm Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

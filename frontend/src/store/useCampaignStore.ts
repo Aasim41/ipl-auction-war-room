@@ -1,6 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { getFranchise, IPLPlayer, IPL_FRANCHISES } from '../data/franchises'
+import { 
+  generateTournamentSchedule, 
+  generateInitialPointsTable, 
+  TournamentFixture, 
+  TournamentPointsEntry 
+} from '../data/scheduleGenerator'
 
 export interface CampaignPlayer extends IPLPlayer {
   is_released?: boolean
@@ -25,10 +31,15 @@ export interface UserCampaign {
     rivalTeam: string
     cashAdjustment: number
   }>
-  playingXI: string[] // player_ids
+  playingXI: string[] // player_ids in batting order (0: Opener 1 ... 10: No. 11)
   impactPlayerId?: string
   rulesAcknowledged: boolean
   lastSaved: string
+  // Tournament season mode
+  schedule: TournamentFixture[]
+  currentMatchIndex: number
+  pointsTable: TournamentPointsEntry[]
+  lockedPhases: Array<'trade' | 'retain_release' | 'mini_auction'>
 }
 
 export interface UserProfile {
@@ -63,7 +74,7 @@ interface CampaignStoreState {
   deleteCampaign: (campaignId: string) => void
   resetCampaign: (campaignId: string) => void
   
-  // Phase Transitions
+  // Phase Transitions & Lockdown ("no going back in the cycle")
   advancePhase: (nextPhase: UserCampaign['currentPhase']) => void
   acknowledgeRules: () => void
   
@@ -72,6 +83,12 @@ interface CampaignStoreState {
   addAuctionPlayerToSquad: (player: CampaignPlayer, bidAmount: number) => boolean
   executeTrade: (playerOutId: string, playerIn: CampaignPlayer, rivalTeamId: string, cashDelta: number) => boolean
   setPlayingXI: (playerIds: string[], impactPlayerId?: string) => void
+  swapPlayingXISlots: (indexA: number, indexB: number) => void
+  replacePlayingXIPlayer: (slotIndex: number, newPlayerId: string) => void
+  autoOptimizePlayingXI: () => void
+  
+  // Tournament Season & Match Simulation
+  recordMatchResult: (matchNo: number, resultData: TournamentFixture['result']) => void
 }
 
 const DEFAULT_USER: UserProfile = {
@@ -120,12 +137,10 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
         if (!target) return false
 
-        // Check PIN if profile has one
         if (target.pin && pin && target.pin !== pin.trim()) {
           return false
         }
 
-        // Find their most recently saved campaign
         const userCamps = Object.values(campaigns).filter((c) => c.userId === target.id)
         const lastCamp = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())[0]
 
@@ -161,11 +176,10 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       deleteProfile: (userId) => {
-        const { profiles, campaigns, currentUserId } = get()
+        const { profiles, campaigns } = get()
         const updatedProfiles = { ...profiles }
         delete updatedProfiles[userId]
 
-        // Also clean up campaigns for this user
         const updatedCampaigns = { ...campaigns }
         Object.keys(updatedCampaigns).forEach((cid) => {
           if (updatedCampaigns[cid].userId === userId) {
@@ -191,7 +205,6 @@ export const useCampaignStore = create<CampaignStoreState>()(
         const franchise = getFranchise(teamId)
         const campaignId = `${currentUser.id}_${teamId}_2027`
 
-        // Format full squad with campaign metadata
         const initialSquad: CampaignPlayer[] = franchise.squad2026.map((p, idx) => ({
           ...p,
           player_id: p.player_id || `${teamId}_${idx + 1}`,
@@ -199,6 +212,9 @@ export const useCampaignStore = create<CampaignStoreState>()(
           is_retained: true,
           is_released: false
         }))
+
+        const schedule = generateTournamentSchedule(teamId)
+        const pointsTable = generateInitialPointsTable()
 
         const newCampaign: UserCampaign = {
           id: campaignId,
@@ -213,7 +229,11 @@ export const useCampaignStore = create<CampaignStoreState>()(
           tradedHistory: [],
           playingXI: initialSquad.slice(0, 11).map((p) => p.player_id),
           rulesAcknowledged: false,
-          lastSaved: new Date().toISOString()
+          lastSaved: new Date().toISOString(),
+          schedule,
+          currentMatchIndex: 0,
+          pointsTable,
+          lockedPhases: []
         }
 
         set({
@@ -232,16 +252,44 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       getActiveCampaign: () => {
         const { activeCampaignId, campaigns, currentUserId } = get()
+        let active: UserCampaign | null = null
+
         if (activeCampaignId && campaigns[activeCampaignId]) {
-          return campaigns[activeCampaignId]
+          active = campaigns[activeCampaignId]
+        } else {
+          const userCamps = Object.values(campaigns).filter((c) => c.userId === currentUserId)
+          if (userCamps.length > 0) {
+            const sorted = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())
+            active = sorted[0]
+          }
         }
-        // If not set, check if current user has any saved campaign
-        const userCamps = Object.values(campaigns).filter((c) => c.userId === currentUserId)
-        if (userCamps.length > 0) {
-          const sorted = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())
-          return sorted[0]
+
+        if (active) {
+          // Self-heal: ensure tournament schedule and points table are present
+          let needsUpdate = false
+          let updatedActive = { ...active }
+
+          if (!updatedActive.schedule || updatedActive.schedule.length === 0) {
+            updatedActive.schedule = generateTournamentSchedule(updatedActive.teamId)
+            updatedActive.currentMatchIndex = 0
+            needsUpdate = true
+          }
+          if (!updatedActive.pointsTable || updatedActive.pointsTable.length === 0) {
+            updatedActive.pointsTable = generateInitialPointsTable()
+            needsUpdate = true
+          }
+          if (!updatedActive.lockedPhases) {
+            updatedActive.lockedPhases = []
+            needsUpdate = true
+          }
+
+          if (needsUpdate) {
+            get().updateActiveCampaign(() => updatedActive)
+            return updatedActive
+          }
         }
-        return null
+
+        return active
       },
 
       getUserCampaigns: () => {
@@ -296,7 +344,11 @@ export const useCampaignStore = create<CampaignStoreState>()(
           releasedStars: [],
           tradedHistory: [],
           playingXI: resetSquad.slice(0, 11).map((p) => p.player_id),
-          lastSaved: new Date().toISOString()
+          lastSaved: new Date().toISOString(),
+          schedule: generateTournamentSchedule(current.teamId),
+          currentMatchIndex: 0,
+          pointsTable: generateInitialPointsTable(),
+          lockedPhases: []
         }
 
         set({
@@ -305,10 +357,29 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       advancePhase: (nextPhase) => {
-        get().updateActiveCampaign((prev) => ({
-          ...prev,
-          currentPhase: nextPhase
-        }))
+        get().updateActiveCampaign((prev) => {
+          const locked: Array<'trade' | 'retain_release' | 'mini_auction'> = [...(prev.lockedPhases || [])]
+          
+          // Enforce "once a cycle is started there is no going back"
+          if (nextPhase === 'retain_release' && !locked.includes('trade')) {
+            locked.push('trade')
+          }
+          if (nextPhase === 'mini_auction') {
+            if (!locked.includes('trade')) locked.push('trade')
+            if (!locked.includes('retain_release')) locked.push('retain_release')
+          }
+          if (nextPhase === 'playing_xi' || nextPhase === 'match') {
+            if (!locked.includes('trade')) locked.push('trade')
+            if (!locked.includes('retain_release')) locked.push('retain_release')
+            if (!locked.includes('mini_auction')) locked.push('mini_auction')
+          }
+
+          return {
+            ...prev,
+            currentPhase: nextPhase,
+            lockedPhases: locked
+          }
+        })
       },
 
       acknowledgeRules: () => {
@@ -320,6 +391,9 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       togglePlayerRetention: (playerId: string) => {
+        const camp = get().getActiveCampaign()
+        if (camp?.lockedPhases?.includes('retain_release')) return // Locked!
+
         get().updateActiveCampaign((prev) => {
           const target = prev.squad.find((p) => p.player_id === playerId)
           if (!target) return prev
@@ -356,6 +430,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
       addAuctionPlayerToSquad: (player: CampaignPlayer, bidAmount: number) => {
         const campaign = get().getActiveCampaign()
         if (!campaign) return false
+        if (campaign.lockedPhases?.includes('mini_auction')) return false
 
         if (campaign.remainingPurse < bidAmount) return false
 
@@ -387,6 +462,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
       executeTrade: (playerOutId, playerIn, rivalTeamId, cashDelta) => {
         const campaign = get().getActiveCampaign()
         if (!campaign) return false
+        if (campaign.lockedPhases?.includes('trade')) return false
 
         const outPlayer = campaign.squad.find((p) => p.player_id === playerOutId)
         if (!outPlayer) return false
@@ -426,10 +502,203 @@ export const useCampaignStore = create<CampaignStoreState>()(
           playingXI: playerIds,
           impactPlayerId
         }))
+      },
+
+      swapPlayingXISlots: (indexA, indexB) => {
+        get().updateActiveCampaign((prev) => {
+          const xi = [...prev.playingXI]
+          if (indexA < 0 || indexA >= xi.length || indexB < 0 || indexB >= xi.length) return prev
+          const temp = xi[indexA]
+          xi[indexA] = xi[indexB]
+          xi[indexB] = temp
+          return {
+            ...prev,
+            playingXI: xi
+          }
+        })
+      },
+
+      replacePlayingXIPlayer: (slotIndex, newPlayerId) => {
+        get().updateActiveCampaign((prev) => {
+          const xi = [...prev.playingXI]
+          if (slotIndex < 0 || slotIndex >= 11) return prev
+          // If player already in XI at another slot, swap them
+          const existingIdx = xi.indexOf(newPlayerId)
+          if (existingIdx !== -1) {
+            const oldAtSlot = xi[slotIndex]
+            xi[slotIndex] = newPlayerId
+            xi[existingIdx] = oldAtSlot
+          } else {
+            xi[slotIndex] = newPlayerId
+          }
+          return {
+            ...prev,
+            playingXI: xi
+          }
+        })
+      },
+
+      autoOptimizePlayingXI: () => {
+        get().updateActiveCampaign((prev) => {
+          const activePlayers = prev.squad.filter((p) => !p.is_released)
+          if (activePlayers.length === 0) return prev
+
+          // Separate candidates by role
+          const wks = activePlayers.filter((p) => p.role === 'WK').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+          const bats = activePlayers.filter((p) => p.role === 'BAT').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+          const ars = activePlayers.filter((p) => p.role === 'AR').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+          const bowls = activePlayers.filter((p) => p.role === 'BOWL').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+
+          const chosen: CampaignPlayer[] = []
+          let overseasCount = 0
+
+          const canPick = (p: CampaignPlayer) => {
+            if (chosen.some((c) => c.player_id === p.player_id)) return false
+            if (p.is_overseas && overseasCount >= 4) return false
+            return true
+          }
+
+          const addPlayer = (p: CampaignPlayer) => {
+            chosen.push(p)
+            if (p.is_overseas) overseasCount++
+          }
+
+          // Slot 1 & 2: Explosive Openers (Batters with high SR or top WK)
+          const openerCandidates = [...bats, ...wks].sort((a, b) => {
+            const srA = Number(a.statsSummary?.match(/SR\s*([\d.]+)/)?.[1]) || 135
+            const srB = Number(b.statsSummary?.match(/SR\s*([\d.]+)/)?.[1]) || 135
+            return srB - srA
+          })
+
+          for (const cand of openerCandidates) {
+            if (chosen.length >= 2) break
+            if (canPick(cand)) addPlayer(cand)
+          }
+
+          // Slot 3 & 4: Solid Top Order Anchors (Highest Avg)
+          const anchorCandidates = [...bats].sort((a, b) => {
+            const avgA = Number(a.statsSummary?.match(/Avg\s*([\d.]+)/)?.[1]) || 30
+            const avgB = Number(b.statsSummary?.match(/Avg\s*([\d.]+)/)?.[1]) || 30
+            return avgB - avgA
+          })
+
+          for (const cand of anchorCandidates) {
+            if (chosen.length >= 4) break
+            if (canPick(cand)) addPlayer(cand)
+          }
+
+          // Slot 5: Ensure Primary Wicketkeeper is in XI
+          const hasWK = chosen.some((p) => p.role === 'WK')
+          if (!hasWK) {
+            const bestWk = wks.find(canPick)
+            if (bestWk) addPlayer(bestWk)
+          }
+
+          // Slot 6 & 7: Explosive Finishers & Premier All-Rounders
+          for (const cand of ars) {
+            if (chosen.length >= 7) break
+            if (canPick(cand)) addPlayer(cand)
+          }
+
+          // Slot 8, 9, 10, 11: Specialist Spinners & Death Bowlers
+          for (const cand of bowls) {
+            if (chosen.length >= 11) break
+            if (canPick(cand)) addPlayer(cand)
+          }
+
+          // If still under 11, backfill with best available players obeying overseas <= 4
+          const allRemaining = [...activePlayers].sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+          for (const cand of allRemaining) {
+            if (chosen.length >= 11) break
+            if (canPick(cand)) addPlayer(cand)
+          }
+
+          // Impact sub: best bench player (power hitter or bowler)
+          const impact = allRemaining.find((p) => !chosen.some((c) => c.player_id === p.player_id))
+
+          return {
+            ...prev,
+            playingXI: chosen.slice(0, 11).map((p) => p.player_id),
+            impactPlayerId: impact?.player_id
+          }
+        })
+      },
+
+      recordMatchResult: (matchNo, resultData) => {
+        if (!resultData) return
+
+        get().updateActiveCampaign((prev) => {
+          const updatedSchedule = (prev.schedule || []).map((f) => {
+            if (f.matchNo === matchNo) {
+              return {
+                ...f,
+                status: 'COMPLETED' as const,
+                result: resultData
+              }
+            }
+            if (f.matchNo === matchNo + 1) {
+              return {
+                ...f,
+                status: 'CURRENT' as const
+              }
+            }
+            return f
+          })
+
+          // Update Points Table
+          const updatedPoints = (prev.pointsTable || generateInitialPointsTable()).map((entry) => {
+            if (entry.teamId === prev.teamId) {
+              const myWon = resultData.winnerTeamId === prev.teamId
+              const runsFor = resultData.myRuns
+              const oversFor = Math.max(1, resultData.myOvers)
+              const runsAgainst = resultData.rivalRuns
+              const oversAgainst = Math.max(1, resultData.rivalOvers)
+              const matchNRR = (runsFor / oversFor) - (runsAgainst / oversAgainst)
+
+              return {
+                ...entry,
+                played: entry.played + 1,
+                won: entry.won + (myWon ? 1 : 0),
+                lost: entry.lost + (myWon ? 0 : 1),
+                points: entry.points + (myWon ? 2 : 0),
+                nrr: Math.round(((entry.nrr * entry.played + matchNRR) / (entry.played + 1)) * 1000) / 1000
+              }
+            }
+
+            if (entry.teamId === resultData.winnerTeamId && resultData.winnerTeamId !== prev.teamId) {
+              // Rival won
+              return {
+                ...entry,
+                played: entry.played + 1,
+                won: entry.won + 1,
+                points: entry.points + 2
+              }
+            } else if (resultData.winnerTeamId === prev.teamId && entry.teamId === updatedSchedule.find(s => s.matchNo === matchNo)?.rivalTeamId) {
+              // Rival lost
+              return {
+                ...entry,
+                played: entry.played + 1,
+                lost: entry.lost + 1
+              }
+            }
+
+            return entry
+          })
+
+          // Sort Points Table by Points descending, then NRR descending
+          updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr)
+
+          return {
+            ...prev,
+            schedule: updatedSchedule,
+            currentMatchIndex: Math.min(matchNo, updatedSchedule.length - 1),
+            pointsTable: updatedPoints
+          }
+        })
       }
     }),
     {
-      name: 'auctionxi-user-campaign-v2',
+      name: 'auctionxi-user-campaign-v3',
       partialize: (state) => ({
         profiles: state.profiles,
         currentUserId: state.currentUserId,
