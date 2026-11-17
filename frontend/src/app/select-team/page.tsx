@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore'
 import { useCampaignStore } from '../../store/useCampaignStore'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { ChevronRight, Trophy, MapPin, Users, Compass, Shield, ArrowRight } from 'lucide-react'
+import { ChevronRight, Trophy, MapPin, Users, Compass, Shield, ArrowRight, ArrowLeft } from 'lucide-react'
 import { STADIUMS } from '../../data/stadiums'
 import gsap from 'gsap'
 

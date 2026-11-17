@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, MapPin, Zap, ChevronRight, Info, ShieldAlert, Sparkles, Activity, AlertCircle, Swords } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Users, MapPin, Zap, ChevronRight, Info, ShieldAlert, Sparkles, Activity, AlertCircle, Swords, ArrowLeft } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper';
 import { getFranchise } from '../../data/franchises';
@@ -94,6 +95,7 @@ const TEAM_HOME_CITY: Record<string, string> = {
 };
 
 export default function PlayingXIPage() {
+  const router = useRouter();
   const { getActiveCampaign } = useCampaignStore();
   const campaign = getActiveCampaign();
 
@@ -244,31 +246,40 @@ export default function PlayingXIPage() {
   const franchise = campaign ? getFranchise(campaign.teamId) : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-14">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-12 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
       <CampaignPhaseStepper />
 
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 flex-1 flex flex-col justify-between">
+      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
         
         {/* Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 mb-3 border-b border-white/10 gap-2 shrink-0">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-mono font-black uppercase">
-                PART 4 OF 4: PLAYING XI & HOME FORTRESS
-              </span>
-              <span className="text-[11px] text-gray-400">Background Pitch Engine Calibrated</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/auction')}
+              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-all border border-white/10"
+              title="Back to Mini-Auction"
+            >
+              <ArrowLeft size={14} className="text-amber-400" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.2 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-mono font-black uppercase">
+                  PART 4: PLAYING XI & HOME FORTRESS
+                </span>
+                <span className="text-[10px] text-gray-400">Background Pitch Engine Calibrated</span>
+              </div>
+              <h1 className="text-lg sm:text-xl font-black font-display text-white">
+                Matchday Lineup & Pitch Calibration
+              </h1>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
-              Matchday Lineup & Pitch Calibration
-            </h1>
           </div>
 
           <button
             onClick={() => setShowSimulator(true)}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
+            className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
           >
-            <Swords size={16} />
-            <span>Launch Match Simulation</span>
+            <Swords size={14} />
+            <span>Simulate 20-Over Match</span>
           </button>
         </div>
 
