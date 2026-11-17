@@ -260,7 +260,9 @@ export function OnboardingAuthModal({ isOpen, onClose, onSuccess }: OnboardingAu
                           </span>
                         )}
                         {p.pin && (
-                          <Lock size={11} className="text-amber-400" title="PIN protected" />
+                          <span title="PIN protected">
+                            <Lock size={11} className="text-amber-400" />
+                          </span>
                         )}
                       </div>
                       <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5 font-mono">
