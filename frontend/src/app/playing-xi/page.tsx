@@ -2,11 +2,33 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, MapPin, Zap, ChevronRight, Info, ShieldAlert, Sparkles, Activity, AlertCircle, Swords, ArrowLeft } from 'lucide-react';
-import { useCampaignStore } from '../../store/useCampaignStore';
-import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper';
-import { getFranchise } from '../../data/franchises';
+import { 
+  Users, 
+  MapPin, 
+  Zap, 
+  ChevronRight, 
+  Info, 
+  ShieldAlert, 
+  Sparkles, 
+  Activity, 
+  AlertCircle, 
+  Swords, 
+  ArrowLeft,
+  Calendar,
+  Trophy,
+  ArrowUp,
+  ArrowDown,
+  RefreshCw,
+  CheckCircle2,
+  Lock,
+  ChevronDown,
+  Flame,
+  Shield
+} from 'lucide-react';
+import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore';
+import { getFranchise, IPL_FRANCHISES } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
+import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
 
 const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: string, hint: string, favRole: string }> = {
   Chennai: {
@@ -94,343 +116,605 @@ const TEAM_HOME_CITY: Record<string, string> = {
   pbks: 'Dharamsala'
 };
 
+const BATTING_ROLES = [
+  '#1 Explosive Opener',
+  '#2 Anchor Opener',
+  '#3 Top-Order Anchor',
+  '#4 Power Middle Order',
+  '#5 Wicketkeeper / Finisher',
+  '#6 Finisher All-Rounder',
+  '#7 Premier All-Rounder',
+  '#8 Specialist Spinner',
+  '#9 Strike Bowler',
+  '#10 Express Pacer',
+  '#11 Death Specialist'
+];
+
 export default function PlayingXIPage() {
   const router = useRouter();
-  const { getActiveCampaign } = useCampaignStore();
+  const { 
+    getActiveCampaign, 
+    swapPlayingXISlots, 
+    replacePlayingXIPlayer, 
+    autoOptimizePlayingXI,
+    recordMatchResult 
+  } = useCampaignStore();
+  
   const campaign = getActiveCampaign();
 
-  const [players, setPlayers] = useState<any[]>([]);
-  const [squad, setSquad] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<'xi' | 'schedule'>('xi');
   const [venue, setVenue] = useState('Bengaluru');
-  const [impactPlayer, setImpactPlayer] = useState(true);
-  const [optimizedXi, setOptimizedXi] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
+  const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
 
-  const venues = Object.keys(VENUE_INSIGHTS);
-  const currentInsight = VENUE_INSIGHTS[venue] || VENUE_INSIGHTS['Chennai'];
+  // Bench Swap Drawer state
+  const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
 
-  // Initialize from active campaign
   useEffect(() => {
-    if (campaign) {
-      const activePlayers = campaign.squad.filter(p => !p.is_released);
-      setPlayers(activePlayers);
-      setSquad(activePlayers.map(p => p.player_id));
-      if (TEAM_HOME_CITY[campaign.teamId]) {
-        setVenue(TEAM_HOME_CITY[campaign.teamId]);
-      }
+    if (campaign && TEAM_HOME_CITY[campaign.teamId]) {
+      setVenue(TEAM_HOME_CITY[campaign.teamId]);
     }
   }, [campaign]);
 
-  const toggleSquadPlayer = (id: string) => {
-    if (squad.includes(id)) {
-      setSquad(squad.filter(sId => sId !== id));
-    } else {
-      if (squad.length < 25) setSquad([...squad, id]);
-    }
-  };
+  if (!campaign) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-white text-center">
+        <div className="p-8 rounded-3xl bg-slate-900 border border-white/10 max-w-md">
+          <AlertCircle size={36} className="mx-auto text-amber-400 mb-3" />
+          <h3 className="text-lg font-black font-display mb-2">No Active Campaign</h3>
+          <p className="text-xs text-gray-400 mb-4">Please select your franchise to enter the war room.</p>
+          <button
+            onClick={() => router.push('/select-team')}
+            className="px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase cursor-pointer"
+          >
+            Select Team
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  // Smart Offline-first Playing XI Optimizer
-  const optimizeXI = async () => {
-    setLoading(true);
-    
-    // Attempt backend first with instant offline fallback
-    try {
-      const selectedPlayerObjects = players.filter(p => squad.includes(p.player_id));
-      const res = await fetch('http://localhost:8000/api/playing-xi/optimize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          squad_player_ids: squad, 
-          venue, 
-          impact_player: impactPlayer, 
-          players_data: selectedPlayerObjects
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setOptimizedXi(data);
-        setLoading(false);
-        return;
+  const franchise = getFranchise(campaign.teamId);
+  const activeSquad = campaign.squad.filter(p => !p.is_released);
+  
+  // Resolve Playing XI objects from player_ids
+  const playingXIObjects: CampaignPlayer[] = (campaign.playingXI || [])
+    .map(id => activeSquad.find(p => p.player_id === id))
+    .filter(Boolean) as CampaignPlayer[];
+
+  // Fallback if playingXI is incomplete
+  const fullPlayingXI: CampaignPlayer[] = [...playingXIObjects];
+  if (fullPlayingXI.length < 11) {
+    activeSquad.forEach(p => {
+      if (fullPlayingXI.length < 11 && !fullPlayingXI.some(x => x.player_id === p.player_id)) {
+        fullPlayingXI.push(p);
       }
-    } catch (e) {
-      // Handled by offline algorithm below
-    }
-
-    // Client-side offline selection algorithm
-    const pool = players.filter(p => squad.includes(p.player_id));
-    
-    // Sort by OVR / Power Index
-    const sorted = [...pool].sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80));
-    
-    // Pick with constraints: Max 4 Overseas, Min 1 WK, Min 3 Bat, Min 4 Bowl
-    const xi: any[] = [];
-    let overseasPicked = 0;
-
-    // 1. Pick Top Wicket-keeper
-    const wk = sorted.find(p => p.role === 'WK');
-    if (wk) {
-      xi.push(wk);
-      if (wk.is_overseas) overseasPicked++;
-    }
-
-    // 2. Pick Top Batters (3-4)
-    for (const p of sorted) {
-      if (xi.length >= 5) break;
-      if (xi.some(x => x.player_id === p.player_id)) continue;
-      if (p.role === 'BAT') {
-        if (p.is_overseas && overseasPicked >= 4) continue;
-        xi.push(p);
-        if (p.is_overseas) overseasPicked++;
-      }
-    }
-
-    // 3. Pick Top All-Rounders (2)
-    for (const p of sorted) {
-      if (xi.length >= 7) break;
-      if (xi.some(x => x.player_id === p.player_id)) continue;
-      if (p.role === 'AR') {
-        if (p.is_overseas && overseasPicked >= 4) continue;
-        xi.push(p);
-        if (p.is_overseas) overseasPicked++;
-      }
-    }
-
-    // 4. Pick Top Bowlers (4)
-    for (const p of sorted) {
-      if (xi.length >= 11) break;
-      if (xi.some(x => x.player_id === p.player_id)) continue;
-      if (p.role === 'BOWL') {
-        if (p.is_overseas && overseasPicked >= 4) continue;
-        xi.push(p);
-        if (p.is_overseas) overseasPicked++;
-      }
-    }
-
-    // Fill remaining up to 11 if still under
-    for (const p of sorted) {
-      if (xi.length >= 11) break;
-      if (xi.some(x => x.player_id === p.player_id)) continue;
-      if (p.is_overseas && overseasPicked >= 4) continue;
-      xi.push(p);
-      if (p.is_overseas) overseasPicked++;
-    }
-
-    // Impact player (12th man)
-    let impactSub: any = null;
-    if (impactPlayer) {
-      impactSub = sorted.find(p => !xi.some(x => x.player_id === p.player_id));
-      if (impactSub) {
-        impactSub = { ...impactSub, is_impact_player: true };
-      }
-    }
-
-    const totalPower = xi.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0);
-
-    setOptimizedXi({
-      playing_xi: xi,
-      impact_player: impactSub,
-      total_power: totalPower,
-      venue_boost: currentInsight.boost
     });
+  }
 
-    setLoading(false);
+  // Reserve squad (bench players)
+  const benchPlayers = activeSquad.filter(p => !fullPlayingXI.some(x => x.player_id === p.player_id));
+  const impactPlayer = activeSquad.find(p => p.player_id === campaign.impactPlayerId) || benchPlayers[0];
+
+  // BCCI Compliance Checks
+  const overseasInXI = fullPlayingXI.filter(p => p.is_overseas).length;
+  const wkInXI = fullPlayingXI.filter(p => p.role === 'WK').length;
+  const bowlersInXI = fullPlayingXI.filter(p => p.role === 'BOWL' || p.role === 'AR').length;
+  const isCompliant = fullPlayingXI.length === 11 && overseasInXI <= 4 && wkInXI >= 1 && bowlersInXI >= 5;
+
+  const currentInsight = VENUE_INSIGHTS[venue] || VENUE_INSIGHTS['Bengaluru'];
+
+  // Tournament Fixtures & Schedule
+  const schedule = campaign.schedule || [];
+  const currentMatch = schedule.find(f => f.status === 'CURRENT') || schedule[0];
+  const rivalFranchise = currentMatch ? getFranchise(currentMatch.rivalTeamId) : getFranchise('csk');
+  const pointsTable = campaign.pointsTable || [];
+
+  const handleLaunchMatch = (fixture?: TournamentFixture) => {
+    setSelectedFixtureForMatch(fixture || currentMatch);
+    setShowSimulator(true);
   };
 
-  const displayXi = optimizedXi ? (
-    optimizedXi.impact_player 
-      ? [...(optimizedXi.playing_xi || []), optimizedXi.impact_player] 
-      : (optimizedXi.playing_xi || [])
-  ) : [];
-
-  const franchise = campaign ? getFranchise(campaign.teamId) : null;
+  const handleMoveSlot = (index: number, direction: 'up' | 'down') => {
+    const target = direction === 'up' ? index - 1 : index + 1;
+    if (target >= 0 && target < fullPlayingXI.length) {
+      swapPlayingXISlots(index, target);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-12 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
-      <CampaignPhaseStepper />
-
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-13 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
       <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
         
-        {/* Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
+        {/* Banner with View Toggle (Lineup vs Schedule) */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-3 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push('/auction')}
-              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-all border border-white/10"
-              title="Back to Mini-Auction"
-            >
-              <ArrowLeft size={14} className="text-amber-400" />
-            </button>
+            <span className="w-8 h-8 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: franchise.color }}>
+              {franchise.emoji}
+            </span>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.2 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-mono font-black uppercase">
-                  PART 4: PLAYING XI & HOME FORTRESS
+                <span className="px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-mono font-black uppercase">
+                  PART 4: TOURNAMENT & MATCH ARENA
                 </span>
-                <span className="text-[10px] text-gray-400">Background Pitch Engine Calibrated</span>
+                <span className="text-[10px] text-gray-400">14-Match Official IPL Season</span>
               </div>
-              <h1 className="text-lg sm:text-xl font-black font-display text-white">
-                Matchday Lineup & Pitch Calibration
+              <h1 className="text-base sm:text-lg font-black font-display text-white">
+                {franchise.name} War Room & Matchday Operations
               </h1>
             </div>
           </div>
 
-          <button
-            onClick={() => setShowSimulator(true)}
-            className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
-          >
-            <Swords size={14} />
-            <span>Simulate 20-Over Match</span>
-          </button>
-        </div>
-
-        {/* 2-Column Playing XI Selector */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 flex-1">
-          
-          {/* Controls Column */}
-          <div className="lg:col-span-1 space-y-4">
-            
-            {/* Venue Selector */}
-            <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
-              <label className="text-xs font-black uppercase text-gray-300 block mb-2 flex items-center gap-1.5">
-                <MapPin size={14} className="text-amber-400" />
-                Match Stadium
-              </label>
-              <select 
-                value={venue} 
-                onChange={(e) => setVenue(e.target.value)}
-                className="w-full bg-slate-950 border border-white/15 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-white/10">
+              <button
+                onClick={() => setActiveTab('xi')}
+                className={`px-3 py-1 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'xi' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
+                }`}
               >
-                {venues.map(v => (
-                  <option key={v} value={v}>{v} — {VENUE_INSIGHTS[v]?.title}</option>
-                ))}
-              </select>
-
-              {/* Dynamic Venue Behavior Card */}
-              <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs">
-                <div className="font-bold text-amber-300 mb-0.5">{currentInsight.title}</div>
-                <div className="text-[11px] text-gray-300">{currentInsight.behavior}</div>
-                <div className="text-[10px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1">
-                  <Sparkles size={11} /> {currentInsight.boost}
-                </div>
-              </div>
+                <Users size={12} />
+                <span>Playing XI & Field</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('schedule')}
+                className={`px-3 py-1 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'schedule' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Calendar size={12} />
+                <span>Season Schedule & Table</span>
+              </button>
             </div>
 
-            {/* Impact Player Toggle */}
-            <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-white block">Impact Player Rule</span>
-                <span className="text-[10px] text-gray-400">12th tactical sub allowed</span>
-              </div>
-              <input
-                type="checkbox"
-                checked={impactPlayer}
-                onChange={(e) => setImpactPlayer(e.target.checked)}
-                className="w-4 h-4 accent-amber-500 cursor-pointer"
-              />
-            </div>
-
-            {/* Generate XI Button */}
             <button
-              onClick={optimizeXI}
-              disabled={loading || squad.length < 11}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer hover:scale-[1.01] transition-all disabled:opacity-40"
+              onClick={() => handleLaunchMatch()}
+              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
             >
-              <Zap size={15} />
-              <span>{loading ? 'Optimizing XI...' : `Generate Calibrated XI for ${venue}`}</span>
+              <Swords size={13} />
+              <span>Simulate Next Match</span>
             </button>
           </div>
+        </div>
 
-          {/* Output Column */}
-          <div className="lg:col-span-2 p-5 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl">
-            {displayXi.length > 0 ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                  <div>
-                    <h3 className="text-base font-black text-white">Official Matchday Playing XI</h3>
-                    <span className="text-[11px] text-emerald-400 font-medium">
-                      Calibrated for {venue} • {currentInsight.boost}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-gray-400 uppercase block">Total Power</span>
-                    <span className="text-xl font-black font-mono text-amber-300">
-                      {optimizedXi?.total_power ? optimizedXi.total_power.toFixed(0) : '890'}
-                    </span>
+        {/* ─── TAB 1: PLAYING XI & PITCH TACTICAL SELECTION ─── */}
+        {activeTab === 'xi' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
+            
+            {/* Left 4 Columns: Stadium Vitals, AI Optimizer, & BCCI Compliance */}
+            <div className="lg:col-span-4 space-y-3 flex flex-col justify-between">
+              
+              {/* Stadium & Venue Calibration */}
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
+                <label className="text-xs font-black uppercase text-gray-300 block mb-1.5 flex items-center gap-1.5">
+                  <MapPin size={13} className="text-amber-400" />
+                  Match Fortress Stadium
+                </label>
+                <select 
+                  value={venue} 
+                  onChange={(e) => setVenue(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/15 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-amber-400 cursor-pointer"
+                >
+                  {Object.keys(VENUE_INSIGHTS).map(v => (
+                    <option key={v} value={v}>{v} — {VENUE_INSIGHTS[v]?.title}</option>
+                  ))}
+                </select>
+
+                <div className="mt-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
+                  <div className="font-bold text-amber-300 text-[11px]">{currentInsight.title}</div>
+                  <div className="text-[10px] text-gray-300">{currentInsight.behavior}</div>
+                  <div className="text-[10px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
+                    <Sparkles size={11} /> {currentInsight.boost}
                   </div>
                 </div>
+              </div>
 
-                {/* 11 Players Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {displayXi.map((player: any, idx: number) => {
-                    const isImpact = player.is_impact_player;
-                    return (
-                      <div
-                        key={player.player_id || idx}
-                        className={`p-3 rounded-2xl border flex flex-col justify-between ${
-                          isImpact
-                            ? 'bg-amber-500/20 border-amber-500/50'
-                            : 'bg-slate-950 border-white/10'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between mb-1">
-                          <span className="text-[10px] font-mono font-bold text-gray-400">
-                            {isImpact ? 'IMPACT SUB' : `#${idx + 1}`}
-                          </span>
-                          <span className="text-[10px] font-black text-amber-400 font-mono">
-                            {player.Power_Index || 85} OVR
-                          </span>
+              {/* BCCI Compliance Status Bar */}
+              <div className="p-3 rounded-2xl bg-slate-900 border border-white/10">
+                <div className="text-[11px] font-black uppercase text-gray-400 tracking-wider mb-2 flex items-center justify-between">
+                  <span>BCCI Official Rule Validation</span>
+                  {isCompliant ? (
+                    <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      ✓ Compliant
+                    </span>
+                  ) : (
+                    <span className="text-[9px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
+                      ⚠️ Rule Alert
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] font-mono">
+                  <div className={`p-1.5 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className="text-[9px] uppercase font-sans text-gray-400">Overseas</div>
+                    <div className="text-sm font-black mt-0.5">{overseasInXI}/4 Max</div>
+                  </div>
+                  <div className={`p-1.5 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className="text-[9px] uppercase font-sans text-gray-400">Keeper (WK)</div>
+                    <div className="text-sm font-black mt-0.5">{wkInXI} in XI</div>
+                  </div>
+                  <div className={`p-1.5 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className="text-[9px] uppercase font-sans text-gray-400">Bowlers/AR</div>
+                    <div className="text-sm font-black mt-0.5">{bowlersInXI}/5 Min</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Auto-Pick Best XI Button */}
+              <button
+                onClick={() => autoOptimizePlayingXI()}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
+              >
+                <Zap size={14} />
+                <span>Auto-Pick Best XI (AI Stat-Optimizer)</span>
+              </button>
+
+              {/* Impact Player Slot */}
+              <div className="p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1">
+                    <Sparkles size={11} /> Impact Player Sub (12th Man)
+                  </span>
+                  <div className="text-xs font-black text-white mt-0.5">
+                    {impactPlayer ? impactPlayer.name : 'Select Reserve'}
+                  </div>
+                  <div className="text-[10px] text-gray-400">
+                    {impactPlayer?.role} • OVR {impactPlayer?.Power_Index}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setBenchDrawerSlotIndex(11)} // slot 11 = impact sub
+                  className="px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-[10px] font-bold border border-indigo-500/30 cursor-pointer"
+                >
+                  Change
+                </button>
+              </div>
+
+            </div>
+
+            {/* Right 8 Columns: 2D Pitch Lineup in Proper Batting Order */}
+            <div className="lg:col-span-8 p-3 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                <div className="text-xs font-black uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                  <span>🏏 Official Matchday 11 (Batting Order 1 to 11)</span>
+                  <span className="text-[10px] text-gray-400 font-normal">Use arrows to adjust order</span>
+                </div>
+                <span className="text-[10px] font-mono text-amber-400">
+                  Total Squad OVR: {Math.round(fullPlayingXI.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0) / 11)}
+                </span>
+              </div>
+
+              {/* 11 Players in Real Batting Order */}
+              <div className="space-y-1.5 overflow-y-auto max-h-[460px] pr-1">
+                {fullPlayingXI.map((player, index) => {
+                  return (
+                    <div
+                      key={player.player_id}
+                      className="p-2 sm:p-2.5 rounded-2xl bg-slate-950/90 border border-white/10 hover:border-amber-400/40 flex items-center justify-between gap-2 transition-all hover:bg-white/5"
+                    >
+                      {/* Left: Batting Order & Identity */}
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-6 h-6 rounded-lg bg-white/10 text-amber-400 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                          {index + 1}
                         </div>
-                        <div className="font-bold text-xs text-white truncate">
-                          {player.name}
-                        </div>
-                        <div className="text-[10px] text-gray-400 font-mono mt-1 flex items-center gap-1.5">
-                          <span className="text-indigo-300 font-bold">{player.role}</span>
-                          {player.is_overseas && <span className="text-sky-300">OS</span>}
+                        <div className="min-w-0">
+                          <div className="font-bold text-xs text-white flex items-center gap-1.5 truncate">
+                            <span className="truncate">{player.name}</span>
+                            {player.is_overseas && (
+                              <span className="text-[8px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono shrink-0">
+                                OS ✈
+                              </span>
+                            )}
+                            {player.role === 'WK' && (
+                              <span className="text-[8px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono shrink-0">
+                                WK 🧤
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-mono truncate">
+                            <span className="text-amber-300/80 font-bold">{BATTING_ROLES[index]}</span> • {player.role} • OVR {player.Power_Index}
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
 
-                {/* Action to proceed to match */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-xs text-gray-300">Lineup verified with BCCI Overseas & WK quota.</span>
-                  <button
-                    onClick={() => setShowSimulator(true)}
-                    className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-lg cursor-pointer transition-all"
-                  >
-                    <Swords size={14} />
-                    <span>Start Match Simulation</span>
-                  </button>
-                </div>
+                      {/* Right: Stats Summary & Re-order Controls */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="text-right hidden sm:block">
+                          <div className="text-[10px] font-mono text-gray-300 max-w-[140px] truncate">
+                            {player.statsSummary || `OVR ${player.Power_Index}`}
+                          </div>
+                        </div>
+
+                        {/* Move Up/Down Controls */}
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={() => handleMoveSlot(index, 'up')}
+                            disabled={index === 0}
+                            className="p-1 rounded bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
+                            title="Move up batting order"
+                          >
+                            <ArrowUp size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleMoveSlot(index, 'down')}
+                            disabled={index === fullPlayingXI.length - 1}
+                            className="p-1 rounded bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
+                            title="Move down batting order"
+                          >
+                            <ArrowDown size={12} />
+                          </button>
+                        </div>
+
+                        {/* Swap with Bench Button */}
+                        <button
+                          onClick={() => setBenchDrawerSlotIndex(index)}
+                          className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-[10px] font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
+                        >
+                          Swap
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-500">
-                <Users size={40} className="mb-3 text-gray-600" />
-                <h4 className="text-sm font-bold text-gray-300">No Playing XI Generated Yet</h4>
-                <p className="text-xs text-gray-500 max-w-sm mt-1">
-                  Click &quot;Generate Calibrated XI&quot; to automatically pick your best 11 based on pitch behavior at {venue}.
-                </p>
-              </div>
-            )}
+
+            </div>
           </div>
+        )}
 
-        </div>
+        {/* ─── TAB 2: FULL IPL TOURNAMENT SEASON & SCHEDULE ─── */}
+        {activeTab === 'schedule' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
+            
+            {/* Left 7 Columns: 14-Match Official Fixtures Schedule */}
+            <div className="lg:col-span-7 p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+                    <Calendar size={13} className="text-amber-400" />
+                    IPL 2027 Official Fixture Schedule (14 Matches)
+                  </h3>
+                  <p className="text-[10px] text-gray-400">Home & Away round-robin campaign</p>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">
+                  {schedule.filter(s => s.status === 'COMPLETED').length} / 14 Played
+                </span>
+              </div>
+
+              {/* Fixture cards */}
+              <div className="space-y-2 overflow-y-auto max-h-[460px] pr-1">
+                {schedule.map((fixture) => {
+                  const isCurrent = fixture.status === 'CURRENT';
+                  const isDone = fixture.status === 'COMPLETED';
+
+                  return (
+                    <div
+                      key={fixture.matchNo}
+                      className={`p-3 rounded-2xl border transition-all ${
+                        isCurrent
+                          ? 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-slate-950 border-amber-500/50 shadow-lg shadow-amber-500/10'
+                          : isDone
+                          ? 'bg-slate-950/70 border-white/5 opacity-80'
+                          : 'bg-slate-950/90 border-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        {/* Match info */}
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-white/10 text-white font-mono font-black text-xs flex items-center justify-center shrink-0">
+                            #{fixture.matchNo}
+                          </div>
+                          <div>
+                            <div className="text-xs font-black text-white flex items-center gap-2">
+                              <span>{franchise.short}</span>
+                              <span className="text-gray-400 font-normal">vs</span>
+                              <span>{fixture.rivalShort}</span>
+                              <span className="text-base">{fixture.rivalEmoji}</span>
+                            </div>
+                            <div className="text-[10px] text-gray-400 font-mono">
+                              {fixture.isHome ? '🏠 Home' : '✈ Away'} • {fixture.stadiumName}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status or Launch Button */}
+                        <div>
+                          {isCurrent ? (
+                            <button
+                              onClick={() => handleLaunchMatch(fixture)}
+                              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase flex items-center gap-1 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                            >
+                              <Swords size={12} />
+                              <span>Play Match</span>
+                            </button>
+                          ) : isDone ? (
+                            <div className="text-right">
+                              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                                fixture.result?.winnerTeamId === franchise.short.toLowerCase()
+                                  ? 'bg-emerald-500/20 text-emerald-300'
+                                  : 'bg-rose-500/20 text-rose-300'
+                              }`}>
+                                {fixture.result?.winnerTeamId === franchise.short.toLowerCase() ? 'WON (+2 PTS)' : 'LOST'}
+                              </span>
+                              <div className="text-[9px] text-gray-400 mt-0.5 font-mono">
+                                by {fixture.result?.margin}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-gray-500 font-mono uppercase">
+                              Upcoming
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right 5 Columns: Live 10-Team Standings Points Table */}
+            <div className="lg:col-span-5 p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
+              <div className="pb-2 mb-2 border-b border-white/10">
+                <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+                  <Trophy size={13} className="text-amber-400" />
+                  IPL 2027 Championship Standings
+                </h3>
+                <p className="text-[10px] text-gray-400">Top 4 Franchises Qualify for Playoffs</p>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto flex-1 max-h-[460px]">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
+                    <tr>
+                      <th className="py-1">Pos</th>
+                      <th className="py-1">Team</th>
+                      <th className="py-1 text-center">P</th>
+                      <th className="py-1 text-center">W</th>
+                      <th className="py-1 text-center">L</th>
+                      <th className="py-1 text-right">NRR</th>
+                      <th className="py-1 text-right font-black text-amber-300">Pts</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-gray-200">
+                    {pointsTable.map((row, idx) => {
+                      const isMyTeam = row.teamId === franchise.short.toLowerCase();
+                      const isTop4 = idx < 4;
+
+                      return (
+                        <tr 
+                          key={row.teamId}
+                          className={`hover:bg-white/5 ${
+                            isMyTeam ? 'bg-amber-500/10 font-bold text-amber-200' : ''
+                          }`}
+                        >
+                          <td className="py-1.5">
+                            <span className={`w-5 h-5 rounded-md inline-flex items-center justify-center text-[10px] font-bold ${
+                              isTop4 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-gray-500'
+                            }`}>
+                              {idx + 1}
+                            </span>
+                          </td>
+                          <td className="py-1.5 font-sans flex items-center gap-1.5 truncate">
+                            <span>{row.emoji}</span>
+                            <span className="font-bold truncate">{row.shortName}</span>
+                          </td>
+                          <td className="py-1.5 text-center text-gray-400">{row.played}</td>
+                          <td className="py-1.5 text-center text-emerald-400">{row.won}</td>
+                          <td className="py-1.5 text-center text-rose-400">{row.lost}</td>
+                          <td className="py-1.5 text-right text-[11px] text-gray-400">
+                            {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
+                          </td>
+                          <td className="py-1.5 text-right font-black text-amber-300">{row.points}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="pt-2 border-t border-white/10 text-[10px] text-gray-400 text-center font-sans">
+                Gold positions (1-4) advance to IPL Playoffs (Qualifier 1 & Eliminator).
+              </div>
+            </div>
+
+          </div>
+        )}
 
       </main>
 
-      {/* Full Match Simulator Modal */}
-      {franchise && (
+      {/* Bench Drawer Modal (For Manual Player Swapping) */}
+      {benchDrawerSlotIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="bg-slate-950 border border-white/20 rounded-3xl p-5 max-w-lg w-full shadow-2xl text-white max-h-[85vh] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+                <div>
+                  <h3 className="text-sm font-black text-white">
+                    {benchDrawerSlotIndex === 11 
+                      ? 'Select Impact Player Sub' 
+                      : `Swap into Slot #${benchDrawerSlotIndex + 1} (${BATTING_ROLES[benchDrawerSlotIndex]})`
+                    }
+                  </h3>
+                  <p className="text-[11px] text-gray-400">Choose any bench player from your 25-man squad</p>
+                </div>
+                <button
+                  onClick={() => setBenchDrawerSlotIndex(null)}
+                  className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Bench list */}
+              <div className="space-y-1.5 overflow-y-auto max-h-[380px] pr-1">
+                {benchPlayers.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-gray-400">
+                    No reserves on the bench.
+                  </div>
+                ) : (
+                  benchPlayers.map((bp) => (
+                    <div
+                      key={bp.player_id}
+                      onClick={() => {
+                        if (benchDrawerSlotIndex === 11) {
+                          // Impact sub
+                          useCampaignStore.getState().setPlayingXI(campaign.playingXI, bp.player_id);
+                        } else {
+                          replacePlayingXIPlayer(benchDrawerSlotIndex, bp.player_id);
+                        }
+                        setBenchDrawerSlotIndex(null);
+                      }}
+                      className="p-2.5 rounded-2xl bg-slate-900 border border-white/10 hover:border-amber-400/50 flex items-center justify-between cursor-pointer transition-all hover:bg-white/10"
+                    >
+                      <div>
+                        <div className="font-bold text-xs text-white flex items-center gap-1.5">
+                          <span>{bp.name}</span>
+                          {bp.is_overseas && <span className="text-[8px] px-1 rounded bg-sky-500/20 text-sky-300">OS</span>}
+                          {bp.role === 'WK' && <span className="text-[8px] px-1 rounded bg-amber-500/20 text-amber-300">WK</span>}
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono">
+                          {bp.role} • Salary: ₹{bp.price} Cr
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-black text-amber-300 font-mono">OVR {bp.Power_Index}</div>
+                        <span className="text-[9px] text-amber-400 font-bold">Tap to Swap</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setBenchDrawerSlotIndex(null)}
+              className="mt-3 w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-gray-300 cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── LIVE BALL-BY-BALL MATCH SIMULATOR ─── */}
+      {showSimulator && (
         <BallByBallMatchSimulator
           isOpen={showSimulator}
           onClose={() => setShowSimulator(false)}
           myFranchise={franchise}
-          mySquad={(campaign?.squad || []).map(p => ({
-            ...p,
-            is_overseas: !!p.is_overseas,
-            base_price: p.price,
-            predicted_price: p.price
-          }))}
+          mySquad={activeSquad}
+          myPlayingXIIds={campaign.playingXI}
+          rivalFranchise={selectedFixtureForMatch ? getFranchise(selectedFixtureForMatch.rivalTeamId) : rivalFranchise}
+          venueName={selectedFixtureForMatch ? selectedFixtureForMatch.stadiumName : currentInsight.title}
+          matchFixture={selectedFixtureForMatch || currentMatch}
+          onMatchComplete={(res) => {
+            if (currentMatch && res) {
+              recordMatchResult(selectedFixtureForMatch?.matchNo || currentMatch.matchNo, res);
+            }
+          }}
         />
       )}
     </div>

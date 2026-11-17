@@ -2,9 +2,21 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeftRight, Check, X, Shield, ArrowRight, RefreshCw, AlertCircle, ArrowLeft } from 'lucide-react'
+import { 
+  ArrowLeftRight, 
+  Check, 
+  X, 
+  Shield, 
+  ArrowRight, 
+  RefreshCw, 
+  AlertCircle, 
+  ArrowLeft,
+  Lock,
+  Sparkles,
+  Zap,
+  CheckCircle2
+} from 'lucide-react'
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
-import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper'
 import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
 
 export default function TradeWindowPage() {
@@ -19,6 +31,8 @@ export default function TradeWindowPage() {
   const [tradeMessage, setTradeMessage] = useState<string | null>(null)
   const [searchMy, setSearchMy] = useState('')
   const [searchRival, setSearchRival] = useState('')
+  const [isTradingAnimation, setIsTradingAnimation] = useState(false)
+  const [showConfirmLock, setShowConfirmLock] = useState(false)
 
   if (!campaign) {
     return (
@@ -38,6 +52,7 @@ export default function TradeWindowPage() {
     )
   }
 
+  const isTradeLocked = campaign.lockedPhases?.includes('trade')
   const myFranchise = getFranchise(campaign.teamId)
   const rivalFranchise = getFranchise(selectedRivalId)
 
@@ -98,18 +113,23 @@ export default function TradeWindowPage() {
   const evaluation = evaluateTrade()
 
   const handleExecuteTrade = () => {
-    if (!playerOut || !playerIn || !evaluation.acceptable) return
+    if (!playerOut || !playerIn || !evaluation.acceptable || isTradeLocked) return
 
-    const success = executeTrade(playerOut.player_id, playerIn, selectedRivalId, -cashOffer)
-    if (success) {
-      setTradeMessage(`✅ Deal Sealed! ${playerIn.name} joined ${myFranchise.short}. ${playerOut.name} moved to ${rivalFranchise.short}.`)
-      setPlayerOut(null)
-      setPlayerIn(null)
-      setCashOffer(0)
-      setTimeout(() => setTradeMessage(null), 5000)
-    } else {
-      setTradeMessage(`❌ Trade Failed: Check purse limits or roster constraints.`)
-    }
+    setIsTradingAnimation(true)
+
+    setTimeout(() => {
+      const success = executeTrade(playerOut.player_id, playerIn, selectedRivalId, -cashOffer)
+      setIsTradingAnimation(false)
+      if (success) {
+        setTradeMessage(`✅ Deal Sealed! ${playerIn.name} joined ${myFranchise.short}. ${playerOut.name} moved to ${rivalFranchise.short}.`)
+        setPlayerOut(null)
+        setPlayerIn(null)
+        setCashOffer(0)
+        setTimeout(() => setTradeMessage(null), 5000)
+      } else {
+        setTradeMessage(`❌ Trade Failed: Check purse limits or roster constraints.`)
+      }
+    }, 800)
   }
 
   const handleFinishTradeWindow = () => {
@@ -118,21 +138,12 @@ export default function TradeWindowPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-12 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
-      <CampaignPhaseStepper />
-
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-13 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
       <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
         
         {/* Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push('/')}
-              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-all border border-white/10"
-              title="Return to Home Dashboard"
-            >
-              <ArrowLeft size={14} className="text-amber-400" />
-            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.2 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[9px] font-mono font-black uppercase">
@@ -140,20 +151,53 @@ export default function TradeWindowPage() {
                 </span>
                 <span className="text-[10px] text-gray-400">All 10 Franchises Open for Direct Exchange</span>
               </div>
-              <h1 className="text-lg sm:text-xl font-black font-display text-white">
+              <h1 className="text-base sm:text-lg font-black font-display text-white">
                 IPL 2027 Official Player Trading Desk
               </h1>
             </div>
           </div>
 
-          <button
-            onClick={handleFinishTradeWindow}
-            className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
-          >
-            <span>Proceed to Part 2: Retain & Release</span>
-            <ArrowRight size={13} />
-          </button>
+          {!isTradeLocked ? (
+            <button
+              onClick={() => setShowConfirmLock(true)}
+              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+            >
+              <span>Lock Trades & Proceed to Retentions</span>
+              <ArrowRight size={13} />
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push('/squad')}
+              className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Proceed to Retain & Release</span>
+              <ArrowRight size={13} />
+            </button>
+          )}
         </div>
+
+        {/* Lockdown Notice if Window Closed */}
+        {isTradeLocked && (
+          <div className="p-3 mb-3 rounded-2xl bg-slate-900 border border-amber-500/30 flex items-center justify-between text-xs shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+                <Lock size={16} />
+              </div>
+              <div>
+                <strong className="text-amber-300 block">TRADE WINDOW OFFICIALLY CLOSED</strong>
+                <span className="text-gray-400 text-[11px]">
+                  BCCI trade deadline has concluded for this season. You cannot make trades after advancing the cycle.
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push('/squad')}
+              className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer"
+            >
+              Go to Squad
+            </button>
+          </div>
+        )}
 
         {tradeMessage && (
           <div className="p-3 mb-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-bold text-center animate-fade-in shrink-0">
@@ -162,10 +206,12 @@ export default function TradeWindowPage() {
         )}
 
         {/* 3-Column Trade Interface */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1 min-h-[500px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1 min-h-[480px]">
           
           {/* Column 1 (Left): Your Squad */}
-          <div className="lg:col-span-5 p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl">
+          <div className={`lg:col-span-5 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+            playerOut ? 'ring-2 ring-rose-500/40 shadow-rose-500/10' : ''
+          }`}>
             <div>
               <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
                 <div className="flex items-center gap-2">
@@ -176,7 +222,7 @@ export default function TradeWindowPage() {
                   </div>
                 </div>
                 {playerOut && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold animate-pulse">
                     OFFERING: {playerOut.name}
                   </span>
                 )}
@@ -197,12 +243,15 @@ export default function TradeWindowPage() {
                 return (
                   <div
                     key={p.player_id}
-                    onClick={() => setPlayerOut(isSelected ? null : p)}
+                    onClick={() => {
+                      if (isTradeLocked) return
+                      setPlayerOut(isSelected ? null : p)
+                    }}
                     className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-rose-500/20 border-rose-500 text-white shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                        ? 'bg-rose-500/20 border-rose-500 text-white shadow-[0_0_15px_rgba(244,63,94,0.3)] scale-[1.01]'
                         : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
-                    }`}
+                    } ${isTradeLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     <div>
                       <div className="font-bold text-xs text-white flex items-center gap-1.5">
@@ -223,10 +272,22 @@ export default function TradeWindowPage() {
             </div>
           </div>
 
-          {/* Column 2 (Middle): Trade Negotiation & Cash */}
-          <div className="lg:col-span-2 p-4 rounded-3xl bg-slate-950 border border-white/10 flex flex-col justify-between items-center text-center shadow-2xl">
+          {/* Column 2 (Middle): Trade Negotiation & Animated Transfer Beam */}
+          <div className="lg:col-span-2 p-3.5 sm:p-4 rounded-3xl bg-slate-950 border border-white/10 flex flex-col justify-between items-center text-center shadow-2xl relative overflow-hidden">
+            
+            {/* Animated Swapping Light Beam */}
+            {isTradingAnimation && (
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-500/30 via-amber-500/40 to-emerald-500/30 animate-pulse pointer-events-none flex items-center justify-center">
+                <Sparkles className="animate-spin text-amber-300" size={32} />
+              </div>
+            )}
+
             <div className="w-full">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center mx-auto mb-2 font-bold">
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-2 font-bold transition-all ${
+                isTradingAnimation 
+                  ? 'bg-amber-500 text-slate-950 scale-125 rotate-180 duration-500' 
+                  : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+              }`}>
                 <ArrowLeftRight size={20} />
               </div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">Deal Room</h4>
@@ -240,8 +301,9 @@ export default function TradeWindowPage() {
               </span>
               <div className="flex items-center justify-center gap-2">
                 <button
+                  disabled={isTradeLocked}
                   onClick={() => setCashOffer(Math.max(-5, cashOffer - 0.5))}
-                  className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black text-xs cursor-pointer"
+                  className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-xs cursor-pointer"
                 >
                   -
                 </button>
@@ -249,8 +311,9 @@ export default function TradeWindowPage() {
                   {cashOffer >= 0 ? `+₹${cashOffer.toFixed(1)} Cr` : `-₹${Math.abs(cashOffer).toFixed(1)} Cr`}
                 </span>
                 <button
+                  disabled={isTradeLocked}
                   onClick={() => setCashOffer(Math.min(campaign.remainingPurse, cashOffer + 0.5))}
-                  className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black text-xs cursor-pointer"
+                  className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-xs cursor-pointer"
                 >
                   +
                 </button>
@@ -260,12 +323,12 @@ export default function TradeWindowPage() {
 
             {/* Evaluation Status */}
             <div className="w-full mb-2">
-              <div className={`p-2.5 rounded-xl border text-[11px] font-bold ${
+              <div className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all ${
                 evaluation.acceptable
-                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10'
                   : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
               }`}>
-                {evaluation.acceptable ? '🟢 DEAL VIABLE' : '🔴 UNBALANCED'}
+                {evaluation.acceptable ? '🟢 DEAL APPROVED' : '🔴 UNBALANCED'}
                 <div className="text-[10px] font-normal text-gray-300 mt-1">
                   {evaluation.reason}
                 </div>
@@ -275,28 +338,29 @@ export default function TradeWindowPage() {
             {/* Execute Button */}
             <button
               onClick={handleExecuteTrade}
-              disabled={!evaluation.acceptable}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer transition-all"
+              disabled={!evaluation.acceptable || isTradeLocked || isTradingAnimation}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer transition-all active:scale-95"
             >
-              Confirm Trade
+              {isTradingAnimation ? 'Executing Transfer...' : 'Confirm Trade'}
             </button>
           </div>
 
           {/* Column 3 (Right): Rival Team Squad */}
-          <div className="lg:col-span-5 p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl">
+          <div className={`lg:col-span-5 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+            playerIn ? 'ring-2 ring-emerald-500/40 shadow-emerald-500/10' : ''
+          }`}>
             <div>
               <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{rivalFranchise.emoji}</span>
                   <div>
-                    {/* Rival Team Selector Dropdown */}
                     <select
                       value={selectedRivalId}
                       onChange={(e) => {
                         setSelectedRivalId(e.target.value)
                         setPlayerIn(null)
                       }}
-                      className="bg-slate-950 border border-white/15 text-xs font-black uppercase text-white rounded-lg px-2 py-0.5 focus:outline-none"
+                      className="bg-slate-950 border border-white/15 text-xs font-black uppercase text-white rounded-lg px-2 py-0.5 focus:outline-none cursor-pointer"
                     >
                       {Object.keys(IPL_FRANCHISES)
                         .filter(tid => tid !== campaign.teamId)
@@ -310,7 +374,7 @@ export default function TradeWindowPage() {
                   </div>
                 </div>
                 {playerIn && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold animate-pulse">
                     REQUESTING: {playerIn.name}
                   </span>
                 )}
@@ -331,12 +395,15 @@ export default function TradeWindowPage() {
                 return (
                   <div
                     key={p.player_id}
-                    onClick={() => setPlayerIn(isSelected ? null : p)}
+                    onClick={() => {
+                      if (isTradeLocked) return
+                      setPlayerIn(isSelected ? null : p)
+                    }}
                     className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-emerald-500/20 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] scale-[1.01]'
                         : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
-                    }`}
+                    } ${isTradeLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     <div>
                       <div className="font-bold text-xs text-white flex items-center gap-1.5">
@@ -360,6 +427,40 @@ export default function TradeWindowPage() {
         </div>
 
       </main>
+
+      {/* Confirmation Modal to Lock Trade Window */}
+      {showConfirmLock && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="bg-slate-950 border border-amber-500/40 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-3">
+              <Lock size={22} />
+            </div>
+            <h3 className="text-base font-black text-white mb-1.5">
+              Lock Trade Window & Proceed?
+            </h3>
+            <p className="text-xs text-gray-300 mb-5 leading-relaxed">
+              According to official BCCI regulations, once the Trade Window is submitted, it locks permanently for this IPL 2027 cycle. There is no going back to trade players.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setShowConfirmLock(false)}
+                className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 cursor-pointer"
+              >
+                Keep Trading
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirmLock(false)
+                  handleFinishTradeWindow()
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-black text-slate-950 cursor-pointer shadow-lg shadow-emerald-500/30"
+              >
+                Confirm & Lock
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
