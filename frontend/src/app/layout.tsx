@@ -25,7 +25,7 @@ export default function RootLayout({
           <CapacitorDeviceManager />
           <AmbientBackground />
           <Navbar />
-          <main className="min-h-screen relative z-0">
+          <main className="min-h-screen">
             {children}
           </main>
         </ThemeProvider>
