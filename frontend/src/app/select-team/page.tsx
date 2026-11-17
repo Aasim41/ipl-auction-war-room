@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronRight, Trophy, MapPin, Users, Compass, Shield, ArrowRight, ArrowLeft } from 'lucide-react'
 import { STADIUMS } from '../../data/stadiums'
 import gsap from 'gsap'
+import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 
 const teams = [
   { id: 'csk',  name: 'Chennai Super Kings',         short: 'CSK',  color: '#fbbf24', emoji: '🦁', titles: '5x Champions', stadium: 'Chepauk (M. A. Chidambaram)', city: 'Chennai' },
@@ -56,6 +57,8 @@ export default function SelectTeamPage() {
   const handleSelect = (teamId: string) => {
     setSelectedTeam(teamId)
     setTheme(teamId)
+    gameAudio.playTradeDealSuccess()
+    triggerGameHaptic('heavy')
     
     // Find existing campaign for this team or create a new one
     const existing = Object.values(campaigns).find(c => c.teamId === teamId)

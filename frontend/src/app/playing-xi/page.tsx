@@ -375,11 +375,12 @@ export default function PlayingXIPage() {
 
               {/* AI Auto-Pick Best XI Button */}
               <button
-                onClick={() => autoOptimizePlayingXI()}
+                onClick={handleAutoOptimize}
+                disabled={isOptimizing}
                 className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
               >
-                <Zap size={14} />
-                <span>Auto-Pick Best XI (AI Stat-Optimizer)</span>
+                <Zap size={14} className={isOptimizing ? 'animate-spin' : ''} />
+                <span>{isOptimizing ? 'Optimizing Tactical Lineup...' : 'Auto-Pick Best XI (AI Stat-Optimizer)'}</span>
               </button>
 
               {/* Impact Player Slot */}
@@ -418,7 +419,9 @@ export default function PlayingXIPage() {
               </div>
 
               {/* 11 Players in Real Batting Order */}
-              <div className="space-y-1.5 overflow-y-auto max-h-[460px] pr-1">
+              <div className={`space-y-1.5 overflow-y-auto max-h-[460px] pr-1 rounded-2xl transition-all ${
+                isOptimizing ? 'ring-2 ring-amber-400 p-1 animate-magic-sweep shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''
+              }`}>
                 {fullPlayingXI.map((player, index) => {
                   return (
                     <div
@@ -718,6 +721,8 @@ export default function PlayingXIPage() {
                     <div
                       key={bp.player_id}
                       onClick={() => {
+                        gameAudio.playCardSwap();
+                        triggerGameHaptic('medium');
                         if (benchDrawerSlotIndex === 11) {
                           useCampaignStore.getState().setPlayingXI(campaign.playingXI, bp.player_id);
                         } else {
