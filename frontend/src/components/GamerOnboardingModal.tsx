@@ -20,6 +20,7 @@ import {
   Flame,
   Award
 } from 'lucide-react'
+import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 interface GamerOnboardingModalProps {
   isOpen: boolean
