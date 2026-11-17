@@ -57,7 +57,7 @@ export function generateTournamentSchedule(myTeamId: string): TournamentFixture[
     const rival = getFranchise(rId);
     const isHome = index % 2 === 0;
     const stadium = isHome ? myFranchise.stadiumName : rival.stadiumName;
-    const city = isHome ? myFranchise.homeVenue : rival.homeVenue;
+    const city = isHome ? (myFranchise.stadiumCity || 'Bengaluru') : (rival.stadiumCity || 'Mumbai');
 
     return {
       matchNo: index + 1,
