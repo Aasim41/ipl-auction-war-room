@@ -135,7 +135,6 @@ export function generateTournamentSchedule(myTeamId: string): TournamentFixture[
     teamAEmoji: '👑',
     teamBId: 'rank2',
     teamBName: 'Runner Up (Rank 2)',
-    teamAShort: 'Rank 2',
     teamBShort: 'Rank 2',
     teamBColor: '#3b82f6',
     teamBEmoji: '🥈',

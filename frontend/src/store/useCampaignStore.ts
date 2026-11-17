@@ -649,10 +649,11 @@ export const useCampaignStore = create<CampaignStoreState>()(
           const currentFix = (prev.schedule || []).find(f => f.matchNo === matchNo)
           const targetRound = currentFix?.round || 1
 
-          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {}
+          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
           
           // Seed pointsMap from existing pointsTable
-          (prev.pointsTable || generateInitialPointsTable()).forEach(t => {
+          const initialTable = prev.pointsTable && prev.pointsTable.length > 0 ? prev.pointsTable : generateInitialPointsTable();
+          initialTable.forEach(t => {
             pointsMap[t.teamId] = {
               played: t.played,
               won: t.won,
