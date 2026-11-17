@@ -20,10 +20,14 @@ import {
   ChevronRight,
   Target,
   Compass,
-  Award
+  Award,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';
 import { TournamentFixture } from '../data/scheduleGenerator';
+import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
+import { getFranchiseAI } from '../data/franchiseAI';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
