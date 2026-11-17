@@ -148,6 +148,36 @@ export default function BallByBallMatchSimulator({
   const [lastShotTraj, setLastShotTraj] = useState<{ x: number; y: number; name: string } | null>(null);
   const [isMuted, setIsMuted] = useState(false);
 
+  // Mobile touch swipe gesture state
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null || touchStartY === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    const deltaY = e.changedTouches[0].clientY - touchStartY;
+
+    // Detect horizontal swipe (> 40px, more horizontal than vertical)
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0 && activeTab === 'arena') {
+        setActiveTab('scorecard');
+        gameAudio.playUiTap('light');
+        triggerGameHaptic('light');
+      } else if (deltaX > 0 && activeTab === 'scorecard') {
+        setActiveTab('arena');
+        gameAudio.playUiTap('light');
+        triggerGameHaptic('light');
+      }
+    }
+    setTouchStartX(null);
+    setTouchStartY(null);
+  };
+
   useEffect(() => {
     setIsMuted(gameAudio.isMuted());
     const handleSoundChange = (e: any) => {
