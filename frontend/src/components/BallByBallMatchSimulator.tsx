@@ -146,6 +146,16 @@ export default function BallByBallMatchSimulator({
   // Event banner
   const [eventBanner, setEventBanner] = useState<{ text: string; subtext: string; color: string } | null>(null);
   const [lastShotTraj, setLastShotTraj] = useState<{ x: number; y: number; name: string } | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+
+  useEffect(() => {
+    setIsMuted(gameAudio.isMuted());
+    const handleSoundChange = (e: any) => {
+      if (e?.detail) setIsMuted(e.detail.isMuted);
+    };
+    window.addEventListener('auctionxi_sound_change', handleSoundChange);
+    return () => window.removeEventListener('auctionxi_sound_change', handleSoundChange);
+  }, []);
 
   // Squads
   const [bat1Squad, setBat1Squad] = useState<any[]>([]);
@@ -286,14 +296,83 @@ export default function BallByBallMatchSimulator({
     const activeBowlers = currentBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').slice(0, 5);
     const bowler = activeBowlers[currentBowlerIdx % activeBowlers.length] || currentBowlSquad[0];
 
-    // Determine tactics
+    // Determine tactics based on Utility AI Profiles
+    const rivalAI = getFranchiseAI(rivalFranchise.short || rivalFranchise.id);
+    let botBatTactic: BattingTactic = 'ROTATE';
+    let botBowlTactic: BowlingTactic = 'GOOD_LENGTH';
+
+    if (!isUserBatting) {
+      // Rival Bot is Batting
+      const isPowerplay = currentOver < 6;
+      const isDeath = currentOver >= 16;
+      const botRand = Math.random();
+
+      if (rivalFranchise.short === 'CSK') {
+        // CSK: Seasoned anchors, conservative early, explosive finish
+        if (isPowerplay) {
+          botBatTactic = botRand < 0.35 ? 'DEFEND' : botRand < 0.85 ? 'ROTATE' : 'ATTACK';
+        } else if (isDeath) {
+          botBatTactic = botRand < 0.55 ? 'MAXIMUM' : botRand < 0.85 ? 'ATTACK' : 'ROTATE';
+        } else {
+          botBatTactic = botRand < 0.20 ? 'DEFEND' : botRand < 0.75 ? 'ROTATE' : 'ATTACK';
+        }
+      } else if (rivalFranchise.short === 'SRH' || rivalFranchise.short === 'MI') {
+        // SRH & MI: Hyper-aggressive in powerplays & death overs
+        if (isPowerplay) {
+          botBatTactic = botRand < 0.10 ? 'ROTATE' : botRand < 0.55 ? 'ATTACK' : 'MAXIMUM';
+        } else if (isDeath) {
+          botBatTactic = botRand < 0.70 ? 'MAXIMUM' : 'ATTACK';
+        } else {
+          botBatTactic = botRand < 0.35 ? 'ROTATE' : botRand < 0.75 ? 'ATTACK' : 'MAXIMUM';
+        }
+      } else if (rivalFranchise.short === 'RR') {
+        // RR: Moneyball analytical valuation & required rate adaptation
+        const reqRate = (chaseTarget && currentInnings === 2) 
+          ? (chaseTarget - activeInn.totalRuns) / Math.max(0.1, (20 - currentOver)) 
+          : 8.5;
+        if (reqRate > 10.5) {
+          botBatTactic = botRand < 0.60 ? 'MAXIMUM' : 'ATTACK';
+        } else if (reqRate > 8.5) {
+          botBatTactic = botRand < 0.50 ? 'ATTACK' : 'ROTATE';
+        } else {
+          botBatTactic = botRand < 0.65 ? 'ROTATE' : botRand < 0.85 ? 'ATTACK' : 'DEFEND';
+        }
+      } else {
+        const pAggr = rivalAI.matchDayBias.powerplayAggression;
+        if (isPowerplay) {
+          botBatTactic = botRand < (1 - pAggr) ? 'ROTATE' : botRand < 0.75 ? 'ATTACK' : 'MAXIMUM';
+        } else if (isDeath) {
+          botBatTactic = botRand < 0.6 ? 'MAXIMUM' : 'ATTACK';
+        } else {
+          botBatTactic = botRand < 0.5 ? 'ROTATE' : botRand < 0.8 ? 'ATTACK' : 'DEFEND';
+        }
+      }
+    } else {
+      // Rival Bot is Bowling
+      const isSpinner = bowler.role === 'BOWL' && (bowler.name.includes('Chahal') || bowler.name.includes('Kuldeep') || bowler.name.includes('Ashwin') || bowler.name.includes('Rashid') || bowler.name.includes('Narine') || bowler.name.includes('Jadeja') || bowler.name.includes('Bishnoi') || bowler.name.includes('Axar') || bowler.name.includes('Varun'));
+      const botRand = Math.random();
+
+      if (rivalFranchise.short === 'CSK' || isSpinner || rivalAI.matchDayBias.spinPriority > 0.8) {
+        // CSK / Spin choke: Disciplined good length and deceptive slower cutters
+        botBowlTactic = botRand < 0.55 ? 'GOOD_LENGTH' : botRand < 0.85 ? 'SLOWER' : 'YORKER';
+      } else if (rivalFranchise.short === 'MI' || rivalFranchise.short === 'SRH' || rivalAI.matchDayBias.paceAggression > 0.8) {
+        // MI / SRH: Express pace hostility (145+ km/h bouncers & toe-crushing yorkers)
+        botBowlTactic = botRand < 0.45 ? 'YORKER' : botRand < 0.80 ? 'BOUNCER' : 'GOOD_LENGTH';
+      } else if (rivalFranchise.short === 'RR') {
+        // RR: Moneyball variation based on batter strike rate
+        botBowlTactic = botRand < 0.40 ? 'GOOD_LENGTH' : botRand < 0.70 ? 'SLOWER' : 'YORKER';
+      } else {
+        botBowlTactic = botRand < 0.35 ? 'GOOD_LENGTH' : botRand < 0.65 ? 'YORKER' : botRand < 0.85 ? 'SLOWER' : 'BOUNCER';
+      }
+    }
+
     const activeBatTactic: BattingTactic = isUserBatting 
       ? (customTactic as BattingTactic) || battingTactic 
-      : (Math.random() < 0.25 ? 'DEFEND' : Math.random() < 0.6 ? 'ROTATE' : Math.random() < 0.85 ? 'ATTACK' : 'MAXIMUM');
+      : botBatTactic;
 
     const activeBowlTactic: BowlingTactic = !isUserBatting
       ? (customTactic as BowlingTactic) || bowlingTactic
-      : (Math.random() < 0.3 ? 'YORKER' : Math.random() < 0.6 ? 'GOOD_LENGTH' : Math.random() < 0.85 ? 'SLOWER' : 'BOUNCER');
+      : botBowlTactic;
 
     // Dynamic Outcome Probability based on tactics
     const rand = Math.random();
@@ -410,12 +489,15 @@ export default function BallByBallMatchSimulator({
     const newTotalRuns = activeInn.totalRuns + runs;
     const newTotalWickets = isWicket ? activeInn.totalWickets + 1 : activeInn.totalWickets;
 
-    // Trigger visual animations
+    // Trigger visual animations & Procedural Audio/Haptics
     setIsBallAnimating(true);
     setLastShotTraj(shotZone);
     setTimeout(() => setIsBallAnimating(false), 600);
 
     if (isSix) {
+      gameAudio.playWillowCrack('six');
+      gameAudio.playCrowdRoar('six');
+      triggerGameHaptic('six');
       setEventBanner({
         text: '🚀 MAXIMUM! 6 RUNS!',
         subtext: `${striker} hammers ${bowler.name} into the crowd!`,
@@ -423,6 +505,9 @@ export default function BallByBallMatchSimulator({
       });
       setTimeout(() => setEventBanner(null), 1500);
     } else if (isFour) {
+      gameAudio.playWillowCrack('four');
+      gameAudio.playCrowdRoar('boundary');
+      triggerGameHaptic('four');
       setEventBanner({
         text: '⚡ CRACKING 4! BOUNDARY!',
         subtext: `${striker} pierces ${shotZone.name} to the rope!`,
@@ -430,12 +515,21 @@ export default function BallByBallMatchSimulator({
       });
       setTimeout(() => setEventBanner(null), 1200);
     } else if (isWicket) {
+      gameAudio.playStumpShatter();
+      gameAudio.playCrowdRoar('wicket');
+      triggerGameHaptic('wicket');
       setEventBanner({
         text: '🎯 WICKET! OUT!',
         subtext: `${striker} ${dismissal}!`,
         color: 'from-rose-600 to-red-700'
       });
       setTimeout(() => setEventBanner(null), 1800);
+    } else if (runs > 0) {
+      gameAudio.playWillowCrack('single');
+      triggerGameHaptic('light');
+    } else {
+      gameAudio.playWillowCrack('dot');
+      gameAudio.playBallWhoosh();
     }
 
     const newBall: SimulatedBall = {
