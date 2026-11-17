@@ -35,7 +35,8 @@ export default function SquadRetainReleasePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showMatchupModal, setShowMatchupModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
-  const [showSimulator, setShowSimulator] = useState(false)
+  const [showConfirmAuction, setShowConfirmAuction] = useState(false)
+  const isRetainLocked = campaign?.lockedPhases?.includes('retain_release')
 
   if (!campaign) {
     return (
@@ -79,8 +80,11 @@ export default function SquadRetainReleasePage() {
 
   // Proceed to Mini-Auction
   const handleProceedToAuction = () => {
-    advancePhase('mini_auction')
-    router.push('/auction')
+    if (isRetainLocked) {
+      router.push('/auction')
+    } else {
+      setShowConfirmAuction(true)
+    }
   }
 
   return (
@@ -390,6 +394,40 @@ export default function SquadRetainReleasePage() {
           predicted_price: p.price
         }))}
       />
+      {/* Confirmation Modal to Lock Retentions & Enter Auction */}
+      {showConfirmAuction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="bg-slate-950 border border-amber-500/40 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-3">
+              <Shield size={22} />
+            </div>
+            <h3 className="text-base font-black text-white mb-1.5">
+              Submit Official Retentions to BCCI?
+            </h3>
+            <p className="text-xs text-gray-300 mb-5 leading-relaxed">
+              Once submitted, all released players enter the Mini-Auction pool and your retained list is locked permanently for this cycle. There is no going back.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setShowConfirmAuction(false)}
+                className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 cursor-pointer"
+              >
+                Review List
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirmAuction(false)
+                  advancePhase('mini_auction')
+                  router.push('/auction')
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-black text-slate-950 cursor-pointer shadow-lg shadow-amber-500/30"
+              >
+                Confirm & Lock
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
