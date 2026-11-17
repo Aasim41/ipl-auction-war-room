@@ -195,17 +195,17 @@ export default function LandingPage() {
       </div>
 
       {/* ─── Main Hero Section ─── */}
-      <main className="relative z-10 max-w-6xl mx-auto text-center px-4 sm:px-6 pt-6 sm:pt-10 pb-6 w-full flex-1 flex flex-col justify-center">
+      <main className="relative z-10 max-w-6xl mx-auto text-center px-3 sm:px-6 pt-3 sm:pt-8 pb-4 w-full flex-1 flex flex-col justify-center">
         
         {/* Cricket Broadcast Badge */}
-        <div className="gsap-broadcast-badge inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-amber-500/30 bg-amber-950/20 text-amber-300 text-xs font-semibold mb-4 mx-auto shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-          <Trophy size={13} className="text-amber-400" />
+        <div className="gsap-broadcast-badge inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full border border-amber-500/30 bg-amber-950/20 text-amber-300 text-[11px] font-semibold mb-2 sm:mb-3 mx-auto shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+          <Trophy size={12} className="text-amber-400" />
           <span>ROAD TO IPL 2027 • FRANCHISE GM CAMPAIGN</span>
-          <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 text-[9px] font-bold">2027 EDITION</span>
+          <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 text-[8px] font-bold">2027 EDITION</span>
         </div>
 
         {/* Hero Title */}
-        <h1 ref={headlineRef} className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.92] mb-4">
+        <h1 ref={headlineRef} className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none mb-2 sm:mb-3">
           <span className="gsap-hero-title block text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
             CONQUER THE
           </span>
@@ -221,23 +221,23 @@ export default function LandingPage() {
         </h1>
 
         {/* Hero Subtitle */}
-        <div className="gsap-hero-subtitle text-xs sm:text-base text-gray-300 max-w-2xl mx-auto mb-6 font-normal leading-relaxed">
+        <div className="gsap-hero-subtitle text-[11px] sm:text-sm text-gray-300 max-w-2xl mx-auto mb-3 sm:mb-5 font-normal leading-relaxed">
           The official 4-phase IPL manager campaign. Trade with rivals, lock in retentions for purse refunds, battle 9 AI franchise bots in the live Mini-Auction, and conquer match day!
         </div>
 
         {/* Saved Career Quick Banner if Active */}
         {mounted && activeCamp && (
-          <div className="max-w-md mx-auto mb-6 p-3 rounded-2xl bg-slate-900/90 border border-white/15 flex items-center justify-between shadow-xl backdrop-blur-md">
-            <div className="flex items-center gap-2.5 text-left">
-              <span className="text-2xl">{activeFranchise.emoji}</span>
+          <div className="max-w-md mx-auto mb-3 sm:mb-5 p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-white/15 flex items-center justify-between shadow-xl backdrop-blur-md">
+            <div className="flex items-center gap-2 text-left">
+              <span className="text-xl sm:text-2xl">{activeFranchise.emoji}</span>
               <div>
-                <div className="text-xs font-black text-white flex items-center gap-1.5">
+                <div className="text-[11px] sm:text-xs font-black text-white flex items-center gap-1.5">
                   <span>{activeCamp.teamName}</span>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 font-black uppercase">
+                  <span className="text-[8px] px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 font-black uppercase">
                     {activeCamp.currentPhase.replace('_', ' ')}
                   </span>
                 </div>
-                <div className="text-[10px] text-gray-400 font-mono">
+                <div className="text-[9px] sm:text-[10px] text-gray-400 font-mono">
                   Manager: <strong className="text-gray-200">{currentUser.gamerTag}</strong> • Purse: ₹{activeCamp.remainingPurse.toFixed(2)} Cr
                 </div>
               </div>
@@ -245,16 +245,16 @@ export default function LandingPage() {
 
             <Link
               href={targetPhaseUrl}
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase flex items-center gap-1 shadow-md transition-all active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] uppercase flex items-center gap-1 shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
             >
               <span>Resume</span>
-              <ArrowRight size={13} />
+              <ArrowRight size={12} />
             </Link>
           </div>
         )}
 
         {/* CTA Buttons */}
-        <div className="gsap-cta-group flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+        <div className="gsap-cta-group flex flex-row items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           {mounted && activeCamp ? (
             <Link
               href={targetPhaseUrl}
@@ -262,13 +262,13 @@ export default function LandingPage() {
                 gameAudio.playUiTap('select')
                 triggerGameHaptic('light')
               }}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl font-display text-base sm:text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+              className="px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-base font-bold tracking-wider text-black flex items-center justify-center gap-1.5 sm:gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
               style={{
                 backgroundColor: activeStadium.teamColor,
                 boxShadow: `0 8px 25px ${activeStadium.teamColor}60`,
               }}
             >
-              <Gavel size={18} />
+              <Gavel size={16} />
               RESUME {activeCamp.teamName.toUpperCase()}
             </Link>
           ) : (
@@ -278,13 +278,13 @@ export default function LandingPage() {
                 gameAudio.playUiTap('select')
                 triggerGameHaptic('light')
               }}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl font-display text-base sm:text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+              className="px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-base font-bold tracking-wider text-black flex items-center justify-center gap-1.5 sm:gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
               style={{
                 backgroundColor: activeStadium.teamColor,
                 boxShadow: `0 8px 25px ${activeStadium.teamColor}60`,
               }}
             >
-              <Gavel size={18} />
+              <Gavel size={16} />
               START IPL 2027 CAMPAIGN
             </Link>
           )}
@@ -295,10 +295,10 @@ export default function LandingPage() {
               triggerGameHaptic('light')
               setShowOnboarding(true)
             }}
-            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl font-display text-sm sm:text-base font-bold tracking-wider text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
+            className="px-3.5 sm:px-5 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-sm font-bold tracking-wider text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 flex items-center justify-center gap-1.5 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
           >
-            <Sparkles size={16} className="text-amber-400" />
-            <span>HOW TO PLAY (GUIDE)</span>
+            <Sparkles size={14} className="text-amber-400" />
+            <span>HOW TO PLAY</span>
           </button>
 
           <Link
@@ -307,9 +307,9 @@ export default function LandingPage() {
               gameAudio.playUiTap('light')
               triggerGameHaptic('light')
             }}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-display text-sm sm:text-base font-bold tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
+            className="px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-display text-xs sm:text-base font-bold tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center gap-1.5 transition-all transform hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
           >
-            <MapPin size={18} />
+            <MapPin size={16} />
             {activeCamp ? 'SWITCH FRANCHISE' : 'CHOOSE TEAM'}
           </Link>
         </div>

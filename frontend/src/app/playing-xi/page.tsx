@@ -15,6 +15,7 @@ import {
   Trophy, 
   ArrowUp, 
   ArrowDown, 
+  ArrowLeft,
   CheckCircle2, 
   Lock, 
   Flame, 
@@ -261,6 +262,18 @@ export default function PlayingXIPage() {
         {/* Banner with View Toggle (Lineup vs Schedule) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-3 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('light');
+                triggerGameHaptic('light');
+                router.push('/');
+              }}
+              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Home Dashboard"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
             <span className="w-8 h-8 rounded-xl flex items-center justify-center text-lg shadow-md shrink-0" style={{ backgroundColor: franchise.color }}>
               {franchise.emoji}
             </span>

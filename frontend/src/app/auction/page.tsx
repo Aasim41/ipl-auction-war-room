@@ -11,6 +11,7 @@ import {
   Sparkles, 
   CheckCircle2, 
   ArrowRight, 
+  ArrowLeft,
   Flame, 
   Shield, 
   Volume2, 
@@ -288,18 +289,32 @@ export default function MiniAuctionPage() {
         
         {/* Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-mono font-black uppercase">
-                PART 3: LIVE MINI-AUCTION ARENA
-              </span>
-              <span className="text-[10px] text-gray-400">
-                Pool of {auctionPool.length} Stars (AI Releases + Marquee)
-              </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('light')
+                triggerGameHaptic('light')
+                router.push('/')
+              }}
+              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Home Dashboard"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-mono font-black uppercase">
+                  PART 3: LIVE MINI-AUCTION ARENA
+                </span>
+                <span className="text-[10px] text-gray-400">
+                  Pool of {auctionPool.length} Stars (AI Releases + Marquee)
+                </span>
+              </div>
+              <h1 className="text-lg sm:text-xl font-black font-display text-white">
+                IPL 2027 Gavel Bidding War Room
+              </h1>
             </div>
-            <h1 className="text-lg sm:text-xl font-black font-display text-white">
-              IPL 2027 Gavel Bidding War Room
-            </h1>
           </div>
 
         {campaign.lockedPhases?.includes('mini_auction') && (
