@@ -1354,21 +1354,21 @@ export default function BallByBallMatchSimulator({
               )}
 
               {/* Execution Action Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 border-t border-white/10">
                 <button
                   onClick={() => executeBall()}
                   disabled={matchDone}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
                 >
                   <Play size={16} className="fill-slate-950" />
                   <span>{isUserBatting ? `PLAY SHOT [${battingTactic}]` : `BOWL BALL [${bowlingTactic}]`}</span>
                 </button>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
                   <button
                     onClick={handleSimulateOver}
                     disabled={matchDone}
-                    className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                    className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
                   >
                     <FastForward size={14} />
                     <span>Simulate Over</span>
@@ -1377,7 +1377,7 @@ export default function BallByBallMatchSimulator({
                   <button
                     onClick={handleInstantResult}
                     disabled={matchDone}
-                    className="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                    className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all"
                   >
                     <span>Instant Result</span>
                     <ChevronRight size={14} />

@@ -338,31 +338,33 @@ export default function PlayingXIPage() {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-white/10">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-white/10 flex-1 sm:flex-none">
               <button
                 onClick={() => setActiveTab('xi')}
-                className={`px-3 py-1 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'xi' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <Users size={13} />
-                <span>Playing XI & Field</span>
+                <span className="hidden sm:inline">Playing XI & Field</span>
+                <span className="sm:hidden">Playing XI</span>
               </button>
               <button
                 onClick={() => setActiveTab('schedule')}
-                className={`px-3 py-1 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'schedule' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <Calendar size={13} />
-                <span>Tournament Schedule (74 Matches)</span>
+                <span className="hidden sm:inline">Tournament Schedule (74 Matches)</span>
+                <span className="sm:hidden">Schedule</span>
               </button>
             </div>
 
             <button
               onClick={() => handleLaunchMatch()}
-              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+              className="w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
             >
               <Swords size={13} />
               <span>Simulate Next Match</span>

@@ -126,6 +126,7 @@ export function Navbar() {
     { 
       id: 'trade', 
       label: currentPhaseOrder > 1 ? '1. Trade (Closed)' : '1. Trade Window', 
+      shortLabel: '1. Trade',
       href: '/trade', 
       icon: ArrowLeftRight,
       isConcluded: currentPhaseOrder > 1 || lockedPhases.includes('trade'),
@@ -134,6 +135,7 @@ export function Navbar() {
     { 
       id: 'retain_release', 
       label: currentPhaseOrder > 2 ? '2. Retain (Finalized)' : '2. Retain & Release', 
+      shortLabel: '2. Retain',
       href: '/squad', 
       icon: Users,
       isConcluded: currentPhaseOrder > 2 || lockedPhases.includes('retain_release'),
@@ -142,6 +144,7 @@ export function Navbar() {
     { 
       id: 'mini_auction', 
       label: currentPhaseOrder > 3 ? '3. Auction (Finalized)' : '3. Mini-Auction', 
+      shortLabel: '3. Auction',
       href: '/auction', 
       icon: Gavel,
       isConcluded: currentPhaseOrder > 3 || lockedPhases.includes('mini_auction'),
@@ -150,6 +153,7 @@ export function Navbar() {
     { 
       id: 'playing_xi', 
       label: '4. Playing XI & Schedule', 
+      shortLabel: '4. Play',
       href: '/playing-xi', 
       icon: Calendar,
       isConcluded: false,
@@ -282,7 +286,8 @@ export function Navbar() {
                     className="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shrink-0 bg-slate-900/60 text-gray-500 border border-white/5 cursor-not-allowed opacity-60 hover:opacity-80 transition-opacity"
                   >
                     <Lock size={11} className={phase.isConcluded ? "text-amber-500/70" : "text-gray-500"} />
-                    <span>{phase.label}</span>
+                    <span className="hidden md:inline">{phase.label}</span>
+                    <span className="md:hidden">{phase.shortLabel}</span>
                   </div>
                 )
               }
@@ -305,7 +310,8 @@ export function Navbar() {
                     <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping shrink-0" />
                   )}
                   <phase.icon size={12} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
-                  <span>{phase.label}</span>
+                  <span className="hidden md:inline">{phase.label}</span>
+                  <span className="md:hidden">{phase.shortLabel}</span>
                 </Link>
               )
             })}
