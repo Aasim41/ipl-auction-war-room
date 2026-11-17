@@ -1,22 +1,42 @@
 'use client'
 
 import React from 'react'
-import { Shield, Users, Globe, IndianRupee, ArrowRight, CheckCircle2, Flame, Gavel, ArrowLeftRight, Swords } from 'lucide-react'
+import { Shield, Users, Globe, IndianRupee, ArrowRight, CheckCircle2, Flame, Gavel, ArrowLeftRight, Swords, X } from 'lucide-react'
 
 interface BCCIRulesModalProps {
   isOpen: boolean
-  teamName: string
-  teamEmoji: string
-  onAccept: () => void
+  teamName?: string
+  teamEmoji?: string
+  onAccept?: () => void
+  onClose?: () => void
 }
 
-export function BCCIRulesModal({ isOpen, teamName, teamEmoji, onAccept }: BCCIRulesModalProps) {
+export function BCCIRulesModal({ 
+  isOpen, 
+  teamName = 'Franchise GM', 
+  teamEmoji = '🏏', 
+  onAccept,
+  onClose 
+}: BCCIRulesModalProps) {
   if (!isOpen) return null
+
+  const handleDismiss = () => {
+    if (onClose) onClose()
+    else if (onAccept) onAccept()
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-xl animate-fade-in text-white">
       <div className="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/40 rounded-3xl p-5 sm:p-7 shadow-[0_0_50px_rgba(245,158,11,0.2)] max-h-[92vh] flex flex-col justify-between overflow-y-auto">
         
+        {/* Close button */}
+        <button
+          onClick={handleDismiss}
+          className="absolute top-4 right-4 p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer transition-colors"
+        >
+          <X size={18} />
+        </button>
+
         {/* Header */}
         <div className="text-center pb-4 border-b border-white/10 shrink-0">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-black tracking-wider uppercase mb-2">
@@ -141,10 +161,10 @@ export function BCCIRulesModal({ isOpen, teamName, teamEmoji, onAccept }: BCCIRu
         {/* Action Button */}
         <div className="pt-3 border-t border-white/10 shrink-0">
           <button
-            onClick={onAccept}
+            onClick={handleDismiss}
             className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm tracking-wide uppercase transition-all shadow-[0_0_25px_rgba(245,158,11,0.4)] hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>Accept Rules & Enter Trade Window</span>
+            <span>Understood & Close</span>
             <ArrowRight size={16} />
           </button>
         </div>
