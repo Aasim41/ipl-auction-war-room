@@ -629,6 +629,25 @@ export const useCampaignStore = create<CampaignStoreState>()(
         if (!resultData) return
 
         get().updateActiveCampaign((prev) => {
+          const currentFix = (prev.schedule || []).find(f => f.matchNo === matchNo)
+          const targetRound = currentFix?.round || 1
+
+          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {}
+          
+          // Seed pointsMap from existing pointsTable
+          (prev.pointsTable || generateInitialPointsTable()).forEach(t => {
+            pointsMap[t.teamId] = {
+              played: t.played,
+              won: t.won,
+              lost: t.lost,
+              runsFor: t.nrr * t.played * 20 + t.played * 160,
+              oversFor: Math.max(1, t.played * 20),
+              runsAgainst: t.played * 160,
+              oversAgainst: Math.max(1, t.played * 20)
+            }
+          })
+
+          // 1. Update the user's match
           const updatedSchedule = (prev.schedule || []).map((f) => {
             if (f.matchNo === matchNo) {
               return {
@@ -637,57 +656,107 @@ export const useCampaignStore = create<CampaignStoreState>()(
                 result: resultData
               }
             }
-            if (f.matchNo === matchNo + 1) {
+
+            // 2. Simultaneously simulate any unplayed AI match in this same round
+            if (f.round === targetRound && f.status !== 'COMPLETED' && f.matchNo !== matchNo) {
+              const aiRes = simulateAIMatch(f)
               return {
                 ...f,
-                status: 'CURRENT' as const
+                status: 'COMPLETED' as const,
+                result: aiRes
               }
             }
+
             return f
           })
 
-          // Update Points Table
+          // 3. Accumulate points & NRR for this round's completed matches
+          updatedSchedule.filter(f => f.round === targetRound && f.result).forEach(f => {
+            const res = f.result!
+            const tA = f.teamAId
+            const tB = f.teamBId
+
+            if (pointsMap[tA] && pointsMap[tB]) {
+              pointsMap[tA].played += 1
+              pointsMap[tB].played += 1
+
+              if (res.winnerTeamId === tA) {
+                pointsMap[tA].won += 1
+                pointsMap[tB].lost += 1
+              } else {
+                pointsMap[tB].won += 1
+                pointsMap[tA].lost += 1
+              }
+
+              pointsMap[tA].runsFor += res.teamARuns
+              pointsMap[tA].oversFor += res.teamAOvers
+              pointsMap[tA].runsAgainst += res.teamBRuns
+              pointsMap[tA].oversAgainst += res.teamBOvers
+
+              pointsMap[tB].runsFor += res.teamBRuns
+              pointsMap[tB].oversFor += res.teamBOvers
+              pointsMap[tB].runsAgainst += res.teamARuns
+              pointsMap[tB].oversAgainst += res.teamAOvers
+            }
+          })
+
+          // Rebuild points table
           const updatedPoints = (prev.pointsTable || generateInitialPointsTable()).map((entry) => {
-            if (entry.teamId === prev.teamId) {
-              const myWon = resultData.winnerTeamId === prev.teamId
-              const runsFor = resultData.myRuns
-              const oversFor = Math.max(1, resultData.myOvers)
-              const runsAgainst = resultData.rivalRuns
-              const oversAgainst = Math.max(1, resultData.rivalOvers)
-              const matchNRR = (runsFor / oversFor) - (runsAgainst / oversAgainst)
-
-              return {
-                ...entry,
-                played: entry.played + 1,
-                won: entry.won + (myWon ? 1 : 0),
-                lost: entry.lost + (myWon ? 0 : 1),
-                points: entry.points + (myWon ? 2 : 0),
-                nrr: Math.round(((entry.nrr * entry.played + matchNRR) / (entry.played + 1)) * 1000) / 1000
-              }
+            const st = pointsMap[entry.teamId]
+            if (!st) return entry
+            const nrr = st.oversFor > 0 ? (st.runsFor / st.oversFor) - (st.runsAgainst / st.oversAgainst) : 0
+            return {
+              ...entry,
+              played: st.played,
+              won: st.won,
+              lost: st.lost,
+              points: st.won * 2,
+              nrr: Math.round(nrr * 1000) / 1000
             }
-
-            if (entry.teamId === resultData.winnerTeamId && resultData.winnerTeamId !== prev.teamId) {
-              // Rival won
-              return {
-                ...entry,
-                played: entry.played + 1,
-                won: entry.won + 1,
-                points: entry.points + 2
-              }
-            } else if (resultData.winnerTeamId === prev.teamId && entry.teamId === updatedSchedule.find(s => s.matchNo === matchNo)?.rivalTeamId) {
-              // Rival lost
-              return {
-                ...entry,
-                played: entry.played + 1,
-                lost: entry.lost + 1
-              }
-            }
-
-            return entry
           })
 
           // Sort Points Table by Points descending, then NRR descending
           updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr)
+
+          // 4. Find the user's next upcoming match and mark it CURRENT
+          const nextMyMatch = updatedSchedule.find(f => f.isMyMatch && f.status === 'UPCOMING')
+          if (nextMyMatch) {
+            nextMyMatch.status = 'CURRENT'
+          } else if (targetRound >= 14) {
+            // League complete! Seed Top 4 into Qualifier 1 & Eliminator
+            const top4 = updatedPoints.slice(0, 4)
+            const q1 = updatedSchedule.find(f => f.matchNo === 71)
+            const elim = updatedSchedule.find(f => f.matchNo === 72)
+
+            if (q1 && top4.length >= 2) {
+              q1.teamAId = top4[0].teamId
+              q1.teamAName = top4[0].teamName
+              q1.teamAShort = top4[0].shortName
+              q1.teamAColor = top4[0].color
+              q1.teamAEmoji = top4[0].emoji
+              q1.teamBId = top4[1].teamId
+              q1.teamBName = top4[1].teamName
+              q1.teamBShort = top4[1].shortName
+              q1.teamBColor = top4[1].color
+              q1.teamBEmoji = top4[1].emoji
+              q1.isMyMatch = q1.teamAId === prev.teamId || q1.teamBId === prev.teamId
+              q1.status = 'CURRENT'
+            }
+
+            if (elim && top4.length >= 4) {
+              elim.teamAId = top4[2].teamId
+              elim.teamAName = top4[2].teamName
+              elim.teamAShort = top4[2].shortName
+              elim.teamAColor = top4[2].color
+              elim.teamAEmoji = top4[2].emoji
+              elim.teamBId = top4[3].teamId
+              elim.teamBName = top4[3].teamName
+              elim.teamBShort = top4[3].shortName
+              elim.teamBColor = top4[3].color
+              elim.teamBEmoji = top4[3].emoji
+              elim.isMyMatch = elim.teamAId === prev.teamId || elim.teamBId === prev.teamId
+            }
+          }
 
           return {
             ...prev,
