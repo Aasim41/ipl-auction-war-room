@@ -296,6 +296,9 @@ export default function BallByBallMatchSimulator({
     const activeBowlers = currentBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').slice(0, 5);
     const bowler = activeBowlers[currentBowlerIdx % activeBowlers.length] || currentBowlSquad[0];
 
+    // Target for chase in 2nd innings
+    const chaseTarget = currentInnings === 2 ? inn1.totalRuns + 1 : null;
+
     // Determine tactics based on Utility AI Profiles
     const rivalAI = getFranchiseAI(rivalFranchise.short || rivalFranchise.id);
     let botBatTactic: BattingTactic = 'ROTATE';
@@ -383,9 +386,6 @@ export default function BallByBallMatchSimulator({
     let dismissal = '';
     let commentary = '';
     const shotZone = SHOT_ZONES[Math.floor(Math.random() * SHOT_ZONES.length)];
-
-    // Target for chase in 2nd innings
-    const chaseTarget = currentInnings === 2 ? inn1.totalRuns + 1 : null;
 
     // BATTING TACTIC LOGIC
     if (activeBatTactic === 'DEFEND') {
