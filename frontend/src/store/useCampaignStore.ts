@@ -9,7 +9,7 @@ export interface CampaignPlayer extends IPLPlayer {
 }
 
 export interface UserCampaign {
-  id: string // e.g. "aasim_rcb_2027"
+  id: string // e.g. "gm_123_rcb_2027"
   userId: string
   teamId: string
   teamName: string
@@ -35,21 +35,30 @@ export interface UserProfile {
   id: string
   gamerTag: string
   avatar: string
+  pin?: string
+  roleTitle?: string
   createdAt: string
 }
 
 interface CampaignStoreState {
+  profiles: Record<string, UserProfile>
+  currentUserId: string
   currentUser: UserProfile
   activeCampaignId: string | null
   campaigns: Record<string, UserCampaign> // keyed by campaign id
   
-  // User Profile Actions
+  // User Authentication & Onboarding Actions
+  registerProfile: (gamerTag: string, avatar: string, pin?: string) => UserProfile
+  loginProfile: (gamerTag: string, pin?: string) => boolean
+  switchProfile: (userId: string) => void
   setUserProfile: (profile: Partial<UserProfile>) => void
+  deleteProfile: (userId: string) => void
   
   // Campaign Actions
   createCampaign: (teamId: string) => UserCampaign
   switchCampaign: (campaignId: string) => void
   getActiveCampaign: () => UserCampaign | null
+  getUserCampaigns: () => UserCampaign[]
   updateActiveCampaign: (updater: (prev: UserCampaign) => UserCampaign) => void
   deleteCampaign: (campaignId: string) => void
   resetCampaign: (campaignId: string) => void
@@ -66,23 +75,115 @@ interface CampaignStoreState {
 }
 
 const DEFAULT_USER: UserProfile = {
-  id: 'user_cricket_gm_1',
+  id: 'gm_default_1',
   gamerTag: 'Franchise GM',
-  avatar: '🏏',
+  avatar: '👑',
+  roleTitle: 'Head of Cricket Operations',
   createdAt: new Date().toISOString()
 }
 
 export const useCampaignStore = create<CampaignStoreState>()(
   persist(
     (set, get) => ({
+      profiles: { [DEFAULT_USER.id]: DEFAULT_USER },
+      currentUserId: DEFAULT_USER.id,
       currentUser: DEFAULT_USER,
       activeCampaignId: null,
       campaigns: {},
 
+      registerProfile: (gamerTag, avatar, pin) => {
+        const id = `gm_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+        const newProfile: UserProfile = {
+          id,
+          gamerTag: gamerTag.trim() || 'Franchise GM',
+          avatar: avatar || '👑',
+          pin: pin ? pin.trim() : undefined,
+          roleTitle: 'Franchise General Manager',
+          createdAt: new Date().toISOString()
+        }
+
+        const updatedProfiles = { ...get().profiles, [id]: newProfile }
+        set({
+          profiles: updatedProfiles,
+          currentUserId: id,
+          currentUser: newProfile
+        })
+        return newProfile
+      },
+
+      loginProfile: (gamerTag, pin) => {
+        const { profiles, campaigns } = get()
+        const cleanTag = gamerTag.trim().toLowerCase()
+        const target = Object.values(profiles).find(
+          (p) => p.gamerTag.toLowerCase() === cleanTag
+        )
+
+        if (!target) return false
+
+        // Check PIN if profile has one
+        if (target.pin && pin && target.pin !== pin.trim()) {
+          return false
+        }
+
+        // Find their most recently saved campaign
+        const userCamps = Object.values(campaigns).filter((c) => c.userId === target.id)
+        const lastCamp = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())[0]
+
+        set({
+          currentUserId: target.id,
+          currentUser: target,
+          activeCampaignId: lastCamp ? lastCamp.id : null
+        })
+
+        return true
+      },
+
+      switchProfile: (userId) => {
+        const target = get().profiles[userId]
+        if (!target) return
+        const userCamps = Object.values(get().campaigns).filter((c) => c.userId === userId)
+        const lastCamp = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())[0]
+
+        set({
+          currentUserId: userId,
+          currentUser: target,
+          activeCampaignId: lastCamp ? lastCamp.id : null
+        })
+      },
+
       setUserProfile: (profile) => {
+        const current = get().currentUser
+        const updated = { ...current, ...profile }
         set((state) => ({
-          currentUser: { ...state.currentUser, ...profile }
+          currentUser: updated,
+          profiles: { ...state.profiles, [updated.id]: updated }
         }))
+      },
+
+      deleteProfile: (userId) => {
+        const { profiles, campaigns, currentUserId } = get()
+        const updatedProfiles = { ...profiles }
+        delete updatedProfiles[userId]
+
+        // Also clean up campaigns for this user
+        const updatedCampaigns = { ...campaigns }
+        Object.keys(updatedCampaigns).forEach((cid) => {
+          if (updatedCampaigns[cid].userId === userId) {
+            delete updatedCampaigns[cid]
+          }
+        })
+
+        const remainingKeys = Object.keys(updatedProfiles)
+        const nextId = remainingKeys[0] || DEFAULT_USER.id
+        const nextProfile = updatedProfiles[nextId] || DEFAULT_USER
+
+        set({
+          profiles: remainingKeys.length > 0 ? updatedProfiles : { [DEFAULT_USER.id]: DEFAULT_USER },
+          currentUserId: nextId,
+          currentUser: nextProfile,
+          campaigns: updatedCampaigns,
+          activeCampaignId: null
+        })
       },
 
       createCampaign: (teamId: string) => {
@@ -130,16 +231,22 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       getActiveCampaign: () => {
-        const { activeCampaignId, campaigns } = get()
-        if (!activeCampaignId || !campaigns[activeCampaignId]) {
-          // If no active campaign, check if any exists
-          const keys = Object.keys(campaigns)
-          if (keys.length > 0) {
-            return campaigns[keys[0]]
-          }
-          return null
+        const { activeCampaignId, campaigns, currentUserId } = get()
+        if (activeCampaignId && campaigns[activeCampaignId]) {
+          return campaigns[activeCampaignId]
         }
-        return campaigns[activeCampaignId]
+        // If not set, check if current user has any saved campaign
+        const userCamps = Object.values(campaigns).filter((c) => c.userId === currentUserId)
+        if (userCamps.length > 0) {
+          const sorted = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())
+          return sorted[0]
+        }
+        return null
+      },
+
+      getUserCampaigns: () => {
+        const { campaigns, currentUserId } = get()
+        return Object.values(campaigns).filter((c) => c.userId === currentUserId)
       },
 
       updateActiveCampaign: (updater) => {
@@ -229,7 +336,6 @@ export const useCampaignStore = create<CampaignStoreState>()(
             return p
           })
 
-          // Calculate new purse: Base mini-auction purse + sum of all released player salaries
           const franchise = getFranchise(prev.teamId)
           const basePurse = franchise.miniAuctionPurse2026 || 18.5
           const releasedSum = updatedSquad
@@ -251,14 +357,11 @@ export const useCampaignStore = create<CampaignStoreState>()(
         const campaign = get().getActiveCampaign()
         if (!campaign) return false
 
-        // Validate purse
         if (campaign.remainingPurse < bidAmount) return false
 
-        // Validate squad size
         const activeCount = campaign.squad.filter((p) => !p.is_released).length
         if (activeCount >= 25) return false
 
-        // Validate overseas quota
         if (player.is_overseas) {
           const overseasCount = campaign.squad.filter((p) => !p.is_released && p.is_overseas).length
           if (overseasCount >= 8) return false
@@ -288,7 +391,6 @@ export const useCampaignStore = create<CampaignStoreState>()(
         const outPlayer = campaign.squad.find((p) => p.player_id === playerOutId)
         if (!outPlayer) return false
 
-        // Verify budget with cash delta
         if (campaign.remainingPurse + cashDelta < 0) return false
 
         get().updateActiveCampaign((prev) => {
@@ -327,8 +429,10 @@ export const useCampaignStore = create<CampaignStoreState>()(
       }
     }),
     {
-      name: 'auctionxi-user-campaign-v1',
+      name: 'auctionxi-user-campaign-v2',
       partialize: (state) => ({
+        profiles: state.profiles,
+        currentUserId: state.currentUserId,
         currentUser: state.currentUser,
         activeCampaignId: state.activeCampaignId,
         campaigns: state.campaigns
