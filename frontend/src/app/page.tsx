@@ -296,11 +296,6 @@ export default function LandingPage() {
             {activeCamp ? 'SWITCH FRANCHISE' : 'CHOOSE TEAM'}
           </Link>
         </div>
-          >
-            <MapPin size={18} />
-            {activeCamp ? 'SWITCH FRANCHISE SAVE' : 'CHOOSE YOUR TEAM'}
-          </Link>
-        </div>
 
         {/* ─── Interactive Home Ground Stadium Showcase ─── */}
         <div className="max-w-4xl mx-auto w-full mb-6">

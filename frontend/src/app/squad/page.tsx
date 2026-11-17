@@ -44,6 +44,16 @@ export default function SquadRetainReleasePage() {
     setMounted(true)
   }, [])
 
+  // Strict cycle lockdown: redirect if Retain & Release is concluded
+  useEffect(() => {
+    if (mounted && campaign && campaign.lockedPhases?.includes('retain_release')) {
+      const target = campaign.currentPhase === 'playing_xi' || campaign.currentPhase === 'match'
+        ? '/playing-xi'
+        : '/auction'
+      router.replace(target)
+    }
+  }, [mounted, campaign, router])
+
   if (!mounted) {
     return <div className="min-h-screen bg-slate-950" />
   }
@@ -103,16 +113,9 @@ export default function SquadRetainReleasePage() {
 
       <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
         
-        {/* Banner with Back Button */}
+        {/* Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push('/trade')}
-              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-all border border-white/10"
-              title="Back to Trade Window"
-            >
-              <ArrowLeft size={14} className="text-amber-400" />
-            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-black uppercase">

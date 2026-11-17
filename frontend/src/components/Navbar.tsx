@@ -78,40 +78,57 @@ export function Navbar() {
     }
   }
 
-  const triggerLockedAlert = (phaseName: string) => {
-    setLockedToast(`🔒 ${phaseName} is permanently finalized for this season. BCCI rules forbid modifying past phases.`)
+  const triggerLockedAlert = (phaseName: string, isPast: boolean) => {
+    if (isPast) {
+      setLockedToast(`🔒 ${phaseName} is permanently finalized for Season 2027. BCCI rules forbid returning to concluded phases.`)
+    } else {
+      setLockedToast(`🔒 Complete your current phase before unlocking ${phaseName}.`)
+    }
     setTimeout(() => setLockedToast(null), 3500)
   }
 
   // The 4 Core Sequential Phases
+  const phaseOrder: Record<string, number> = {
+    'trade': 1,
+    'retain_release': 2,
+    'mini_auction': 3,
+    'playing_xi': 4,
+    'match': 4
+  }
+  const currentPhaseOrder = phaseOrder[activeCamp?.currentPhase || 'trade'] || 1
+
   const PHASES = [
     { 
       id: 'trade', 
-      label: '1. Trade Window', 
+      label: currentPhaseOrder > 1 ? '1. Trade (Closed)' : '1. Trade Window', 
       href: '/trade', 
       icon: ArrowLeftRight,
-      isLocked: lockedPhases.includes('trade')
+      isConcluded: currentPhaseOrder > 1 || lockedPhases.includes('trade'),
+      isLocked: currentPhaseOrder !== 1
     },
     { 
       id: 'retain_release', 
-      label: '2. Retain & Release', 
+      label: currentPhaseOrder > 2 ? '2. Retain (Finalized)' : '2. Retain & Release', 
       href: '/squad', 
       icon: Users,
-      isLocked: lockedPhases.includes('retain_release')
+      isConcluded: currentPhaseOrder > 2 || lockedPhases.includes('retain_release'),
+      isLocked: currentPhaseOrder !== 2
     },
     { 
       id: 'mini_auction', 
-      label: '3. Mini-Auction', 
+      label: currentPhaseOrder > 3 ? '3. Auction (Finalized)' : '3. Mini-Auction', 
       href: '/auction', 
       icon: Gavel,
-      isLocked: lockedPhases.includes('mini_auction')
+      isConcluded: currentPhaseOrder > 3 || lockedPhases.includes('mini_auction'),
+      isLocked: currentPhaseOrder !== 3
     },
     { 
       id: 'playing_xi', 
       label: '4. Playing XI & Schedule', 
       href: '/playing-xi', 
       icon: Calendar,
-      isLocked: false
+      isConcluded: false,
+      isLocked: currentPhaseOrder < 4
     },
   ]
 
@@ -120,19 +137,8 @@ export function Navbar() {
       <nav className="fixed top-0 left-0 right-0 w-full h-12 sm:h-14 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-2 sm:px-4 gap-2">
           
-          {/* Left: Back Button & Franchise Identity */}
+          {/* Left: Franchise Identity */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {pathname !== '/' && (
-              <button
-                onClick={handleBack}
-                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-black cursor-pointer transition-all border border-white/15 shadow-sm"
-                title="Return to Dashboard (Cannot re-enter past locked phases)"
-              >
-                <ArrowLeft size={14} className="text-amber-400" />
-                <span className="hidden xs:inline">Home</span>
-              </button>
-            )}
-
             <Link href="/" className="flex items-center gap-1.5 group shrink-0">
               <div
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-black text-xs sm:text-sm shadow-lg transition-transform group-hover:scale-105"

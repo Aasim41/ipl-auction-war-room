@@ -39,6 +39,18 @@ export default function TradeWindowPage() {
     setMounted(true)
   }, [])
 
+  // Strict cycle lockdown: redirect if Trade Window is concluded
+  useEffect(() => {
+    if (mounted && campaign && campaign.lockedPhases?.includes('trade')) {
+      const target = campaign.currentPhase === 'playing_xi' || campaign.currentPhase === 'match'
+        ? '/playing-xi'
+        : campaign.currentPhase === 'mini_auction'
+        ? '/auction'
+        : '/squad'
+      router.replace(target)
+    }
+  }, [mounted, campaign, router])
+
   if (!mounted) {
     return <div className="min-h-screen bg-slate-950" />
   }
