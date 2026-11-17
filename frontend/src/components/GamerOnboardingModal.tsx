@@ -161,14 +161,19 @@ export function GamerOnboardingModal({ isOpen, onClose, onCompleteToTeamSelect }
 
   const handleNext = () => {
     if (isLast) {
+      gameAudio.playTradeDealSuccess()
+      triggerGameHaptic('heavy')
       onCompleteToTeamSelect()
     } else {
+      gameAudio.playUiTap('light')
+      triggerGameHaptic('light')
       setCurrentStep(prev => prev + 1)
     }
   }
 
   const handlePrev = () => {
     if (currentStep > 0) {
+      gameAudio.playUiTap('light')
       setCurrentStep(prev => prev - 1)
     }
   }

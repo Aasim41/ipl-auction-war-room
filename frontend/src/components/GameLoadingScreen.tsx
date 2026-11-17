@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Trophy, Shield, Zap, Sparkles, Activity, Gavel, Play } from 'lucide-react'
+import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 interface GameLoadingScreenProps {
   onComplete: () => void
@@ -130,7 +131,11 @@ export function GameLoadingScreen({ onComplete, durationMs = 2800 }: GameLoading
         {/* Tap to Enter CTA when 100% */}
         {isReady && (
           <button
-            onClick={onComplete}
+            onClick={() => {
+              gameAudio.playTradeDealSuccess()
+              triggerGameHaptic('medium')
+              onComplete()
+            }}
             className="mt-6 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-display text-base font-black tracking-wider uppercase flex items-center gap-2.5 shadow-[0_0_30px_rgba(245,158,11,0.6)] cursor-pointer hover:scale-105 active:scale-95 transition-all animate-bounce"
           >
             <Play size={18} className="fill-slate-950" />
