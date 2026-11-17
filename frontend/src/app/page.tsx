@@ -248,7 +248,7 @@ export default function UnifiedTeamSelectHomePage() {
                     <span>Franchise War Room Identity</span>
                   </div>
                   <p className="text-[11px] text-gray-200 leading-snug">
-                    {activeFranchiseAI.auctionStyle}
+                    {activeFranchiseAI.tagline || activeFranchiseAI.personality}
                   </p>
                 </div>
 
@@ -258,7 +258,7 @@ export default function UnifiedTeamSelectHomePage() {
                     <span>Matchday Playing Style</span>
                   </div>
                   <p className="text-[11px] text-gray-200 leading-snug">
-                    {activeFranchiseAI.matchPersonality}
+                    {activeFranchiseAI.personality}
                   </p>
                 </div>
 
@@ -315,28 +315,28 @@ export default function UnifiedTeamSelectHomePage() {
               {/* Pitch Characteristics Grid */}
               <div className="grid grid-cols-2 gap-2 mb-2.5 text-xs">
                 <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
-                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Soil Profile</span>
-                  <span className="text-[11px] font-bold text-amber-300">{activeStadium.soilType}</span>
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Pitch Profile</span>
+                  <span className="text-[11px] font-bold text-amber-300">{activeStadium.pitchType}</span>
                 </div>
                 <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
                   <span className="text-[9px] font-mono text-gray-400 uppercase block">Stadium Capacity</span>
                   <span className="text-[11px] font-bold text-white">{activeStadium.capacity}</span>
                 </div>
                 <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
-                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Dew Factor</span>
-                  <span className="text-[11px] font-bold text-sky-300">{activeStadium.dewFactor}</span>
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Boundary Scale</span>
+                  <span className="text-[11px] font-bold text-sky-300">{activeStadium.boundarySize}</span>
                 </div>
                 <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
-                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Strategic Advantage</span>
-                  <span className="text-[11px] font-bold text-emerald-400">{activeStadium.pitchProfile}</span>
+                  <span className="text-[9px] font-mono text-gray-400 uppercase block">Ground Record</span>
+                  <span className="text-[11px] font-bold text-emerald-400">{activeStadium.recordScore}</span>
                 </div>
               </div>
 
               {/* Boundary Dimensions */}
               <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/5 mb-2.5">
                 <div className="flex items-center justify-between text-[10px] font-mono text-gray-400 mb-1">
-                  <span>BOUNDARY LENGTHS</span>
-                  <span className="text-gray-300">Off: {activeStadium.boundaryOff}m • Straight: {activeStadium.boundaryStraight}m • Leg: {activeStadium.boundaryLeg}m</span>
+                  <span>GROUND DIMENSIONS</span>
+                  <span className="text-gray-300">{activeStadium.boundarySize} • Capacity: {activeStadium.capacity}</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-900 border border-white/10 overflow-hidden flex">
                   <div className="h-full bg-sky-500" style={{ width: '33%' }} title="Off" />
