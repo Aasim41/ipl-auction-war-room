@@ -122,6 +122,7 @@ export function Navbar() {
     'match': 4
   }
   const currentPhaseOrder = phaseOrder[activeCamp?.currentPhase || 'trade'] || 1
+  const activeSquadCount = activeCamp?.squad?.filter((p: any) => !p.is_released).length || 0
 
   const PHASES = [
     { 
@@ -158,7 +159,7 @@ export function Navbar() {
       href: '/playing-xi', 
       icon: Calendar,
       isConcluded: false,
-      isLocked: currentPhaseOrder < 4
+      isLocked: currentPhaseOrder < 4 && activeSquadCount < 18
     },
   ]
 
@@ -292,6 +293,9 @@ export function Navbar() {
                   onClick={() => {
                     gameAudio.playUiTap('light')
                     triggerGameHaptic('light')
+                    if (phase.id === 'playing_xi' && currentPhaseOrder < 4) {
+                      advancePhase('playing_xi')
+                    }
                   }}
                   className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     isActive
