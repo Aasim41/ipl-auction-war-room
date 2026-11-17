@@ -12,21 +12,25 @@ interface TacticalMatchupModalProps {
 }
 
 const COMMON_BATTERS = [
-  'Virat Kohli', 'Rohit Sharma', 'Rishabh Pant', 'Heinrich Klaasen',
-  'Travis Head', 'Andre Russell', 'Shubman Gill', 'Nicholas Pooran', 'MS Dhoni',
-  'Phil Salt', 'Rajat Patidar', 'Suryakumar Yadav', 'Sanju Samson', 'KL Rahul'
+  'Virat Kohli', 'Rohit Sharma', 'Suryakumar Yadav', 'Rishabh Pant', 
+  'Heinrich Klaasen', 'Travis Head', 'Andre Russell', 'Shubman Gill', 
+  'Nicholas Pooran', 'MS Dhoni', 'Phil Salt', 'Rajat Patidar', 
+  'Sanju Samson', 'KL Rahul', 'Ruturaj Gaikwad', 'Rinku Singh',
+  'Tilak Varma', 'Hardik Pandya', 'Shivam Dube', 'Yashasvi Jaiswal'
 ];
 
 const COMMON_BOWLERS = [
   'Jasprit Bumrah', 'Mitchell Starc', 'Rashid Khan', 'Sunil Narine',
-  'Pat Cummins', 'Kagiso Rabada', 'Kuldeep Yadav', 'Varun Chakaravarthy', 'Arshdeep Singh',
-  'Matheesha Pathirana', 'Trent Boult', 'Mohammed Shami', 'Ravindra Jadeja', 'Harshit Rana'
+  'Pat Cummins', 'Kagiso Rabada', 'Kuldeep Yadav', 'Varun Chakaravarthy', 
+  'Arshdeep Singh', 'Matheesha Pathirana', 'Trent Boult', 'Mohammed Shami', 
+  'Ravindra Jadeja', 'Harshit Rana', 'Yuzvendra Chahal', 'Mohammed Siraj',
+  'Axar Patel', 'Anrich Nortje', 'T Natarajan', 'Lockie Ferguson'
 ];
 
 export default function TacticalMatchupModal({
   isOpen,
   onClose,
-  defaultBatter = 'Virat Kohli',
+  defaultBatter = 'Rohit Sharma',
   defaultBowler = 'Mitchell Starc',
   onProceedToMatch
 }: TacticalMatchupModalProps) {
@@ -35,46 +39,32 @@ export default function TacticalMatchupModal({
   const [matchupData, setMatchupData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchMatchup = async (b: string, bw: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`http://localhost:8000/api/enterprise/matchup?batter=${encodeURIComponent(b)}&bowler=${encodeURIComponent(bw)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.head_to_head_stats) {
-          setMatchupData(data);
-          setLoading(false);
-          return;
-        }
-      }
-    } catch {
-      // Offline-first calculation engine fallback
-    }
-
-    // High-precision offline simulation matrix
-    const hash = (b + bw).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const computeOfflineMatchup = (b: string, bw: string) => {
+    const cleanB = b || 'Batter';
+    const cleanBw = bw || 'Bowler';
+    const hash = (cleanB + cleanBw).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const strikeRate = 125 + (hash % 58);
     const dismissalRisk = 8 + (hash % 18);
     const dotPct = 30 + (hash % 22);
     const advantage = strikeRate > 155 ? 'BATTER ADVANTAGE' : dismissalRisk > 16 ? 'BOWLER DOMINANCE' : 'TACTICAL DEADLOCK';
     
-    setMatchupData({
+    return {
       tactical_recommendation: advantage === 'BATTER ADVANTAGE'
-        ? `${b} enjoys high strike rate leverage against ${bw}'s length balls; prioritize targeting straight and midwicket boundaries.`
+        ? `${cleanB} enjoys high strike rate leverage against ${cleanBw}'s length balls; prioritize targeting straight and midwicket boundaries.`
         : advantage === 'BOWLER DOMINANCE'
-        ? `${bw} creates severe dot-ball pressure and induces mistimed pull shots against ${b} using short bodyline deliveries.`
-        : `Balanced duel: ${b} can rotate strike with low-risk placements while ${bw} should attack the fourth stump channel.`,
+        ? `${cleanBw} creates severe dot-ball pressure and induces mistimed pull shots against ${cleanB} using short bodyline deliveries.`
+        : `Balanced duel: ${cleanB} can rotate strike with low-risk placements while ${cleanBw} should attack the fourth stump channel.`,
       hawkeye_wagon_wheel_focus: advantage === 'BATTER ADVANTAGE' ? 'V-Arc & Deep Midwicket' : 'Channel Outside Off & Short Ribline',
       batter: {
-        name: b,
-        stance: 'Right-Hand Top-Order Anchor & Finisher',
+        name: cleanB,
+        stance: cleanB.toLowerCase().includes('pant') || cleanB.toLowerCase().includes('head') || cleanB.toLowerCase().includes('dube') ? 'Left-Hand Explosive Aggressor' : 'Right-Hand Top-Order Anchor & Finisher',
         profile_strength: 'High strike rate in Powerplay & clean lofted cover drives against pace',
         vulnerability: 'Vulnerable to 145k+ short-pitch bodyline bumpers and hard lengths'
       },
       bowler: {
-        name: bw,
-        threat_factor: 'Lethal death-overs yorkers and deceptive off-cutters',
-        style: 'Express Pace / Sharp seam and reverse swing variation'
+        name: cleanBw,
+        threat_factor: cleanBw.toLowerCase().includes('bumrah') || cleanBw.toLowerCase().includes('starc') ? 'Lethal death-overs yorkers and express pace' : 'Deceptive cutters, wrist spin & tactical length variations',
+        style: cleanBw.toLowerCase().includes('khan') || cleanBw.toLowerCase().includes('narine') || cleanBw.toLowerCase().includes('chahal') ? 'Mystery Wrist-Spin & Deceptive Turn' : 'Express Pace / Sharp seam and reverse swing variation'
       },
       tactical_edge: advantage,
       head_to_head_stats: {
@@ -86,30 +76,34 @@ export default function TacticalMatchupModal({
         balls_per_dismissal: (18 + (hash % 15)).toFixed(1),
         boundary_frequency_balls: (4.2 + (hash % 4) * 0.5).toFixed(1)
       },
-      historical_stats: {
-        balls_faced: 35 + (hash % 40),
-        runs_scored: 45 + (hash % 50),
-        dismissals: Math.max(1, hash % 4),
-        head_to_head_sr: strikeRate.toFixed(1),
-        dot_ball_percentage: `${dotPct}%`,
-        dismissal_probability: `${dismissalRisk}%`
-      },
       phase_splits: {
         powerplay_sr: (strikeRate + 12).toFixed(1),
         middle_overs_sr: (strikeRate - 6).toFixed(1),
         death_overs_sr: (strikeRate + 24).toFixed(1)
       }
-    });
+    };
+  };
+
+  const updateMatchup = (b: string, bw: string) => {
+    setLoading(true);
+    const data = computeOfflineMatchup(b, bw);
+    setMatchupData(data);
     setLoading(false);
   };
 
   useEffect(() => {
     if (isOpen) {
-      setBatter(defaultBatter || 'Virat Kohli');
-      setBowler(defaultBowler || 'Mitchell Starc');
-      fetchMatchup(defaultBatter || 'Virat Kohli', defaultBowler || 'Mitchell Starc');
+      const initialB = defaultBatter || 'Rohit Sharma';
+      const initialBw = defaultBowler || 'Mitchell Starc';
+      setBatter(initialB);
+      setBowler(initialBw);
+      updateMatchup(initialB, initialBw);
     }
   }, [isOpen, defaultBatter, defaultBowler]);
+
+  // Ensure selected batter/bowler are always present in the options list so dropdown never desyncs!
+  const batterOptions = Array.from(new Set([batter, ...COMMON_BATTERS])).filter(Boolean);
+  const bowlerOptions = Array.from(new Set([bowler, ...COMMON_BOWLERS])).filter(Boolean);
 
   if (!isOpen) return null;
 
@@ -151,12 +145,13 @@ export default function TacticalMatchupModal({
             <select
               value={batter}
               onChange={(e) => {
-                setBatter(e.target.value);
-                fetchMatchup(e.target.value, bowler);
+                const nextB = e.target.value;
+                setBatter(nextB);
+                updateMatchup(nextB, bowler);
               }}
               className="w-full bg-slate-950 border border-white/20 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-blue-500 cursor-pointer"
             >
-              {COMMON_BATTERS.map(b => (
+              {batterOptions.map(b => (
                 <option key={b} value={b}>{b}</option>
               ))}
             </select>
@@ -169,12 +164,13 @@ export default function TacticalMatchupModal({
             <select
               value={bowler}
               onChange={(e) => {
-                setBowler(e.target.value);
-                fetchMatchup(batter, e.target.value);
+                const nextBw = e.target.value;
+                setBowler(nextBw);
+                updateMatchup(batter, nextBw);
               }}
               className="w-full bg-slate-950 border border-white/20 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-red-500 cursor-pointer"
             >
-              {COMMON_BOWLERS.map(bw => (
+              {bowlerOptions.map(bw => (
                 <option key={bw} value={bw}>{bw}</option>
               ))}
             </select>

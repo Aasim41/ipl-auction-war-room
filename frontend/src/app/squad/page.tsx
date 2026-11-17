@@ -395,8 +395,8 @@ export default function SquadRetainReleasePage() {
       <TacticalMatchupModal
         isOpen={showMatchupModal}
         onClose={() => setShowMatchupModal(false)}
-        defaultBatter={retainedPlayers[0]?.name || 'Virat Kohli'}
-        defaultBowler="Jasprit Bumrah"
+        defaultBatter={retainedPlayers.find((p) => p.role === 'BAT' || p.role === 'WK')?.name || 'Rohit Sharma'}
+        defaultBowler={retainedPlayers.find((p) => p.role === 'BOWL')?.name || 'Jasprit Bumrah'}
         onProceedToMatch={() => {
           setShowMatchupModal(false)
           setShowSimulator(true)
