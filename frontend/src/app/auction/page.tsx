@@ -18,7 +18,8 @@ import {
   Play,
   RotateCcw,
   Eye,
-  ListOrdered
+  ListOrdered,
+  Lock
 } from 'lucide-react'
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
 import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper'
@@ -247,6 +248,28 @@ export default function MiniAuctionPage() {
               IPL 2027 Gavel Bidding War Room
             </h1>
           </div>
+
+        {campaign.lockedPhases?.includes('mini_auction') && (
+          <div className="p-3 mb-2 rounded-2xl bg-slate-900 border border-amber-500/30 flex items-center justify-between text-xs shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+                <Lock size={16} />
+              </div>
+              <div>
+                <strong className="text-amber-300 block">MINI-AUCTION OFFICIALLY CONCLUDED</strong>
+                <span className="text-gray-400 text-[11px]">
+                  Auction hammer is down and all franchise squads are finalized for the season.
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push('/playing-xi')}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase cursor-pointer"
+            >
+              Go to Playing XI & Schedule
+            </button>
+          </div>
+        )}
 
           <div className="flex items-center gap-2">
             <button

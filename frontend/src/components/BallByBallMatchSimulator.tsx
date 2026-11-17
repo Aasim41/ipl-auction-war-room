@@ -27,7 +27,7 @@ interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
   onClose: () => void;
   myFranchise: FranchiseData;
-  mySquad: Player[];
+  mySquad: any[];
   myPlayingXIIds?: string[];
   rivalFranchise: FranchiseData;
   venueName: string;
