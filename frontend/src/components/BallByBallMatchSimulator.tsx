@@ -733,6 +733,14 @@ export default function BallByBallMatchSimulator({
     };
 
     setMatchResultSummary(summary);
+
+    if (userWon) {
+      gameAudio.playConfettiFanfare();
+      triggerGameHaptic('heavy');
+    } else {
+      gameAudio.playTradeReject();
+      triggerGameHaptic('medium');
+    }
   };
 
   // Fast forward remaining balls of the over
@@ -794,23 +802,50 @@ export default function BallByBallMatchSimulator({
             </span>
           </div>
 
-          {/* Tab selector */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+          {/* Tab selector & Sound Toggle */}
+          <div className="flex items-center gap-2">
+            {/* Rival AI Strategy Badge */}
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[11px] font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
+              <span className="font-bold">{rivalFranchise.short} AI:</span>
+              <span className="text-gray-300">{rivalFranchise.short === 'CSK' ? 'Anchor & Spin Choke' : rivalFranchise.short === 'SRH' || rivalFranchise.short === 'MI' ? 'Powerplay Blitzkrieg' : rivalFranchise.short === 'RR' ? 'Moneyball Analytics' : 'Utility AI Matrix'}</span>
+            </div>
+
+            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+              <button
+                onClick={() => setActiveTab('arena')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'arena' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Interactive Arena
+              </button>
+              <button
+                onClick={() => setActiveTab('scorecard')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Scorecard & POTM
+              </button>
+            </div>
+
+            {/* Sound Toggle */}
             <button
-              onClick={() => setActiveTab('arena')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'arena' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+              onClick={() => {
+                const next = gameAudio.toggleMute();
+                setIsMuted(next);
+                triggerGameHaptic('light');
+                if (!next) gameAudio.playUiTap('select');
+              }}
+              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                isMuted
+                  ? 'bg-rose-500/20 border-rose-500/30 text-rose-300 hover:bg-rose-500/30'
+                  : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30'
               }`}
+              title={isMuted ? 'Game Audio Muted (Click to Unmute)' : 'Game Audio Active (Click to Mute)'}
             >
-              Interactive Arena
-            </button>
-            <button
-              onClick={() => setActiveTab('scorecard')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Scorecard & POTM
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="animate-pulse" />}
             </button>
           </div>
 
@@ -990,7 +1025,11 @@ export default function BallByBallMatchSimulator({
                   ].map(t => (
                     <button
                       key={t.id}
-                      onClick={() => setBattingTactic(t.id as BattingTactic)}
+                      onClick={() => {
+                        setBattingTactic(t.id as BattingTactic)
+                        gameAudio.playUiTap('select')
+                        triggerGameHaptic('light')
+                      }}
                       className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
                         battingTactic === t.id
                           ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md scale-[1.02]'
@@ -1012,7 +1051,11 @@ export default function BallByBallMatchSimulator({
                   ].map(t => (
                     <button
                       key={t.id}
-                      onClick={() => setBowlingTactic(t.id as BowlingTactic)}
+                      onClick={() => {
+                        setBowlingTactic(t.id as BowlingTactic)
+                        gameAudio.playUiTap('select')
+                        triggerGameHaptic('light')
+                      }}
                       className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
                         bowlingTactic === t.id
                           ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-md scale-[1.02]'
