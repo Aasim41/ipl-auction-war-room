@@ -92,7 +92,7 @@ export function OnboardingAuthModal({ isOpen, onClose, onSuccess }: OnboardingAu
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md overflow-x-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md overflow-x-hidden">
       <div className="relative w-full max-w-2xl bg-slate-950 border border-white/20 rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
         
         {/* Header */}

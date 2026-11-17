@@ -844,7 +844,7 @@ export default function BallByBallMatchSimulator({
   const bowlingTeamColor = currentInnings === 1 ? (bowl1Squad[0]?.teamColor || '#38bdf8') : (bat1Squad[0]?.teamColor || '#38bdf8');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-3 md:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden select-none">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-3 md:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden select-none">
       <div 
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
