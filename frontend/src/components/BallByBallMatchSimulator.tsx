@@ -1,435 +1,962 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Play, X, Trophy, Swords, Activity, TrendingUp, Sparkles } from 'lucide-react';
-import { IPL_FRANCHISES, FranchiseData } from '../data/franchises';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Play, 
+  Pause, 
+  SkipForward, 
+  FastForward, 
+  RotateCcw, 
+  Trophy, 
+  Swords, 
+  X, 
+  Activity, 
+  Sparkles, 
+  Flame, 
+  CheckCircle2, 
+  ArrowRight,
+  Shield,
+  Zap,
+  ChevronRight
+} from 'lucide-react';
+import { IPL_FRANCHISES, FranchiseData, getFranchise } from '../data/franchises';
 import { Player } from '../lib/usePlayerData';
+import { TournamentFixture } from '../data/scheduleGenerator';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
   onClose: () => void;
   myFranchise: FranchiseData;
   mySquad: Player[];
+  myPlayingXIIds?: string[];
+  rivalFranchise: FranchiseData;
+  venueName: string;
+  matchFixture?: TournamentFixture;
+  onMatchComplete?: (result: TournamentFixture['result']) => void;
+}
+
+interface SimulatedBall {
+  over: number;
+  ball: number;
+  striker: string;
+  nonStriker: string;
+  bowler: string;
+  runs: number;
+  isWicket: boolean;
+  wicketType?: string;
+  fielder?: string;
+  isFour: boolean;
+  isSix: boolean;
+  commentary: string;
+  totalRuns: number;
+  totalWickets: number;
+}
+
+interface InningsData {
+  teamName: string;
+  teamShort: string;
+  teamColor: string;
+  totalRuns: number;
+  totalWickets: number;
+  oversPlayed: number;
+  balls: SimulatedBall[];
+  battingScorecard: Array<{
+    name: string;
+    dismissal: string;
+    runs: number;
+    balls: number;
+    fours: number;
+    sixes: number;
+    strikeRate: string;
+  }>;
+  bowlingFigures: Array<{
+    name: string;
+    overs: string;
+    maidens: number;
+    runs: number;
+    wickets: number;
+    economy: string;
+  }>;
+  fallOfWickets: Array<{
+    wicket: number;
+    score: number;
+    player: string;
+    over: string;
+  }>;
 }
 
 export default function BallByBallMatchSimulator({
   isOpen,
   onClose,
   myFranchise,
-  mySquad
+  mySquad,
+  myPlayingXIIds,
+  rivalFranchise,
+  venueName,
+  matchFixture,
+  onMatchComplete
 }: BallByBallMatchSimulatorProps) {
-  const [rivalFranchiseKey, setRivalFranchiseKey] = useState<string>('csk');
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [matchResult, setMatchResult] = useState<any | null>(null);
-  const [activeInningsTab, setActiveInningsTab] = useState<'inn1' | 'inn2'>('inn1');
+  // Simulation control states
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [simSpeed, setSimSpeed] = useState<1 | 2 | 5>(2);
+  const [currentInnings, setCurrentInnings] = useState<1 | 2>(1);
+  const [currentBallIndex, setCurrentBallIndex] = useState(0);
+  const [matchDone, setMatchDone] = useState(false);
+  const [activeTab, setActiveTab] = useState<'arena' | 'scorecard' | 'worm'>('arena');
 
-  if (!isOpen) return null;
+  // Generated full match data
+  const [inn1, setInn1] = useState<InningsData | null>(null);
+  const [inn2, setInn2] = useState<InningsData | null>(null);
+  const [potm, setPotm] = useState<{ player: string; team: string; stats: string } | null>(null);
+  const [matchResultSummary, setMatchResultSummary] = useState<TournamentFixture['result'] | null>(null);
 
-  const rivalFranchise = IPL_FRANCHISES[rivalFranchiseKey] || IPL_FRANCHISES.csk;
+  // Animation visual banner state
+  const [eventBanner, setEventBanner] = useState<{ text: string; subtext: string; color: string; icon: string } | null>(null);
 
-  const handleSimulate = async () => {
-    setIsSimulating(true);
-    setMatchResult(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Format squads
-    const teamASquad = mySquad.map(p => ({
-      name: p.name,
-      role: p.role || 'BAT',
-      Power_Index: Number(p.Power_Index) || 80.0
-    }));
-
-    const teamBSquad = (rivalFranchise.squad2026 || []).map(p => ({
-      name: p.name,
-      role: p.role,
-      Power_Index: Number(p.Power_Index) || 82.0
-    }));
-
-    try {
-      const res = await fetch('http://localhost:8000/api/enterprise/simulate-match-balls', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          team_a_name: myFranchise.short,
-          team_a_squad: teamASquad,
-          team_b_name: rivalFranchise.short,
-          team_b_squad: teamBSquad,
-          venue: `${myFranchise.stadiumName || 'Wankhede Stadium'}`
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.team_a_innings && data.team_a_innings.batting_card) {
-          setMatchResult(data);
-          return;
-        }
-      }
-    } catch {
-      // Offline-first simulation fallback
+  // Initialize and generate match data when opened
+  useEffect(() => {
+    if (!isOpen) {
+      setIsPlaying(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
     }
 
-    // ─── High-Fidelity Client-Side 20-Over Simulation ───
-    const avgPowerA = teamASquad.reduce((s, p) => s + p.Power_Index, 0) / (teamASquad.length || 1);
-    const avgPowerB = teamBSquad.reduce((s, p) => s + p.Power_Index, 0) / (teamBSquad.length || 1);
-    
-    const runsA = Math.floor(160 + (avgPowerA - 78) * 2.4 + (Math.random() * 24));
-    const wktsA = Math.min(10, Math.floor(3 + Math.random() * 5));
-    const runsB = Math.floor(155 + (avgPowerB - 78) * 2.4 + (Math.random() * 24));
-    const wktsB = Math.min(10, Math.floor(3 + Math.random() * 5));
+    // Determine starting XI for Team A (User)
+    let teamAPlayers: Player[] = [];
+    if (myPlayingXIIds && myPlayingXIIds.length >= 11) {
+      teamAPlayers = myPlayingXIIds.map(id => mySquad.find(p => p.player_id === id)).filter(Boolean) as Player[];
+    }
+    if (teamAPlayers.length < 11) {
+      teamAPlayers = mySquad.slice(0, 11);
+    }
 
-    const aWon = runsA > runsB;
-    const margin = aWon ? `${runsA - runsB} runs` : `${10 - wktsB} wickets`;
-    const winner = aWon ? myFranchise.name : rivalFranchise.name;
+    // Determine starting XI for Team B (Rival)
+    const teamBPlayers = (rivalFranchise.squad2026 || []).slice(0, 11);
 
-    // Helper: Generate Batting Card
-    const buildBattingCard = (squad: any[], totalRuns: number, totalWkts: number) => {
-      const activeBatters = squad.slice(0, Math.min(squad.length, 9));
-      let currentAlloc = 0;
-      return activeBatters.map((p, i) => {
-        const isOut = i < totalWkts;
-        const weight = (9 - i) / 45;
-        let r = Math.max(3, Math.floor(totalRuns * weight + (Math.random() * 6 - 3)));
-        if (i === activeBatters.length - 1) {
-          r = Math.max(2, totalRuns - currentAlloc);
-        }
-        currentAlloc += r;
-        const b = Math.max(3, Math.floor(r * (0.6 + Math.random() * 0.25)));
-        const fours = Math.floor(r / 10);
-        const sixes = Math.floor(r / 16);
-        const sr = b > 0 ? ((r / b) * 100).toFixed(1) : '100.0';
-        const dismissal = isOut
-          ? (i % 3 === 0 ? 'c & b Bowler' : i % 2 === 0 ? 'b Bowler' : 'c Deep Midwicket')
-          : 'not out';
+    // Generate Full Realistic 20-Over Engine Simulation
+    const generated = generateRealistic20OverMatch(myFranchise, teamAPlayers, rivalFranchise, teamBPlayers, venueName);
+    setInn1(generated.inn1);
+    setInn2(generated.inn2);
+    setPotm(generated.potm);
+    setMatchResultSummary(generated.resultSummary);
 
-        return {
-          name: p.name,
-          dismissal,
-          runs: r,
-          balls: b,
-          fours,
-          sixes,
-          sr
-        };
-      });
+    setCurrentInnings(1);
+    setCurrentBallIndex(0);
+    setMatchDone(false);
+    setIsPlaying(false);
+  }, [isOpen, myFranchise, mySquad, myPlayingXIIds, rivalFranchise, venueName]);
+
+  // Ball-by-ball playback tick loop
+  useEffect(() => {
+    if (!isPlaying || !inn1 || !inn2) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+
+    const intervalMs = simSpeed === 5 ? 250 : simSpeed === 2 ? 650 : 1200;
+
+    timerRef.current = setInterval(() => {
+      advanceOneBall();
+    }, intervalMs);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
     };
+  }, [isPlaying, currentInnings, currentBallIndex, simSpeed, inn1, inn2]);
 
-    // Helper: Generate Bowling Card
-    const buildBowlingCard = (bowlingSquad: any[], oppRuns: number, oppWkts: number) => {
-      const bowlers = bowlingSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
-      const selected = bowlers.length >= 5 ? bowlers.slice(0, 5) : bowlingSquad.slice(-5);
-      let assignedWkts = 0;
+  const advanceOneBall = () => {
+    if (!inn1 || !inn2) return;
 
-      return selected.map((bw, i) => {
-        const remainingWkts = oppWkts - assignedWkts;
-        const w = i === 0 ? Math.min(remainingWkts, 2) : (remainingWkts > 0 && Math.random() > 0.4 ? 1 : 0);
-        assignedWkts += w;
-        const runs = Math.floor(oppRuns / 5 + (Math.random() * 8 - 4));
-        return {
-          name: bw.name,
-          overs: '4.0',
-          maidens: Math.random() > 0.85 ? 1 : 0,
-          runs,
-          wickets: w,
-          econ: (runs / 4).toFixed(2)
-        };
-      });
-    };
-
-    // Helper: Key Balls Commentary
-    const buildKeyBalls = (teamShort: string, totalRuns: number) => {
-      return [
-        { ball: '16.4', event: '4', commentary: `${teamShort} batter charges down and pierces extra cover! Boundary!`, score_after: `${Math.floor(totalRuns * 0.80)}/3` },
-        { ball: '17.2', event: '6', commentary: `Pitched up into the slot, launched over long-on for a monster 102m SIX!`, score_after: `${Math.floor(totalRuns * 0.85)}/3` },
-        { ball: '18.1', event: 'W', commentary: `TIMBER! Rapid 146 km/h yorker rattles the stumps! Massive breakthrough!`, score_after: `${Math.floor(totalRuns * 0.88)}/4` },
-        { ball: '18.5', event: '4', commentary: `Edged past the diving keeper and trickles into third-man fence.`, score_after: `${Math.floor(totalRuns * 0.92)}/4` },
-        { ball: '19.2', event: '6', commentary: `Incredible helicopter swat! Clears square leg boundary with sheer power!`, score_after: `${Math.floor(totalRuns * 0.96)}/4` },
-        { ball: '20.0', event: '2', commentary: `Drives hard to deep mid-wicket, running hard for two to close out the innings!`, score_after: `${totalRuns}/4` }
-      ];
-    };
-
-    setTimeout(() => {
-      setMatchResult({
-        match_winner: winner,
-        result_description: `${winner} won by ${margin}!`,
-        team_a_innings: {
-          team: myFranchise.short,
-          total_runs: runsA,
-          wickets: wktsA,
-          overs: 20.0,
-          run_rate: (runsA / 20).toFixed(2),
-          batting_card: buildBattingCard(teamASquad, runsA, wktsA),
-          bowling_card: buildBowlingCard(teamBSquad, runsA, wktsA),
-          key_balls: buildKeyBalls(myFranchise.short, runsA)
-        },
-        team_b_innings: {
-          team: rivalFranchise.short,
-          total_runs: runsB,
-          wickets: wktsB,
-          overs: 20.0,
-          run_rate: (runsB / 20).toFixed(2),
-          batting_card: buildBattingCard(teamBSquad, runsB, wktsB),
-          bowling_card: buildBowlingCard(teamASquad, runsB, wktsB),
-          key_balls: buildKeyBalls(rivalFranchise.short, runsB)
-        }
-      });
-      setIsSimulating(false);
-    }, 600);
+    if (currentInnings === 1) {
+      if (currentBallIndex < inn1.balls.length - 1) {
+        const nextIdx = currentBallIndex + 1;
+        setCurrentBallIndex(nextIdx);
+        triggerBannerForBall(inn1.balls[nextIdx]);
+      } else {
+        // Switch to 2nd Innings
+        setCurrentInnings(2);
+        setCurrentBallIndex(0);
+        triggerBannerForBall(inn2.balls[0]);
+      }
+    } else {
+      if (currentBallIndex < inn2.balls.length - 1) {
+        const nextIdx = currentBallIndex + 1;
+        setCurrentBallIndex(nextIdx);
+        triggerBannerForBall(inn2.balls[nextIdx]);
+      } else {
+        // Match Finished!
+        setIsPlaying(false);
+        setMatchDone(true);
+        setActiveTab('scorecard');
+      }
+    }
   };
 
-  const inn1 = matchResult?.team_a_innings;
-  const inn2 = matchResult?.team_b_innings;
-  const activeInn = activeInningsTab === 'inn1' ? inn1 : inn2;
+  const triggerBannerForBall = (b: SimulatedBall) => {
+    if (b.isSix) {
+      setEventBanner({
+        text: '🚀 MAXIMUM! 6 RUNS!',
+        subtext: `${b.striker} dispatches ${b.bowler} 104m into the top tier!`,
+        color: 'from-amber-500 to-yellow-600',
+        icon: 'SIX'
+      });
+      setTimeout(() => setEventBanner(null), 1400);
+    } else if (b.isFour) {
+      setEventBanner({
+        text: '⚡ CRACKING 4! BOUNDARY!',
+        subtext: `${b.striker} pierces the gap with sheer precision!`,
+        color: 'from-sky-500 to-blue-600',
+        icon: 'FOUR'
+      });
+      setTimeout(() => setEventBanner(null), 1200);
+    } else if (b.isWicket) {
+      setEventBanner({
+        text: '🎯 WICKET! OUT!',
+        subtext: `${b.striker} ${b.wicketType || 'is dismissed'} by ${b.bowler}!`,
+        color: 'from-rose-600 to-red-700',
+        icon: 'WICKET'
+      });
+      setTimeout(() => setEventBanner(null), 1800);
+    }
+  };
+
+  const handleSkipToEnd = () => {
+    if (!inn1 || !inn2) return;
+    setIsPlaying(false);
+    setCurrentInnings(2);
+    setCurrentBallIndex(inn2.balls.length - 1);
+    setMatchDone(true);
+    setActiveTab('scorecard');
+  };
+
+  const handleNextOver = () => {
+    if (!inn1 || !inn2) return;
+    const activeInn = currentInnings === 1 ? inn1 : inn2;
+    const currentBall = activeInn.balls[currentBallIndex];
+    if (!currentBall) return;
+
+    // Find next over start
+    const nextOverIndex = activeInn.balls.findIndex((b, idx) => idx > currentBallIndex && b.over > currentBall.over);
+    if (nextOverIndex !== -1) {
+      setCurrentBallIndex(nextOverIndex);
+    } else {
+      if (currentInnings === 1) {
+        setCurrentInnings(2);
+        setCurrentBallIndex(0);
+      } else {
+        handleSkipToEnd();
+      }
+    }
+  };
+
+  if (!isOpen || !inn1 || !inn2) return null;
+
+  const activeInnings = currentInnings === 1 ? inn1 : inn2;
+  const currentBall = activeInnings.balls[currentBallIndex] || activeInnings.balls[0];
+
+  // Over trail balls (last 6 balls of the current over)
+  const currentOverBalls = activeInnings.balls.filter(b => b.over === currentBall.over && activeInnings.balls.indexOf(b) <= currentBallIndex);
+
+  // Target calculation for 2nd innings
+  const target = inn1.totalRuns + 1;
+  const runsNeeded = target - currentBall.totalRuns;
+  const ballsRemaining = Math.max(0, 120 - (currentBall.over * 6 + currentBall.ball));
+  const reqRR = ballsRemaining > 0 ? ((runsNeeded / ballsRemaining) * 6).toFixed(2) : '0.00';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md overflow-x-hidden">
-      <div className="relative w-full max-w-5xl bg-slate-950 border border-white/20 rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden">
+      <div className="relative w-full max-w-6xl bg-slate-950 border border-white/20 rounded-3xl flex flex-col h-[94vh] max-h-[850px] shadow-2xl overflow-hidden">
         
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
-              <Swords size={18} />
+        {/* Top Header & Navigation Bar */}
+        <div className="px-4 py-2.5 bg-slate-900/90 border-b border-white/10 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 font-display font-black text-xs sm:text-sm">
+              <span className="text-lg">{myFranchise.emoji}</span>
+              <span className="text-white">{myFranchise.short}</span>
+              <span className="text-gray-400 font-sans text-xs">vs</span>
+              <span className="text-white">{rivalFranchise.short}</span>
+              <span className="text-lg">{rivalFranchise.emoji}</span>
             </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-                20-Over Live Match Simulator
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                  OFFLINE READY
-                </span>
-              </h3>
-              <p className="text-[11px] text-gray-400">
-                Simulating ball-by-ball performance, batting cards, bowling figures, and death overs.
-              </p>
-            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-mono hidden sm:inline">
+              📍 {venueName}
+            </span>
           </div>
+
+          {/* Tab selector */}
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+            <button
+              onClick={() => setActiveTab('arena')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'arena' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Live Stadium Arena
+            </button>
+            <button
+              onClick={() => setActiveTab('scorecard')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Full Scorecards
+            </button>
+          </div>
+
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Rival Selection & Run Action */}
-        <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="text-xs font-black uppercase text-gray-400">Select Opponent:</span>
-            <select
-              value={rivalFranchiseKey}
-              onChange={(e) => setRivalFranchiseKey(e.target.value)}
-              className="bg-slate-950 border border-white/20 rounded-xl px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
-            >
-              {Object.entries(IPL_FRANCHISES).map(([key, fr]) => {
-                if (fr.short === myFranchise.short) return null;
-                return (
-                  <option key={key} value={key}>
-                    {fr.name} ({fr.short})
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          <button
-            onClick={handleSimulate}
-            disabled={isSimulating}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all disabled:opacity-50"
-          >
-            {isSimulating ? (
-              <>
-                <Activity className="animate-spin" size={14} /> Simulating Match Deliveries...
-              </>
-            ) : (
-              <>
-                <Play size={14} /> Simulate 20-Over Match
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Results Area */}
-        {matchResult && (
-          <div className="space-y-4">
-            
-            {/* Match Winner Summary Banner */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/20 border border-amber-500/30 text-center">
-              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase mb-1">
-                <Trophy size={12} /> Match Result
-              </div>
-              <div className="text-lg sm:text-2xl font-black text-white">
-                {matchResult.result_description}
-              </div>
-              <div className="text-xs text-gray-300 mt-1.5 flex justify-center items-center gap-6 font-mono font-bold">
-                <span>{myFranchise.short}: <strong className="text-emerald-400 text-sm">{inn1?.total_runs}/{inn1?.wickets}</strong> ({inn1?.overs} ov)</span>
-                <span className="text-gray-500">vs</span>
-                <span>{rivalFranchise.short}: <strong className="text-amber-400 text-sm">{inn2?.total_runs}/{inn2?.wickets}</strong> ({inn2?.overs} ov)</span>
-              </div>
+        {/* Dynamic Event Banner Overlay (FOUR, SIX, WICKET) */}
+        {eventBanner && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-bounce">
+            <div className={`px-6 py-2.5 rounded-2xl bg-gradient-to-r ${eventBanner.color} text-white font-black text-center shadow-2xl border border-white/40`}>
+              <div className="text-lg sm:text-xl tracking-wider drop-shadow-md">{eventBanner.text}</div>
+              <div className="text-xs font-sans text-white/90 drop-shadow">{eventBanner.subtext}</div>
             </div>
-
-            {/* Over-by-Over Worm Progression Bar */}
-            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
-              <div className="flex items-center justify-between text-xs font-bold text-gray-300 mb-2">
-                <span className="flex items-center gap-1.5 text-emerald-400 font-black">
-                  <TrendingUp size={13} /> Run Rate Progression
-                </span>
-                <span className="text-[10px] text-gray-400 font-mono">
-                  {myFranchise.short} vs {rivalFranchise.short}
-                </span>
-              </div>
-
-              <div className="space-y-1.5">
-                <div>
-                  <div className="flex justify-between text-[11px] text-cyan-300 font-mono mb-0.5 font-bold">
-                    <span>{myFranchise.short}: {inn1?.total_runs} runs</span>
-                    <span>RR: {inn1?.run_rate}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-950 overflow-hidden flex">
-                    <div 
-                      className="bg-cyan-500 transition-all duration-1000" 
-                      style={{ width: `${Math.min(100, (inn1?.total_runs / 230) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] text-amber-300 font-mono mb-0.5 font-bold">
-                    <span>{rivalFranchise.short}: {inn2?.total_runs} runs</span>
-                    <span>RR: {inn2?.run_rate}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-slate-950 overflow-hidden flex">
-                    <div 
-                      className="bg-amber-400 transition-all duration-1000" 
-                      style={{ width: `${Math.min(100, (inn2?.total_runs / 230) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Innings Tabs */}
-            <div className="flex gap-2 border-b border-white/10 pb-2">
-              <button
-                onClick={() => setActiveInningsTab('inn1')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeInningsTab === 'inn1'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                1st Innings: {inn1?.team} ({inn1?.total_runs}/{inn1?.wickets})
-              </button>
-              <button
-                onClick={() => setActiveInningsTab('inn2')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeInningsTab === 'inn2'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                2nd Innings: {inn2?.team} ({inn2?.total_runs}/{inn2?.wickets})
-              </button>
-            </div>
-
-            {/* Scorecard Tables Grid (Side-by-side in landscape) */}
-            {activeInn && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-                
-                {/* Batting Card */}
-                <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
-                  <div className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2">
-                    Batting Scorecard
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="text-gray-400 border-b border-white/10 text-left text-[11px]">
-                          <th className="py-1.5">Batter</th>
-                          <th>Dismissal</th>
-                          <th className="text-right">R</th>
-                          <th className="text-right">B</th>
-                          <th className="text-right">4s</th>
-                          <th className="text-right">6s</th>
-                          <th className="text-right">SR</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 font-mono text-[11px]">
-                        {(activeInn.batting_card || []).map((b: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-white/5">
-                            <td className="py-1 font-sans font-bold text-white">{b.name}</td>
-                            <td className="text-[10px] text-gray-400 font-sans">{b.dismissal}</td>
-                            <td className="text-right font-black text-emerald-400">{b.runs}</td>
-                            <td className="text-right text-gray-300">{b.balls}</td>
-                            <td className="text-right text-gray-300">{b.fours}</td>
-                            <td className="text-right text-gray-300">{b.sixes}</td>
-                            <td className="text-right text-amber-400 font-bold">{b.sr}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Bowling Figures & Death Overs Feed */}
-                <div className="space-y-3.5">
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
-                    <div className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-2">
-                      Bowling Figures
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="text-gray-400 border-b border-white/10 text-left text-[11px]">
-                            <th className="py-1.5">Bowler</th>
-                            <th className="text-right">O</th>
-                            <th className="text-right">M</th>
-                            <th className="text-right">R</th>
-                            <th className="text-right">W</th>
-                            <th className="text-right">Econ</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 font-mono text-[11px]">
-                          {(activeInn.bowling_card || []).map((bw: any, idx: number) => (
-                            <tr key={idx} className="hover:bg-white/5">
-                              <td className="py-1 font-sans font-bold text-white">{bw.name}</td>
-                              <td className="text-right text-gray-300">{bw.overs}</td>
-                              <td className="text-right text-gray-300">{bw.maidens}</td>
-                              <td className="text-right text-gray-300">{bw.runs}</td>
-                              <td className="text-right font-black text-rose-400">{bw.wickets}</td>
-                              <td className="text-right text-amber-400 font-bold">{bw.econ}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Death Overs Feed */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10">
-                    <div className="text-[11px] font-black uppercase tracking-wider text-gray-400 mb-1.5">
-                      Clutch Over-by-Over Highlights
-                    </div>
-                    <div className="space-y-1.5 max-h-36 overflow-y-auto font-mono text-[10px]">
-                      {(activeInn.key_balls || []).map((k: any, i: number) => (
-                        <div key={i} className="p-1 rounded bg-slate-950 flex items-start gap-1.5 border border-white/5">
-                          <span className="font-bold text-amber-400 shrink-0">{k.ball}</span>
-                          <span className={`px-1 rounded text-[9px] font-black shrink-0 ${
-                            k.event === 'W' ? 'bg-rose-500 text-white' : (k.event === '6' ? 'bg-emerald-500 text-black' : (k.event === '4' ? 'bg-blue-500 text-white' : 'bg-gray-800 text-gray-300'))
-                          }`}>
-                            {k.event}
-                          </span>
-                          <span className="text-gray-300 font-sans">{k.commentary}</span>
-                          <span className="text-gray-500 ml-auto shrink-0 font-mono">[{k.score_after}]</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-            )}
           </div>
         )}
+
+        {/* Content Area */}
+        {activeTab === 'arena' ? (
+          <div className="flex-1 flex flex-col justify-between p-3 sm:p-4 overflow-y-auto">
+            
+            {/* Live Score Ticker Banner */}
+            <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/15 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl shrink-0">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-lg"
+                  style={{ backgroundColor: activeInnings.teamColor }}
+                >
+                  {activeInnings.teamShort}
+                </div>
+                <div>
+                  <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight flex items-baseline gap-2">
+                    <span>{currentBall.totalRuns}/{currentBall.totalWickets}</span>
+                    <span className="text-xs sm:text-sm font-sans font-bold text-gray-400">
+                      ({currentBall.over}.{currentBall.ball} ov)
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-gray-400 font-mono">
+                    CRR: {((currentBall.totalRuns / Math.max(1, currentBall.over * 6 + currentBall.ball)) * 6).toFixed(2)}
+                    {currentInnings === 2 && (
+                      <span className="text-amber-400 font-bold ml-2">
+                        • Need {runsNeeded} off {ballsRemaining} balls (Req RR: {reqRR})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Over Ball Bubbles */}
+              <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                <span className="text-[10px] font-mono text-gray-400 uppercase mr-1">Over {currentBall.over + 1}:</span>
+                {currentOverBalls.map((b, i) => (
+                  <div
+                    key={i}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono shadow-md ${
+                      b.isWicket 
+                        ? 'bg-rose-600 text-white animate-pulse' 
+                        : b.isSix 
+                        ? 'bg-amber-400 text-slate-950 font-black' 
+                        : b.isFour 
+                        ? 'bg-sky-400 text-slate-950' 
+                        : b.runs > 0 
+                        ? 'bg-slate-700 text-white' 
+                        : 'bg-slate-900 border border-white/20 text-gray-400'
+                    }`}
+                  >
+                    {b.isWicket ? 'W' : b.runs}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Stadium Pitch Canvas (2D Animated Cricket Stadium) */}
+            <div className="relative my-3 flex-1 min-h-[220px] rounded-3xl bg-gradient-to-b from-emerald-950/80 via-emerald-900/60 to-emerald-950/80 border border-emerald-500/30 overflow-hidden flex flex-col justify-between p-4 shadow-inner">
+              {/* Pitch turf strip */}
+              <div className="absolute inset-x-1/4 inset-y-4 bg-gradient-to-b from-amber-900/30 via-amber-800/20 to-amber-900/30 border-x border-amber-600/20 rounded-xl pointer-events-none" />
+
+              {/* Top: Non-Striker & Bowler Card */}
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-white/15 backdrop-blur-md max-w-[200px]">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase">Non-Striker</div>
+                  <div className="text-xs font-black text-white truncate">{currentBall.nonStriker}</div>
+                </div>
+
+                <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-red-500/30 backdrop-blur-md text-right max-w-[220px]">
+                  <div className="text-[10px] font-bold text-red-400 uppercase flex items-center justify-end gap-1">
+                    <Activity size={10} /> Bowler
+                  </div>
+                  <div className="text-xs font-black text-white truncate">{currentBall.bowler}</div>
+                </div>
+              </div>
+
+              {/* Center Action: Pitch Crease & Ball Trajectory Visual */}
+              <div className="relative z-10 flex flex-col items-center justify-center my-auto py-2">
+                <div className="text-xs font-mono font-bold text-emerald-300 bg-slate-950/70 px-4 py-1 rounded-full border border-emerald-500/30 backdrop-blur-md mb-2">
+                  Ball {currentBall.over}.{currentBall.ball} • {currentBall.commentary}
+                </div>
+                {/* Wickets graphic */}
+                <div className="flex items-center gap-8">
+                  <div className="w-8 h-2 bg-amber-400 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.6)]" />
+                  <div className={`w-3.5 h-3.5 rounded-full ${currentBall.isWicket ? 'bg-red-500 animate-ping' : currentBall.isSix ? 'bg-amber-400 animate-pulse' : 'bg-white'} shadow-md`} />
+                  <div className="w-8 h-2 bg-amber-400 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.6)]" />
+                </div>
+              </div>
+
+              {/* Bottom: Striker on Strike Card */}
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-amber-500/40 backdrop-blur-md max-w-[240px]">
+                  <div className="text-[10px] font-bold text-amber-400 uppercase flex items-center gap-1">
+                    <Flame size={10} /> Striker on Crease
+                  </div>
+                  <div className="text-xs font-black text-white truncate">{currentBall.striker} *</div>
+                </div>
+
+                <div className="text-right text-[10px] text-gray-400 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-white/10">
+                  Innings {currentInnings} of 2 • {activeInnings.teamName}
+                </div>
+              </div>
+            </div>
+
+            {/* Playback & Fast-Forward Control Console */}
+            <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 flex flex-wrap items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className={`px-4 py-2 rounded-xl font-black text-xs uppercase flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isPlaying 
+                      ? 'bg-rose-500 text-white shadow-rose-500/30' 
+                      : 'bg-emerald-500 text-slate-950 shadow-emerald-500/30'
+                  } shadow-md active:scale-95`}
+                >
+                  {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+                  <span>{isPlaying ? 'Pause' : 'Play Live'}</span>
+                </button>
+
+                <button
+                  onClick={advanceOneBall}
+                  disabled={isPlaying || matchDone}
+                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-40 text-xs font-bold text-white flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                >
+                  <SkipForward size={14} />
+                  <span>Next Ball</span>
+                </button>
+
+                <button
+                  onClick={handleNextOver}
+                  disabled={isPlaying || matchDone}
+                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-40 text-xs font-bold text-white flex items-center gap-1 cursor-pointer transition-all active:scale-95 hidden sm:flex"
+                >
+                  <FastForward size={14} />
+                  <span>Next Over</span>
+                </button>
+              </div>
+
+              {/* Speed Buttons */}
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+                <span className="text-[10px] text-gray-400 font-bold px-2 uppercase">Speed:</span>
+                {[1, 2, 5].map((spd) => (
+                  <button
+                    key={spd}
+                    onClick={() => setSimSpeed(spd as any)}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-mono font-bold cursor-pointer ${
+                      simSpeed === spd ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {spd}x
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleSkipToEnd}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-md ml-auto"
+              >
+                <Zap size={13} />
+                <span>Super-Sim to End</span>
+              </button>
+            </div>
+
+          </div>
+        ) : (
+          /* Full Detailed Scorecard Tab */
+          <div className="flex-1 p-4 overflow-y-auto space-y-4">
+            
+            {/* Match Winner & POTM Banner */}
+            {matchResultSummary && (
+              <div className="p-4 rounded-3xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-slate-950 border border-amber-500/40 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl">
+                <div>
+                  <div className="text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                    <Trophy size={13} /> Match Concluded
+                  </div>
+                  <h3 className="text-xl font-black text-white mt-0.5">
+                    {matchResultSummary.winnerName} won by {matchResultSummary.margin}!
+                  </h3>
+                  <div className="text-xs text-gray-300 font-mono mt-1">
+                    {inn1.teamShort}: {inn1.totalRuns}/{inn1.totalWickets} ({inn1.oversPlayed} ov) • {inn2.teamShort}: {inn2.totalRuns}/{inn2.totalWickets} ({inn2.oversPlayed} ov)
+                  </div>
+                </div>
+
+                {potm && (
+                  <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-right">
+                    <span className="text-[9px] font-black uppercase text-amber-300 block">PLAYER OF THE MATCH</span>
+                    <strong className="text-sm font-black text-white block">{potm.player}</strong>
+                    <span className="text-xs font-mono text-gray-300">{potm.stats}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Innings 1 Scorecard */}
+            <div className="p-4 rounded-3xl bg-slate-900 border border-white/10">
+              <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
+                <h4 className="text-sm font-black text-white flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: inn1.teamColor }} />
+                  1st Innings: {inn1.teamName} ({inn1.totalRuns}/{inn1.totalWickets} in {inn1.oversPlayed} ov)
+                </h4>
+              </div>
+
+              {/* Batting Card */}
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
+                    <tr>
+                      <th className="py-1">Batter</th>
+                      <th className="py-1">Dismissal</th>
+                      <th className="py-1 text-right">R</th>
+                      <th className="py-1 text-right">B</th>
+                      <th className="py-1 text-right">4s</th>
+                      <th className="py-1 text-right">6s</th>
+                      <th className="py-1 text-right">SR</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-gray-200">
+                    {inn1.battingScorecard.map((b, i) => (
+                      <tr key={i} className="hover:bg-white/5">
+                        <td className="py-1.5 font-sans font-bold text-white">{b.name}</td>
+                        <td className="py-1.5 text-gray-400 text-[11px]">{b.dismissal}</td>
+                        <td className="py-1.5 text-right font-black text-amber-300">{b.runs}</td>
+                        <td className="py-1.5 text-right text-gray-400">{b.balls}</td>
+                        <td className="py-1.5 text-right">{b.fours}</td>
+                        <td className="py-1.5 text-right">{b.sixes}</td>
+                        <td className="py-1.5 text-right text-gray-400">{b.strikeRate}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Bowling Card */}
+              <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">Bowling Figures ({inn2.teamShort})</h5>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
+                    <tr>
+                      <th className="py-1">Bowler</th>
+                      <th className="py-1 text-right">O</th>
+                      <th className="py-1 text-right">M</th>
+                      <th className="py-1 text-right">R</th>
+                      <th className="py-1 text-right">W</th>
+                      <th className="py-1 text-right">Econ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-gray-200">
+                    {inn1.bowlingFigures.map((bw, i) => (
+                      <tr key={i} className="hover:bg-white/5">
+                        <td className="py-1.5 font-sans font-bold text-white">{bw.name}</td>
+                        <td className="py-1.5 text-right">{bw.overs}</td>
+                        <td className="py-1.5 text-right text-gray-400">{bw.maidens}</td>
+                        <td className="py-1.5 text-right text-rose-300">{bw.runs}</td>
+                        <td className="py-1.5 text-right font-black text-emerald-400">{bw.wickets}</td>
+                        <td className="py-1.5 text-right text-gray-400">{bw.economy}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Innings 2 Scorecard */}
+            <div className="p-4 rounded-3xl bg-slate-900 border border-white/10">
+              <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
+                <h4 className="text-sm font-black text-white flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: inn2.teamColor }} />
+                  2nd Innings: {inn2.teamName} ({inn2.totalRuns}/{inn2.totalWickets} in {inn2.oversPlayed} ov)
+                </h4>
+              </div>
+
+              {/* Batting Card */}
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
+                    <tr>
+                      <th className="py-1">Batter</th>
+                      <th className="py-1">Dismissal</th>
+                      <th className="py-1 text-right">R</th>
+                      <th className="py-1 text-right">B</th>
+                      <th className="py-1 text-right">4s</th>
+                      <th className="py-1 text-right">6s</th>
+                      <th className="py-1 text-right">SR</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-gray-200">
+                    {inn2.battingScorecard.map((b, i) => (
+                      <tr key={i} className="hover:bg-white/5">
+                        <td className="py-1.5 font-sans font-bold text-white">{b.name}</td>
+                        <td className="py-1.5 text-gray-400 text-[11px]">{b.dismissal}</td>
+                        <td className="py-1.5 text-right font-black text-amber-300">{b.runs}</td>
+                        <td className="py-1.5 text-right text-gray-400">{b.balls}</td>
+                        <td className="py-1.5 text-right">{b.fours}</td>
+                        <td className="py-1.5 text-right">{b.sixes}</td>
+                        <td className="py-1.5 text-right text-gray-400">{b.strikeRate}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Bowling Card */}
+              <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">Bowling Figures ({inn1.teamShort})</h5>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
+                    <tr>
+                      <th className="py-1">Bowler</th>
+                      <th className="py-1 text-right">O</th>
+                      <th className="py-1 text-right">M</th>
+                      <th className="py-1 text-right">R</th>
+                      <th className="py-1 text-right">W</th>
+                      <th className="py-1 text-right">Econ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-gray-200">
+                    {inn2.bowlingFigures.map((bw, i) => (
+                      <tr key={i} className="hover:bg-white/5">
+                        <td className="py-1.5 font-sans font-bold text-white">{bw.name}</td>
+                        <td className="py-1.5 text-right">{bw.overs}</td>
+                        <td className="py-1.5 text-right text-gray-400">{bw.maidens}</td>
+                        <td className="py-1.5 text-right text-rose-300">{bw.runs}</td>
+                        <td className="py-1.5 text-right font-black text-emerald-400">{bw.wickets}</td>
+                        <td className="py-1.5 text-right text-gray-400">{bw.economy}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Bottom Actions: Save Result to Tournament Schedule */}
+            {matchResultSummary && (
+              <div className="pt-2 flex items-center justify-end">
+                <button
+                  onClick={() => {
+                    if (onMatchComplete) {
+                      onMatchComplete(matchResultSummary);
+                    }
+                    onClose();
+                  }}
+                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-emerald-500/20 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  <CheckCircle2 size={16} />
+                  <span>Record Result to IPL Schedule & Points Table</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            )}
+
+          </div>
+        )}
+
       </div>
     </div>
   );
+}
+
+// ─── HIGH-PRECISION REALISTIC 20-OVER CRICKET GENERATOR ───
+function generateRealistic20OverMatch(
+  franchiseA: FranchiseData,
+  squadA: Player[],
+  franchiseB: FranchiseData,
+  squadB: Player[],
+  venue: string
+) {
+  // Determine who bats first (Coin Toss)
+  const aBatsFirst = Math.random() > 0.5;
+  const bat1Team = aBatsFirst ? franchiseA : franchiseB;
+  const bat1Squad = aBatsFirst ? squadA : squadB;
+  const bowl1Team = aBatsFirst ? franchiseB : franchiseA;
+  const bowl1Squad = aBatsFirst ? squadB : squadA;
+
+  // Innings 1 Simulation
+  const inn1 = simulateSingleInnings(bat1Team, bat1Squad, bowl1Team, bowl1Squad, null);
+
+  // Innings 2 Simulation (Chase with target)
+  const inn2 = simulateSingleInnings(bowl1Team, bowl1Squad, bat1Team, bat1Squad, inn1.totalRuns + 1);
+
+  // Determine Winner
+  let winnerTeam = franchiseA;
+  let margin = '';
+  let aWon = false;
+
+  if (aBatsFirst) {
+    if (inn1.totalRuns > inn2.totalRuns) {
+      winnerTeam = franchiseA;
+      margin = `${inn1.totalRuns - inn2.totalRuns} runs`;
+      aWon = true;
+    } else {
+      winnerTeam = franchiseB;
+      margin = `${10 - inn2.totalWickets} wickets`;
+      aWon = false;
+    }
+  } else {
+    if (inn2.totalRuns > inn1.totalRuns) {
+      winnerTeam = franchiseA;
+      margin = `${10 - inn2.totalWickets} wickets`;
+      aWon = true;
+    } else {
+      winnerTeam = franchiseB;
+      margin = `${inn1.totalRuns - inn2.totalRuns} runs`;
+      aWon = false;
+    }
+  }
+
+  // Player of the match
+  const allBatters = [...inn1.battingScorecard, ...inn2.battingScorecard];
+  const topBatter = allBatters.sort((a, b) => b.runs - a.runs)[0];
+  const allBowlers = [...inn1.bowlingFigures, ...inn2.bowlingFigures];
+  const topBowler = allBowlers.sort((a, b) => b.wickets - a.wickets || a.runs - b.runs)[0];
+
+  let potm = {
+    player: topBatter.name,
+    team: winnerTeam.name,
+    stats: `${topBatter.runs}* (${topBatter.balls}b, ${topBatter.fours}x4, ${topBatter.sixes}x6)`
+  };
+
+  if (topBowler.wickets >= 3) {
+    potm = {
+      player: topBowler.name,
+      team: winnerTeam.name,
+      stats: `${topBowler.wickets}/${topBowler.runs} (${topBowler.overs} ov)`
+    };
+  }
+
+  const resultSummary: TournamentFixture['result'] = {
+    winnerTeamId: winnerTeam.short.toLowerCase(),
+    winnerName: winnerTeam.name,
+    margin,
+    myRuns: aBatsFirst ? inn1.totalRuns : inn2.totalRuns,
+    myWickets: aBatsFirst ? inn1.totalWickets : inn2.totalWickets,
+    myOvers: aBatsFirst ? inn1.oversPlayed : inn2.oversPlayed,
+    rivalRuns: aBatsFirst ? inn2.totalRuns : inn1.totalRuns,
+    rivalWickets: aBatsFirst ? inn2.totalWickets : inn1.totalWickets,
+    rivalOvers: aBatsFirst ? inn2.oversPlayed : inn1.oversPlayed,
+    pomPlayer: potm.player,
+    pomStats: potm.stats
+  };
+
+  return { inn1, inn2, potm, resultSummary };
+}
+
+function simulateSingleInnings(
+  batTeam: FranchiseData,
+  batSquad: Player[],
+  bowlTeam: FranchiseData,
+  bowlSquad: Player[],
+  target: number | null
+): InningsData {
+  const bowlers = bowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
+  const activeBowlers = (bowlers.length >= 4 ? bowlers : bowlSquad).slice(0, 5);
+
+  const batters = batSquad.slice(0, 11);
+  let strikerIdx = 0;
+  let nonStrikerIdx = 1;
+  let nextBatterIdx = 2;
+
+  let totalRuns = 0;
+  let totalWickets = 0;
+  const balls: SimulatedBall[] = [];
+
+  const batterStats: Record<string, { runs: number; balls: number; fours: number; sixes: number; dismissal: string }> = {};
+  batters.forEach(b => {
+    batterStats[b.name] = { runs: 0, balls: 0, fours: 0, sixes: 0, dismissal: 'not out' };
+  });
+
+  const bowlerStats: Record<string, { overs: number; ballsInOver: number; maidens: number; runs: number; wickets: number }> = {};
+  activeBowlers.forEach(b => {
+    bowlerStats[b.name] = { overs: 0, ballsInOver: 0, maidens: 0, runs: 0, wickets: 0 };
+  });
+
+  const fallOfWickets: Array<{ wicket: number; score: number; player: string; over: string }> = [];
+
+  // Simulate 20 overs (120 legal balls)
+  for (let over = 0; over < 20; over++) {
+    const bowler = activeBowlers[over % activeBowlers.length];
+    let runsInOver = 0;
+
+    for (let ball = 1; ball <= 6; ball++) {
+      if (totalWickets >= 10) break;
+      if (target !== null && totalRuns >= target) break;
+
+      const striker = batters[strikerIdx]?.name || 'Batter';
+      const nonStriker = batters[nonStrikerIdx]?.name || 'Non-Striker';
+
+      // Ball event generator
+      const rand = Math.random();
+      let runs = 0;
+      let isWicket = false;
+      let isFour = false;
+      let isSix = false;
+      let dismissal = '';
+      let commentary = '';
+
+      if (rand < 0.055) {
+        // WICKET!
+        isWicket = true;
+        totalWickets++;
+        const fielder = bowlSquad[Math.floor(Math.random() * bowlSquad.length)].name;
+        
+        if (Math.random() < 0.35) {
+          dismissal = `b ${bowler.name}`;
+          commentary = `CLEAN BOWLED! ${bowler.name} beats the inside edge and uproots off-stump!`;
+        } else if (Math.random() < 0.65) {
+          dismissal = `c ${fielder} b ${bowler.name}`;
+          commentary = `CAUGHT! Lofted towards deep midwicket and taken safely by ${fielder}!`;
+        } else if (Math.random() < 0.85) {
+          dismissal = `c & b ${bowler.name}`;
+          commentary = `CAUGHT & BOWLED! Searing return catch held sharply by ${bowler.name}!`;
+        } else {
+          dismissal = `lbw b ${bowler.name}`;
+          commentary = `LBW! Plumb in front! Finger goes up immediately!`;
+        }
+
+        batterStats[striker].dismissal = dismissal;
+        bowlerStats[bowler.name].wickets++;
+        fallOfWickets.push({
+          wicket: totalWickets,
+          score: totalRuns,
+          player: striker,
+          over: `${over}.${ball}`
+        });
+
+        // Bring next batter
+        if (nextBatterIdx < batters.length) {
+          strikerIdx = nextBatterIdx++;
+        }
+      } else if (rand < 0.17) {
+        // SIX!
+        runs = 6;
+        isSix = true;
+        commentary = `MASSIVE SIX! Clean strike sailed 100+ meters into the stands!`;
+      } else if (rand < 0.32) {
+        // FOUR!
+        runs = 4;
+        isFour = true;
+        commentary = `FOUR! Pierces the cover gap with cracking timing to the fence!`;
+      } else if (rand < 0.44) {
+        runs = 2;
+        commentary = `Pushed into the deep pocket, hurried back for a sharp couple!`;
+      } else if (rand < 0.72) {
+        runs = 1;
+        commentary = `Worked into mid-on for a quick single.`;
+      } else {
+        runs = 0;
+        commentary = `Dot ball. Swing and a miss outside the off-stump channel.`;
+      }
+
+      totalRuns += runs;
+      runsInOver += runs;
+
+      // Update stats
+      batterStats[striker].runs += runs;
+      batterStats[striker].balls += 1;
+      if (isFour) batterStats[striker].fours++;
+      if (isSix) batterStats[striker].sixes++;
+
+      bowlerStats[bowler.name].runs += runs;
+      bowlerStats[bowler.name].ballsInOver++;
+
+      // Rotate strike on odd runs
+      if (runs % 2 === 1) {
+        const temp = strikerIdx;
+        strikerIdx = nonStrikerIdx;
+        nonStrikerIdx = temp;
+      }
+
+      balls.push({
+        over,
+        ball,
+        striker,
+        nonStriker,
+        bowler: bowler.name,
+        runs,
+        isWicket,
+        wicketType: dismissal,
+        isFour,
+        isSix,
+        commentary,
+        totalRuns,
+        totalWickets
+      });
+    }
+
+    bowlerStats[bowler.name].overs += 1;
+    if (runsInOver === 0) bowlerStats[bowler.name].maidens += 1;
+
+    // Rotate strike at end of over
+    const temp = strikerIdx;
+    strikerIdx = nonStrikerIdx;
+    nonStrikerIdx = temp;
+
+    if (totalWickets >= 10 || (target !== null && totalRuns >= target)) break;
+  }
+
+  const battingScorecard = batters.map(b => {
+    const s = batterStats[b.name];
+    const sr = s.balls > 0 ? ((s.runs / s.balls) * 100).toFixed(1) : '0.0';
+    return {
+      name: b.name,
+      dismissal: s.dismissal,
+      runs: s.runs,
+      balls: s.balls,
+      fours: s.fours,
+      sixes: s.sixes,
+      strikeRate: sr
+    };
+  });
+
+  const bowlingFigures = activeBowlers.map(b => {
+    const s = bowlerStats[b.name];
+    const ov = s.overs;
+    const econ = ov > 0 ? (s.runs / ov).toFixed(2) : '0.00';
+    return {
+      name: b.name,
+      overs: `${ov}.0`,
+      maidens: s.maidens,
+      runs: s.runs,
+      wickets: s.wickets,
+      economy: econ
+    };
+  });
+
+  const oversPlayed = Math.min(20, Math.ceil(balls.length / 6));
+
+  return {
+    teamName: batTeam.name,
+    teamShort: batTeam.short,
+    teamColor: batTeam.color,
+    totalRuns,
+    totalWickets,
+    oversPlayed,
+    balls,
+    battingScorecard,
+    bowlingFigures,
+    fallOfWickets
+  };
 }
