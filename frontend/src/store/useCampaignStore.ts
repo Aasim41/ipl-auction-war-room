@@ -15,15 +15,125 @@ export interface CampaignPlayer extends IPLPlayer {
   currentPrice: number
 }
 
-// Intelligent Cricket Lineup Builder & Optimizer
-export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds: string[]; impactId?: string } {
+// Intelligent Cricket Lineup Builder & Tactical Optimizer
+// Calibrates XI based on: Pitch/Venue characteristics, Rival Strengths/Weaknesses, and Bat-First vs Bowl-First tactics
+export function computeOptimalPlayingXI(
+  activeSquad: CampaignPlayer[],
+  options?: {
+    venueCity?: string;
+    rivalTeamId?: string;
+    mode?: 'bat_first' | 'bowl_first';
+  }
+): { xiIds: string[]; impactId?: string; strategySummary?: string } {
   const eligible = activeSquad.filter((p) => !p.is_released)
   if (eligible.length === 0) return { xiIds: [] }
 
-  const wks = eligible.filter((p) => p.role === 'WK').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-  const bats = eligible.filter((p) => p.role === 'BAT').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-  const ars = eligible.filter((p) => p.role === 'AR').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-  const bowls = eligible.filter((p) => p.role === 'BOWL').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+  const venue = options?.venueCity || 'Mumbai'
+  const rival = (options?.rivalTeamId || 'csk').toLowerCase()
+  const mode = options?.mode || 'bat_first'
+
+  // Spin-favoring conditions (Chepauk, Ekana, Arun Jaitley)
+  const isSpinTrack = venue === 'Chennai' || venue === 'Lucknow' || venue === 'Delhi'
+  // Pace & Bounce / High Scoring (Wankhede, Hyderabad, Eden Gardens, Mohali)
+  const isPaceTrack = venue === 'Mumbai' || venue === 'Hyderabad' || venue === 'Kolkata' || venue === 'Mohali'
+  // Short boundaries (Chinnaswamy)
+  const isSmallGround = venue === 'Bengaluru'
+  // Large Outfield (Jaipur, Ahmedabad)
+  const isLargeGround = venue === 'Jaipur' || venue === 'Ahmedabad'
+
+  // Helper to test spinner keywords
+  const isSpinner = (p: CampaignPlayer) => {
+    const n = p.name.toLowerCase()
+    const s = (p.statsSummary || '').toLowerCase()
+    return n.includes('chahal') || n.includes('kuldeep') || n.includes('narine') || 
+           n.includes('rashid') || n.includes('ashwin') || n.includes('jadeja') || 
+           n.includes('bishnoi') || n.includes('varun') || n.includes('axar') || 
+           n.includes('theekshana') || n.includes('hasaranga') || n.includes('zampa') || 
+           n.includes('suyash') || n.includes('noor') || s.includes('spin') || s.includes('turn')
+  }
+
+  // Helper to test express pacers / swing
+  const isExpressPacer = (p: CampaignPlayer) => {
+    const n = p.name.toLowerCase()
+    const s = (p.statsSummary || '').toLowerCase()
+    return n.includes('bumrah') || n.includes('boult') || n.includes('starc') || 
+           n.includes('cummins') || n.includes('arshdeep') || n.includes('shami') || 
+           n.includes('siraj') || n.includes('archer') || n.includes('nortje') || 
+           n.includes('rabada') || n.includes('coetzee') || n.includes('mayank yadav') || 
+           n.includes('ferguson') || n.includes('wood') || n.includes('harshit') || 
+           s.includes('pace') || s.includes('pacer') || s.includes('seam') || s.includes('swing') || s.includes('yorker')
+  }
+
+  // Helper to test explosive boundary clearers
+  const isPowerhitter = (p: CampaignPlayer) => {
+    const n = p.name.toLowerCase()
+    const s = (p.statsSummary || '').toLowerCase()
+    return n.includes('klaasen') || n.includes('pooran') || n.includes('russell') || 
+           n.includes('rohit') || n.includes('suryakumar') || n.includes('hardik') || 
+           n.includes('head') || n.includes('miller') || n.includes('rinku') || 
+           n.includes('livingstone') || n.includes('maxwell') || s.includes('six') || s.includes('explosive')
+  }
+
+  // Compute Tactical Rating per player
+  const scoredSquad = eligible.map((p) => {
+    let score = Number(p.Power_Index) || 82
+    const s = (p.statsSummary || '').toLowerCase()
+
+    // 1. VENUE FACTOR
+    if (isSpinTrack) {
+      if (isSpinner(p)) score += 24 // Massive boost on turn tracks
+      else if (p.role === 'AR' && isSpinner(p)) score += 20
+      else if (isExpressPacer(p) && !p.name.toLowerCase().includes('bumrah')) score -= 4
+      if (s.includes('anchor') || p.name.includes('Kohli') || p.name.includes('Gaikwad')) score += 8
+    } else if (isPaceTrack) {
+      if (isExpressPacer(p)) score += 22 // High bounce & pace carry
+      if (isPowerhitter(p)) score += 14 // Clear boundaries with dew
+      if (isSpinner(p) && !p.name.includes('Rashid') && !p.name.includes('Narine')) score -= 3
+    } else if (isSmallGround) {
+      if (isPowerhitter(p)) score += 24 // Chinnaswamy 200+ par score
+      if (s.includes('death') || s.includes('yorker')) score += 14
+    } else if (isLargeGround) {
+      if (p.role === 'AR') score += 10
+      if (s.includes('control') || s.includes('economy')) score += 12
+    }
+
+    // 2. RIVAL WEAKNESS / STRENGTH COUNTER FACTOR
+    if (rival === 'csk') {
+      // Counter CSK: pace yorkers at death (Dhoni/Jadeja) + wrist spin in middle overs
+      if (s.includes('yorker') || s.includes('death')) score += 10
+      if (isSpinner(p)) score += 8
+    } else if (rival === 'srh' || rival === 'kkr') {
+      // Counter SRH/KKR: New ball swing to dismiss Head/Abhishek/Narine in powerplay
+      if (isExpressPacer(p) && (s.includes('swing') || s.includes('powerplay') || p.name.includes('Boult') || p.name.includes('Starc') || p.name.includes('Bumrah'))) score += 16
+    } else if (rival === 'mi') {
+      // Counter MI: Middle-order mystery spin & wide yorkers
+      if (isSpinner(p) || s.includes('yorker')) score += 12
+    } else if (rival === 'rr') {
+      // Counter RR: Pace variation & change of length
+      if (s.includes('cutter') || s.includes('variation')) score += 10
+    }
+
+    // 3. TACTICAL MODE FACTOR (Bat First vs Bowl First)
+    if (mode === 'bat_first') {
+      // Optimize for setting huge target: Boost batting depth
+      if (p.role === 'BAT') score += 12
+      if (p.role === 'AR') score += 10
+      if (p.role === 'WK') score += 8
+    } else {
+      // Optimize for restricting opposition: Boost 5-6 frontline bowling weapons
+      if (p.role === 'BOWL') score += 16
+      if (p.role === 'AR') score += 8
+      if (isExpressPacer(p) || isSpinner(p)) score += 10
+    }
+
+    return { ...p, tacticalScore: score }
+  })
+
+  // Group by role sorted by tactical score
+  const wks = scoredSquad.filter((p) => p.role === 'WK').sort((a, b) => b.tacticalScore - a.tacticalScore)
+  const bats = scoredSquad.filter((p) => p.role === 'BAT').sort((a, b) => b.tacticalScore - a.tacticalScore)
+  const ars = scoredSquad.filter((p) => p.role === 'AR').sort((a, b) => b.tacticalScore - a.tacticalScore)
+  const bowls = scoredSquad.filter((p) => p.role === 'BOWL').sort((a, b) => b.tacticalScore - a.tacticalScore)
 
   const selected: CampaignPlayer[] = []
   let overseasCount = 0
@@ -39,59 +149,60 @@ export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds:
     if (p.is_overseas) overseasCount++
   }
 
-  // 1. Mandatory Wicketkeeper (BCCI Rule: min 1 WK in XI)
+  // 1. Mandatory Wicketkeeper (BCCI Rule: min 1 WK)
   const primaryWk = wks.find(canSelect) || wks[0]
   if (primaryWk && canSelect(primaryWk)) {
     add(primaryWk)
   }
 
-  // 2. Openers: Batters & Keepers with opener pedigree
-  const openerCandidates = [...bats, ...wks].sort((a, b) => {
-    const isOpA = (a.statsSummary || '').toLowerCase().includes('open') ? 25 : 0
-    const isOpB = (b.statsSummary || '').toLowerCase().includes('open') ? 25 : 0
-    return ((Number(b.Power_Index) || 80) + isOpB) - ((Number(a.Power_Index) || 80) + isOpA)
+  // 2. Openers: Top 2 opening batsmen
+  const openerPool = [...bats, ...wks].sort((a, b) => {
+    const isOpA = (a.statsSummary || '').toLowerCase().includes('open') ? 30 : 0
+    const isOpB = (b.statsSummary || '').toLowerCase().includes('open') ? 30 : 0
+    return (b.tacticalScore + isOpB) - (a.tacticalScore + isOpA)
   })
 
-  for (const p of openerCandidates) {
+  for (const p of openerPool) {
     if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length >= 3) break
     if (canSelect(p)) add(p)
   }
 
-  // 3. Top Order Specialist Batters (Slots 3 & 4)
+  // 3. Middle Order & Finishers based on Bat-First vs Bowl-First
+  const maxBats = mode === 'bat_first' ? 5 : 4
   for (const p of bats) {
-    if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length >= 4) break
+    if (selected.filter((s) => s.role === 'BAT').length >= maxBats) break
     if (canSelect(p)) add(p)
   }
 
-  // 4. Finishers & All-Rounders (Slots 5, 6, 7)
+  // 4. All-Rounders
   for (const p of ars) {
     if (selected.filter((s) => s.role === 'AR').length >= 3) break
     if (canSelect(p)) add(p)
   }
 
-  // 5. Frontline Bowling Attack (Slots 8, 9, 10, 11) - Ensure bowlers + ars >= 5
+  // 5. Frontline Bowlers (Ensure bowlers + ars >= 5)
+  const minBowlers = mode === 'bowl_first' ? 5 : 4
   for (const p of bowls) {
+    if (selected.filter((s) => s.role === 'BOWL').length >= minBowlers) break
+    if (canSelect(p)) add(p)
+  }
+
+  // 6. Fill remaining up to 11
+  const sortedRemaining = [...scoredSquad].sort((a, b) => b.tacticalScore - a.tacticalScore)
+  for (const p of sortedRemaining) {
     if (selected.length >= 11) break
     if (canSelect(p)) add(p)
   }
 
-  // 6. Backfill remaining slots obeying overseas <= 4
-  const remaining = [...eligible].sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-  for (const p of remaining) {
-    if (selected.length >= 11) break
-    if (canSelect(p)) add(p)
-  }
-
-  // 7. Fallback if overseas capped: fill with Indian players
-  for (const p of remaining) {
+  // Fallback for overseas cap
+  for (const p of sortedRemaining) {
     if (selected.length >= 11) break
     if (!selected.some((s) => s.player_id === p.player_id) && !p.is_overseas) {
       selected.push(p)
     }
   }
 
-  // 8. Sort into proper cricket batting order 1 to 11:
-  // 1-2: Openers | 3-4: Top Order | 5: WK/Middle | 6-7: Finishers/AR | 8-11: Tail/Bowlers
+  // 7. Sort into authentic cricket order 1 to 11
   const orderedXI: CampaignPlayer[] = []
   const pool = [...selected]
 
@@ -104,7 +215,7 @@ export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds:
     return undefined
   }
 
-  // Openers (Slots 1 & 2): Pure Batters or Keeper-Batters (NEVER Bowlers!)
+  // 1-2: Openers
   for (let i = 0; i < 2; i++) {
     const opener = takeOne((p) => (p.role === 'BAT' || p.role === 'WK') && (p.statsSummary || '').toLowerCase().includes('open'))
       || takeOne((p) => p.role === 'BAT' || p.role === 'WK')
@@ -113,7 +224,7 @@ export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds:
     if (opener) orderedXI.push(opener)
   }
 
-  // Top Order (Slots 3 & 4): Anchors & Middle Order Batters
+  // 3-4: Top Order Anchors
   for (let i = 0; i < 2; i++) {
     const top = takeOne((p) => p.role === 'BAT')
       || takeOne((p) => p.role === 'WK')
@@ -122,14 +233,14 @@ export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds:
     if (top) orderedXI.push(top)
   }
 
-  // Middle Order (Slot 5): Keeper or Batting AR
+  // 5: Wicketkeeper or Middle-Order Anchor
   const mid = takeOne((p) => p.role === 'WK')
     || takeOne((p) => p.role === 'BAT')
     || takeOne((p) => p.role === 'AR')
     || pool.shift()
   if (mid) orderedXI.push(mid)
 
-  // Finishers (Slots 6 & 7): All-Rounders & Powerhitters
+  // 6-7: Finishers & All-Rounders
   for (let i = 0; i < 2; i++) {
     const fin = takeOne((p) => p.role === 'AR')
       || takeOne((p) => p.role === 'BAT')
@@ -138,15 +249,14 @@ export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds:
     if (fin) orderedXI.push(fin)
   }
 
-  // Tail & Specialist Bowlers (Slots 8, 9, 10, 11):
-  // ARs bat before bowlers; express pacers like Bumrah bat at #11
+  // 8-11: Bowlers (ARs before pure bowlers, express pacers bat last)
   pool.sort((a, b) => {
     if (a.role === 'AR' && b.role !== 'AR') return -1
     if (b.role === 'AR' && a.role !== 'AR') return 1
-    const aIsDeath = (a.statsSummary || '').toLowerCase().includes('yorker') || (a.statsSummary || '').toLowerCase().includes('death')
-    const bIsDeath = (b.statsSummary || '').toLowerCase().includes('yorker') || (b.statsSummary || '').toLowerCase().includes('death')
-    if (aIsDeath && !bIsDeath) return 1
-    if (!aIsDeath && bIsDeath) return -1
+    const aIsPace = isExpressPacer(a)
+    const bIsPace = isExpressPacer(b)
+    if (aIsPace && !bIsPace) return 1
+    if (!aIsPace && bIsPace) return -1
     return 0
   })
 
@@ -154,13 +264,27 @@ export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds:
     orderedXI.push(pool.shift()!)
   }
 
-  // Impact Player (12th Man): Best bench player
-  const bench = eligible.filter((p) => !orderedXI.some((o) => o.player_id === p.player_id))
-  const impact = bench.sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))[0]
+  // 8. TACTICAL IMPACT PLAYER (12th Man) SELECTION
+  const bench = scoredSquad.filter((p) => !orderedXI.some((o) => o.player_id === p.player_id))
+  let impact: CampaignPlayer | undefined
+  if (mode === 'bat_first') {
+    // If batting first: 12th man should be the best frontline bowler/spinner to bowl in 2nd innings!
+    impact = bench.filter((p) => p.role === 'BOWL' || p.role === 'AR').sort((a, b) => b.tacticalScore - a.tacticalScore)[0] 
+      || bench.sort((a, b) => b.tacticalScore - a.tacticalScore)[0]
+  } else {
+    // If bowling first: 12th man should be the best explosive finisher/batter to chase in 2nd innings!
+    impact = bench.filter((p) => p.role === 'BAT' || p.role === 'WK' || isPowerhitter(p)).sort((a, b) => b.tacticalScore - a.tacticalScore)[0]
+      || bench.sort((a, b) => b.tacticalScore - a.tacticalScore)[0]
+  }
+
+  const pacerCount = orderedXI.slice(0, 11).filter(isExpressPacer).length
+  const spinCount = orderedXI.slice(0, 11).filter(isSpinner).length
+  const strategySummary = `Calibrated for ${venue} vs ${rival.toUpperCase()} (${mode === 'bat_first' ? 'Bat First' : 'Bowl First'}): Configured ${pacerCount} Express Pacers + ${spinCount} Spinners, with ${impact?.name || '12th Man'} lined up as tactical Impact Sub!`
 
   return {
     xiIds: orderedXI.slice(0, 11).map((p) => p.player_id),
-    impactId: impact?.player_id
+    impactId: impact?.player_id,
+    strategySummary
   }
 }
 
