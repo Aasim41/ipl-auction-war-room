@@ -6,6 +6,7 @@ import "./auction-ui.css";
 import { ThemeProvider } from "../components/ThemeProvider";
 import { Navbar } from "../components/Navbar";
 import { AmbientBackground } from "../components/AmbientBackground";
+import { CapacitorDeviceManager } from "../components/CapacitorDeviceManager";
 
 export const metadata: Metadata = {
   title: "IPLMetrics — IPL Analytics & Auction Simulator",
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <ThemeProvider>
+          <CapacitorDeviceManager />
           <AmbientBackground />
           <Navbar />
           <main className="min-h-screen relative z-0">
