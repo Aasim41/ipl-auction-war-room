@@ -15,6 +15,155 @@ export interface CampaignPlayer extends IPLPlayer {
   currentPrice: number
 }
 
+// Intelligent Cricket Lineup Builder & Optimizer
+export function computeOptimalPlayingXI(activeSquad: CampaignPlayer[]): { xiIds: string[]; impactId?: string } {
+  const eligible = activeSquad.filter((p) => !p.is_released)
+  if (eligible.length === 0) return { xiIds: [] }
+
+  const wks = eligible.filter((p) => p.role === 'WK').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+  const bats = eligible.filter((p) => p.role === 'BAT').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+  const ars = eligible.filter((p) => p.role === 'AR').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+  const bowls = eligible.filter((p) => p.role === 'BOWL').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+
+  const selected: CampaignPlayer[] = []
+  let overseasCount = 0
+
+  const canSelect = (p: CampaignPlayer) => {
+    if (selected.some((s) => s.player_id === p.player_id)) return false
+    if (p.is_overseas && overseasCount >= 4) return false
+    return true
+  }
+
+  const add = (p: CampaignPlayer) => {
+    selected.push(p)
+    if (p.is_overseas) overseasCount++
+  }
+
+  // 1. Mandatory Wicketkeeper (BCCI Rule: min 1 WK in XI)
+  const primaryWk = wks.find(canSelect) || wks[0]
+  if (primaryWk && canSelect(primaryWk)) {
+    add(primaryWk)
+  }
+
+  // 2. Openers: Batters & Keepers with opener pedigree
+  const openerCandidates = [...bats, ...wks].sort((a, b) => {
+    const isOpA = (a.statsSummary || '').toLowerCase().includes('open') ? 25 : 0
+    const isOpB = (b.statsSummary || '').toLowerCase().includes('open') ? 25 : 0
+    return ((Number(b.Power_Index) || 80) + isOpB) - ((Number(a.Power_Index) || 80) + isOpA)
+  })
+
+  for (const p of openerCandidates) {
+    if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length >= 3) break
+    if (canSelect(p)) add(p)
+  }
+
+  // 3. Top Order Specialist Batters (Slots 3 & 4)
+  for (const p of bats) {
+    if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length >= 4) break
+    if (canSelect(p)) add(p)
+  }
+
+  // 4. Finishers & All-Rounders (Slots 5, 6, 7)
+  for (const p of ars) {
+    if (selected.filter((s) => s.role === 'AR').length >= 3) break
+    if (canSelect(p)) add(p)
+  }
+
+  // 5. Frontline Bowling Attack (Slots 8, 9, 10, 11) - Ensure bowlers + ars >= 5
+  for (const p of bowls) {
+    if (selected.length >= 11) break
+    if (canSelect(p)) add(p)
+  }
+
+  // 6. Backfill remaining slots obeying overseas <= 4
+  const remaining = [...eligible].sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
+  for (const p of remaining) {
+    if (selected.length >= 11) break
+    if (canSelect(p)) add(p)
+  }
+
+  // 7. Fallback if overseas capped: fill with Indian players
+  for (const p of remaining) {
+    if (selected.length >= 11) break
+    if (!selected.some((s) => s.player_id === p.player_id) && !p.is_overseas) {
+      selected.push(p)
+    }
+  }
+
+  // 8. Sort into proper cricket batting order 1 to 11:
+  // 1-2: Openers | 3-4: Top Order | 5: WK/Middle | 6-7: Finishers/AR | 8-11: Tail/Bowlers
+  const orderedXI: CampaignPlayer[] = []
+  const pool = [...selected]
+
+  const takeOne = (predicate: (p: CampaignPlayer) => boolean): CampaignPlayer | undefined => {
+    const idx = pool.findIndex(predicate)
+    if (idx !== -1) {
+      const [item] = pool.splice(idx, 1)
+      return item
+    }
+    return undefined
+  }
+
+  // Openers (Slots 1 & 2): Pure Batters or Keeper-Batters (NEVER Bowlers!)
+  for (let i = 0; i < 2; i++) {
+    const opener = takeOne((p) => (p.role === 'BAT' || p.role === 'WK') && (p.statsSummary || '').toLowerCase().includes('open'))
+      || takeOne((p) => p.role === 'BAT' || p.role === 'WK')
+      || takeOne((p) => p.role === 'AR')
+      || pool.shift()
+    if (opener) orderedXI.push(opener)
+  }
+
+  // Top Order (Slots 3 & 4): Anchors & Middle Order Batters
+  for (let i = 0; i < 2; i++) {
+    const top = takeOne((p) => p.role === 'BAT')
+      || takeOne((p) => p.role === 'WK')
+      || takeOne((p) => p.role === 'AR')
+      || pool.shift()
+    if (top) orderedXI.push(top)
+  }
+
+  // Middle Order (Slot 5): Keeper or Batting AR
+  const mid = takeOne((p) => p.role === 'WK')
+    || takeOne((p) => p.role === 'BAT')
+    || takeOne((p) => p.role === 'AR')
+    || pool.shift()
+  if (mid) orderedXI.push(mid)
+
+  // Finishers (Slots 6 & 7): All-Rounders & Powerhitters
+  for (let i = 0; i < 2; i++) {
+    const fin = takeOne((p) => p.role === 'AR')
+      || takeOne((p) => p.role === 'BAT')
+      || takeOne((p) => p.role === 'WK')
+      || pool.shift()
+    if (fin) orderedXI.push(fin)
+  }
+
+  // Tail & Specialist Bowlers (Slots 8, 9, 10, 11):
+  // ARs bat before bowlers; express pacers like Bumrah bat at #11
+  pool.sort((a, b) => {
+    if (a.role === 'AR' && b.role !== 'AR') return -1
+    if (b.role === 'AR' && a.role !== 'AR') return 1
+    const aIsDeath = (a.statsSummary || '').toLowerCase().includes('yorker') || (a.statsSummary || '').toLowerCase().includes('death')
+    const bIsDeath = (b.statsSummary || '').toLowerCase().includes('yorker') || (b.statsSummary || '').toLowerCase().includes('death')
+    if (aIsDeath && !bIsDeath) return 1
+    if (!aIsDeath && bIsDeath) return -1
+    return 0
+  })
+
+  while (pool.length > 0) {
+    orderedXI.push(pool.shift()!)
+  }
+
+  // Impact Player (12th Man): Best bench player
+  const bench = eligible.filter((p) => !orderedXI.some((o) => o.player_id === p.player_id))
+  const impact = bench.sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))[0]
+
+  return {
+    xiIds: orderedXI.slice(0, 11).map((p) => p.player_id),
+    impactId: impact?.player_id
+  }
+}
+
 export interface UserCampaign {
   id: string // e.g. "gm_123_rcb_2027"
   userId: string
