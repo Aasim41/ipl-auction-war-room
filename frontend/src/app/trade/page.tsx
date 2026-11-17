@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
 import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
+import { getFranchiseAI } from '../../data/franchiseAI'
 
 export default function TradeWindowPage() {
   const router = useRouter()
@@ -95,38 +96,100 @@ export default function TradeWindowPage() {
     p.name.toLowerCase().includes(searchRival.toLowerCase())
   )
 
-  // AI Trade Evaluation logic (100% offline)
+  // AI Trade Evaluation logic with Franchise Personalities & Realistic Bargaining (100% offline)
   const evaluateTrade = () => {
     if (!playerOut || !playerIn) {
-      return { acceptable: false, reason: 'Select one player from each team to evaluate trade.' }
+      return { 
+        acceptable: false, 
+        status: 'NO SELECTION', 
+        reason: 'Select one player from each team to evaluate trade offer.' 
+      }
     }
 
+    const rivalAI = getFranchiseAI(selectedRivalId)
     const powerOut = Number(playerOut.Power_Index) || 80
     const powerIn = Number(playerIn.Power_Index) || 80
     const priceOut = Number(playerOut.currentPrice || playerOut.price) || 5
     const priceIn = Number(playerIn.currentPrice || playerIn.price) || 5
 
-    // Effective offer value: Power + cash compensation
-    const netValueDiff = (powerOut - powerIn) + (cashOffer * 1.5)
-
-    // Overseas balance check
-    if (playerIn.is_overseas && !playerOut.is_overseas) {
-      const currentOverseas = campaign.squad.filter(p => !p.is_released && p.is_overseas).length
-      if (currentOverseas >= 8) {
-        return { acceptable: false, reason: 'Cannot acquire overseas player: Your 8-man overseas quota is full!' }
+    // 1. UNTOUCHABLE FRANCHISE CORNERSTONE PROTECTION
+    const isUntouchable = rivalAI.untouchables.some(u => 
+      playerIn.name.toLowerCase().includes(u.toLowerCase()) || 
+      u.toLowerCase().includes(playerIn.name.toLowerCase())
+    )
+    if (isUntouchable) {
+      return { 
+        acceptable: false, 
+        isUntouchable: true,
+        status: 'UNTOUCHABLE ICON',
+        reason: `❌ REJECTED IMMEDIATELY: ${playerIn.name} is the franchise marquee icon of ${rivalFranchise.name}! The board, fans, and sponsors consider him non-negotiable. He cannot be traded under any circumstances.` 
       }
     }
 
-    if (netValueDiff >= -4) {
+    // 2. OVERSEAS SQUAD QUOTA CHECK (Max 8 in squad)
+    if (playerIn.is_overseas && !playerOut.is_overseas) {
+      const currentOverseas = campaign.squad.filter(p => !p.is_released && p.is_overseas).length
+      if (currentOverseas >= 8) {
+        return { 
+          acceptable: false, 
+          status: 'OVERSEAS LIMIT',
+          reason: '❌ REJECTED: Your 8-man overseas squad quota is already full. You must trade an overseas player out to acquire one.' 
+        }
+      }
+    }
+
+    // 3. SPECIALIST ROLE SCARCITY (Wicketkeeper Protection)
+    if (playerIn.role === 'WK') {
+      const rivalWKs = rivalSquad.filter(p => p.role === 'WK')
+      if (rivalWKs.length <= 1 && playerOut.role !== 'WK') {
+        return {
+          acceptable: false,
+          status: 'ROLE SCARCITY',
+          reason: `❌ REJECTED: ${playerIn.name} is ${rivalFranchise.short}'s only specialist wicketkeeper! You must offer a quality wicketkeeper in exchange to protect our squad balance.`
+        }
+      }
+    }
+
+    // 4. QUALITY DISPARITY & BARGAINING COUNTER-OFFER
+    const qualityGap = powerIn - powerOut
+    let requiredCash = Math.max(0, Math.round((qualityGap * 0.8 + (priceIn - priceOut) * 0.5) * 2) / 2)
+
+    // Personality adjustments
+    if (rivalAI.tradeStyle === 'moneyball') {
+      // RR strictly demands positive financial surplus
+      requiredCash = Math.max(requiredCash, Math.round((priceIn - priceOut + 1.5) * 2) / 2)
+    } else if (rivalAI.tradeStyle === 'aggressive' && qualityGap > 2) {
+      // MI / SRH demand heavy compensation for losing power
+      requiredCash = Math.max(requiredCash, Math.round((qualityGap * 1.1) * 2) / 2)
+    }
+
+    if (qualityGap >= 8 && cashOffer < requiredCash) {
+      return {
+        acceptable: false,
+        counterOfferCash: requiredCash,
+        status: 'OFFER INSUFFICIENT',
+        reason: `❌ REJECTED: Large quality disparity! ${playerIn.name} (PI: ${powerIn}) is significantly superior to ${playerOut.name} (PI: ${powerOut}). ${rivalFranchise.short} refuses this straight swap.`,
+        counterOfferText: `🤝 ${rivalFranchise.short} Counter-Offer: Pay a cash transfer of +₹${requiredCash.toFixed(1)} Cr to bridge the talent gap.`
+      }
+    }
+
+    // Net value difference calculation
+    const netValueDiff = (powerOut - powerIn) + (cashOffer * 1.5)
+
+    if (netValueDiff >= 0 || (requiredCash > 0 && cashOffer >= requiredCash)) {
       return { 
         acceptable: true, 
-        reason: `${rivalFranchise.short} AI Board Approves: Fair value exchange for ${playerIn.name}.` 
+        status: 'DEAL APPROVED',
+        reason: `🟢 ${rivalFranchise.short} Board Approves: Fair value exchange for ${playerIn.name}. ${rivalAI.tagline}` 
       }
     } else {
-      const deficit = Math.abs(Math.round(netValueDiff / 1.5 * 10) / 10)
+      const deficit = Math.max(0.5, Math.abs(Math.round(netValueDiff / 1.5 * 2) / 2))
       return { 
         acceptable: false, 
-        reason: `${rivalFranchise.short} demands higher value: Add +₹${deficit} Cr cash or a higher-rated player.` 
+        counterOfferCash: deficit,
+        status: 'BARGAINING',
+        reason: `❌ REJECTED: ${rivalFranchise.short} demands greater value for ${playerIn.name}.`,
+        counterOfferText: `🤝 ${rivalFranchise.short} Counter-Offer: Increase cash sweetener to +₹${deficit.toFixed(1)} Cr to seal the deal.` 
       }
     }
   }
@@ -347,12 +410,38 @@ export default function TradeWindowPage() {
               <div className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all ${
                 evaluation.acceptable
                   ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10'
+                  : evaluation.isUntouchable
+                  ? 'bg-rose-950/40 border-rose-600/50 text-rose-300'
                   : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
               }`}>
-                {evaluation.acceptable ? '🟢 DEAL APPROVED' : '🔴 UNBALANCED'}
-                <div className="text-[10px] font-normal text-gray-300 mt-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span>{evaluation.acceptable ? '🟢 DEAL APPROVED' : evaluation.status || '🔴 REJECTED'}</span>
+                  {evaluation.isUntouchable && (
+                    <span className="px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-200 text-[9px] font-mono">
+                      UNTOUCHABLE
+                    </span>
+                  )}
+                </div>
+                <div className="text-[10px] font-normal text-gray-300 leading-snug">
                   {evaluation.reason}
                 </div>
+
+                {/* AI Bargaining Counter-Offer */}
+                {evaluation.counterOfferText && evaluation.counterOfferCash && (
+                  <div className="mt-2.5 p-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-left">
+                    <span className="text-[10px] font-black text-amber-300 block mb-1">
+                      {evaluation.counterOfferText}
+                    </span>
+                    <button
+                      disabled={isTradeLocked}
+                      onClick={() => setCashOffer(evaluation.counterOfferCash!)}
+                      className="w-full py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
+                    >
+                      <Sparkles size={11} />
+                      <span>Accept Counter-Offer (+₹{evaluation.counterOfferCash.toFixed(1)} Cr)</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
