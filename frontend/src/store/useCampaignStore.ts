@@ -797,49 +797,66 @@ export const useCampaignStore = create<CampaignStoreState>()(
         return true
       },
 
-      setPlayingXI: (playerIds, impactPlayerId) => {
-        get().updateActiveCampaign((prev) => ({
-          ...prev,
-          playingXI: playerIds,
-          impactPlayerId
-        }))
-      },
-
-      swapPlayingXISlots: (indexA, indexB) => {
+      setPlayingXI: (playerIds, impactPlayerId, mode = 'bat_first') => {
         get().updateActiveCampaign((prev) => {
-          const xi = [...prev.playingXI]
-          if (indexA < 0 || indexA >= xi.length || indexB < 0 || indexB >= xi.length) return prev
-          const temp = xi[indexA]
-          xi[indexA] = xi[indexB]
-          xi[indexB] = temp
-          return {
-            ...prev,
-            playingXI: xi
-          }
-        })
-      },
-
-      replacePlayingXIPlayer: (slotIndex, newPlayerId) => {
-        get().updateActiveCampaign((prev) => {
-          const xi = [...prev.playingXI]
-          if (slotIndex < 0 || slotIndex >= 11) return prev
-          // If player already in XI at another slot, swap them
-          const existingIdx = xi.indexOf(newPlayerId)
-          if (existingIdx !== -1) {
-            const oldAtSlot = xi[slotIndex]
-            xi[slotIndex] = newPlayerId
-            xi[existingIdx] = oldAtSlot
+          if (mode === 'bat_first') {
+            return {
+              ...prev,
+              batFirstXI: playerIds,
+              batFirstImpactId: impactPlayerId,
+              playingXI: playerIds,
+              impactPlayerId: impactPlayerId || prev.impactPlayerId
+            }
           } else {
-            xi[slotIndex] = newPlayerId
-          }
-          return {
-            ...prev,
-            playingXI: xi
+            return {
+              ...prev,
+              bowlFirstXI: playerIds,
+              bowlFirstImpactId: impactPlayerId
+            }
           }
         })
       },
 
-      autoOptimizePlayingXI: (venueCity, rivalTeamId, mode) => {
+      swapPlayingXISlots: (indexA, indexB, mode = 'bat_first') => {
+        get().updateActiveCampaign((prev) => {
+          const currentXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
+            ? [...prev.bowlFirstXI]
+            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? [...prev.batFirstXI] : [...prev.playingXI])
+          if (indexA < 0 || indexA >= currentXI.length || indexB < 0 || indexB >= currentXI.length) return prev
+          const temp = currentXI[indexA]
+          currentXI[indexA] = currentXI[indexB]
+          currentXI[indexB] = temp
+          if (mode === 'bowl_first') {
+            return { ...prev, bowlFirstXI: currentXI }
+          } else {
+            return { ...prev, batFirstXI: currentXI, playingXI: currentXI }
+          }
+        })
+      },
+
+      replacePlayingXIPlayer: (slotIndex, newPlayerId, mode = 'bat_first') => {
+        get().updateActiveCampaign((prev) => {
+          const currentXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
+            ? [...prev.bowlFirstXI]
+            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? [...prev.batFirstXI] : [...prev.playingXI])
+          if (slotIndex < 0 || slotIndex >= 11) return prev
+          const existingIdx = currentXI.indexOf(newPlayerId)
+          if (existingIdx !== -1) {
+            const oldAtSlot = currentXI[slotIndex]
+            currentXI[slotIndex] = newPlayerId
+            currentXI[existingIdx] = oldAtSlot
+          } else {
+            currentXI[slotIndex] = newPlayerId
+          }
+          if (mode === 'bowl_first') {
+            return { ...prev, bowlFirstXI: currentXI }
+          } else {
+            return { ...prev, batFirstXI: currentXI, playingXI: currentXI }
+          }
+        })
+      },
+
+      autoOptimizePlayingXI: (venueCity, rivalTeamId, mode = 'bat_first') => {
         let strategySummary: string | undefined
         get().updateActiveCampaign((prev) => {
           const activePlayers = prev.squad.filter((p) => !p.is_released)
@@ -847,10 +864,20 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
           const optimized = computeOptimalPlayingXI(activePlayers, { venueCity, rivalTeamId, mode })
           strategySummary = optimized.strategySummary
-          return {
-            ...prev,
-            playingXI: optimized.xiIds,
-            impactPlayerId: optimized.impactId
+          if (mode === 'bowl_first') {
+            return {
+              ...prev,
+              bowlFirstXI: optimized.xiIds,
+              bowlFirstImpactId: optimized.impactId
+            }
+          } else {
+            return {
+              ...prev,
+              batFirstXI: optimized.xiIds,
+              batFirstImpactId: optimized.impactId,
+              playingXI: optimized.xiIds,
+              impactPlayerId: optimized.impactId
+            }
           }
         })
         return { strategySummary }
@@ -863,22 +890,6 @@ export const useCampaignStore = create<CampaignStoreState>()(
           const currentFix = (prev.schedule || []).find(f => f.matchNo === matchNo)
           const targetRound = currentFix?.round || 1
 
-          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
-          
-          // Seed pointsMap from existing pointsTable
-          const initialTable = prev.pointsTable && prev.pointsTable.length > 0 ? prev.pointsTable : generateInitialPointsTable();
-          initialTable.forEach(t => {
-            pointsMap[t.teamId] = {
-              played: t.played,
-              won: t.won,
-              lost: t.lost,
-              runsFor: t.nrr * t.played * 20 + t.played * 160,
-              oversFor: Math.max(1, t.played * 20),
-              runsAgainst: t.played * 160,
-              oversAgainst: Math.max(1, t.played * 20)
-            }
-          })
-
           // 1. Update the user's match
           const updatedSchedule = (prev.schedule || []).map((f) => {
             if (f.matchNo === matchNo) {
@@ -889,7 +900,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
               }
             }
 
-            // 2. Simultaneously simulate any unplayed AI match in this same round
+            // 2. Simultaneously simulate all other unplayed AI matches in this same round
             if (f.round === targetRound && f.status !== 'COMPLETED' && f.matchNo !== matchNo) {
               const aiRes = simulateAIMatch(f)
               return {
@@ -902,91 +913,105 @@ export const useCampaignStore = create<CampaignStoreState>()(
             return f
           })
 
-          // 3. Accumulate points & NRR for this round's completed matches
-          updatedSchedule.filter(f => f.round === targetRound && f.result).forEach(f => {
-            const res = f.result!
-            const tA = f.teamAId
-            const tB = f.teamBId
+          // 3. Rebuild the entire points table deterministically from ALL completed league matches
+          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
+          ALL_TEAM_IDS.forEach((id) => {
+            pointsMap[id] = { played: 0, won: 0, lost: 0, runsFor: 0, oversFor: 0, runsAgainst: 0, oversAgainst: 0 };
+          });
 
-            if (pointsMap[tA] && pointsMap[tB]) {
-              pointsMap[tA].played += 1
-              pointsMap[tB].played += 1
+          updatedSchedule.forEach((f) => {
+            if (f.status === 'COMPLETED' && f.result && f.stage === 'League') {
+              const res = f.result;
+              const tA = f.teamAId;
+              const tB = f.teamBId;
+              if (pointsMap[tA] && pointsMap[tB]) {
+                pointsMap[tA].played += 1;
+                pointsMap[tB].played += 1;
 
-              if (res.winnerTeamId === tA) {
-                pointsMap[tA].won += 1
-                pointsMap[tB].lost += 1
-              } else {
-                pointsMap[tB].won += 1
-                pointsMap[tA].lost += 1
+                if (res.winnerTeamId === tA) {
+                  pointsMap[tA].won += 1;
+                  pointsMap[tB].lost += 1;
+                } else {
+                  pointsMap[tB].won += 1;
+                  pointsMap[tA].lost += 1;
+                }
+
+                pointsMap[tA].runsFor += res.teamARuns;
+                pointsMap[tA].oversFor += Math.max(1, res.teamAOvers);
+                pointsMap[tA].runsAgainst += res.teamBRuns;
+                pointsMap[tA].oversAgainst += Math.max(1, res.teamBOvers);
+
+                pointsMap[tB].runsFor += res.teamBRuns;
+                pointsMap[tB].oversFor += Math.max(1, res.teamBOvers);
+                pointsMap[tB].runsAgainst += res.teamARuns;
+                pointsMap[tB].oversAgainst += Math.max(1, res.teamAOvers);
               }
-
-              pointsMap[tA].runsFor += res.teamARuns
-              pointsMap[tA].oversFor += res.teamAOvers
-              pointsMap[tA].runsAgainst += res.teamBRuns
-              pointsMap[tA].oversAgainst += res.teamBOvers
-
-              pointsMap[tB].runsFor += res.teamBRuns
-              pointsMap[tB].oversFor += res.teamBOvers
-              pointsMap[tB].runsAgainst += res.teamARuns
-              pointsMap[tB].oversAgainst += res.teamAOvers
             }
-          })
+          });
 
-          // Rebuild points table
-          const updatedPoints = (prev.pointsTable || generateInitialPointsTable()).map((entry) => {
-            const st = pointsMap[entry.teamId]
-            if (!st) return entry
-            const nrr = st.oversFor > 0 ? (st.runsFor / st.oversFor) - (st.runsAgainst / st.oversAgainst) : 0
+          const updatedPoints = ALL_TEAM_IDS.map((tId) => {
+            const f = getFranchise(tId);
+            const st = pointsMap[tId];
+            const nrr = st.oversFor > 0 && st.oversAgainst > 0
+              ? (st.runsFor / st.oversFor) - (st.runsAgainst / st.oversAgainst)
+              : 0;
             return {
-              ...entry,
+              teamId: tId,
+              teamName: f.name,
+              shortName: f.short,
+              color: f.color,
+              emoji: f.emoji,
               played: st.played,
               won: st.won,
               lost: st.lost,
               points: st.won * 2,
               nrr: Math.round(nrr * 1000) / 1000
-            }
-          })
+            };
+          });
 
           // Sort Points Table by Points descending, then NRR descending
-          updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr)
+          updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr);
 
           // 4. Find the user's next upcoming match and mark it CURRENT
-          const nextMyMatch = updatedSchedule.find(f => f.isMyMatch && f.status === 'UPCOMING')
+          const nextMyMatch = updatedSchedule.find(f => f.isMyMatch && f.status === 'UPCOMING');
           if (nextMyMatch) {
-            nextMyMatch.status = 'CURRENT'
-          } else if (targetRound >= 14) {
-            // League complete! Seed Top 4 into Qualifier 1 & Eliminator
-            const top4 = updatedPoints.slice(0, 4)
-            const q1 = updatedSchedule.find(f => f.matchNo === 71)
-            const elim = updatedSchedule.find(f => f.matchNo === 72)
+            nextMyMatch.status = 'CURRENT';
+          }
+
+          // 5. Seed Playoffs if League Completed (all 70 matches completed)
+          const leagueDone = updatedSchedule.filter(f => f.stage === 'League' && f.status === 'COMPLETED').length >= 70;
+          if (leagueDone) {
+            const top4 = updatedPoints.slice(0, 4);
+            const q1 = updatedSchedule.find(f => f.matchNo === 71);
+            const elim = updatedSchedule.find(f => f.matchNo === 72);
 
             if (q1 && top4.length >= 2) {
-              q1.teamAId = top4[0].teamId
-              q1.teamAName = top4[0].teamName
-              q1.teamAShort = top4[0].shortName
-              q1.teamAColor = top4[0].color
-              q1.teamAEmoji = top4[0].emoji
-              q1.teamBId = top4[1].teamId
-              q1.teamBName = top4[1].teamName
-              q1.teamBShort = top4[1].shortName
-              q1.teamBColor = top4[1].color
-              q1.teamBEmoji = top4[1].emoji
-              q1.isMyMatch = q1.teamAId === prev.teamId || q1.teamBId === prev.teamId
-              q1.status = 'CURRENT'
+              q1.teamAId = top4[0].teamId;
+              q1.teamAName = top4[0].teamName;
+              q1.teamAShort = top4[0].shortName;
+              q1.teamAColor = top4[0].color;
+              q1.teamAEmoji = top4[0].emoji;
+              q1.teamBId = top4[1].teamId;
+              q1.teamBName = top4[1].teamName;
+              q1.teamBShort = top4[1].shortName;
+              q1.teamBColor = top4[1].color;
+              q1.teamBEmoji = top4[1].emoji;
+              q1.isMyMatch = q1.teamAId === prev.teamId || q1.teamBId === prev.teamId;
+              if (q1.status === 'UPCOMING') q1.status = 'CURRENT';
             }
 
             if (elim && top4.length >= 4) {
-              elim.teamAId = top4[2].teamId
-              elim.teamAName = top4[2].teamName
-              elim.teamAShort = top4[2].shortName
-              elim.teamAColor = top4[2].color
-              elim.teamAEmoji = top4[2].emoji
-              elim.teamBId = top4[3].teamId
-              elim.teamBName = top4[3].teamName
-              elim.teamBShort = top4[3].shortName
-              elim.teamBColor = top4[3].color
-              elim.teamBEmoji = top4[3].emoji
-              elim.isMyMatch = elim.teamAId === prev.teamId || elim.teamBId === prev.teamId
+              elim.teamAId = top4[2].teamId;
+              elim.teamAName = top4[2].teamName;
+              elim.teamAShort = top4[2].shortName;
+              elim.teamAColor = top4[2].color;
+              elim.teamAEmoji = top4[2].emoji;
+              elim.teamBId = top4[3].teamId;
+              elim.teamBName = top4[3].teamName;
+              elim.teamBShort = top4[3].shortName;
+              elim.teamBColor = top4[3].color;
+              elim.teamBEmoji = top4[3].emoji;
+              elim.isMyMatch = elim.teamAId === prev.teamId || elim.teamBId === prev.teamId;
             }
           }
 
@@ -994,9 +1019,153 @@ export const useCampaignStore = create<CampaignStoreState>()(
             ...prev,
             schedule: updatedSchedule,
             currentMatchIndex: Math.min(matchNo, updatedSchedule.length - 1),
-            pointsTable: updatedPoints
-          }
+            pointsTable: updatedPoints,
+            lastSaved: new Date().toISOString()
+          };
         })
+      },
+
+      simulateScheduleMatch: (matchNo) => {
+        get().updateActiveCampaign((prev) => {
+          const match = (prev.schedule || []).find(f => f.matchNo === matchNo);
+          if (!match || match.status === 'COMPLETED') return prev;
+
+          const res = simulateAIMatch(match);
+          const updatedSchedule = (prev.schedule || []).map(f => f.matchNo === matchNo ? { ...f, status: 'COMPLETED' as const, result: res } : f);
+
+          // Rebuild points table from all completed league matches
+          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
+          ALL_TEAM_IDS.forEach((id) => {
+            pointsMap[id] = { played: 0, won: 0, lost: 0, runsFor: 0, oversFor: 0, runsAgainst: 0, oversAgainst: 0 };
+          });
+
+          updatedSchedule.forEach((f) => {
+            if (f.status === 'COMPLETED' && f.result && f.stage === 'League') {
+              const r = f.result;
+              const tA = f.teamAId;
+              const tB = f.teamBId;
+              if (pointsMap[tA] && pointsMap[tB]) {
+                pointsMap[tA].played += 1;
+                pointsMap[tB].played += 1;
+                if (r.winnerTeamId === tA) {
+                  pointsMap[tA].won += 1;
+                  pointsMap[tB].lost += 1;
+                } else {
+                  pointsMap[tB].won += 1;
+                  pointsMap[tA].lost += 1;
+                }
+                pointsMap[tA].runsFor += r.teamARuns;
+                pointsMap[tA].oversFor += Math.max(1, r.teamAOvers);
+                pointsMap[tA].runsAgainst += r.teamBRuns;
+                pointsMap[tA].oversAgainst += Math.max(1, r.teamBOvers);
+                pointsMap[tB].runsFor += r.teamBRuns;
+                pointsMap[tB].oversFor += Math.max(1, r.teamBOvers);
+                pointsMap[tB].runsAgainst += r.teamARuns;
+                pointsMap[tB].oversAgainst += Math.max(1, r.teamAOvers);
+              }
+            }
+          });
+
+          const updatedPoints = ALL_TEAM_IDS.map((tId) => {
+            const f = getFranchise(tId);
+            const st = pointsMap[tId];
+            const nrr = st.oversFor > 0 && st.oversAgainst > 0
+              ? (st.runsFor / st.oversFor) - (st.runsAgainst / st.oversAgainst)
+              : 0;
+            return {
+              teamId: tId,
+              teamName: f.name,
+              shortName: f.short,
+              color: f.color,
+              emoji: f.emoji,
+              played: st.played,
+              won: st.won,
+              lost: st.lost,
+              points: st.won * 2,
+              nrr: Math.round(nrr * 1000) / 1000
+            };
+          });
+          updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr);
+
+          return {
+            ...prev,
+            schedule: updatedSchedule,
+            pointsTable: updatedPoints,
+            lastSaved: new Date().toISOString()
+          };
+        });
+      },
+
+      simulateRound: (roundNumber) => {
+        get().updateActiveCampaign((prev) => {
+          const updatedSchedule = (prev.schedule || []).map((f) => {
+            if (f.round === roundNumber && f.status !== 'COMPLETED') {
+              const res = simulateAIMatch(f);
+              return { ...f, status: 'COMPLETED' as const, result: res };
+            }
+            return f;
+          });
+
+          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
+          ALL_TEAM_IDS.forEach((id) => {
+            pointsMap[id] = { played: 0, won: 0, lost: 0, runsFor: 0, oversFor: 0, runsAgainst: 0, oversAgainst: 0 };
+          });
+
+          updatedSchedule.forEach((f) => {
+            if (f.status === 'COMPLETED' && f.result && f.stage === 'League') {
+              const r = f.result;
+              const tA = f.teamAId;
+              const tB = f.teamBId;
+              if (pointsMap[tA] && pointsMap[tB]) {
+                pointsMap[tA].played += 1;
+                pointsMap[tB].played += 1;
+                if (r.winnerTeamId === tA) {
+                  pointsMap[tA].won += 1;
+                  pointsMap[tB].lost += 1;
+                } else {
+                  pointsMap[tB].won += 1;
+                  pointsMap[tA].lost += 1;
+                }
+                pointsMap[tA].runsFor += r.teamARuns;
+                pointsMap[tA].oversFor += Math.max(1, r.teamAOvers);
+                pointsMap[tA].runsAgainst += r.teamBRuns;
+                pointsMap[tA].oversAgainst += Math.max(1, r.teamBOvers);
+                pointsMap[tB].runsFor += r.teamBRuns;
+                pointsMap[tB].oversFor += Math.max(1, r.teamBOvers);
+                pointsMap[tB].runsAgainst += r.teamARuns;
+                pointsMap[tB].oversAgainst += Math.max(1, r.teamAOvers);
+              }
+            }
+          });
+
+          const updatedPoints = ALL_TEAM_IDS.map((tId) => {
+            const f = getFranchise(tId);
+            const st = pointsMap[tId];
+            const nrr = st.oversFor > 0 && st.oversAgainst > 0
+              ? (st.runsFor / st.oversFor) - (st.runsAgainst / st.oversAgainst)
+              : 0;
+            return {
+              teamId: tId,
+              teamName: f.name,
+              shortName: f.short,
+              color: f.color,
+              emoji: f.emoji,
+              played: st.played,
+              won: st.won,
+              lost: st.lost,
+              points: st.won * 2,
+              nrr: Math.round(nrr * 1000) / 1000
+            };
+          });
+          updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr);
+
+          return {
+            ...prev,
+            schedule: updatedSchedule,
+            pointsTable: updatedPoints,
+            lastSaved: new Date().toISOString()
+          };
+        });
       }
     }),
     {
