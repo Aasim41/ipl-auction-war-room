@@ -275,6 +275,10 @@ export function Navbar() {
                 <Link
                   key={phase.id}
                   href={phase.href}
+                  onClick={() => {
+                    gameAudio.playUiTap('light')
+                    triggerGameHaptic('light')
+                  }}
                   className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     isActive
                       ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-[0_0_15px_rgba(245,158,11,0.6)] scale-[1.02] border border-amber-400'
