@@ -379,7 +379,7 @@ export default function UnifiedTeamSelectHomePage() {
       <GamerOnboardingModal
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
-        onComplete={() => setShowOnboarding(false)}
+        onCompleteToTeamSelect={() => setShowOnboarding(false)}
       />
     </div>
   )
