@@ -36,6 +36,7 @@ export default function SquadRetainReleasePage() {
   const [showMatchupModal, setShowMatchupModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [showConfirmAuction, setShowConfirmAuction] = useState(false)
+  const [showSimulator, setShowSimulator] = useState(false)
   const isRetainLocked = campaign?.lockedPhases?.includes('retain_release')
 
   if (!campaign) {
@@ -387,12 +388,9 @@ export default function SquadRetainReleasePage() {
         isOpen={showSimulator}
         onClose={() => setShowSimulator(false)}
         myFranchise={franchise}
-        mySquad={campaign.squad.map(p => ({
-          ...p,
-          is_overseas: !!p.is_overseas,
-          base_price: p.price,
-          predicted_price: p.price
-        }))}
+        mySquad={campaign.squad}
+        rivalFranchise={getFranchise(campaign.teamId === 'csk' ? 'rcb' : 'csk')}
+        venueName={franchise.stadiumName}
       />
       {/* Confirmation Modal to Lock Retentions & Enter Auction */}
       {showConfirmAuction && (
