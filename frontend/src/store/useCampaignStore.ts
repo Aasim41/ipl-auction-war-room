@@ -4,6 +4,7 @@ import { getFranchise, IPLPlayer, IPL_FRANCHISES } from '../data/franchises'
 import { 
   generateTournamentSchedule, 
   generateInitialPointsTable, 
+  simulateAIMatch,
   TournamentFixture, 
   TournamentPointsEntry 
 } from '../data/scheduleGenerator'

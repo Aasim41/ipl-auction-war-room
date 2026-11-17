@@ -7,22 +7,20 @@ import {
   Users, 
   Shield, 
   Gavel, 
-  Crosshair, 
   ArrowLeftRight, 
   Target, 
-  MapPin, 
   ArrowLeft,
   Activity,
   Lock,
-  CheckCircle2,
   Calendar,
   RotateCcw,
   Plus,
   Coins,
-  ChevronDown
+  ChevronDown,
+  AlertCircle
 } from 'lucide-react'
 import { useCampaignStore } from '../store/useCampaignStore'
-import { getFranchise, IPL_FRANCHISES } from '../data/franchises'
+import { getFranchise } from '../data/franchises'
 import { OnboardingAuthModal } from './OnboardingAuthModal'
 import { BCCIRulesModal } from './BCCIRulesModal'
 
@@ -32,10 +30,8 @@ export function Navbar() {
   const { 
     currentUser, 
     campaigns, 
-    activeCampaignId, 
     getActiveCampaign, 
     switchCampaign, 
-    createCampaign, 
     resetCampaign 
   } = useCampaignStore()
 
@@ -44,6 +40,7 @@ export function Navbar() {
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showTeamSwitcher, setShowTeamSwitcher] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [lockedToast, setLockedToast] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -60,18 +57,30 @@ export function Navbar() {
   const overseasCount = activeCamp ? activeCamp.squad.filter(p => !p.is_released && p.is_overseas).length : 0
   const remainingPurse = activeCamp ? activeCamp.remainingPurse : 125.0
 
+  // ─── STRICT BACK NAVIGATION: NEVER GO BACK TO LOCKED/PAST PHASES ───
   const handleBack = () => {
-    if (pathname === '/playing-xi') {
-      router.push('/auction')
-    } else if (pathname === '/auction') {
-      router.push('/squad')
-    } else if (pathname === '/squad') {
-      router.push('/trade')
-    } else if (pathname === '/trade') {
+    // If inside any tournament phase, back takes you to Home Dashboard, preserving all progress
+    // It NEVER steps back into closed trade windows or past auctions!
+    if (pathname === '/trade' || pathname === '/squad' || pathname === '/auction' || pathname === '/playing-xi') {
       router.push('/')
+    } else if (pathname === '/win-prob' || pathname === '/stats' || pathname === '/hub') {
+      // Sub-tools return to your active campaign phase
+      const targetUrl = activeCamp?.currentPhase === 'playing_xi' || activeCamp?.currentPhase === 'match'
+        ? '/playing-xi'
+        : activeCamp?.currentPhase === 'mini_auction'
+        ? '/auction'
+        : activeCamp?.currentPhase === 'retain_release'
+        ? '/squad'
+        : '/trade'
+      router.push(targetUrl)
     } else {
-      router.back()
+      router.push('/')
     }
+  }
+
+  const triggerLockedAlert = (phaseName: string) => {
+    setLockedToast(`🔒 ${phaseName} is permanently finalized for this season. BCCI rules forbid modifying past phases.`)
+    setTimeout(() => setLockedToast(null), 3500)
   }
 
   // The 4 Core Sequential Phases
@@ -116,11 +125,11 @@ export function Navbar() {
             {pathname !== '/' && (
               <button
                 onClick={handleBack}
-                className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 text-[11px] font-bold cursor-pointer transition-all border border-white/15"
-                title="Go Back"
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-black cursor-pointer transition-all border border-white/15 shadow-sm"
+                title="Return to Dashboard (Cannot re-enter past locked phases)"
               >
-                <ArrowLeft size={13} className="text-amber-400" />
-                <span className="hidden xs:inline">Back</span>
+                <ArrowLeft size={14} className="text-amber-400" />
+                <span className="hidden xs:inline">Home</span>
               </button>
             )}
 
@@ -138,7 +147,7 @@ export function Navbar() {
                 <span className="font-display font-black text-xs sm:text-sm text-white tracking-wide block">
                   AUCTION<span style={{ color: franchise.color || '#e11d48' }}>XI</span>
                 </span>
-                <span className="text-[9px] text-gray-400 font-mono block">
+                <span className="text-[10px] text-gray-400 font-mono block">
                   {franchise.short} WAR ROOM
                 </span>
               </div>
@@ -149,10 +158,10 @@ export function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setShowTeamSwitcher(!showTeamSwitcher)}
-                  className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer border border-white/10"
+                  className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer border border-white/10"
                   title="Switch franchise campaign save"
                 >
-                  <span className="max-w-[70px] truncate">{franchise.name.split(' ')[0]}</span>
+                  <span className="max-w-[80px] truncate">{franchise.name.split(' ')[0]}</span>
                   <ChevronDown size={11} className="text-gray-400" />
                 </button>
 
@@ -180,7 +189,7 @@ export function Navbar() {
                               <span>{f.emoji}</span>
                               <span>{f.short}</span>
                             </span>
-                            <span className="text-[9px] font-mono text-gray-400">
+                            <span className="text-[10px] font-mono text-gray-400">
                               ₹{c.remainingPurse.toFixed(1)}Cr
                             </span>
                           </button>
@@ -211,20 +220,22 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Center: The 4 Championship Phases (Single Clean Bar) */}
+          {/* Center: The 4 Championship Phases (Strictly locked past phases) */}
           <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto max-w-[55vw] sm:max-w-none scrollbar-none py-1 px-1">
             {PHASES.map((phase) => {
               const isActive = pathname === phase.href
               const isLocked = phase.isLocked
 
+              // LOCKED PHASES ARE COMPLETELY UNCLICKABLE — STRICT "NO GOING BACK" RULE
               if (isLocked) {
                 return (
                   <div
                     key={phase.id}
-                    title="Phase completed and locked for this tournament cycle according to BCCI rules."
-                    className="px-2.5 sm:px-3 py-1 rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1.5 shrink-0 bg-slate-900/60 text-gray-500 border border-white/5 cursor-not-allowed opacity-75"
+                    onClick={() => triggerLockedAlert(phase.label)}
+                    title="Phase finalized and locked by BCCI regulations. You cannot go back."
+                    className="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shrink-0 bg-slate-900/60 text-gray-500 border border-white/5 cursor-not-allowed opacity-60 hover:opacity-80 transition-opacity"
                   >
-                    <Lock size={11} className="text-gray-500" />
+                    <Lock size={11} className="text-amber-500/70" />
                     <span>{phase.label}</span>
                   </div>
                 )
@@ -234,7 +245,7 @@ export function Navbar() {
                 <Link
                   key={phase.id}
                   href={phase.href}
-                  className={`px-2.5 sm:px-3 py-1 rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     isActive
                       ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-[0_0_15px_rgba(245,158,11,0.6)] scale-[1.02] border border-amber-400'
                       : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/10'
@@ -252,9 +263,9 @@ export function Navbar() {
             {/* Quick Rules Button */}
             <button
               onClick={() => setShowRulesModal(true)}
-              className="px-2 py-1 rounded-xl text-[10px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer shrink-0 hidden lg:flex items-center gap-1"
+              className="px-2.5 py-1 rounded-xl text-[11px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer shrink-0 hidden lg:flex items-center gap-1"
             >
-              <Shield size={11} className="text-amber-400" />
+              <Shield size={12} className="text-amber-400" />
               <span>Rules</span>
             </button>
           </div>
@@ -265,21 +276,21 @@ export function Navbar() {
               <>
                 {/* Purse Pill */}
                 <div 
-                  className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 text-[11px] font-mono font-black text-amber-300"
+                  className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 text-xs font-mono font-black text-amber-300"
                   title="Remaining Mini-Auction Purse"
                 >
-                  <Coins size={12} className="text-amber-400" />
+                  <Coins size={13} className="text-amber-400" />
                   <span>₹{remainingPurse.toFixed(1)}Cr</span>
                 </div>
 
                 {/* Squad Count Pill */}
                 <div 
-                  className="px-2 py-1 rounded-xl bg-slate-900 border border-white/10 flex items-center gap-1 text-[10px] font-mono font-bold text-gray-300 hidden sm:flex"
+                  className="px-2.5 py-1 rounded-xl bg-slate-900 border border-white/10 flex items-center gap-1 text-[11px] font-mono font-bold text-gray-300 hidden sm:flex"
                   title="Active squad size (Max 25) & Overseas count (Max 8)"
                 >
-                  <Users size={11} className="text-sky-400" />
+                  <Users size={12} className="text-sky-400" />
                   <span>{activeCount}/25</span>
-                  <span className={`text-[9px] px-1 rounded ${overseasCount > 8 ? 'bg-rose-500/30 text-rose-300' : 'bg-white/5 text-gray-400'}`}>
+                  <span className={`text-[10px] px-1 rounded ${overseasCount > 8 ? 'bg-rose-500/30 text-rose-300' : 'bg-white/5 text-gray-400'}`}>
                     {overseasCount} OS
                   </span>
                 </div>
@@ -293,7 +304,7 @@ export function Navbar() {
               title="Manager Profile & Save Slots"
             >
               <span className="text-sm">{currentUser?.avatar || '👑'}</span>
-              <span className="hidden sm:inline text-[11px] max-w-[80px] truncate">
+              <span className="hidden sm:inline text-xs max-w-[80px] truncate">
                 {currentUser?.gamerTag || 'GM'}
               </span>
             </button>
@@ -301,6 +312,16 @@ export function Navbar() {
 
         </div>
       </nav>
+
+      {/* Lock Notification Toast Alert */}
+      {lockedToast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+          <div className="px-5 py-2.5 rounded-2xl bg-slate-950 border border-amber-500/50 shadow-2xl flex items-center gap-2 text-xs font-black text-amber-300 backdrop-blur-xl">
+            <Lock size={14} className="text-amber-400" />
+            <span>{lockedToast}</span>
+          </div>
+        </div>
+      )}
 
       {/* Profile & Auth Modal */}
       <OnboardingAuthModal 
@@ -316,7 +337,7 @@ export function Navbar() {
 
       {/* Reset Season Confirmation Modal */}
       {showResetConfirm && activeCamp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
           <div className="bg-slate-950 border border-rose-500/30 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl">
             <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto mb-3">
               <RotateCcw size={24} />
