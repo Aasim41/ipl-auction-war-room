@@ -275,6 +275,9 @@ export default function BallByBallMatchSimulator({
   const executeBall = (customTactic?: BattingTactic | BowlingTactic) => {
     if (matchDone || !inn1 || !inn2) return;
 
+    // Immediately clear any existing banner to avoid stale overlay mismatches
+    setEventBanner(null);
+
     const activeInn = currentInnings === 1 ? inn1 : inn2;
     const currentBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
     const currentBowlSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
@@ -503,7 +506,7 @@ export default function BallByBallMatchSimulator({
         subtext: `${striker} hammers ${bowler.name} into the crowd!`,
         color: 'from-amber-500 to-yellow-600'
       });
-      setTimeout(() => setEventBanner(null), 1500);
+      setTimeout(() => setEventBanner(null), 1400);
     } else if (isFour) {
       gameAudio.playWillowCrack('four');
       gameAudio.playCrowdRoar('boundary');
@@ -523,13 +526,34 @@ export default function BallByBallMatchSimulator({
         subtext: `${striker} ${dismissal}!`,
         color: 'from-rose-600 to-red-700'
       });
-      setTimeout(() => setEventBanner(null), 1800);
-    } else if (runs > 0) {
+      setTimeout(() => setEventBanner(null), 1600);
+    } else if (runs === 2) {
       gameAudio.playWillowCrack('single');
       triggerGameHaptic('light');
+      setEventBanner({
+        text: '⚡ 2 RUNS! Sharp Double!',
+        subtext: `${striker} & ${nonStriker} hurry back for a quick couple!`,
+        color: 'from-emerald-500 to-teal-600'
+      });
+      setTimeout(() => setEventBanner(null), 1000);
+    } else if (runs === 1) {
+      gameAudio.playWillowCrack('single');
+      triggerGameHaptic('light');
+      setEventBanner({
+        text: '✓ 1 RUN • Strike Rotated',
+        subtext: `${striker} works it into ${shotZone.name} for a single`,
+        color: 'from-slate-700 to-slate-800'
+      });
+      setTimeout(() => setEventBanner(null), 800);
     } else {
       gameAudio.playWillowCrack('dot');
       gameAudio.playBallWhoosh();
+      setEventBanner({
+        text: '🛑 DOT BALL • Defended',
+        subtext: `Good ball from ${bowler.name}, no run`,
+        color: 'from-slate-800 to-slate-900'
+      });
+      setTimeout(() => setEventBanner(null), 800);
     }
 
     const newBall: SimulatedBall = {

@@ -757,7 +757,7 @@ export default function PlayingXIPage() {
                   <h3 className="text-sm font-black text-white">
                     {benchDrawerSlotIndex === 11 
                       ? 'Select Impact Player Sub' 
-                      : `Swap into Slot #${benchDrawerSlotIndex + 1} (${BATTING_ROLES[benchDrawerSlotIndex]})`
+                      : `Swap into Slot #${benchDrawerSlotIndex + 1}${fullPlayingXI[benchDrawerSlotIndex] ? ` (${getPlayerTacticalBadge(fullPlayingXI[benchDrawerSlotIndex], benchDrawerSlotIndex)})` : ''}`
                     }
                   </h3>
                   <p className="text-xs text-gray-400">Choose any bench player from your 25-man squad</p>
