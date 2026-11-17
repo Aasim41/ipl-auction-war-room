@@ -29,6 +29,8 @@ import {
   generateDynamicAuctionPool, 
   DynamicAuctionPlayer 
 } from '../../data/franchises'
+import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
+import { getFranchiseAI } from '../../data/franchiseAI'
 
 const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
@@ -66,7 +68,7 @@ export default function MiniAuctionPage() {
   const currentPlayer = auctionPool[currentIndex]
   const isUserHighest = highestBidder === campaign?.teamId
 
-  // Live Timer & Gavel Countdown
+  // Live Timer & Gavel Countdown with Procedural Sound & Haptics
   useEffect(() => {
     if (!currentPlayer || gavelPhase === 'sold') return
 
@@ -74,12 +76,16 @@ export default function MiniAuctionPage() {
       setTimer((prev) => {
         if (prev <= 1) {
           if (gavelPhase === 'bidding') {
+            gameAudio.playAuctionGavel(false)
             setGavelPhase('going_once')
             return 3
           } else if (gavelPhase === 'going_once') {
+            gameAudio.playAuctionGavel(false)
             setGavelPhase('going_twice')
             return 3
           } else if (gavelPhase === 'going_twice') {
+            gameAudio.playAuctionGavel(true)
+            triggerGameHaptic('gavel')
             setGavelPhase('sold')
             handleSold()
             return 0
@@ -93,19 +99,45 @@ export default function MiniAuctionPage() {
     return () => clearInterval(interval)
   }, [timer, gavelPhase, currentPlayer])
 
-  // AI Bots Automatic Counter-Bidding
+  // AI Bots Automatic Counter-Bidding with Utility AI Franchise Personalities
   useEffect(() => {
     if (!currentPlayer || gavelPhase === 'sold' || gavelPhase === 'going_twice') return
 
     const botTimeout = setTimeout(() => {
-      const valuation = (currentPlayer.powerIndex / 10) * 1.5
-      if (currentBid < valuation && Math.random() > 0.4) {
-        const availableBots = BOT_TEAMS.filter((t) => t !== campaign?.teamId && t !== highestBidder)
-        if (availableBots.length > 0) {
-          const chosenBot = availableBots[Math.floor(Math.random() * availableBots.length)]
+      const baseValuation = (currentPlayer.powerIndex / 10) * 1.5
+      const availableBots = BOT_TEAMS.filter((t) => t !== campaign?.teamId && t !== highestBidder)
+      
+      if (availableBots.length > 0) {
+        // Evaluate bot interest based on Franchise AI Profile
+        const interestedBots = availableBots.filter((botId) => {
+          const ai = getFranchiseAI(botId)
+          // CSK: conservative, anchors & spin
+          if (ai.id === 'csk') {
+            const isSpinOrAnchor = currentPlayer.role === 'BAT' || currentPlayer.role === 'AR'
+            const maxBid = baseValuation * 1.15
+            return currentBid < maxBid && isSpinOrAnchor && Math.random() > 0.4
+          }
+          // SRH & MI: hyper-aggressive bidding wars for pacers and power hitters
+          if (ai.id === 'srh' || ai.id === 'mi') {
+            const isPacerOrHitter = currentPlayer.role === 'BOWL' || currentPlayer.powerIndex > 80
+            const maxBid = baseValuation * 1.85
+            return currentBid < maxBid && (isPacerOrHitter ? Math.random() > 0.25 : Math.random() > 0.5)
+          }
+          // RR: moneyball valuation, strictly drops out when prices exceed predicted value
+          if (ai.id === 'rr') {
+            const maxBid = baseValuation * 1.05
+            return currentBid < maxBid && Math.random() > 0.35
+          }
+          // Other teams
+          return currentBid < baseValuation * 1.3 && Math.random() > 0.4
+        })
+
+        if (interestedBots.length > 0) {
+          const chosenBot = interestedBots[Math.floor(Math.random() * interestedBots.length)]
           const increment = currentBid < 5 ? 0.25 : currentBid < 10 ? 0.5 : 1.0
           const newBid = Math.round((currentBid + increment) * 100) / 100
 
+          gameAudio.playBiddingPaddle()
           setCurrentBid(newBid)
           setHighestBidder(chosenBot)
           setTimer(8)
@@ -129,6 +161,9 @@ export default function MiniAuctionPage() {
     const winnerName = isUserWin ? campaign.teamName : (getFranchise(highestBidder)?.name || highestBidder.toUpperCase())
     
     if (isUserWin) {
+      gameAudio.playTradeDealSuccess()
+      gameAudio.playCrowdRoar('cheer')
+      triggerGameHaptic('heavy')
       addAuctionPlayerToSquad({
         player_id: currentPlayer.id,
         name: currentPlayer.name,
@@ -156,6 +191,8 @@ export default function MiniAuctionPage() {
     const newBid = Math.round((currentBid + increment) * 100) / 100
 
     if (newBid > campaign.remainingPurse) {
+      gameAudio.playTradeReject()
+      triggerGameHaptic('trade_reject')
       alert(`Cannot bid ₹${newBid} Cr: Exceeds your available purse of ₹${campaign.remainingPurse.toFixed(2)} Cr!`)
       return
     }
@@ -163,11 +200,15 @@ export default function MiniAuctionPage() {
     if (currentPlayer.is_overseas) {
       const overseasCount = campaign.squad.filter((p) => !p.is_released && p.is_overseas).length
       if (overseasCount >= 8) {
+        gameAudio.playTradeReject()
+        triggerGameHaptic('trade_reject')
         alert('Cannot bid: Your 8-player overseas quota is full!')
         return
       }
     }
 
+    gameAudio.playBiddingPaddle()
+    triggerGameHaptic('paddle')
     setCurrentBid(newBid)
     setHighestBidder(campaign.teamId)
     setTimer(10)
@@ -195,6 +236,8 @@ export default function MiniAuctionPage() {
   }
 
   const handleFinishAuction = () => {
+    gameAudio.playPhaseLock()
+    triggerGameHaptic('lock')
     advancePhase('playing_xi')
     router.push('/playing-xi')
   }
@@ -305,6 +348,29 @@ export default function MiniAuctionPage() {
           {/* Column 1 (Left 7 cols): Live Hammer Stage & Paddle Controls */}
           <div className="lg:col-span-7 p-3 sm:p-4 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-2xl relative overflow-hidden">
             
+            {/* Dramatic Gavel Slam Strike Animation Overlay */}
+            {gavelPhase === 'sold' && (
+              <div className="absolute inset-0 z-30 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 pointer-events-none">
+                <div className="relative flex items-center justify-center mb-3">
+                  <div className="absolute w-32 h-32 rounded-full border-4 border-amber-400/80 animate-shockwave" />
+                  <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.8)] animate-gavel-slam">
+                    <Gavel size={36} className="text-white drop-shadow-lg" />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <span className="px-4 py-1 rounded-full bg-rose-600 text-white font-black text-[11px] font-mono tracking-widest uppercase shadow-lg">
+                    HAMMER DOWN • SOLD!
+                  </span>
+                  <h3 className="text-lg sm:text-2xl font-black text-white font-display mt-1 drop-shadow-md">
+                    {currentPlayer?.name}
+                  </h3>
+                  <p className="text-xs text-amber-300 font-mono font-bold mt-0.5">
+                    Acquired by <span className="text-white uppercase font-black">{highestBidder}</span> for ₹{currentBid.toFixed(2)} Cr
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Top Gavel Bar */}
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <div className="flex items-center gap-2">
