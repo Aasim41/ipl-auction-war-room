@@ -115,19 +115,49 @@ const TEAM_HOME_CITY: Record<string, string> = {
   pbks: 'Dharamsala'
 };
 
-const BATTING_ROLES = [
-  '#1 Explosive Opener',
-  '#2 Anchor Opener',
-  '#3 Top-Order Anchor',
-  '#4 Power Middle Order',
-  '#5 Wicketkeeper / Finisher',
-  '#6 Finisher All-Rounder',
-  '#7 Premier All-Rounder',
-  '#8 Specialist Spinner',
-  '#9 Strike Bowler',
-  '#10 Express Pacer',
-  '#11 Death Specialist'
-];
+// Dynamic Tactical Role Generator based on actual player capabilities
+export function getPlayerTacticalBadge(player: CampaignPlayer, slotIndex: number): string {
+  if (!player) return `#${slotIndex + 1} Squad Member`;
+
+  // Specialist Bowler
+  if (player.role === 'BOWL') {
+    const s = (player.statsSummary || '').toLowerCase();
+    if (s.includes('spin') || s.includes('wrist') || s.includes('mystery')) {
+      return 'Specialist Spinner';
+    }
+    if (s.includes('swing') || s.includes('seam') || s.includes('powerplay')) {
+      return 'Powerplay Swing Pacer';
+    }
+    if (s.includes('yorker') || s.includes('death') || s.includes('express')) {
+      return 'Express Death Pacer';
+    }
+    return slotIndex >= 9 ? 'Strike Bowler & Tail' : 'Frontline Strike Bowler';
+  }
+
+  // Wicketkeeper
+  if (player.role === 'WK') {
+    if (slotIndex <= 1) return 'Wicketkeeper / Opener';
+    if (slotIndex <= 3) return 'Wicketkeeper / Top Order';
+    return 'Wicketkeeper / Finisher';
+  }
+
+  // All-Rounder
+  if (player.role === 'AR') {
+    const s = (player.statsSummary || '').toLowerCase();
+    if (s.includes('spin')) return 'Spin Bowling All-Rounder';
+    if (s.includes('pace') || s.includes('seam') || s.includes('fast')) return 'Fast Bowling All-Rounder';
+    if (slotIndex <= 2) return 'Top-Order All-Rounder';
+    if (slotIndex <= 4) return 'Match-Winning All-Rounder';
+    return 'Finisher All-Rounder';
+  }
+
+  // Pure Batter
+  const s = (player.statsSummary || '').toLowerCase();
+  if (s.includes('open') || slotIndex <= 1) return 'Explosive Opener';
+  if (s.includes('anchor') || slotIndex <= 3) return 'Top-Order Anchor';
+  if (s.includes('finish') || slotIndex >= 5) return 'Power Finisher';
+  return 'Middle-Order Anchor';
+}
 
 export default function PlayingXIPage() {
   const router = useRouter();
@@ -155,10 +185,27 @@ export default function PlayingXIPage() {
   const campaign = mounted ? getActiveCampaign() : null;
 
   useEffect(() => {
-    if (campaign && TEAM_HOME_CITY[campaign.teamId]) {
-      setVenue(TEAM_HOME_CITY[campaign.teamId]);
+    if (campaign) {
+      if (TEAM_HOME_CITY[campaign.teamId]) {
+        setVenue(TEAM_HOME_CITY[campaign.teamId]);
+      }
+
+      // Automatically repair invalid lineups on mount (e.g. bowler opening, >4 overseas, 0 WK)
+      const activeSquad = campaign.squad.filter((p) => !p.is_released);
+      const currentXI = (campaign.playingXI || [])
+        .map((id) => activeSquad.find((p) => p.player_id === id))
+        .filter(Boolean) as CampaignPlayer[];
+      
+      const overseasInXI = currentXI.filter((p) => p.is_overseas).length;
+      const wkInXI = currentXI.filter((p) => p.role === 'WK').length;
+      const bowlersInXI = currentXI.filter((p) => p.role === 'BOWL' || p.role === 'AR').length;
+      const isBowlerOpening = currentXI[0]?.role === 'BOWL';
+
+      if (currentXI.length < 11 || overseasInXI > 4 || wkInXI < 1 || bowlersInXI < 5 || isBowlerOpening) {
+        autoOptimizePlayingXI();
+      }
     }
-  }, [campaign]);
+  }, [campaign, autoOptimizePlayingXI]);
 
   // Prevent SSR/Client Hydration Mismatch
   if (!mounted) {
@@ -461,7 +508,7 @@ export default function PlayingXIPage() {
                             )}
                           </div>
                           <div className="text-[11px] text-gray-400 font-mono truncate">
-                            <span className="text-amber-300 font-bold">{BATTING_ROLES[index]}</span> • {player.role} • OVR {player.Power_Index}
+                            <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • {player.role} • OVR {player.Power_Index}
                           </div>
                         </div>
                       </div>
