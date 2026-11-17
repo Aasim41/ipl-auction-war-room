@@ -365,6 +365,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
         const schedule = generateTournamentSchedule(teamId)
         const pointsTable = generateInitialPointsTable()
+        const initialXI = computeOptimalPlayingXI(initialSquad)
 
         const newCampaign: UserCampaign = {
           id: campaignId,
@@ -377,7 +378,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           squad: initialSquad,
           releasedStars: [],
           tradedHistory: [],
-          playingXI: initialSquad.slice(0, 11).map((p) => p.player_id),
+          playingXI: initialXI.xiIds,
+          impactPlayerId: initialXI.impactId,
           rulesAcknowledged: false,
           lastSaved: new Date().toISOString(),
           schedule,
@@ -503,6 +505,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
           is_released: false
         }))
 
+        const resetXI = computeOptimalPlayingXI(resetSquad)
         const resetCamp: UserCampaign = {
           ...current,
           currentPhase: 'trade',
@@ -510,7 +513,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           squad: resetSquad,
           releasedStars: [],
           tradedHistory: [],
-          playingXI: resetSquad.slice(0, 11).map((p) => p.player_id),
+          playingXI: resetXI.xiIds,
+          impactPlayerId: resetXI.impactId,
           lastSaved: new Date().toISOString(),
           schedule: generateTournamentSchedule(current.teamId),
           currentMatchIndex: 0,
@@ -710,85 +714,14 @@ export const useCampaignStore = create<CampaignStoreState>()(
           const activePlayers = prev.squad.filter((p) => !p.is_released)
           if (activePlayers.length === 0) return prev
 
-          // Separate candidates by role
-          const wks = activePlayers.filter((p) => p.role === 'WK').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-          const bats = activePlayers.filter((p) => p.role === 'BAT').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-          const ars = activePlayers.filter((p) => p.role === 'AR').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-          const bowls = activePlayers.filter((p) => p.role === 'BOWL').sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-
-          const chosen: CampaignPlayer[] = []
-          let overseasCount = 0
-
-          const canPick = (p: CampaignPlayer) => {
-            if (chosen.some((c) => c.player_id === p.player_id)) return false
-            if (p.is_overseas && overseasCount >= 4) return false
-            return true
-          }
-
-          const addPlayer = (p: CampaignPlayer) => {
-            chosen.push(p)
-            if (p.is_overseas) overseasCount++
-          }
-
-          // Slot 1 & 2: Explosive Openers (Batters with high SR or top WK)
-          const openerCandidates = [...bats, ...wks].sort((a, b) => {
-            const srA = Number(a.statsSummary?.match(/SR\s*([\d.]+)/)?.[1]) || 135
-            const srB = Number(b.statsSummary?.match(/SR\s*([\d.]+)/)?.[1]) || 135
-            return srB - srA
-          })
-
-          for (const cand of openerCandidates) {
-            if (chosen.length >= 2) break
-            if (canPick(cand)) addPlayer(cand)
-          }
-
-          // Slot 3 & 4: Solid Top Order Anchors (Highest Avg)
-          const anchorCandidates = [...bats].sort((a, b) => {
-            const avgA = Number(a.statsSummary?.match(/Avg\s*([\d.]+)/)?.[1]) || 30
-            const avgB = Number(b.statsSummary?.match(/Avg\s*([\d.]+)/)?.[1]) || 30
-            return avgB - avgA
-          })
-
-          for (const cand of anchorCandidates) {
-            if (chosen.length >= 4) break
-            if (canPick(cand)) addPlayer(cand)
-          }
-
-          // Slot 5: Ensure Primary Wicketkeeper is in XI
-          const hasWK = chosen.some((p) => p.role === 'WK')
-          if (!hasWK) {
-            const bestWk = wks.find(canPick)
-            if (bestWk) addPlayer(bestWk)
-          }
-
-          // Slot 6 & 7: Explosive Finishers & Premier All-Rounders
-          for (const cand of ars) {
-            if (chosen.length >= 7) break
-            if (canPick(cand)) addPlayer(cand)
-          }
-
-          // Slot 8, 9, 10, 11: Specialist Spinners & Death Bowlers
-          for (const cand of bowls) {
-            if (chosen.length >= 11) break
-            if (canPick(cand)) addPlayer(cand)
-          }
-
-          // If still under 11, backfill with best available players obeying overseas <= 4
-          const allRemaining = [...activePlayers].sort((a, b) => (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80))
-          for (const cand of allRemaining) {
-            if (chosen.length >= 11) break
-            if (canPick(cand)) addPlayer(cand)
-          }
-
-          // Impact sub: best bench player (power hitter or bowler)
-          const impact = allRemaining.find((p) => !chosen.some((c) => c.player_id === p.player_id))
-
+          const optimized = computeOptimalPlayingXI(activePlayers)
           return {
             ...prev,
-            playingXI: chosen.slice(0, 11).map((p) => p.player_id),
-            impactPlayerId: impact?.player_id
+            playingXI: optimized.xiIds,
+            impactPlayerId: optimized.impactId
           }
         })
+      },
       },
 
       recordMatchResult: (matchNo, resultData) => {
