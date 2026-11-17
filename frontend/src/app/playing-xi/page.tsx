@@ -26,6 +26,7 @@ import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore';
 import { getFranchise } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
 import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
+import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
 
 const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: string, hint: string, favRole: string }> = {
   Chennai: {
@@ -144,6 +145,7 @@ export default function PlayingXIPage() {
   const [showSimulator, setShowSimulator] = useState(false);
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -229,6 +231,8 @@ export default function PlayingXIPage() {
   const pointsTable = campaign.pointsTable || [];
 
   const handleLaunchMatch = (fixture?: TournamentFixture) => {
+    gameAudio.playUiTap('select');
+    triggerGameHaptic('light');
     setSelectedFixtureForMatch(fixture || currentMatch);
     setShowSimulator(true);
   };
@@ -236,8 +240,18 @@ export default function PlayingXIPage() {
   const handleMoveSlot = (index: number, direction: 'up' | 'down') => {
     const target = direction === 'up' ? index - 1 : index + 1;
     if (target >= 0 && target < fullPlayingXI.length) {
+      gameAudio.playCardSwap();
+      triggerGameHaptic('light');
       swapPlayingXISlots(index, target);
     }
+  };
+
+  const handleAutoOptimize = () => {
+    setIsOptimizing(true);
+    gameAudio.playConfettiFanfare();
+    triggerGameHaptic('medium');
+    autoOptimizePlayingXI();
+    setTimeout(() => setIsOptimizing(false), 1200);
   };
 
   return (
