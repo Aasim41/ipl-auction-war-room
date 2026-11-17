@@ -94,7 +94,7 @@ export default function InternationalScheduleModal({ isOpen, onClose }: Internat
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in text-slate-100">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in text-slate-100">
       <div className="relative w-full max-w-4xl bg-slate-950 border border-white/20 rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col justify-between overflow-hidden">
         
         {/* Header */}

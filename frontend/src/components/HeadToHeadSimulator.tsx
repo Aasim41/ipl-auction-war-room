@@ -102,7 +102,7 @@ export default function HeadToHeadSimulator({ myFranchise, mySquad, onClose }: H
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-4xl bg-slate-950 border border-slate-700/70 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-y-auto max-h-[92vh]">
         
         {/* Close Button */}
