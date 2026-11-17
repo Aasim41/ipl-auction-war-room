@@ -331,9 +331,26 @@ export function Navbar() {
               </>
             )}
 
+            {/* Audio Sound & Haptics Toggle */}
+            <button
+              onClick={toggleSound}
+              className={`px-2 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer border ${
+                isMuted 
+                  ? 'bg-rose-500/15 border-rose-500/30 text-rose-300 hover:bg-rose-500/25' 
+                  : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
+              }`}
+              title={isMuted ? 'Game Audio Muted (Click to Unmute)' : 'Game Audio Active (Click to Mute)'}
+            >
+              {isMuted ? <VolumeX size={13} /> : <Volume2 size={13} className="animate-pulse" />}
+              <span className="hidden md:inline text-[10px] font-mono font-black">{isMuted ? 'MUTED' : 'SFX'}</span>
+            </button>
+
             {/* GM Profile Pill */}
             <button
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => {
+                gameAudio.playUiTap('light')
+                setShowAuthModal(true)
+              }}
               className="px-2 sm:px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-black cursor-pointer transition-all border border-white/15"
               title="Manager Profile & Save Slots"
             >
@@ -349,7 +366,7 @@ export function Navbar() {
 
       {/* Lock Notification Toast Alert */}
       {lockedToast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 animate-shake-reject">
           <div className="px-5 py-2.5 rounded-2xl bg-slate-950 border border-amber-500/50 shadow-2xl flex items-center gap-2 text-xs font-black text-amber-300 backdrop-blur-xl">
             <Lock size={14} className="text-amber-400" />
             <span>{lockedToast}</span>
