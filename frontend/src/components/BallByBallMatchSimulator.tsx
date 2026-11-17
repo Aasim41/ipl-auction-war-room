@@ -28,6 +28,7 @@ import { FranchiseData } from '../data/franchises';
 import { TournamentFixture } from '../data/scheduleGenerator';
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
 import { getFranchiseAI } from '../data/franchiseAI';
+import TeamLogo from './TeamLogo';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
