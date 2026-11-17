@@ -200,7 +200,7 @@ export default function LandingPage() {
         </p>
 
         {/* Saved Career Quick Banner if Active */}
-        {activeCamp && (
+        {mounted && activeCamp && (
           <div className="max-w-md mx-auto mb-6 p-3 rounded-2xl bg-slate-900/90 border border-white/15 flex items-center justify-between shadow-xl backdrop-blur-md">
             <div className="flex items-center gap-2.5 text-left">
               <span className="text-2xl">{activeFranchise.emoji}</span>
@@ -229,7 +229,7 @@ export default function LandingPage() {
 
         {/* CTA Buttons */}
         <div className="gsap-cta-group flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
-          {activeCamp ? (
+          {mounted && activeCamp ? (
             <Link
               href={targetPhaseUrl}
               className="w-full sm:w-auto px-7 py-3.5 rounded-2xl font-display text-base sm:text-lg font-bold tracking-wider text-black flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
