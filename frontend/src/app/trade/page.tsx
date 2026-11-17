@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeftRight, Check, X, Shield, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react'
+import { ArrowLeftRight, Check, X, Shield, ArrowRight, RefreshCw, AlertCircle, ArrowLeft } from 'lucide-react'
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
 import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper'
 import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
@@ -118,31 +118,40 @@ export default function TradeWindowPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-14">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-12 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
       <CampaignPhaseStepper />
 
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 flex-1 flex flex-col justify-between">
+      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
         
         {/* Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 mb-3 border-b border-white/10 gap-2 shrink-0">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px] font-mono font-black uppercase">
-                PART 1 OF 4: TRADING WINDOW
-              </span>
-              <span className="text-[11px] text-gray-400">All 10 Franchises Open for Bidding</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/')}
+              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-all border border-white/10"
+              title="Return to Home Dashboard"
+            >
+              <ArrowLeft size={14} className="text-amber-400" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.2 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[9px] font-mono font-black uppercase">
+                  PART 1: TRADING WINDOW
+                </span>
+                <span className="text-[10px] text-gray-400">All 10 Franchises Open for Direct Exchange</span>
+              </div>
+              <h1 className="text-lg sm:text-xl font-black font-display text-white">
+                IPL 2027 Official Player Trading Desk
+              </h1>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
-              IPL 2027 Official Player Trading Desk
-            </h1>
           </div>
 
           <button
             onClick={handleFinishTradeWindow}
-            className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
+            className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
           >
             <span>Proceed to Part 2: Retain & Release</span>
-            <ArrowRight size={14} />
+            <ArrowRight size={13} />
           </button>
         </div>
 
