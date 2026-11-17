@@ -73,7 +73,17 @@ export default function SelectTeamPage() {
   if (!mounted) return null
 
   return (
-    <div ref={containerRef} className="min-h-screen relative overflow-hidden p-6 pt-12 flex flex-col justify-between text-white">
+    <div ref={containerRef} className="min-h-screen relative overflow-x-hidden touch-pan-y p-3 sm:p-6 pt-10 sm:pt-12 flex flex-col justify-between text-white w-full max-w-full">
+
+      {/* Top Left Back Button */}
+      <button
+        onClick={() => router.push('/')}
+        className="absolute top-3 sm:top-4 left-3 sm:left-6 z-30 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 border border-white/15 cursor-pointer shadow-lg backdrop-blur-md"
+        title="Return to Home Screen"
+      >
+        <ArrowLeft size={14} className="text-amber-400" />
+        <span>Back</span>
+      </button>
 
       {/* Dynamic Floodlight Beam from Top */}
       <div 
@@ -86,16 +96,16 @@ export default function SelectTeamPage() {
       <div className="relative z-10 max-w-6xl mx-auto w-full text-center">
         
         {/* Header */}
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs font-semibold text-gray-300 mb-3 tracking-wider uppercase">
+        <div className="mb-4 sm:mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] sm:text-xs font-semibold text-gray-300 mb-2 tracking-wider uppercase">
             <span>🏏</span>
             <span>CHOOSE YOUR FRANCHISE & HOME GROUND</span>
           </div>
 
-          <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight text-white mb-3">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white mb-2">
             SELECT YOUR <span style={{ color: activeTeam.color }} className="transition-colors duration-500">FRANCHISE FORTRESS</span>
           </h1>
-          <p className="text-sm text-gray-400 max-w-lg mx-auto font-light">
+          <p className="text-xs sm:text-sm text-gray-400 max-w-lg mx-auto font-light">
             Each franchise operates from their iconic home stadium, dictating pitch behavior, boundary tactics, and War Room budget priorities.
           </p>
         </div>
@@ -146,6 +156,7 @@ export default function SelectTeamPage() {
             const isSelected = (selectedTeam || theme) === team.id
             const isHovered = hoveredTeam === team.id
             const stadium = STADIUMS[team.id] || STADIUMS.rcb
+            const existingCampaign = Object.values(campaigns).find(c => c.teamId === team.id)
 
             return (
               <div
@@ -153,7 +164,7 @@ export default function SelectTeamPage() {
                 onMouseEnter={() => setHoveredTeam(team.id)}
                 onMouseLeave={() => setHoveredTeam(null)}
                 onClick={() => handleSelect(team.id)}
-                className={`gsap-team-card relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer text-left flex flex-col justify-between group hover:-translate-y-1.5 ${
+                className={`gsap-team-card relative p-3 sm:p-4 rounded-2xl border transition-all duration-300 cursor-pointer text-left flex flex-col justify-between group hover:-translate-y-1.5 ${
                   isSelected
                     ? 'border-white bg-white/10 shadow-2xl scale-[1.02]'
                     : 'border-white/10 bg-slate-950/50 hover:border-white/30 hover:bg-white/5'
@@ -166,7 +177,7 @@ export default function SelectTeamPage() {
                 {/* Active Selection Checkmark Badge */}
                 {isSelected && (
                   <div
-                    className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-full flex items-center justify-center text-black text-xs font-black z-20 shadow-lg"
+                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-black text-[10px] font-black z-20 shadow-lg"
                     style={{ backgroundColor: team.color }}
                   >
                     ✓
@@ -175,18 +186,25 @@ export default function SelectTeamPage() {
 
                 <div>
                   {/* Top Icon & Short code */}
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl">{team.emoji}</span>
-                    <span 
-                      className="px-2 py-0.5 rounded text-[11px] font-black tracking-wider"
-                      style={{
-                        backgroundColor: `${team.color}25`,
-                        color: team.color,
-                        border: `1px solid ${team.color}50`
-                      }}
-                    >
-                      {team.short}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      {existingCampaign && (
+                        <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] font-black uppercase border border-amber-500/40">
+                          {existingCampaign.currentPhase.replace('_', ' ')}
+                        </span>
+                      )}
+                      <span 
+                        className="px-2 py-0.5 rounded text-[10px] font-black tracking-wider"
+                        style={{
+                          backgroundColor: `${team.color}25`,
+                          color: team.color,
+                          border: `1px solid ${team.color}50`
+                        }}
+                      >
+                        {team.short}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Team Name */}
