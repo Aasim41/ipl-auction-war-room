@@ -60,6 +60,7 @@ export function Navbar() {
   }, [])
 
   const toggleSound = () => {
+    gameAudio.unlockAudio()
     const nextMuted = gameAudio.toggleMute()
     setIsMuted(nextMuted)
     triggerGameHaptic('light')
@@ -161,8 +162,23 @@ export function Navbar() {
       <nav className="fixed top-0 left-0 right-0 w-full h-12 sm:h-14 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-2 sm:px-4 gap-2">
           
-          {/* Left: Franchise Identity */}
+          {/* Left: Navigation & Franchise Identity */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {pathname !== '/' && (
+              <button
+                onClick={() => {
+                  gameAudio.playUiTap('light')
+                  triggerGameHaptic('light')
+                  handleBack()
+                }}
+                className="px-2 sm:px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-black flex items-center gap-1 border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
+                title="Return to Dashboard"
+              >
+                <ArrowLeft size={13} />
+                <span>Back</span>
+              </button>
+            )}
+
             <Link href="/" className="flex items-center gap-1.5 group shrink-0">
               <div
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-black text-xs sm:text-sm shadow-lg transition-transform group-hover:scale-105"
