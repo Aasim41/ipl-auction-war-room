@@ -17,12 +17,15 @@ import {
   Plus,
   Coins,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  Volume2,
+  VolumeX
 } from 'lucide-react'
 import { useCampaignStore } from '../store/useCampaignStore'
 import { getFranchise } from '../data/franchises'
 import { OnboardingAuthModal } from './OnboardingAuthModal'
 import { BCCIRulesModal } from './BCCIRulesModal'
+import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -41,10 +44,29 @@ export function Navbar() {
   const [showTeamSwitcher, setShowTeamSwitcher] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [lockedToast, setLockedToast] = useState<string | null>(null)
+  const [isMuted, setIsMuted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    setIsMuted(gameAudio.isMuted())
+
+    const handleSoundChange = (e: any) => {
+      if (e?.detail) {
+        setIsMuted(e.detail.isMuted)
+      }
+    }
+    window.addEventListener('auctionxi_sound_change', handleSoundChange)
+    return () => window.removeEventListener('auctionxi_sound_change', handleSoundChange)
   }, [])
+
+  const toggleSound = () => {
+    const nextMuted = gameAudio.toggleMute()
+    setIsMuted(nextMuted)
+    triggerGameHaptic('light')
+    if (!nextMuted) {
+      gameAudio.playUiTap('select')
+    }
+  }
 
   if (pathname === '/select-team') return null
 
@@ -79,6 +101,8 @@ export function Navbar() {
   }
 
   const triggerLockedAlert = (phaseName: string, isPast: boolean) => {
+    gameAudio.playTradeReject()
+    triggerGameHaptic('trade_reject')
     if (isPast) {
       setLockedToast(`🔒 ${phaseName} is permanently finalized for Season 2027. BCCI rules forbid returning to concluded phases.`)
     } else {
