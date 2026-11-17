@@ -722,7 +722,6 @@ export const useCampaignStore = create<CampaignStoreState>()(
           }
         })
       },
-      },
 
       recordMatchResult: (matchNo, resultData) => {
         if (!resultData) return
