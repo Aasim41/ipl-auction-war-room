@@ -26,6 +26,7 @@ import { getFranchise } from '../data/franchises'
 import { OnboardingAuthModal } from './OnboardingAuthModal'
 import { BCCIRulesModal } from './BCCIRulesModal'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
+import TeamLogo from './TeamLogo'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -184,21 +185,13 @@ export function Navbar() {
             )}
 
             <Link href="/" className="flex items-center gap-1.5 group shrink-0">
-              <div
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-black text-xs sm:text-sm shadow-lg transition-transform group-hover:scale-105"
-                style={{
-                  backgroundColor: franchise.color || '#e11d48',
-                  color: '#ffffff'
-                }}
-              >
-                {franchise.emoji}
-              </div>
+              <TeamLogo teamId={franchise.id} size={30} className="transition-transform group-hover:scale-105" />
               <div className="hidden md:block leading-tight text-left">
                 <span className="font-display font-black text-xs sm:text-sm text-white tracking-wide block">
                   AUCTION<span style={{ color: franchise.color || '#e11d48' }}>XI</span>
                 </span>
                 <span className="text-[10px] text-gray-400 font-mono block">
-                  {franchise.short} WAR ROOM
+                  {franchise.name}
                 </span>
               </div>
             </Link>
@@ -208,19 +201,19 @@ export function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setShowTeamSwitcher(!showTeamSwitcher)}
-                  className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer border border-white/10"
+                  className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[11px] font-bold flex items-center gap-1.5 cursor-pointer border border-white/10"
                   title="Switch franchise campaign save"
                 >
-                  <span className="max-w-[80px] truncate">{franchise.name.split(' ')[0]}</span>
+                  <span className="max-w-[120px] sm:max-w-[160px] truncate">{franchise.name}</span>
                   <ChevronDown size={11} className="text-gray-400" />
                 </button>
 
                 {showTeamSwitcher && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900 border border-white/20 rounded-2xl p-2.5 shadow-2xl z-50 text-white backdrop-blur-xl">
+                  <div className="absolute top-full left-0 mt-2 w-72 bg-slate-900 border border-white/20 rounded-2xl p-2.5 shadow-2xl z-50 text-white backdrop-blur-xl">
                     <div className="text-[10px] font-black uppercase text-gray-400 tracking-wider mb-2 px-1">
                       Active Franchise Saves
                     </div>
-                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                    <div className="space-y-1 max-h-52 overflow-y-auto">
                       {Object.values(campaigns).map((c) => {
                         const f = getFranchise(c.teamId)
                         const isSelected = c.id === activeCamp.id
@@ -231,15 +224,15 @@ export function Navbar() {
                               switchCampaign(c.id)
                               setShowTeamSwitcher(false)
                             }}
-                            className={`w-full text-left p-1.5 rounded-xl flex items-center justify-between text-xs font-bold cursor-pointer transition-all ${
+                            className={`w-full text-left p-2 rounded-xl flex items-center justify-between text-xs font-bold cursor-pointer transition-all ${
                               isSelected ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'hover:bg-white/10 text-gray-300'
                             }`}
                           >
-                            <span className="flex items-center gap-1.5">
-                              <span>{f.emoji}</span>
-                              <span>{f.short}</span>
+                            <span className="flex items-center gap-2">
+                              <TeamLogo teamId={f.id} size={22} />
+                              <span className="truncate max-w-[130px]">{f.name}</span>
                             </span>
-                            <span className="text-[10px] font-mono text-gray-400">
+                            <span className="text-[10px] font-mono text-gray-400 shrink-0">
                               ₹{c.remainingPurse.toFixed(1)}Cr
                             </span>
                           </button>
