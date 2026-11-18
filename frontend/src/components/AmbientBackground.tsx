@@ -20,8 +20,8 @@ export function AmbientBackground() {
         className="absolute inset-0 transition-all duration-1000 ease-out"
         style={{
           background: `
-            radial-gradient(circle at 50% 110%, rgba(10, 36, 18, 0.45) 0%, transparent 60%),
-            radial-gradient(circle at 50% -20%, color-mix(in srgb, var(--accent-primary) 18%, #050811) 0%, #03060d 75%)
+            radial-gradient(circle at 50% 110%, rgba(16, 185, 129, 0.28) 0%, rgba(4, 18, 10, 0.95) 60%),
+            radial-gradient(circle at 50% -20%, color-mix(in srgb, var(--accent-primary) 22%, #082014) 0%, #04120a 75%)
           `
         }}
       />

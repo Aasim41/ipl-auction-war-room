@@ -248,7 +248,6 @@ export default function PlayingXIPage() {
     window.addEventListener('app:swipe', handleAppSwipe);
     return () => window.removeEventListener('app:swipe', handleAppSwipe);
   }, [activeTab]);
-  }, [activeTab]);
 
   useEffect(() => {
     setMounted(true);
@@ -1090,7 +1089,7 @@ export default function PlayingXIPage() {
                         </td>
                         <td className="py-3 px-3 font-sans flex items-center gap-2">
                           <TeamLogo teamId={row.shortName} size={22} />
-                          <span className="font-bold text-sm text-white">{row.name || row.shortName}</span>
+                          <span className="font-bold text-sm text-white">{row.shortName}</span>
                           {isMyTeam && (
                             <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded font-mono">
                               YOU
