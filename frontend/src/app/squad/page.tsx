@@ -111,10 +111,10 @@ export default function SquadRetainReleasePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-12 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
+    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-x-hidden touch-pan-y">
       <CampaignPhaseStepper />
 
-      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
+      <main className="w-full flex-1 flex flex-col justify-between px-2 sm:px-3 py-1.5 sm:py-2 overflow-x-hidden">
         
         {/* Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">

@@ -302,8 +302,8 @@ export default function PlayingXIPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-13 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
-      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-x-hidden touch-pan-y">
+      <main className="w-full flex-1 flex flex-col justify-between px-2 sm:px-3 py-1.5 sm:py-2 overflow-x-hidden">
         
         {/* Banner with View Toggle (Lineup vs Schedule) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-3 border-b border-white/10 gap-2 shrink-0">
