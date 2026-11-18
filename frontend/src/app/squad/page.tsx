@@ -26,7 +26,6 @@ import TacticalMatchupModal from '../../components/TacticalMatchupModal'
 import SquadExportModal from '../../components/SquadExportModal'
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
-import { ThreeSquadLocker } from '../../components/ThreeSquadLocker'
 
 export default function SquadRetainReleasePage() {
   const router = useRouter()
@@ -217,14 +216,6 @@ export default function SquadRetainReleasePage() {
             </button>
           </div>
         </div>
-
-        {/* 3D Franchise Vault & Trophy Locker */}
-        <ThreeSquadLocker
-          franchiseColor={franchise.color}
-          franchiseShort={franchise.short}
-          totalPlayers={campaign.squad.length}
-          activeRole={roleFilter}
-        />
 
         {/* Minimal 4 Vitals Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">

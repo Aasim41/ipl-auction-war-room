@@ -28,7 +28,6 @@ import { getFranchise } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
 import MatchScorecardModal from '../../components/MatchScorecardModal';
 import TeamLogo from '../../components/TeamLogo';
-import { ThreeLineupField } from '../../components/ThreeLineupField';
 import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
 import { formatPlayerInitial } from '../../lib/nameFormatter';
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
@@ -440,18 +439,6 @@ export default function PlayingXIPage() {
         {/* ─── TAB 1: PLAYING XI & TACTICAL STRATEGY ─── */}
         {activeTab === 'xi' && (
           <div className="flex flex-col gap-4">
-            {/* 3D Interactive Tactical Cricket Field */}
-            <ThreeLineupField
-              franchiseColor={franchise.color}
-              franchiseShort={franchise.short}
-              players={fullPlayingXI.map((p: CampaignPlayer) => ({ id: p.player_id, name: p.name, role: p.role }))}
-              selectedPlayerId={expandedPlayerId}
-              onSelectPlayer={(pId) => {
-                setExpandedPlayerId(expandedPlayerId === pId ? null : pId);
-                gameAudio.playUiTap('light');
-                triggerGameHaptic('light');
-              }}
-            />
             {/* AI Strategy Toast Feedback */}
             {strategyToast && (
               <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-slate-900 to-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center justify-between gap-2 shadow-lg animate-fadeIn">

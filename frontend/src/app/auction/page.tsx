@@ -40,8 +40,6 @@ import {
 } from '../../data/franchises'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import { getFranchiseAI } from '../../data/franchiseAI'
-import ThreeAuctionStage from '../../components/ThreeAuctionStage'
-
 const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
 export default function MiniAuctionPage() {
@@ -78,11 +76,13 @@ export default function MiniAuctionPage() {
     if (sideTouchStartX.current === null || sideTouchStartY.current === null) return
     const deltaX = e.changedTouches[0].clientX - sideTouchStartX.current
     const deltaY = e.changedTouches[0].clientY - sideTouchStartY.current
+    sideTouchStartX.current = null
+    sideTouchStartY.current = null
 
     const tabs: Array<'pool' | 'squads' | 'feed' | 'ledger'> = ['pool', 'squads', 'feed', 'ledger']
     const curIdx = tabs.indexOf(sideTab)
 
-    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+    if (Math.abs(deltaX) > 28 && Math.abs(deltaX) > Math.abs(deltaY) * 0.7) {
       if (deltaX < 0 && curIdx < tabs.length - 1) {
         setSideTab(tabs[curIdx + 1])
         gameAudio.playUiTap('select')
@@ -93,9 +93,29 @@ export default function MiniAuctionPage() {
         triggerGameHaptic('light')
       }
     }
-    sideTouchStartX.current = null
-    sideTouchStartY.current = null
   }
+
+  // Synchronize with GlobalSwipeManager custom event
+  useEffect(() => {
+    const handleAppSwipe = (e: any) => {
+      const direction = e.detail?.direction
+      const tabs: Array<'pool' | 'squads' | 'feed' | 'ledger'> = ['pool', 'squads', 'feed', 'ledger']
+      const curIdx = tabs.indexOf(sideTab)
+      if (direction === 'left' && curIdx < tabs.length - 1) {
+        e.preventDefault()
+        setSideTab(tabs[curIdx + 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      } else if (direction === 'right' && curIdx > 0) {
+        e.preventDefault()
+        setSideTab(tabs[curIdx - 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      }
+    }
+    window.addEventListener('app:swipe', handleAppSwipe)
+    return () => window.removeEventListener('app:swipe', handleAppSwipe)
+  }, [sideTab])
 
   // Auction Pool Filtering & Inspection
   const [poolSearch, setPoolSearch] = useState('')
@@ -690,7 +710,15 @@ export default function MiniAuctionPage() {
   const displayPurse = getTeamPurse(selectedFranchiseView || campaign.teamId)
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain">
+    <div 
+      onTouchStart={handleSideTouchStart}
+      onTouchEnd={handleSideTouchEnd}
+      onTouchCancel={() => {
+        sideTouchStartX.current = null
+        sideTouchStartY.current = null
+      }}
+      className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-[calc(max(env(safe-area-inset-top,0px),10px)+2.85rem)] sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
+    >
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3">
         
         {/* Minimal Broadcast Header */}
@@ -939,19 +967,6 @@ export default function MiniAuctionPage() {
                     </div>
                   </div>
                 )}
-
-                {/* 3D Auction Stage & Gavel */}
-                <div className="my-1">
-                  <ThreeAuctionStage 
-                    currentBid={currentBid}
-                    highestBidder={isUserHighest ? 'YOU' : highestBidder}
-                    bidderColor={isUserHighest ? '#10b981' : '#f59e0b'}
-                    gavelPhase={gavelPhase}
-                    playerName={currentPlayer.name}
-                    playerRole={currentPlayer.role}
-                  />
-                </div>
-
               </div>
             ) : null}
 
