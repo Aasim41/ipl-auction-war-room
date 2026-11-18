@@ -28,6 +28,7 @@ import { getFranchise } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
 import MatchScorecardModal from '../../components/MatchScorecardModal';
 import TeamLogo from '../../components/TeamLogo';
+import { ThreeLineupField } from '../../components/ThreeLineupField';
 import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
 import { formatPlayerInitial } from '../../lib/nameFormatter';
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
