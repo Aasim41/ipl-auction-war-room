@@ -672,15 +672,15 @@ export default function PlayingXIPage() {
                         <div className="px-3 py-2.5 bg-slate-900/90 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono animate-fadeIn">
                           <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                             <span className="text-[10px] text-gray-400 block">Valuation</span>
-                            <span className="text-amber-300 font-bold">₹{((player.price_cr || player.base_price || 2)).toFixed(2)} Cr</span>
+                            <span className="text-amber-300 font-bold">₹{Number((player as any).price_cr || (player as any).base_price || 2).toFixed(2)} Cr</span>
                           </div>
                           <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                             <span className="text-[10px] text-gray-400 block">Skill Profile</span>
-                            <span className="text-white font-bold truncate block">{player.battingStyle || 'Right Hand'}</span>
+                            <span className="text-white font-bold truncate block">{(player as any).battingStyle || 'Right Hand'}</span>
                           </div>
                           <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                             <span className="text-[10px] text-gray-400 block">Bowling Style</span>
-                            <span className="text-gray-300 font-bold truncate block">{player.bowlingStyle || 'None / Part-time'}</span>
+                            <span className="text-gray-300 font-bold truncate block">{(player as any).bowlingStyle || 'None / Part-time'}</span>
                           </div>
                           <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                             <span className="text-[10px] text-gray-400 block">Fortress Fit</span>
