@@ -658,7 +658,8 @@ export default function PlayingXIPage() {
 
             </div>
           </div>
-        )}
+        </div>
+      )}
 
         {/* ─── TAB 2: FULL IPL TOURNAMENT SEASON & SCHEDULE (74 MATCHES) ─── */}
         {activeTab === 'schedule' && (

@@ -363,9 +363,6 @@ class ProceduralCricketAudio {
       // Ignored
     }
   }
-      // Ignored
-    }
-  }
 
   // 5. Auction Gavel Slam (Heavy Wooden Block Strike)
   public playAuctionGavel(isSold: boolean = false) {

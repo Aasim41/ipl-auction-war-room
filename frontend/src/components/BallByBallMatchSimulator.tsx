@@ -1681,22 +1681,8 @@ export default function BallByBallMatchSimulator({
                       </div>
                     </div>
                   </div>
-                    <span className="text-xs sm:text-sm font-sans font-bold text-gray-400">
-                      ({Math.floor(ballsBowled / 6)}.{ballsBowled % 6} / 20 ov)
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-gray-400 font-mono">
-                    CRR: {currRR}
-                    {currentInnings === 2 && (
-                      <span className="text-amber-400 font-bold ml-2">
-                        • Need {runsNeeded} off {ballsRemaining} balls (Req RR: {reqRR})
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
 
-              {/* Over Ball Bubbles */}
+                  {/* Over Ball Bubbles */}
               <div className="flex items-center gap-1.5 flex-wrap justify-center">
                 <span className="text-[10px] font-mono text-gray-400 uppercase mr-1">Over Trail:</span>
                 {currentOverTrail.map((b, i) => (
