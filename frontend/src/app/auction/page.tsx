@@ -138,7 +138,16 @@ export default function MiniAuctionPage() {
   const getTeamSquad = (teamId: string): CampaignPlayer[] => {
     if (!campaign) return []
     if (teamId === campaign.teamId) return campaign.squad.filter((p) => !p.is_released)
-    return campaign.rivalTeamsData?.[teamId]?.squad ?? (getFranchise(teamId)?.squad2026 || [])
+    return (
+      campaign.rivalTeamsData?.[teamId]?.squad ??
+      (getFranchise(teamId)?.squad2026 || []).map((p, idx) => ({
+        ...p,
+        player_id: p.player_id || `${teamId}_${idx + 1}`,
+        currentPrice: p.price,
+        is_retained: p.is_retained ?? true,
+        is_released: false
+      }))
+    )
   }
 
   // Strict BCCI Budget & Roster Compliance Validator
