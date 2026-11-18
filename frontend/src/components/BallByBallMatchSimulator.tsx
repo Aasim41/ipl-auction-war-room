@@ -1915,7 +1915,7 @@ export default function BallByBallMatchSimulator({
       >
         
         {/* Top Header & Navigation Bar (Safe Area Status Bar Spacing for Mobile) */}
-        <div className="px-3 pb-2.5 pt-[max(env(safe-area-inset-top,0px),36px)] sm:pt-2.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between shrink-0 z-30">
+        <div className="px-3 pb-2.5 pt-[max(env(safe-area-inset-top,0px),54px)] sm:pt-3 bg-slate-900/95 border-b border-white/10 flex items-center justify-between shrink-0 z-30">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 font-display font-black text-xs">
               <TeamLogo teamId={myFranchise.short} size={20} />

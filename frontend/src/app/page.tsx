@@ -26,6 +26,7 @@ import { OnboardingAuthModal } from '../components/OnboardingAuthModal'
 import { GameLoadingScreen } from '../components/GameLoadingScreen'
 import { GamerOnboardingModal } from '../components/GamerOnboardingModal'
 import ThreeChampionshipCup from '../components/ThreeChampionshipCup'
+import { ThreeCricketPlayer } from '../components/ThreeCricketPlayer'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 const TEAMS = [
@@ -71,8 +72,10 @@ export default function UnifiedTeamSelectHomePage() {
     if (touchStartXRef.current === null || touchStartYRef.current === null) return
     const deltaX = e.changedTouches[0].clientX - touchStartXRef.current
     const deltaY = e.changedTouches[0].clientY - touchStartYRef.current
+    touchStartXRef.current = null
+    touchStartYRef.current = null
 
-    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
       const curIdx = TEAMS.findIndex(t => t.id === selectedTeamId)
       if (deltaX < 0 && curIdx < TEAMS.length - 1) {
         handleSelectTeamTab(TEAMS[curIdx + 1].id)
@@ -80,9 +83,24 @@ export default function UnifiedTeamSelectHomePage() {
         handleSelectTeamTab(TEAMS[curIdx - 1].id)
       }
     }
-    touchStartXRef.current = null
-    touchStartYRef.current = null
   }
+
+  // Synchronize with GlobalSwipeManager custom event
+  useEffect(() => {
+    const handleAppSwipe = (e: any) => {
+      const direction = e.detail?.direction
+      const curIdx = TEAMS.findIndex(t => t.id === selectedTeamId)
+      if (direction === 'left' && curIdx < TEAMS.length - 1) {
+        e.preventDefault()
+        handleSelectTeamTab(TEAMS[curIdx + 1].id)
+      } else if (direction === 'right' && curIdx > 0) {
+        e.preventDefault()
+        handleSelectTeamTab(TEAMS[curIdx - 1].id)
+      }
+    }
+    window.addEventListener('app:swipe', handleAppSwipe)
+    return () => window.removeEventListener('app:swipe', handleAppSwipe)
+  }, [selectedTeamId])
 
   useEffect(() => {
     setMounted(true)
@@ -137,7 +155,7 @@ export default function UnifiedTeamSelectHomePage() {
   const existingCampaign = Object.values(campaigns).find(c => c.teamId === activeTeam.id)
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden flex flex-col justify-between text-white bg-slate-950 pt-12 sm:pt-14 pb-4">
+    <div className="min-h-screen relative overflow-x-hidden flex flex-col justify-between text-white bg-slate-950 pt-[calc(max(env(safe-area-inset-top,0px),12px)+2.85rem)] sm:pt-14 pb-16 touch-manipulation select-none">
       
       {/* Optional Cinematic Loading Screen */}
       {showLoading && (
@@ -276,12 +294,20 @@ export default function UnifiedTeamSelectHomePage() {
               )}
             </div>
 
-            {/* 3D Championship Trophy Stage */}
-            <div className="my-3">
+            {/* 3D Visual Experience: Championship Trophy & 3D Pro Cricketer */}
+            <div className="my-3 grid grid-cols-1 md:grid-cols-2 gap-3">
               <ThreeChampionshipCup 
                 franchiseColor={activeTeam.color} 
                 franchiseShort={activeTeam.short}
                 franchiseName={activeTeam.name}
+              />
+              <ThreeCricketPlayer
+                franchiseColor={activeTeam.color}
+                franchiseShort={activeTeam.short}
+                playerName={`${activeTeam.short} Icon Pro`}
+                role="BAT"
+                jerseyNumber={activeTeam.short === 'CSK' ? 7 : activeTeam.short === 'RCB' ? 18 : 45}
+                height={260}
               />
             </div>
 
