@@ -319,6 +319,37 @@ export interface UserCampaign {
   currentMatchIndex: number
   pointsTable: TournamentPointsEntry[]
   lockedPhases: Array<'trade' | 'retain_release' | 'mini_auction'>
+  activeMatchSimulation?: {
+    fixtureMatchNo: number;
+    tossPhase: 'ceremony' | 'arena';
+    userCoinCall: 'heads' | 'tails';
+    coinResult: 'heads' | 'tails' | null;
+    tossWinner: 'user' | 'rival' | null;
+    tossDecision: 'bat' | 'bowl' | null;
+    tossSummaryText: string;
+    aBatsFirst: boolean;
+    currentInnings: 1 | 2;
+    inn1: any;
+    inn2: any;
+    strikerIdx: number;
+    nonStrikerIdx: number;
+    nextBatterIdx: number;
+    currentBowlerIdx: number;
+    battingTactic: string;
+    bowlingTactic: string;
+    matchDone: boolean;
+    matchResultSummary: any;
+    potm: any;
+    bat1Squad: any[];
+    bowl1Squad: any[];
+    lastSavedTime: number;
+  } | null
+  lastSimulatedWave?: {
+    simulatedCount: number;
+    simulatedMatches: Array<{ matchNo: number; teamAShort: string; teamBShort: string; resultSummary: string }>;
+    nextMatchNo: number;
+    nextRivalShort: string;
+  } | null
 }
 
 export interface UserProfile {
@@ -367,9 +398,12 @@ interface CampaignStoreState {
   autoOptimizePlayingXI: (venueCity?: string, rivalTeamId?: string, mode?: 'bat_first' | 'bowl_first') => { strategySummary?: string }
   
   // Tournament Season & Match Simulation
-  recordMatchResult: (matchNo: number, resultData: TournamentFixture['result']) => void
+  recordMatchResult: (matchNo: number, resultData: TournamentFixture['result'], userScorecard?: any) => void
   simulateScheduleMatch: (matchNo: number) => void
   simulateRound: (roundNumber: number) => void
+  saveActiveMatchSimulation: (matchState: any) => void
+  clearActiveMatchSimulation: () => void
+  dismissSimulatedWaveAlert: () => void
 }
 
 const DEFAULT_USER: UserProfile = {
