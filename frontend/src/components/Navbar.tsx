@@ -166,36 +166,39 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 w-full h-11 sm:h-13 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
-        <div className="w-full h-full flex items-center justify-between px-2 sm:px-4 gap-1 sm:gap-2">
+      <nav className="fixed top-0 left-0 right-0 w-full pt-[max(env(safe-area-inset-top,0px),8px)] sm:pt-0 h-[calc(max(env(safe-area-inset-top,0px),8px)+2.75rem)] sm:h-13 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
+        <div className="w-full h-full flex items-center justify-between px-2.5 sm:px-4 gap-1.5 sm:gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {pathname !== '/' && (
+            {pathname !== '/' ? (
               <button
                 onClick={() => {
                   gameAudio.playUiTap('light')
                   triggerGameHaptic('light')
                   handleBack()
                 }}
-                className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 text-xs font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
+                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center sm:gap-1 text-xs font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
                 title="Return to Dashboard"
               >
-                <ArrowLeft size={13} />
-                <span>Back</span>
+                <ArrowLeft size={14} />
+                <span className="hidden sm:inline">Back</span>
               </button>
-            )}
+            ) : null}
 
             <Link href="/" className="flex items-center gap-1.5 group shrink-0" title="Home Dashboard">
               <TeamLogo teamId={franchise.id} size={24} className="transition-transform group-hover:scale-105 shrink-0" />
               <span className="font-black text-xs text-white hidden md:inline truncate max-w-[120px]">
                 {franchise.name}
               </span>
+              <span className="font-mono font-black text-[11px] text-amber-400 sm:hidden">
+                {franchise.short}
+              </span>
             </Link>
 
-            {/* Quick Saves Switcher Dropdown */}
+            {/* Quick Saves Switcher Dropdown (Desktop/Tablet) */}
             {activeCamp && (
-              <div className="relative">
+              <div className="relative hidden sm:block">
                 <button
                   onClick={() => setShowTeamSwitcher(!showTeamSwitcher)}
                   className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer border border-white/10 shrink-0"
@@ -310,11 +313,12 @@ export function Navbar() {
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {activeCamp && (
               <div 
-                className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1.5 text-xs font-mono font-black text-amber-300"
+                className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-mono font-black text-amber-300"
                 title="Remaining Mini-Auction Purse"
               >
                 <Coins size={12} className="text-amber-400 shrink-0" />
-                <span>₹{remainingPurse.toFixed(1)}Cr</span>
+                <span className="hidden sm:inline">₹{remainingPurse.toFixed(1)}Cr</span>
+                <span className="sm:hidden">₹{Math.round(remainingPurse)}Cr</span>
               </div>
             )}
 
@@ -324,7 +328,7 @@ export function Navbar() {
                 gameAudio.playUiTap('light')
                 setShowAuthModal(true)
               }}
-              className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
               title="Manager Profile & Save Slots"
             >
               <span className="text-sm">{currentUser?.avatar || '👑'}</span>

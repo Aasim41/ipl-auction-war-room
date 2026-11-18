@@ -48,7 +48,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden !important;
-  touch-action: pan-y;
+  touch-action: manipulation;
   overscroll-behavior-x: none;
   -webkit-overflow-scrolling: touch;
 }
