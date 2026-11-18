@@ -302,6 +302,71 @@ class ProceduralCricketAudio {
     }
   }
 
+  // 4b. Coin Toss Metallic Spin & Clink
+  public playCoinFlip() {
+    if (this.muted) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+
+      const now = this.ctx.currentTime + 0.005;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1400, now);
+      osc.frequency.exponentialRampToValueAtTime(3200, now + 0.08);
+      osc.frequency.exponentialRampToValueAtTime(1600, now + 0.22);
+
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+
+      osc.connect(gain);
+      gain.connect(this.getDestination());
+
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch {
+      // Ignored
+    }
+  }
+
+  public playCoinClink() {
+    if (this.muted) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+
+      const now = this.ctx.currentTime + 0.005;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2600, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.35);
+
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+
+      osc.connect(gain);
+      gain.connect(this.getDestination());
+
+      osc.start(now);
+      osc.stop(now + 0.38);
+    } catch {
+      // Ignored
+    }
+  }
+      // Ignored
+    }
+  }
+
   // 5. Auction Gavel Slam (Heavy Wooden Block Strike)
   public playAuctionGavel(isSold: boolean = false) {
     if (this.muted) return;
