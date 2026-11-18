@@ -170,7 +170,7 @@ export function Navbar() {
         <div className="w-full h-full flex items-center justify-between px-2 sm:px-4 gap-1 sm:gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {pathname !== '/' && (
               <button
                 onClick={() => {
@@ -178,32 +178,30 @@ export function Navbar() {
                   triggerGameHaptic('light')
                   handleBack()
                 }}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
+                className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 text-xs font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
                 title="Return to Dashboard"
               >
                 <ArrowLeft size={13} />
+                <span>Back</span>
               </button>
             )}
 
-            <Link href="/" className="flex items-center gap-1 group shrink-0" title="Home Dashboard">
-              <TeamLogo teamId={franchise.id} size={26} className="transition-transform group-hover:scale-105 shrink-0" />
-              <div className="hidden xl:block leading-tight text-left">
-                <span className="font-display font-black text-xs text-white tracking-wide block">
-                  AUCTION<span style={{ color: franchise.color || '#e11d48' }}>XI</span>
-                </span>
-              </div>
+            <Link href="/" className="flex items-center gap-1.5 group shrink-0" title="Home Dashboard">
+              <TeamLogo teamId={franchise.id} size={24} className="transition-transform group-hover:scale-105 shrink-0" />
+              <span className="font-black text-xs text-white hidden md:inline truncate max-w-[120px]">
+                {franchise.name}
+              </span>
             </Link>
 
-            {/* Quick Saves / Switcher Dropdown */}
+            {/* Quick Saves Switcher Dropdown */}
             {activeCamp && (
               <div className="relative">
                 <button
                   onClick={() => setShowTeamSwitcher(!showTeamSwitcher)}
-                  className="px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[10px] sm:text-[11px] font-bold flex items-center gap-1 cursor-pointer border border-white/10 shrink-0"
+                  className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer border border-white/10 shrink-0"
                   title="Switch franchise campaign save"
                 >
-                  <span className="hidden md:inline max-w-[110px] truncate">{franchise.name}</span>
-                  <span className="md:hidden font-mono font-black uppercase text-[10px]">{franchise.short}</span>
+                  <span className="font-mono font-bold uppercase">{franchise.short}</span>
                   <ChevronDown size={10} className="text-gray-400 shrink-0" />
                 </button>
 
