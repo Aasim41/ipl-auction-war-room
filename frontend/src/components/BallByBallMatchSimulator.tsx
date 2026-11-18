@@ -22,7 +22,11 @@ import {
   Compass,
   Award,
   Volume2,
-  VolumeX
+  VolumeX,
+  ArrowUp,
+  ArrowDown,
+  ListOrdered,
+  Users
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';
 import { TournamentFixture, MatchScorecard } from '../data/scheduleGenerator';
@@ -318,6 +322,12 @@ export default function BallByBallMatchSimulator({
   const [nonStrikerIdx, setNonStrikerIdx] = useState(1);
   const [nextBatterIdx, setNextBatterIdx] = useState(2);
   const [currentBowlerIdx, setCurrentBowlerIdx] = useState(0);
+  const [lastBowlerIdx, setLastBowlerIdx] = useState<number | null>(null);
+
+  // Tactical management modal states
+  const [showBowlerModal, setShowBowlerModal] = useState(false);
+  const [showBattingOrderModal, setShowBattingOrderModal] = useState(false);
+  const [scorecardInningsView, setScorecardInningsView] = useState<1 | 2>(1);
 
   // Event banner
   const [eventBanner, setEventBanner] = useState<{ text: string; subtext: string; color: string } | null>(null);
@@ -434,7 +444,10 @@ export default function BallByBallMatchSimulator({
         sixes: 0,
         strikeRate: '0.0'
       })),
-      bowlingFigures: firstBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').slice(0, 5).map(b => ({
+      bowlingFigures: (firstBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').length > 0
+        ? firstBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR')
+        : firstBowlSquad.slice(0, 5)
+      ).map(b => ({
         name: b.name,
         overs: '0.0',
         maidens: 0,
@@ -463,7 +476,10 @@ export default function BallByBallMatchSimulator({
         sixes: 0,
         strikeRate: '0.0'
       })),
-      bowlingFigures: firstBatSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').slice(0, 5).map(b => ({
+      bowlingFigures: (firstBatSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').length > 0
+        ? firstBatSquad.filter(p => p.role === 'BOWL' || p.role === 'AR')
+        : firstBatSquad.slice(0, 5)
+      ).map(b => ({
         name: b.name,
         overs: '0.0',
         maidens: 0,
