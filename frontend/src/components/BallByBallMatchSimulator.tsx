@@ -1310,7 +1310,7 @@ export default function BallByBallMatchSimulator({
   const bowlingTeamColor = currentInnings === 1 ? (bowl1Squad[0]?.teamColor || '#38bdf8') : (bat1Squad[0]?.teamColor || '#38bdf8');
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-3 md:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden select-none">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 sm:p-3 md:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden select-none">
       <div 
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -1321,57 +1321,77 @@ export default function BallByBallMatchSimulator({
         <div className="px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-900/90 border-b border-white/10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-1.5 font-display font-black text-xs sm:text-sm">
-              <span className="text-base sm:text-lg">{myFranchise.emoji}</span>
-              <span className="text-white">{myFranchise.short}</span>
+              <TeamLogo teamId={myFranchise.short} size={22} />
+              <span className="text-white font-bold">{myFranchise.short}</span>
               <span className="text-gray-400 font-sans text-xs">vs</span>
-              <span className="text-white">{rivalFranchise.short}</span>
-              <span className="text-base sm:text-lg">{rivalFranchise.emoji}</span>
+              <span className="text-white font-bold">{rivalFranchise.short}</span>
+              <TeamLogo teamId={rivalFranchise.short} size={22} />
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-mono hidden md:inline">
               📍 {venueName}
             </span>
-            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-              isUserBatting ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-            }`}>
-              {isUserBatting ? '🏏 BATTING' : '🎯 BOWLING'}
-            </span>
+            {tossPhase === 'ceremony' ? (
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                🪙 COIN TOSS CEREMONY
+              </span>
+            ) : (
+              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                isUserBatting ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+              }`}>
+                {isUserBatting ? '🏏 BATTING' : '🎯 BOWLING'}
+              </span>
+            )}
           </div>
 
           {/* Tab selector & Sound Toggle */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Rival AI Strategy Badge */}
-            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[11px] font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
-              <span className="font-bold">{rivalFranchise.short} AI:</span>
-              <span className="text-gray-300">{rivalFranchise.short === 'CSK' ? 'Anchor & Spin Choke' : rivalFranchise.short === 'SRH' || rivalFranchise.short === 'MI' ? 'Powerplay Blitzkrieg' : rivalFranchise.short === 'RR' ? 'Moneyball Analytics' : 'Utility AI Matrix'}</span>
-            </div>
+            {tossPhase === 'ceremony' ? (
+              <button
+                onClick={handleQuickTossSkip}
+                className="px-3 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                title="Fast forward toss and jump to match arena"
+              >
+                <Zap size={13} className="text-amber-400" />
+                <span className="hidden sm:inline">Quick Toss (Skip)</span>
+                <span className="sm:hidden">Skip</span>
+              </button>
+            ) : (
+              <>
+                {/* Rival AI Strategy Badge */}
+                <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[11px] font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
+                  <span className="font-bold">{rivalFranchise.short} AI:</span>
+                  <span className="text-gray-300">{rivalFranchise.short === 'CSK' ? 'Anchor & Spin Choke' : rivalFranchise.short === 'SRH' || rivalFranchise.short === 'MI' ? 'Powerplay Blitzkrieg' : rivalFranchise.short === 'RR' ? 'Moneyball Analytics' : 'Utility AI Matrix'}</span>
+                </div>
 
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
-              <button
-                onClick={() => {
-                  setActiveTab('arena');
-                  gameAudio.playUiTap('light');
-                  triggerGameHaptic('light');
-                }}
-                className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'arena' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Arena
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('scorecard');
-                  gameAudio.playUiTap('light');
-                  triggerGameHaptic('light');
-                }}
-                className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Scorecard
-              </button>
-            </div>
+                <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+                  <button
+                    onClick={() => {
+                      setActiveTab('arena');
+                      gameAudio.playUiTap('light');
+                      triggerGameHaptic('light');
+                    }}
+                    className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      activeTab === 'arena' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Arena
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('scorecard');
+                      gameAudio.playUiTap('light');
+                      triggerGameHaptic('light');
+                    }}
+                    className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Scorecard
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Sound Toggle */}
             <button
@@ -1390,49 +1410,277 @@ export default function BallByBallMatchSimulator({
             >
               {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="animate-pulse" />}
             </button>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
+            >
+              <X size={18} />
+            </button>
           </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
-          >
-            <X size={18} />
-          </button>
         </div>
 
-        {/* Mobile Swipe Navigation Bar */}
-        <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/95 border-b border-white/10 text-[10px] text-gray-400 font-mono shrink-0">
-          <span>👈 Swipe for {activeTab === 'arena' ? 'Scorecard' : 'Arena'}</span>
-          <span className="text-amber-400 font-bold">{activeTab === 'arena' ? 'Interactive Arena' : 'Scorecard'}</span>
-          <span>👉</span>
-        </div>
+        {/* Dynamic Toss Ceremony View */}
+        {tossPhase === 'ceremony' ? (
+          <div className="flex-1 flex flex-col justify-between p-3.5 sm:p-6 overflow-y-auto bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+            {/* Captains & Team Showcase */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 shrink-0">
+              {/* Your Team Card */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/90 border border-amber-500/30 flex items-center gap-3.5 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 px-2 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold rounded-bl-xl border-l border-b border-amber-500/30">
+                  HOME SQUAD
+                </div>
+                <div className="w-13 h-13 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1">
+                  <TeamLogo teamId={myFranchise.short} size={42} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Your Franchise</div>
+                  <h3 className="text-sm sm:text-base font-black text-white truncate">{myFranchise.name}</h3>
+                  <div className="text-xs text-gray-300 font-medium mt-0.5 truncate">
+                    Captain: <span className="font-bold text-white">{mySquad[0]?.name || 'Franchise Captain'} (C)</span>
+                  </div>
+                  <div className="text-[10px] text-emerald-400 font-mono mt-0.5">
+                    ✓ Dual Lineups (Bat 1st & Bowl 1st) Ready
+                  </div>
+                </div>
+              </div>
 
-        {/* Dynamic Event Banner Overlay */}
-        {eventBanner && (
-          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-bounce">
-            <div className={`px-6 py-2.5 rounded-2xl bg-gradient-to-r ${eventBanner.color} text-white font-black text-center shadow-2xl border border-white/40`}>
-              <div className="text-lg sm:text-xl tracking-wider drop-shadow-md">{eventBanner.text}</div>
-              <div className="text-xs font-sans text-white/90 drop-shadow">{eventBanner.subtext}</div>
+              {/* Rival Team Card */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center gap-3.5 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 px-2 py-0.5 bg-sky-500/20 text-sky-300 text-[10px] font-mono font-bold rounded-bl-xl border-l border-b border-sky-500/30">
+                  OPPOSITION
+                </div>
+                <div className="w-13 h-13 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1">
+                  <TeamLogo teamId={rivalFranchise.short} size={42} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Opponent</div>
+                  <h3 className="text-sm sm:text-base font-black text-white truncate">{rivalFranchise.name}</h3>
+                  <div className="text-xs text-gray-300 font-medium mt-0.5 truncate">
+                    Captain: <span className="font-bold text-white">{(rivalFranchise.squad2026?.[0]?.name) || 'Opposition Captain'} (C)</span>
+                  </div>
+                  <div className="text-[10px] text-purple-300 font-mono mt-0.5 truncate">
+                    Tactics: {rivalFranchise.short === 'CSK' ? 'Anchor & Spin Choke' : rivalFranchise.short === 'SRH' || rivalFranchise.short === 'MI' ? 'Powerplay Blitzkrieg' : rivalFranchise.short === 'RR' ? 'Moneyball Analytics' : 'Aggressive Pace & Batting Depth'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive Coin Toss Stage */}
+            <div className="flex-1 flex flex-col items-center justify-center py-3 sm:py-6">
+              {/* Coin Visual */}
+              <div className="relative mb-4">
+                <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-amber-400 bg-gradient-to-tr from-amber-600 via-yellow-400 to-amber-300 flex flex-col items-center justify-center shadow-[0_0_35px_rgba(245,158,11,0.5)] transition-all ${
+                  isFlippingCoin ? 'animate-[spin_0.35s_linear_infinite] scale-110' : 'hover:scale-105'
+                }`}>
+                  <div className="w-22 h-22 sm:w-26 sm:h-26 rounded-full border border-amber-700/60 bg-gradient-to-br from-amber-500 to-amber-700 flex flex-col items-center justify-center text-slate-950 font-black shadow-inner">
+                    <span className="text-2xl sm:text-3xl">🪙</span>
+                    <span className="text-xs sm:text-sm font-black tracking-widest uppercase mt-0.5">
+                      {isFlippingCoin ? 'FLIPPING' : coinResult ? coinResult.toUpperCase() : userCoinCall.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 1: Pre-flip Call Selection */}
+              {!coinResult && !isFlippingCoin && (
+                <div className="flex flex-col items-center gap-3 text-center max-w-md w-full">
+                  <div className="text-xs sm:text-sm text-gray-300 font-medium">
+                    Call the coin toss before the match referee spins:
+                  </div>
+                  
+                  <div className="flex items-center gap-3 w-full justify-center">
+                    <button
+                      onClick={() => {
+                        setUserCoinCall('heads');
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                      }}
+                      className={`flex-1 max-w-[140px] py-2.5 px-4 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                        userCoinCall === 'heads'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-105'
+                          : 'bg-slate-900 text-gray-300 border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <span>🟡</span>
+                      <span>HEADS</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUserCoinCall('tails');
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                      }}
+                      className={`flex-1 max-w-[140px] py-2.5 px-4 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                        userCoinCall === 'tails'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-105'
+                          : 'bg-slate-900 text-gray-300 border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <span>⚪</span>
+                      <span>TAILS</span>
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleSpinCoin}
+                    className="w-full max-w-sm mt-1 py-3 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.4)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    <span>🪙</span>
+                    <span>Spin Coin for Toss</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Step 2: In-Flight Animation */}
+              {isFlippingCoin && (
+                <div className="text-center animate-pulse">
+                  <div className="text-sm font-black text-amber-400 uppercase tracking-wider">
+                    Coin is in the air over {venueName}...
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">Captains awaiting the referee's call...</div>
+                </div>
+              )}
+
+              {/* Step 3: User Won Toss */}
+              {coinResult && tossWinner === 'user' && (
+                <div className="flex flex-col items-center gap-3.5 text-center max-w-lg w-full animate-fadeIn">
+                  <div className="px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                    <Sparkles size={14} className="text-emerald-400" />
+                    <span>Coin Landed {coinResult.toUpperCase()} • YOU WON THE TOSS!</span>
+                  </div>
+                  <p className="text-xs text-gray-300">
+                    Pitch conditions at <span className="font-bold text-white">{venueName}</span> assessed. Choose your matchday election:
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                    <button
+                      onClick={() => handleApplyTossDecision(true, `${myFranchise.name} won the toss and elected to bat first`)}
+                      className="p-3.5 rounded-2xl bg-slate-900 border border-amber-500/40 hover:border-amber-400 hover:bg-amber-500/10 text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-95 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="text-xs font-black uppercase text-amber-400 flex items-center gap-1.5">
+                          <span>🏏 Elect to Bat First</span>
+                        </div>
+                        <div className="text-xs font-bold text-white mt-1">Deploy Bat-First XI</div>
+                        <div className="text-[11px] text-gray-400 mt-1">
+                          Sets target with powerhitters & deep batting order.
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs font-black text-amber-300 flex items-center gap-1">
+                        <span>Confirm & Bat ➔</span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => handleApplyTossDecision(false, `${myFranchise.name} won the toss and elected to bowl first`)}
+                      className="p-3.5 rounded-2xl bg-slate-900 border border-sky-500/40 hover:border-sky-400 hover:bg-sky-500/10 text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-95 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="text-xs font-black uppercase text-sky-400 flex items-center gap-1.5">
+                          <span>🎯 Elect to Bowl First</span>
+                        </div>
+                        <div className="text-xs font-bold text-white mt-1">Deploy Bowl-First XI</div>
+                        <div className="text-[11px] text-gray-400 mt-1">
+                          Restricts opposition with 5 frontline bowlers & death seamers.
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs font-black text-sky-300 flex items-center gap-1">
+                        <span>Confirm & Bowl ➔</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Rival Won Toss */}
+              {coinResult && tossWinner === 'rival' && (
+                <div className="flex flex-col items-center gap-3 text-center max-w-md w-full animate-fadeIn">
+                  <div className="px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                    <span>Coin Landed {coinResult.toUpperCase()} • {rivalFranchise.name} WON THE TOSS</span>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 text-left w-full">
+                    <div className="text-xs font-bold text-white">
+                      Opposition Captain Decision:
+                    </div>
+                    <div className="text-xs text-amber-300 font-bold mt-1">
+                      {rivalFranchise.name} elected to {tossDecision === 'bat' ? 'BAT FIRST' : 'BOWL FIRST'}!
+                    </div>
+                    <div className="text-[11px] text-gray-400 mt-1">
+                      {tossDecision === 'bowl' 
+                        ? 'They back their chasing depth. You are batting first with your Bat-First XI!'
+                        : 'They opted to set a total. You are bowling first with your Bowl-First XI!'}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const userBats = tossDecision === 'bowl';
+                      handleApplyTossDecision(userBats, `${rivalFranchise.name} won the toss and elected to ${tossDecision === 'bat' ? 'bat' : 'bowl'} first`);
+                    }}
+                    className="w-full py-3 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    <Swords size={15} />
+                    <span>Enter Match Arena (Counter with {tossDecision === 'bat' ? 'Bowl-First' : 'Bat-First'} XI) ➔</span>
+                  </button>
+                </div>
+              )}
+
             </div>
           </div>
-        )}
+        ) : (
+          <>
+            {/* Mobile Swipe Navigation Bar */}
+            <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/95 border-b border-white/10 text-[10px] text-gray-400 font-mono shrink-0">
+              <span>👈 Swipe for {activeTab === 'arena' ? 'Scorecard' : 'Arena'}</span>
+              <span className="text-amber-400 font-bold">{activeTab === 'arena' ? 'Interactive Arena' : 'Scorecard'}</span>
+              <span>👉</span>
+            </div>
 
-        {/* Tab 1: Interactive Match Arena */}
-        {activeTab === 'arena' ? (
-          <div className="flex-1 flex flex-col justify-between p-3 sm:p-4 overflow-y-auto">
-            
-            {/* Live Score Ticker Banner */}
-            <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/15 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl shrink-0">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-lg"
-                  style={{ backgroundColor: activeInnings.teamColor }}
-                >
-                  {activeInnings.teamShort}
+            {/* Dynamic Event Banner Overlay */}
+            {eventBanner && (
+              <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-bounce">
+                <div className={`px-6 py-2.5 rounded-2xl bg-gradient-to-r ${eventBanner.color} text-white font-black text-center shadow-2xl border border-white/40`}>
+                  <div className="text-lg sm:text-xl tracking-wider drop-shadow-md">{eventBanner.text}</div>
+                  <div className="text-xs font-sans text-white/90 drop-shadow">{eventBanner.subtext}</div>
                 </div>
-                <div>
-                  <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight flex items-baseline gap-2">
-                    <span>{activeInnings.totalRuns}/{activeInnings.totalWickets}</span>
+              </div>
+            )}
+
+            {/* Tab 1: Interactive Match Arena */}
+            {activeTab === 'arena' ? (
+              <div className="flex-1 flex flex-col justify-between p-3 sm:p-4 overflow-y-auto">
+                
+                {/* Live Score Ticker Banner */}
+                <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/15 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shadow-lg shrink-0 p-1"
+                    >
+                      <TeamLogo teamId={activeInnings.teamShort} size={32} />
+                    </div>
+                    <div>
+                      <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight flex items-baseline gap-2">
+                        <span>{activeInnings.totalRuns}/{activeInnings.totalWickets}</span>
+                        <span className="text-xs sm:text-sm font-sans font-bold text-gray-400">
+                          ({Math.floor(ballsBowled / 6)}.{ballsBowled % 6} / 20 ov)
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-gray-400 font-mono flex items-center flex-wrap gap-1.5 mt-0.5">
+                        {tossSummaryText && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25 font-mono">
+                            🪙 {tossSummaryText}
+                          </span>
+                        )}
+                        <span>CRR: {currRR}</span>
+                        {currentInnings === 2 && (
+                          <span className="text-amber-400 font-bold ml-1">
+                            • Need {runsNeeded} off {ballsRemaining} balls (Req RR: {reqRR})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                     <span className="text-xs sm:text-sm font-sans font-bold text-gray-400">
                       ({Math.floor(ballsBowled / 6)}.{ballsBowled % 6} / 20 ov)
                     </span>
@@ -2003,6 +2251,8 @@ export default function BallByBallMatchSimulator({
 
           </div>
         )}
+        </>
+      )}
 
       </div>
     </div>

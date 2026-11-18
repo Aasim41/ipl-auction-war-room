@@ -26,6 +26,7 @@ import {
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore';
 import { getFranchise } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
+import TeamLogo from '../../components/TeamLogo';
 import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
 
@@ -166,17 +167,23 @@ export default function PlayingXIPage() {
     swapPlayingXISlots, 
     replacePlayingXIPlayer, 
     autoOptimizePlayingXI,
-    recordMatchResult 
+    setPlayingXI,
+    recordMatchResult,
+    simulateScheduleMatch,
+    simulateRound
   } = useCampaignStore();
   
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'xi' | 'schedule'>('xi');
-  const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('my');
+  const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('all');
+  const [lineupMode, setLineupMode] = useState<'bat_first' | 'bowl_first'>('bat_first');
+  const [strategyToast, setStrategyToast] = useState<string | null>(null);
   const [venue, setVenue] = useState('Bengaluru');
   const [showSimulator, setShowSimulator] = useState(false);
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isSimulatingRound, setIsSimulatingRound] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -202,7 +209,8 @@ export default function PlayingXIPage() {
       const isBowlerOpening = currentXI[0]?.role === 'BOWL';
 
       if (currentXI.length < 11 || overseasInXI > 4 || wkInXI < 1 || bowlersInXI < 5 || isBowlerOpening) {
-        autoOptimizePlayingXI();
+        autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bat_first');
+        autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bowl_first');
       }
     }
   }, [campaign, autoOptimizePlayingXI]);
@@ -240,8 +248,17 @@ export default function PlayingXIPage() {
   const franchise = getFranchise(campaign.teamId);
   const activeSquad = campaign.squad.filter(p => !p.is_released);
   
+  // Resolve active Playing XI player IDs based on lineupMode (Bat-First vs Bowl-First)
+  const activeLineupIds = lineupMode === 'bat_first'
+    ? (campaign.batFirstXI && campaign.batFirstXI.length >= 11 ? campaign.batFirstXI : campaign.playingXI)
+    : (campaign.bowlFirstXI && campaign.bowlFirstXI.length >= 11 ? campaign.bowlFirstXI : campaign.playingXI);
+
+  const activeImpactId = lineupMode === 'bat_first'
+    ? (campaign.batFirstImpactId || campaign.impactPlayerId)
+    : (campaign.bowlFirstImpactId || campaign.impactPlayerId);
+
   // Resolve Playing XI objects from player_ids
-  const playingXIObjects: CampaignPlayer[] = (campaign.playingXI || [])
+  const playingXIObjects: CampaignPlayer[] = (activeLineupIds || [])
     .map(id => activeSquad.find(p => p.player_id === id))
     .filter(Boolean) as CampaignPlayer[];
 
@@ -257,7 +274,7 @@ export default function PlayingXIPage() {
 
   // Reserve squad (bench players)
   const benchPlayers = activeSquad.filter(p => !fullPlayingXI.some(x => x.player_id === p.player_id));
-  const impactPlayer = activeSquad.find(p => p.player_id === campaign.impactPlayerId) || benchPlayers[0];
+  const impactPlayer = activeSquad.find(p => p.player_id === activeImpactId) || benchPlayers[0];
 
   // BCCI Compliance Checks
   const overseasInXI = fullPlayingXI.filter(p => p.is_overseas).length;
@@ -290,7 +307,7 @@ export default function PlayingXIPage() {
     if (target >= 0 && target < fullPlayingXI.length) {
       gameAudio.playCardSwap();
       triggerGameHaptic('light');
-      swapPlayingXISlots(index, target);
+      swapPlayingXISlots(index, target, lineupMode);
     }
   };
 
@@ -298,7 +315,11 @@ export default function PlayingXIPage() {
     setIsOptimizing(true);
     gameAudio.playConfettiFanfare();
     triggerGameHaptic('medium');
-    autoOptimizePlayingXI();
+    const result = autoOptimizePlayingXI(venue, rivalTeamId, lineupMode);
+    if (result?.strategySummary) {
+      setStrategyToast(result.strategySummary);
+      setTimeout(() => setStrategyToast(null), 6000);
+    }
     setTimeout(() => setIsOptimizing(false), 1200);
   };
 
@@ -374,111 +395,190 @@ export default function PlayingXIPage() {
 
         {/* ─── TAB 1: PLAYING XI & PITCH TACTICAL SELECTION ─── */}
         {activeTab === 'xi' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
-            
-            {/* Left 4 Columns: Stadium Vitals, AI Optimizer, & BCCI Compliance */}
-            <div className="lg:col-span-4 space-y-3 flex flex-col justify-between">
-              
-              {/* Stadium & Venue Calibration */}
-              <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
-                <label className="text-xs font-black uppercase text-gray-200 block mb-1.5 flex items-center gap-1.5">
-                  <MapPin size={13} className="text-amber-400" />
-                  Match Fortress Stadium
-                </label>
-                <select 
-                  value={venue} 
-                  onChange={(e) => setVenue(e.target.value)}
-                  className="w-full bg-slate-950 border border-white/20 rounded-xl p-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
-                >
-                  {Object.keys(VENUE_INSIGHTS).map(v => (
-                    <option key={v} value={v}>{v} — {VENUE_INSIGHTS[v]?.title}</option>
-                  ))}
-                </select>
-
-                <div className="mt-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
-                  <div className="font-bold text-amber-300 text-xs">{currentInsight.title}</div>
-                  <div className="text-[11px] text-gray-300 mt-0.5">{currentInsight.behavior}</div>
-                  <div className="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1">
-                    <Sparkles size={12} /> {currentInsight.boost}
-                  </div>
-                </div>
-              </div>
-
-              {/* BCCI Compliance Status Bar */}
-              <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10">
-                <div className="text-xs font-black uppercase text-gray-300 tracking-wider mb-2.5 flex items-center justify-between">
-                  <span>BCCI Official Rule Validation</span>
-                  {isCompliant ? (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                      ✓ Compliant
+          <div className="space-y-3 flex-1 flex flex-col justify-between">
+            {/* AI Strategy Toast Feedback */}
+            {strategyToast && (
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-slate-900 to-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center justify-between gap-2 shadow-lg animate-fadeIn shrink-0">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} className="text-emerald-400 shrink-0 animate-spin" />
+                  <div>
+                    <span className="font-black uppercase tracking-wider text-[10px] text-emerald-400 mr-1.5">
+                      Tactical AI Adaptation:
                     </span>
-                  ) : (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
-                      ⚠️ Rule Alert
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                  <div className={`p-2 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                    <div className="text-[10px] uppercase font-sans text-gray-400">Overseas</div>
-                    <div className="text-sm font-black mt-0.5">{overseasInXI}/4 Max</div>
-                  </div>
-                  <div className={`p-2 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                    <div className="text-[10px] uppercase font-sans text-gray-400">Keeper (WK)</div>
-                    <div className="text-sm font-black mt-0.5">{wkInXI} in XI</div>
-                  </div>
-                  <div className={`p-2 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                    <div className="text-[10px] uppercase font-sans text-gray-400">Bowlers/AR</div>
-                    <div className="text-sm font-black mt-0.5">{bowlersInXI}/5 Min</div>
+                    <span>{strategyToast}</span>
                   </div>
                 </div>
-              </div>
-
-              {/* AI Auto-Pick Best XI Button */}
-              <button
-                onClick={handleAutoOptimize}
-                disabled={isOptimizing}
-                className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
-              >
-                <Zap size={14} className={isOptimizing ? 'animate-spin' : ''} />
-                <span>{isOptimizing ? 'Optimizing Tactical Lineup...' : 'Auto-Pick Best XI (AI Stat-Optimizer)'}</span>
-              </button>
-
-              {/* Impact Player Slot */}
-              <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1">
-                    <Sparkles size={12} /> Impact Player Sub (12th Man)
-                  </span>
-                  <div className="text-xs font-black text-white mt-0.5">
-                    {impactPlayer ? impactPlayer.name : 'Select Reserve'}
-                  </div>
-                  <div className="text-[11px] text-gray-400 font-mono">
-                    {impactPlayer?.role} • OVR {impactPlayer?.Power_Index}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setBenchDrawerSlotIndex(11)}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 cursor-pointer"
+                <button 
+                  onClick={() => setStrategyToast(null)}
+                  className="p-1 rounded-lg hover:bg-white/10 text-emerald-400 hover:text-white text-xs cursor-pointer"
                 >
-                  Change
+                  ✕
                 </button>
               </div>
+            )}
 
+            {/* Dual Playing 11 Strategy Toggle Bar */}
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <span className="text-[11px] font-black uppercase text-gray-400 tracking-wider hidden sm:inline">
+                  Team Sheet:
+                </span>
+                <div className="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-white/10 w-full sm:w-auto">
+                  <button
+                    onClick={() => {
+                      setLineupMode('bat_first');
+                      gameAudio.playUiTap('select');
+                      triggerGameHaptic('light');
+                    }}
+                    className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      lineupMode === 'bat_first'
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <span>🏏 Bat-First XI</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLineupMode('bowl_first');
+                      gameAudio.playUiTap('select');
+                      triggerGameHaptic('light');
+                    }}
+                    className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      lineupMode === 'bowl_first'
+                        ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <span>🎯 Bowl-First XI</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-gray-300 font-mono text-center sm:text-right w-full sm:w-auto">
+                {lineupMode === 'bat_first' ? (
+                  <span className="text-amber-300">
+                    🏏 Deep Batting (Batters #1-#8) • 12th Man: Strike Bowler
+                  </span>
+                ) : (
+                  <span className="text-sky-300">
+                    🎯 Bowling Fortress (5 Frontline Bowlers) • 12th Man: Power Finisher
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Right 8 Columns: 2D Pitch Lineup in Proper Batting Order */}
-            <div className="lg:col-span-8 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
-                <div className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-2">
-                  <span>🏏 Official Matchday 11 (Batting Order 1 to 11)</span>
-                  <span className="text-[10px] text-gray-400 font-normal">Use arrows to adjust order</span>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
+              
+              {/* Left 4 Columns: Stadium Vitals, AI Optimizer, & BCCI Compliance */}
+              <div className="lg:col-span-4 space-y-3 flex flex-col justify-between">
+                
+                {/* Stadium & Venue Calibration */}
+                <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
+                  <label className="text-xs font-black uppercase text-gray-200 block mb-1.5 flex items-center gap-1.5">
+                    <MapPin size={13} className="text-amber-400" />
+                    Match Fortress Stadium
+                  </label>
+                  <select 
+                    value={venue} 
+                    onChange={(e) => setVenue(e.target.value)}
+                    className="w-full bg-slate-950 border border-white/20 rounded-xl p-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
+                  >
+                    {Object.keys(VENUE_INSIGHTS).map(v => (
+                      <option key={v} value={v}>{v} — {VENUE_INSIGHTS[v]?.title}</option>
+                    ))}
+                  </select>
+
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
+                    <div className="font-bold text-amber-300 text-xs">{currentInsight.title}</div>
+                    <div className="text-[11px] text-gray-300 mt-0.5">{currentInsight.behavior}</div>
+                    <div className="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1">
+                      <Sparkles size={12} /> {currentInsight.boost}
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xs font-mono font-bold text-amber-400">
-                  Total Squad OVR: {Math.round(fullPlayingXI.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0) / 11)}
-                </span>
+
+                {/* BCCI Compliance Status Bar */}
+                <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10">
+                  <div className="text-xs font-black uppercase text-gray-300 tracking-wider mb-2.5 flex items-center justify-between">
+                    <span>BCCI Official Rule Validation</span>
+                    {isCompliant ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                        ✓ Compliant
+                      </span>
+                    ) : (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
+                        ⚠️ Rule Alert
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                    <div className={`p-2 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                      <div className="text-[10px] uppercase font-sans text-gray-400">Overseas</div>
+                      <div className="text-sm font-black mt-0.5">{overseasInXI}/4 Max</div>
+                    </div>
+                    <div className={`p-2 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                      <div className="text-[10px] uppercase font-sans text-gray-400">Keeper (WK)</div>
+                      <div className="text-sm font-black mt-0.5">{wkInXI} in XI</div>
+                    </div>
+                    <div className={`p-2 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                      <div className="text-[10px] uppercase font-sans text-gray-400">Bowlers/AR</div>
+                      <div className="text-sm font-black mt-0.5">{bowlersInXI}/5 Min</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Auto-Pick Best XI Button */}
+                <button
+                  onClick={handleAutoOptimize}
+                  disabled={isOptimizing}
+                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
+                >
+                  <Zap size={14} className={isOptimizing ? 'animate-spin' : ''} />
+                  <span>
+                    {isOptimizing 
+                      ? `Adapting ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} Lineup...` 
+                      : `Auto-Pick Best ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} XI (AI Optimizer)`}
+                  </span>
+                </button>
+
+                {/* Impact Player Slot */}
+                <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1">
+                      <Sparkles size={12} /> Impact Player Sub (12th Man)
+                    </span>
+                    <div className="text-xs font-black text-white mt-0.5">
+                      {impactPlayer ? impactPlayer.name : 'Select Reserve'}
+                    </div>
+                    <div className="text-[11px] text-gray-400 font-mono">
+                      {impactPlayer?.role} • OVR {impactPlayer?.Power_Index}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setBenchDrawerSlotIndex(11)}
+                    className="px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 cursor-pointer"
+                  >
+                    Change
+                  </button>
+                </div>
+
               </div>
+
+              {/* Right 8 Columns: 2D Pitch Lineup in Proper Batting Order */}
+              <div className="lg:col-span-8 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                  <div className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-2">
+                    <span className={lineupMode === 'bat_first' ? 'text-amber-400 font-black' : 'text-sky-400 font-black'}>
+                      {lineupMode === 'bat_first' ? '🏏 Matchday Bat-First 11' : '🎯 Matchday Bowl-First 11'}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-normal hidden sm:inline">(Order 1 to 11 • Use arrows to adjust)</span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-amber-400">
+                    Total Squad OVR: {Math.round(fullPlayingXI.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0) / 11)}
+                  </span>
+                </div>
 
               {/* 11 Players in Real Batting Order */}
               <div className={`space-y-1.5 overflow-y-auto max-h-[460px] pr-1 rounded-2xl transition-all ${
@@ -567,8 +667,8 @@ export default function PlayingXIPage() {
             {/* Left 7 Columns: Fixtures Schedule with My 14 Matches vs All 74 Matches Toggle */}
             <div className="lg:col-span-7 p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
               
-              {/* Filter Tabs: My 14 Matches vs All 74 Matches */}
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2">
+              {/* Filter Tabs & Quick Round Sim */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2">
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
                     <Calendar size={13} className="text-amber-400" />
@@ -577,23 +677,48 @@ export default function PlayingXIPage() {
                   <p className="text-[11px] text-gray-400">14 Rounds of 5 Matches each + 4 Playoff Games</p>
                 </div>
 
-                <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
-                  <button
-                    onClick={() => setScheduleFilter('my')}
-                    className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                      scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    My 14 Matches
-                  </button>
-                  <button
-                    onClick={() => setScheduleFilter('all')}
-                    className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                      scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    All 74 Fixtures
-                  </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Simulate Current Round Button */}
+                  {(() => {
+                    const nextUnplayed = schedule.find(f => f.status !== 'COMPLETED');
+                    const roundToSim = nextUnplayed?.round || 1;
+                    return nextUnplayed ? (
+                      <button
+                        onClick={() => {
+                          gameAudio.playUiTap('select');
+                          triggerGameHaptic('medium');
+                          setIsSimulatingRound(true);
+                          simulateRound(roundToSim);
+                          setTimeout(() => setIsSimulatingRound(false), 600);
+                        }}
+                        disabled={isSimulatingRound}
+                        className="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
+                        title="Simulate all 5 matches in the current round"
+                      >
+                        <Zap size={12} className={isSimulatingRound ? 'animate-spin' : ''} />
+                        <span>{isSimulatingRound ? 'Simulating...' : `⚡ Sim Round ${roundToSim}`}</span>
+                      </button>
+                    ) : null;
+                  })()}
+
+                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+                    <button
+                      onClick={() => setScheduleFilter('all')}
+                      className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                        scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      All 74 Fixtures
+                    </button>
+                    <button
+                      onClick={() => setScheduleFilter('my')}
+                      className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                        scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      My 14 Matches
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -626,12 +751,14 @@ export default function PlayingXIPage() {
                             #{fixture.matchNo}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-xs font-black text-white flex items-center gap-2 truncate">
-                              <span style={{ color: fixture.teamAColor }}>{fixture.teamAShort} {fixture.teamAEmoji}</span>
-                              <span className="text-gray-400 font-normal">vs</span>
-                              <span style={{ color: fixture.teamBColor }}>{fixture.teamBShort} {fixture.teamBEmoji}</span>
+                            <div className="text-xs font-black text-white flex items-center gap-1.5 truncate">
+                              <TeamLogo teamId={fixture.teamAShort} size={18} />
+                              <span style={{ color: fixture.teamAColor }} className="font-bold">{fixture.teamAShort}</span>
+                              <span className="text-gray-400 font-normal text-xs">vs</span>
+                              <span style={{ color: fixture.teamBColor }} className="font-bold">{fixture.teamBShort}</span>
+                              <TeamLogo teamId={fixture.teamBShort} size={18} />
                               {isPlayoff && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono uppercase">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono uppercase ml-1">
                                   {fixture.stage}
                                 </span>
                               )}
@@ -665,6 +792,19 @@ export default function PlayingXIPage() {
                                 by {fixture.result?.margin}
                               </div>
                             </div>
+                          ) : !fixture.isMyMatch ? (
+                            <button
+                              onClick={() => {
+                                gameAudio.playUiTap('select');
+                                triggerGameHaptic('light');
+                                simulateScheduleMatch(fixture.matchNo);
+                              }}
+                              className="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold text-[11px] cursor-pointer hover:scale-105 active:scale-95 transition-all flex items-center gap-1"
+                              title="Simulate this fixture between AI teams and update points table"
+                            >
+                              <Zap size={11} className="text-amber-400" />
+                              <span>Simulate</span>
+                            </button>
                           ) : (
                             <span className="text-[10px] text-gray-500 font-mono uppercase">
                               Upcoming
@@ -722,7 +862,7 @@ export default function PlayingXIPage() {
                             </span>
                           </td>
                           <td className="py-1.5 font-sans flex items-center gap-1.5 truncate">
-                            <span>{row.emoji}</span>
+                            <TeamLogo teamId={row.shortName} size={18} />
                             <span className="font-bold truncate">{row.shortName}</span>
                           </td>
                           <td className="py-1.5 text-center text-gray-400">{row.played}</td>
