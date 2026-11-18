@@ -23,7 +23,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Chennai Super Kings',
     personality: 'The Zen Tacticians',
     tagline: 'Prioritizes seasoned anchors, spin choke, and disciplined auction bidding',
-    untouchables: ['MS Dhoni', 'Ravindra Jadeja', 'Ruturaj Gaikwad', 'Matheesha Pathirana', 'M. Pathirana', 'R. Jadeja', 'R. Gaikwad'],
+    untouchables: ['MS Dhoni', 'Ravindra Jadeja', 'Ruturaj Gaikwad', 'Matheesha Pathirana'],
     tradeStyle: 'conservative',
     auctionTemperament: 'disciplined',
     matchDayBias: {
@@ -38,7 +38,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Mumbai Indians',
     personality: 'Hyper-Aggressive Hitters & Pace Royalty',
     tagline: 'All-out boundary assault, 145+ km/h express pace, relentless auction bidding',
-    untouchables: ['Jasprit Bumrah', 'Suryakumar Yadav', 'Hardik Pandya', 'Rohit Sharma', 'J. Bumrah', 'S. Yadav', 'H. Pandya', 'R. Sharma'],
+    untouchables: ['Jasprit Bumrah', 'Suryakumar Yadav', 'Hardik Pandya', 'Rohit Sharma'],
     tradeStyle: 'aggressive',
     auctionTemperament: 'bidding_war_frenzy',
     matchDayBias: {
@@ -53,7 +53,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Sunrisers Hyderabad',
     personality: 'Powerplay Blitzkriegers',
     tagline: 'High-risk maximum sixes, Travis Head style carnages, aggressive auction counters',
-    untouchables: ['Heinrich Klaasen', 'Travis Head', 'Pat Cummins', 'Abhishek Sharma', 'H. Klaasen', 'T. Head', 'P. Cummins', 'A. Sharma'],
+    untouchables: ['Heinrich Klaasen', 'Travis Head', 'Pat Cummins', 'Abhishek Sharma'],
     tradeStyle: 'aggressive',
     auctionTemperament: 'bidding_war_frenzy',
     matchDayBias: {
@@ -68,7 +68,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Rajasthan Royals',
     personality: 'Moneyball Analytics Economists',
     tagline: 'Statistical valuation caps, strictly drops out when prices exceed true stats',
-    untouchables: ['Sanju Samson', 'Yashasvi Jaiswal', 'Riyan Parag', 'S. Samson', 'Y. Jaiswal', 'R. Parag'],
+    untouchables: ['Sanju Samson', 'Yashasvi Jaiswal', 'Riyan Parag', 'Sandeep Sharma'],
     tradeStyle: 'moneyball',
     auctionTemperament: 'value_hunter',
     matchDayBias: {
@@ -83,7 +83,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Kolkata Knight Riders',
     personality: 'Mystery Spin Choke & Caribbean Muscle',
     tagline: 'Narine/Chakravarthy spin choke followed by Andre Russell maximum fury',
-    untouchables: ['Andre Russell', 'Sunil Narine', 'Rinku Singh', 'A. Russell', 'S. Narine', 'R. Singh'],
+    untouchables: ['Andre Russell', 'Sunil Narine', 'Rinku Singh', 'Varun Chakravarthy'],
     tradeStyle: 'aggressive',
     auctionTemperament: 'bidding_war_frenzy',
     matchDayBias: {
@@ -98,7 +98,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Royal Challengers Bengaluru',
     personality: 'Top-Heavy Passion & Run Machines',
     tagline: 'Kohli-anchored firepower, high-altitude six-hitting at Chinnaswamy',
-    untouchables: ['Virat Kohli', 'Rajat Patidar', 'Yash Dayal', 'V. Kohli', 'R. Patidar', 'Y. Dayal'],
+    untouchables: ['Virat Kohli', 'Rajat Patidar', 'Yash Dayal'],
     tradeStyle: 'balanced',
     auctionTemperament: 'bidding_war_frenzy',
     matchDayBias: {
@@ -113,7 +113,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Gujarat Titans',
     personality: 'Calculated Defensive Disciplinarians',
     tagline: 'Clinical death bowling execution, anchor-based chasing mastery',
-    untouchables: ['Shubman Gill', 'Rashid Khan', 'Sai Sudharsan', 'S. Gill', 'R. Khan', 'S. Sudharsan'],
+    untouchables: ['Shubman Gill', 'Rashid Khan', 'Sai Sudharsan'],
     tradeStyle: 'conservative',
     auctionTemperament: 'disciplined',
     matchDayBias: {
@@ -128,7 +128,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Delhi Capitals',
     personality: 'Youth Aggression & Fearless Strokeplay',
     tagline: 'Young fearless strikers and attacking wrist-spinners',
-    untouchables: ['Axar Patel', 'Kuldeep Yadav', 'Rishabh Pant', 'A. Patel', 'K. Yadav', 'R. Pant'],
+    untouchables: ['Axar Patel', 'Kuldeep Yadav', 'Rishabh Pant'],
     tradeStyle: 'balanced',
     auctionTemperament: 'value_hunter',
     matchDayBias: {
@@ -143,7 +143,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Lucknow Super Giants',
     personality: 'Multi-Dimensional Tactical All-Rounders',
     tagline: 'Heavy reliance on all-rounders, multi-phase flexibility, Ekana grip tactics',
-    untouchables: ['Nicholas Pooran', 'Ravi Bishnoi', 'N. Pooran', 'R. Bishnoi'],
+    untouchables: ['Nicholas Pooran', 'Ravi Bishnoi', 'Mayank Yadav'],
     tradeStyle: 'balanced',
     auctionTemperament: 'disciplined',
     matchDayBias: {
@@ -158,7 +158,7 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     name: 'Punjab Kings',
     personality: 'High-Variance Blitzkrieg',
     tagline: 'Unpredictable, fearless intent, high purse reserves in auctions',
-    untouchables: ['Arshdeep Singh', 'Shashank Singh', 'A. Singh', 'S. Singh'],
+    untouchables: ['Arshdeep Singh', 'Shashank Singh', 'Prabhsimran Singh'],
     tradeStyle: 'moneyball',
     auctionTemperament: 'bidding_war_frenzy',
     matchDayBias: {
@@ -169,6 +169,22 @@ export const FRANCHISE_AI_PROFILES: Record<string, FranchiseAIProfile> = {
     }
   }
 };
+
+export function isUntouchablePlayer(playerName: string, untouchables: string[]): boolean {
+  if (!playerName || !untouchables || untouchables.length === 0) return false;
+  const cleanTarget = playerName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return untouchables.some((u) => {
+    const cleanU = u.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanTarget === cleanU) return true;
+    if (cleanTarget.includes(cleanU) || cleanU.includes(cleanTarget)) return true;
+    // Check last name matching (e.g. "Kohli" matching "V. Kohli" and "Virat Kohli")
+    const uParts = u.trim().split(/\s+/);
+    const uLastName = uParts[uParts.length - 1].toLowerCase();
+    const pParts = playerName.trim().split(/\s+/);
+    const pLastName = pParts[pParts.length - 1].toLowerCase();
+    return uLastName.length >= 4 && uLastName === pLastName;
+  });
+}
 
 export function getFranchiseAI(teamId: string): FranchiseAIProfile {
   return FRANCHISE_AI_PROFILES[teamId.toLowerCase()] || FRANCHISE_AI_PROFILES.csk;
