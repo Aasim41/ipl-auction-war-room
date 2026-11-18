@@ -548,11 +548,11 @@ export const useCampaignStore = create<CampaignStoreState>()(
         }
 
         if (active) {
-          // Self-heal: ensure tournament schedule and points table are present
+          // Self-heal: ensure tournament schedule (all 74 matches), points table, and dual playing XIs
           let needsUpdate = false
           let updatedActive = { ...active }
 
-          if (!updatedActive.schedule || updatedActive.schedule.length === 0) {
+          if (!updatedActive.schedule || updatedActive.schedule.length < 74) {
             updatedActive.schedule = generateTournamentSchedule(updatedActive.teamId)
             updatedActive.currentMatchIndex = 0
             needsUpdate = true
@@ -564,6 +564,30 @@ export const useCampaignStore = create<CampaignStoreState>()(
           if (!updatedActive.lockedPhases) {
             updatedActive.lockedPhases = []
             needsUpdate = true
+          }
+
+          // Ensure dual playing 11s (Bat-First & Bowl-First) are populated for matches
+          const activeSquad = updatedActive.squad.filter((p) => !p.is_released)
+          if (activeSquad.length >= 11) {
+            const franchiseData = getFranchise(updatedActive.teamId)
+            const homeCity = franchiseData?.stadiumCity || 'Bengaluru'
+            
+            if (!updatedActive.batFirstXI || updatedActive.batFirstXI.length < 11) {
+              const optBat = computeOptimalPlayingXI(activeSquad, { venueCity: homeCity, rivalTeamId: 'csk', mode: 'bat_first' })
+              updatedActive.batFirstXI = optBat.xiIds
+              updatedActive.batFirstImpactId = optBat.impactId
+              if (!updatedActive.playingXI || updatedActive.playingXI.length < 11) {
+                updatedActive.playingXI = optBat.xiIds
+                updatedActive.impactPlayerId = optBat.impactId
+              }
+              needsUpdate = true
+            }
+            if (!updatedActive.bowlFirstXI || updatedActive.bowlFirstXI.length < 11) {
+              const optBowl = computeOptimalPlayingXI(activeSquad, { venueCity: homeCity, rivalTeamId: 'csk', mode: 'bowl_first' })
+              updatedActive.bowlFirstXI = optBowl.xiIds
+              updatedActive.bowlFirstImpactId = optBowl.impactId
+              needsUpdate = true
+            }
           }
 
           // Strict Lockdown Self-Healing: guarantee that if a phase is past, it's locked!
@@ -584,7 +608,27 @@ export const useCampaignStore = create<CampaignStoreState>()(
           }
 
           if (needsUpdate) {
-            get().updateActiveCampaign(() => updatedActive)
+            const activeId = activeCampaignId || active.id
+            if (activeId && campaigns[activeId]) {
+              // Direct in-memory mutation so callers in this tick see the repaired data immediately
+              campaigns[activeId] = updatedActive
+            }
+            // Defer Zustand set() to microtask so we NEVER trigger setState during React render pass!
+            queueMicrotask(() => {
+              const state = get()
+              const targetId = state.activeCampaignId || active.id
+              if (targetId && state.campaigns[targetId]) {
+                set({
+                  campaigns: {
+                    ...state.campaigns,
+                    [targetId]: {
+                      ...updatedActive,
+                      lastSaved: new Date().toISOString()
+                    }
+                  }
+                })
+              }
+            })
             return updatedActive
           }
         }

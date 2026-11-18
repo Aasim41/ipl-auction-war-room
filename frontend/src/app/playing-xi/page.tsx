@@ -178,44 +178,20 @@ export default function PlayingXIPage() {
   const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('all');
   const [lineupMode, setLineupMode] = useState<'bat_first' | 'bowl_first'>('bat_first');
   const [strategyToast, setStrategyToast] = useState<string | null>(null);
-  const [venue, setVenue] = useState('Bengaluru');
+  const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
   const [showSimulator, setShowSimulator] = useState(false);
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
-  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const campaign = mounted ? getActiveCampaign() : null;
-
-  useEffect(() => {
-    if (!campaign || hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-
-    if (TEAM_HOME_CITY[campaign.teamId]) {
-      setVenue(TEAM_HOME_CITY[campaign.teamId]);
-    }
-
-    // Automatically repair invalid lineups on first mount
-    const activeSquad = campaign.squad.filter((p) => !p.is_released);
-    const currentXI = (campaign.playingXI || [])
-      .map((id) => activeSquad.find((p) => p.player_id === id))
-      .filter(Boolean) as CampaignPlayer[];
-    
-    const overseasInXI = currentXI.filter((p) => p.is_overseas).length;
-    const wkInXI = currentXI.filter((p) => p.role === 'WK').length;
-    const bowlersInXI = currentXI.filter((p) => p.role === 'BOWL' || p.role === 'AR').length;
-    const isBowlerOpening = currentXI[0]?.role === 'BOWL';
-
-    if (currentXI.length < 11 || overseasInXI > 4 || wkInXI < 1 || bowlersInXI < 5 || isBowlerOpening) {
-      autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bat_first');
-      autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bowl_first');
-    }
-  }, [campaign, autoOptimizePlayingXI]);
+  const venue = selectedVenue || (campaign && TEAM_HOME_CITY[campaign.teamId]) || 'Bengaluru';
+  const setVenue = setSelectedVenue;
 
   // Prevent SSR/Client Hydration Mismatch
   if (!mounted) {
