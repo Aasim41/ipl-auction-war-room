@@ -39,6 +39,38 @@ export default function SquadRetainReleasePage() {
   const [mounted, setMounted] = useState(false)
   const [showConfirmAuction, setShowConfirmAuction] = useState(false)
   const [showSimulator, setShowSimulator] = useState(false)
+  const [expandedSquadPlayerId, setExpandedSquadPlayerId] = useState<string | null>(null)
+
+  const squadTouchStartX = React.useRef<number | null>(null)
+  const squadTouchStartY = React.useRef<number | null>(null)
+
+  const handleSquadTouchStart = (e: React.TouchEvent) => {
+    squadTouchStartX.current = e.touches[0].clientX
+    squadTouchStartY.current = e.touches[0].clientY
+  }
+
+  const handleSquadTouchEnd = (e: React.TouchEvent) => {
+    if (squadTouchStartX.current === null || squadTouchStartY.current === null) return
+    const deltaX = e.changedTouches[0].clientX - squadTouchStartX.current
+    const deltaY = e.changedTouches[0].clientY - squadTouchStartY.current
+
+    const roles: Array<'ALL' | 'BAT' | 'AR' | 'WK' | 'BOWL'> = ['ALL', 'BAT', 'AR', 'WK', 'BOWL']
+    const curIdx = roles.indexOf(roleFilter)
+
+    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      if (deltaX < 0 && curIdx < roles.length - 1) {
+        setRoleFilter(roles[curIdx + 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      } else if (deltaX > 0 && curIdx > 0) {
+        setRoleFilter(roles[curIdx - 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      }
+    }
+    squadTouchStartX.current = null
+    squadTouchStartY.current = null
+  }
   const isRetainLocked = campaign?.lockedPhases?.includes('retain_release')
 
   const squadList = campaign?.squad || []
@@ -226,31 +258,49 @@ export default function SquadRetainReleasePage() {
           </div>
         </div>
 
-        {/* Squad Cards Grid (Clean Page-Level Scrolling) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        {/* Mobile Role Swipe Indicator */}
+        <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/80 rounded-xl border border-white/10 text-[9px] font-mono text-gray-400">
+          <span>👈 Swipe</span>
+          <span className="text-amber-400 font-bold uppercase">Role: {roleFilter === 'ALL' ? 'All Roles' : roleFilter}</span>
+          <span>Swipe 👉</span>
+        </div>
+
+        {/* Squad Cards Grid (Clean Page-Level Scrolling with Touch Swipe) */}
+        <div 
+          onTouchStart={handleSquadTouchStart}
+          onTouchEnd={handleSquadTouchEnd}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 select-none"
+        >
             {filteredSquad.map((player) => {
               const isReleased = player.is_released
+              const isExpanded = expandedSquadPlayerId === player.player_id
               const ovr = Number(player.Power_Index) || 80
               const formBadge = ovr >= 90 ? '🔥 ON FIRE' : ovr >= 80 ? '⚡ IN FORM' : '❄️ COLD'
 
               return (
                 <div
                   key={player.player_id}
-                  className={`p-3 rounded-2xl border transition-all flex flex-col justify-between ${
+                  className={`p-3 rounded-2xl border transition-all flex flex-col justify-between overflow-hidden ${
                     isReleased
                       ? 'bg-rose-950/20 border-rose-500/40 opacity-75'
-                      : 'bg-slate-900/90 border-white/10 hover:border-white/20'
+                      : 'bg-slate-900/90 border-white/10 hover:border-amber-400/40'
                   }`}
                 >
                   {/* Top: Name, Role, Rating */}
-                  <div>
+                  <div 
+                    onClick={() => {
+                      setExpandedSquadPlayerId(isExpanded ? null : player.player_id);
+                      gameAudio.playUiTap('light');
+                    }}
+                    className="cursor-pointer"
+                  >
                     <div className="flex items-start justify-between mb-1">
                       <div>
                         <div className="font-bold text-xs sm:text-sm text-white flex items-center gap-1.5">
                           <span>{player.name}</span>
                           {player.is_overseas && (
                             <span className="text-[8px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold">
-                              OS
+                              OS ✈
                             </span>
                           )}
                         </div>
@@ -258,6 +308,7 @@ export default function SquadRetainReleasePage() {
                           <span className="font-bold text-indigo-300">{player.role}</span>
                           <span>•</span>
                           <span>Salary: <strong className="text-white">₹{player.price} Cr</strong></span>
+                          <span className="text-amber-400 text-[8px] font-bold">{isExpanded ? '▲ Less' : '▼ More'}</span>
                         </div>
                       </div>
 
@@ -277,6 +328,20 @@ export default function SquadRetainReleasePage() {
                       <p className="text-[9px] text-gray-400 line-clamp-1 mt-1 bg-white/5 px-1.5 py-0.5 rounded-lg">
                         {player.statsSummary}
                       </p>
+                    )}
+
+                    {/* Expandable Player Profile Tray */}
+                    {isExpanded && (
+                      <div className="mt-2 pt-2 border-t border-white/10 grid grid-cols-2 gap-1.5 text-xs font-mono animate-fadeIn">
+                        <div className="p-1 rounded-lg bg-white/5 border border-white/5">
+                          <span className="text-[8px] text-gray-400 block">Cap Share</span>
+                          <span className="text-amber-300 font-bold text-[10px]">~{((Number(player.price) / 125) * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="p-1 rounded-lg bg-white/5 border border-white/5">
+                          <span className="text-[8px] text-gray-400 block">Fortress Fit</span>
+                          <span className="text-emerald-400 font-bold text-[10px]">✓ 93% Match</span>
+                        </div>
+                      </div>
                     )}
                   </div>
 
