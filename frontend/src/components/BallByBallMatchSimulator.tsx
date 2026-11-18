@@ -2715,135 +2715,173 @@ export default function BallByBallMatchSimulator({
               </div>
             )}
 
-            {/* Innings 1 Scorecard */}
-            <div className="p-4 rounded-3xl bg-slate-900 border border-white/10 shadow-md">
-              <h4 className="text-sm font-black text-white flex items-center gap-2 pb-2 mb-3 border-b border-white/10">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: inn1.teamColor }} />
-                1st Innings: {inn1.teamName} ({inn1.totalRuns}/{inn1.totalWickets} in {inn1.oversPlayed} ov)
-              </h4>
+            {/* ─── INNINGS TAB SWITCHER FOR HIGH READABILITY ─── */}
+            <div className="flex items-center gap-2 pb-1 border-b border-white/10 shrink-0">
+              <button
+                onClick={() => {
+                  setScorecardInningsView(1);
+                  gameAudio.playUiTap('select');
+                  triggerGameHaptic('light');
+                }}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                  scorecardInningsView === 1
+                    ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                    : 'bg-slate-900 text-gray-400 hover:text-white border border-white/10'
+                }`}
+              >
+                <span>🏏 1st Innings:</span>
+                <span className="font-mono font-bold">{inn1.teamShort} ({inn1.totalRuns}/{inn1.totalWickets})</span>
+              </button>
 
-              {/* Batting Table */}
-              <div className="overflow-x-auto mb-4">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
-                    <tr>
-                      <th className="py-1">Batter</th>
-                      <th className="py-1">Dismissal</th>
-                      <th className="py-1 text-right">R</th>
-                      <th className="py-1 text-right">B</th>
-                      <th className="py-1 text-right">4s</th>
-                      <th className="py-1 text-right">6s</th>
-                      <th className="py-1 text-right">SR</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-gray-200">
-                    {inn1.battingScorecard.map((b, i) => (
-                      <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(b.name)}</td>
-                        <td className="py-1.5 text-gray-400 text-[11px]">{b.dismissal}</td>
-                        <td className="py-1.5 text-right font-black text-amber-300">{b.runs}</td>
-                        <td className="py-1.5 text-right text-gray-400">{b.balls}</td>
-                        <td className="py-1.5 text-right text-sky-300">{b.fours}</td>
-                        <td className="py-1.5 text-right text-emerald-300">{b.sixes}</td>
-                        <td className="py-1.5 text-right text-gray-400">{b.strikeRate}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Bowling Table */}
-              <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">Bowling Figures ({inn2.teamShort})</h5>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
-                    <tr>
-                      <th className="py-1">Bowler</th>
-                      <th className="py-1 text-right">O</th>
-                      <th className="py-1 text-right">R</th>
-                      <th className="py-1 text-right">W</th>
-                      <th className="py-1 text-right">Econ</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-gray-200">
-                    {inn1.bowlingFigures.map((bw, i) => (
-                      <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(bw.name)}</td>
-                        <td className="py-1.5 text-right">{bw.overs}</td>
-                        <td className="py-1.5 text-right text-rose-300">{bw.runs}</td>
-                        <td className="py-1.5 text-right font-black text-emerald-400">{bw.wickets}</td>
-                        <td className="py-1.5 text-right text-gray-400">{bw.economy}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <button
+                onClick={() => {
+                  setScorecardInningsView(2);
+                  gameAudio.playUiTap('select');
+                  triggerGameHaptic('light');
+                }}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                  scorecardInningsView === 2
+                    ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                    : 'bg-slate-900 text-gray-400 hover:text-white border border-white/10'
+                }`}
+              >
+                <span>🎯 2nd Innings:</span>
+                <span className="font-mono font-bold">{inn2.teamShort} ({inn2.totalRuns}/{inn2.totalWickets})</span>
+              </button>
             </div>
 
-            {/* Innings 2 Scorecard */}
-            <div className="p-4 rounded-3xl bg-slate-900 border border-white/10 shadow-md">
-              <h4 className="text-sm font-black text-white flex items-center gap-2 pb-2 mb-3 border-b border-white/10">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: inn2.teamColor }} />
-                2nd Innings: {inn2.teamName} ({inn2.totalRuns}/{inn2.totalWickets} in {inn2.oversPlayed} ov)
-              </h4>
+            {/* Active Selected Innings Scorecard */}
+            {(() => {
+              const currentScoreInn = scorecardInningsView === 1 ? inn1 : inn2;
+              const rivalShort = scorecardInningsView === 1 ? inn2.teamShort : inn1.teamShort;
+              const bCount = currentScoreInn.balls.length;
+              const crr = bCount > 0 ? ((currentScoreInn.totalRuns / bCount) * 6).toFixed(2) : '0.00';
 
-              {/* Batting Table */}
-              <div className="overflow-x-auto mb-4">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
-                    <tr>
-                      <th className="py-1">Batter</th>
-                      <th className="py-1">Dismissal</th>
-                      <th className="py-1 text-right">R</th>
-                      <th className="py-1 text-right">B</th>
-                      <th className="py-1 text-right">4s</th>
-                      <th className="py-1 text-right">6s</th>
-                      <th className="py-1 text-right">SR</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-gray-200">
-                    {inn2.battingScorecard.map((b, i) => (
-                      <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(b.name)}</td>
-                        <td className="py-1.5 text-gray-400 text-[11px]">{b.dismissal}</td>
-                        <td className="py-1.5 text-right font-black text-amber-300">{b.runs}</td>
-                        <td className="py-1.5 text-right text-gray-400">{b.balls}</td>
-                        <td className="py-1.5 text-right text-sky-300">{b.fours}</td>
-                        <td className="py-1.5 text-right text-emerald-300">{b.sixes}</td>
-                        <td className="py-1.5 text-right text-gray-400">{b.strikeRate}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              return (
+                <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/95 border border-white/15 shadow-2xl space-y-4">
+                  {/* Innings Vitals Header */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-3.5 h-3.5 rounded-full shadow-md" style={{ backgroundColor: currentScoreInn.teamColor }} />
+                      <div>
+                        <h4 className="text-base sm:text-lg font-black text-white font-display">
+                          {currentScoreInn.teamName}
+                        </h4>
+                        <span className="text-xs text-gray-400 font-mono">
+                          {scorecardInningsView === 1 ? 'First Innings' : 'Second Innings (Target: ' + (inn1.totalRuns + 1) + ')'}
+                        </span>
+                      </div>
+                    </div>
 
-              {/* Bowling Table */}
-              <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">Bowling Figures ({inn1.teamShort})</h5>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
-                    <tr>
-                      <th className="py-1">Bowler</th>
-                      <th className="py-1 text-right">O</th>
-                      <th className="py-1 text-right">R</th>
-                      <th className="py-1 text-right">W</th>
-                      <th className="py-1 text-right">Econ</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-gray-200">
-                    {inn2.bowlingFigures.map((bw, i) => (
-                      <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(bw.name)}</td>
-                        <td className="py-1.5 text-right">{bw.overs}</td>
-                        <td className="py-1.5 text-right text-rose-300">{bw.runs}</td>
-                        <td className="py-1.5 text-right font-black text-emerald-400">{bw.wickets}</td>
-                        <td className="py-1.5 text-right text-gray-400">{bw.economy}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                    <div className="text-left sm:text-right font-mono">
+                      <div className="text-xl sm:text-2xl font-black text-amber-400">
+                        {currentScoreInn.totalRuns}/{currentScoreInn.totalWickets}
+                        <span className="text-xs text-gray-400 ml-1.5 font-normal">
+                          ({Math.floor(bCount / 6)}.{bCount % 6} / 20 ov)
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-300">
+                        CRR: <strong className="text-white">{crr}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Batting Scorecard Table */}
+                  <div className="overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/60 shadow-inner">
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="text-[11px] text-gray-400 uppercase bg-white/5 border-b border-white/10">
+                        <tr>
+                          <th className="py-2.5 px-3">Batter</th>
+                          <th className="py-2.5 px-2">Dismissal</th>
+                          <th className="py-2.5 px-2 text-right text-amber-300">R</th>
+                          <th className="py-2.5 px-2 text-right">B</th>
+                          <th className="py-2.5 px-2 text-right text-sky-300">4s</th>
+                          <th className="py-2.5 px-2 text-right text-emerald-300">6s</th>
+                          <th className="py-2.5 px-3 text-right">SR</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-gray-200">
+                        {currentScoreInn.battingScorecard.map((b, i) => (
+                          <tr key={i} className="hover:bg-white/5 transition-colors">
+                            <td className="py-2 px-3 font-sans font-bold text-white text-xs sm:text-sm">
+                              {formatPlayerInitial(b.name)}
+                              {b.dismissal === 'not out' && <span className="text-emerald-400 ml-1">*</span>}
+                            </td>
+                            <td className="py-2 px-2 text-xs">
+                              {b.dismissal === 'not out' ? (
+                                <span className="text-emerald-400 font-bold">not out</span>
+                              ) : (
+                                <span className="text-gray-400">{b.dismissal}</span>
+                              )}
+                            </td>
+                            <td className="py-2 px-2 text-right font-black text-amber-300 text-xs sm:text-sm">{b.runs}</td>
+                            <td className="py-2 px-2 text-right text-gray-400">{b.balls}</td>
+                            <td className="py-2 px-2 text-right text-sky-300 font-bold">{b.fours}</td>
+                            <td className="py-2 px-2 text-right text-emerald-300 font-bold">{b.sixes}</td>
+                            <td className="py-2 px-3 text-right text-gray-300">{b.strikeRate}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Fall of Wickets Strip */}
+                  {currentScoreInn.fallOfWickets.length > 0 && (
+                    <div className="p-3 rounded-2xl bg-slate-950/80 border border-white/10">
+                      <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+                        Fall of Wickets:
+                      </span>
+                      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
+                        {currentScoreInn.fallOfWickets.map((fow, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-[11px] font-mono text-gray-300 shrink-0"
+                          >
+                            <strong className="text-rose-400 font-black">{fow.wicket}-{fow.score}</strong>{' '}
+                            <span className="text-gray-200">({formatPlayerInitial(fow.player)}, {fow.over} ov)</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bowling Figures Table */}
+                  <div className="space-y-1.5">
+                    <h5 className="text-xs font-black text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Target size={13} className="text-rose-400" />
+                      Bowling Figures ({rivalShort})
+                    </h5>
+                    <div className="overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/60 shadow-inner">
+                      <table className="w-full text-left text-xs font-mono">
+                        <thead className="text-[11px] text-gray-400 uppercase bg-white/5 border-b border-white/10">
+                          <tr>
+                            <th className="py-2.5 px-3">Bowler</th>
+                            <th className="py-2.5 px-2 text-right">Overs</th>
+                            <th className="py-2.5 px-2 text-right text-rose-300">Runs</th>
+                            <th className="py-2.5 px-2 text-right text-emerald-400">Wkts</th>
+                            <th className="py-2.5 px-3 text-right">Econ</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 text-gray-200">
+                          {currentScoreInn.bowlingFigures.map((bw, i) => (
+                            <tr key={i} className="hover:bg-white/5 transition-colors">
+                              <td className="py-2 px-3 font-sans font-bold text-white text-xs sm:text-sm">
+                                {formatPlayerInitial(bw.name)}
+                              </td>
+                              <td className="py-2 px-2 text-right font-bold text-gray-300">{bw.overs}</td>
+                              <td className="py-2 px-2 text-right text-rose-300 font-black">{bw.runs}</td>
+                              <td className="py-2 px-2 text-right font-black text-emerald-400 text-xs sm:text-sm">{bw.wickets}</td>
+                              <td className="py-2 px-3 text-right text-gray-300">{bw.economy}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })()}
 
             {/* Bottom Actions: Record Result to IPL Points Table */}
             {matchResultSummary && (
@@ -2867,6 +2905,223 @@ export default function BallByBallMatchSimulator({
           </div>
         )}
         </>
+      )}
+
+      {/* ─── MODAL 1: BATTING ORDER REORDERING MANAGER ─── */}
+      {showBattingOrderModal && (
+        <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="w-full max-w-lg bg-slate-900 border border-white/20 rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <ListOrdered size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-white font-display">Tactical Batting Order</h3>
+                  <p className="text-[10px] text-gray-400 font-mono">Promote power-hitters or anchors for next wickets</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBattingOrderModal(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1">
+              {/* Active At Crease */}
+              <div>
+                <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider block mb-1">
+                  Currently At Crease:
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-amber-500/40 text-xs">
+                    <span className="text-[9px] text-amber-300 font-bold block">🏏 STRIKER</span>
+                    <strong className="text-white text-xs sm:text-sm truncate block mt-0.5">
+                      {formatPlayerInitial(strikerPlayer?.name)}
+                    </strong>
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      {activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0} runs ({activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.balls || 0}b)
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-white/20 text-xs">
+                    <span className="text-[9px] text-gray-400 font-bold block">🏃 RUNNER</span>
+                    <strong className="text-white text-xs sm:text-sm truncate block mt-0.5">
+                      {formatPlayerInitial(nonStrikerPlayer?.name)}
+                    </strong>
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      {activeInnings.battingScorecard.find(b => b.name === nonStrikerPlayer?.name)?.runs || 0} runs ({activeInnings.battingScorecard.find(b => b.name === nonStrikerPlayer?.name)?.balls || 0}b)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upcoming Batters Queue */}
+              <div>
+                <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider block mb-1">
+                  Upcoming Batting Order (Tap arrows to reorder):
+                </span>
+                <div className="space-y-1.5">
+                  {currentBatSquad.slice(nextBatterIdx).map((player, relIdx) => {
+                    const actualIdx = nextBatterIdx + relIdx;
+                    const batStat = activeInnings.battingScorecard.find(b => b.name === player.name);
+                    const isOut = batStat && batStat.dismissal !== 'not out';
+                    if (isOut) return null;
+
+                    return (
+                      <div
+                        key={player.player_id || player.name}
+                        className="p-2 sm:p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                            #{actualIdx + 1}
+                          </span>
+                          <div className="truncate">
+                            <div className="font-bold text-xs text-white truncate flex items-center gap-1.5">
+                              <span>{formatPlayerInitial(player.name)}</span>
+                              {player.is_overseas && (
+                                <span className="text-[8px] px-1 rounded bg-sky-500/20 text-sky-300 font-mono">OS</span>
+                              )}
+                              <span className="text-[8px] px-1 rounded bg-white/10 text-gray-300 font-mono">{player.role}</span>
+                            </div>
+                            <span className="text-[10px] text-gray-400 font-mono">
+                              OVR {player.Power_Index || 80}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Reorder Buttons */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => handlePromoteBatter(actualIdx)}
+                            disabled={actualIdx === nextBatterIdx}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-20 text-amber-400 cursor-pointer transition-all active:scale-95"
+                            title="Promote (Bat earlier)"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDemoteBatter(actualIdx)}
+                            disabled={actualIdx === currentBatSquad.length - 1}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-20 text-amber-400 cursor-pointer transition-all active:scale-95"
+                            title="Demote (Bat later)"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-white/10 shrink-0 flex justify-end">
+              <button
+                onClick={() => setShowBattingOrderModal(false)}
+                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer shadow-lg"
+              >
+                Confirm Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL 2: BOWLER ROTATION MANAGER ─── */}
+      {showBowlerModal && (
+        <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="w-full max-w-lg bg-slate-900 border border-white/20 rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                  <Target size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-white font-display">Bowler Rotation Manager</h3>
+                  <p className="text-[10px] text-gray-400 font-mono">Max 4 overs per bowler • No consecutive overs</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBowlerModal(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
+              {activeBowlers.map((b, bIdx) => {
+                const isCurrent = (currentBowlerIdx % (activeBowlers.length || 1)) === bIdx;
+                const ovsCount = getBowlerOversCount(activeInnings.bowlingFigures, b.name);
+                const fig = activeInnings.bowlingFigures.find(f => f.name === b.name);
+                const isQuotaFull = ovsCount >= 4;
+                const isConsecutive = lastBowlerIdx === bIdx && activeInnings.balls.length % 6 === 0 && activeInnings.balls.length > 0;
+                const isDisabled = isQuotaFull || isConsecutive;
+
+                return (
+                  <div
+                    key={b.player_id || b.name}
+                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                      isCurrent
+                        ? 'bg-rose-500/20 border-rose-500 shadow-md ring-1 ring-rose-400'
+                        : isDisabled
+                        ? 'bg-white/5 border-white/5 opacity-50'
+                        : 'bg-slate-950/80 border-white/10 hover:border-white/30'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <strong className="text-white text-xs sm:text-sm font-bold truncate">
+                          {formatPlayerInitial(b.name)}
+                        </strong>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-gray-300 font-mono">
+                          {b.role}
+                        </span>
+                        {isCurrent && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500 text-white font-black font-mono">
+                            BOWLING NOW
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-gray-400 font-mono mt-0.5">
+                        Overs: <strong className="text-white">{fig?.overs || '0.0'} / 4.0</strong> • Runs: {fig?.runs || 0} • Wickets: <strong className="text-emerald-400">{fig?.wickets || 0}</strong> • Econ: {fig?.economy || '0.00'}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleSelectBowler(bIdx)}
+                      disabled={isDisabled || isCurrent}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider shrink-0 cursor-pointer transition-all ${
+                        isCurrent
+                          ? 'bg-rose-600 text-white cursor-default'
+                          : isQuotaFull
+                          ? 'bg-white/10 text-gray-500 cursor-not-allowed'
+                          : isConsecutive
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 cursor-not-allowed'
+                          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md active:scale-95'
+                      }`}
+                    >
+                      {isCurrent ? 'Current' : isQuotaFull ? 'Quota Full 🔒' : isConsecutive ? 'Last Bowler ⚠️' : 'Select ➔'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-3 border-t border-white/10 shrink-0 flex justify-end">
+              <button
+                onClick={() => setShowBowlerModal(false)}
+                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       </div>
