@@ -177,7 +177,7 @@ export default function PlayingXIPage() {
   } = useCampaignStore();
   
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'xi' | 'schedule'>('xi');
+  const [activeTab, setActiveTab] = useState<'xi' | 'schedule' | 'standings'>('xi');
   const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('all');
   const [lineupMode, setLineupMode] = useState<'bat_first' | 'bowl_first'>('bat_first');
   const [strategyToast, setStrategyToast] = useState<string | null>(null);
@@ -208,12 +208,14 @@ export default function PlayingXIPage() {
 
     // Ergonomic 30px swipe threshold
     if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
-      if (deltaX < 0 && activeTab === 'xi') {
-        setActiveTab('schedule');
+      const tabs: Array<'xi' | 'schedule' | 'standings'> = ['xi', 'schedule', 'standings'];
+      const curIdx = tabs.indexOf(activeTab);
+      if (deltaX < 0 && curIdx < tabs.length - 1) {
+        setActiveTab(tabs[curIdx + 1]);
         gameAudio.playUiTap('select');
         triggerGameHaptic('light');
-      } else if (deltaX > 0 && activeTab === 'schedule') {
-        setActiveTab('xi');
+      } else if (deltaX > 0 && curIdx > 0) {
+        setActiveTab(tabs[curIdx - 1]);
         gameAudio.playUiTap('select');
         triggerGameHaptic('light');
       }
@@ -229,20 +231,23 @@ export default function PlayingXIPage() {
   useEffect(() => {
     const handleAppSwipe = (e: any) => {
       const direction = e.detail?.direction;
-      if (direction === 'left' && activeTab === 'xi') {
+      const tabs: Array<'xi' | 'schedule' | 'standings'> = ['xi', 'schedule', 'standings'];
+      const curIdx = tabs.indexOf(activeTab);
+      if (direction === 'left' && curIdx < tabs.length - 1) {
         e.preventDefault();
-        setActiveTab('schedule');
+        setActiveTab(tabs[curIdx + 1]);
         gameAudio.playUiTap('select');
         triggerGameHaptic('light');
-      } else if (direction === 'right' && activeTab === 'schedule') {
+      } else if (direction === 'right' && curIdx > 0) {
         e.preventDefault();
-        setActiveTab('xi');
+        setActiveTab(tabs[curIdx - 1]);
         gameAudio.playUiTap('select');
         triggerGameHaptic('light');
       }
     };
     window.addEventListener('app:swipe', handleAppSwipe);
     return () => window.removeEventListener('app:swipe', handleAppSwipe);
+  }, [activeTab]);
   }, [activeTab]);
 
   useEffect(() => {
