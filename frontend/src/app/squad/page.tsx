@@ -111,58 +111,55 @@ export default function SquadRetainReleasePage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-x-hidden touch-pan-y">
-      <CampaignPhaseStepper />
-
-      <main className="w-full flex-1 flex flex-col justify-between px-2 sm:px-3 py-1.5 sm:py-2 overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain">
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3.5">
         
-        {/* Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
-          <div className="flex items-center gap-2">
+        {/* Minimal Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-white/10 gap-2 shrink-0">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => {
                 gameAudio.playUiTap('light')
                 triggerGameHaptic('light')
                 router.push('/')
               }}
-              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
-              title="Return to Home Dashboard"
+              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Dashboard"
             >
               <ArrowLeft size={13} />
               <span>Back</span>
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-black uppercase">
-                  PART 2: RETAIN & RELEASE DEADLINE
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-black uppercase">
+                  ROSTER RETENTIONS
                 </span>
-                <span className="text-[10px] text-gray-400">Lock Core Stars • Reclaim Salary to Purse</span>
+                <span className="text-[11px] text-gray-400 font-mono hidden sm:inline">Lock Core Stars • Reclaim Purse</span>
               </div>
-              <h1 className="text-lg sm:text-xl font-black font-display text-white">
-                {franchise.name} Roster Retention Desk
+              <h1 className="text-base sm:text-lg font-black font-display text-white">
+                {franchise.name} Retention Desk
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setShowMatchupModal(true)}
-              className="px-2.5 py-1 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
-              title="Open Hawkeye Matchup radar"
+              className="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
             >
               <Target size={13} />
               <span>Hawkeye</span>
             </button>
             <button
               onClick={() => setShowExportModal(true)}
-              className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
             >
-              <Share2 size={12} />
+              <Share2 size={13} />
               <span>Export</span>
             </button>
             <button
               onClick={handleProceedToAuction}
-              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.3)] cursor-pointer hover:scale-[1.02] transition-all shrink-0"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.3)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
             >
               <span>Proceed to Auction</span>
               <ArrowRight size={13} />
@@ -170,89 +167,55 @@ export default function SquadRetainReleasePage() {
           </div>
         </div>
 
-        {/* 4 Summary Vitals Cards (Compact for Landscape!) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2.5 shrink-0">
-          
-          {/* Card 1: Available Mini-Auction Purse */}
-          <div className="p-2.5 rounded-xl bg-slate-900 border border-white/10 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-400 text-[9px] font-black uppercase">
-              <span>Auction Purse Balance</span>
-              <IndianRupee size={12} className="text-emerald-400" />
+        {/* Minimal 4 Vitals Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 flex flex-col justify-between">
+            <span className="text-[10px] font-mono text-gray-400 uppercase">Auction Purse</span>
+            <div className="text-lg sm:text-xl font-black text-emerald-400 font-mono mt-0.5">
+              ₹{campaign.remainingPurse.toFixed(1)} <span className="text-xs text-gray-400">Cr</span>
             </div>
-            <div className="text-lg sm:text-2xl font-black text-emerald-400 font-mono tracking-tight mt-0.5">
-              ₹{campaign.remainingPurse.toFixed(2)} <span className="text-[10px] text-gray-400">Cr</span>
-            </div>
-            <div className="text-[9px] text-gray-400 pt-0.5 border-t border-white/5 flex justify-between">
-              <span>From Releases:</span>
-              <strong className="text-emerald-300">+₹{releasedPurseGain.toFixed(2)} Cr</strong>
-            </div>
+            <span className="text-[10px] text-emerald-300 font-mono mt-0.5">+₹{releasedPurseGain.toFixed(1)} Cr refunds</span>
           </div>
 
-          {/* Card 2: Retained Slots */}
-          <div className="p-2.5 rounded-xl bg-slate-900 border border-white/10 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-400 text-[9px] font-black uppercase">
-              <span>Retained Roster</span>
-              <Users size={12} className="text-indigo-400" />
+          <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 flex flex-col justify-between">
+            <span className="text-[10px] font-mono text-gray-400 uppercase">Retained Squad</span>
+            <div className="text-lg sm:text-xl font-black text-white font-mono mt-0.5">
+              {retainedPlayers.length} <span className="text-xs text-gray-500">/ 25</span>
             </div>
-            <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight mt-0.5">
-              {retainedPlayers.length} <span className="text-[10px] text-gray-500">/ 25 Max</span>
-            </div>
-            <div className="text-[9px] text-gray-400 pt-0.5 border-t border-white/5 flex justify-between">
-              <span>Open Slots:</span>
-              <strong className="text-amber-400">{25 - retainedPlayers.length} open</strong>
-            </div>
+            <span className="text-[10px] text-amber-400 font-mono mt-0.5">{25 - retainedPlayers.length} slots open</span>
           </div>
 
-          {/* Card 3: Overseas Quota */}
-          <div className="p-2.5 rounded-xl bg-slate-900 border border-white/10 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-400 text-[9px] font-black uppercase">
-              <span>Overseas Quota</span>
-              <Globe size={12} className="text-sky-400" />
+          <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 flex flex-col justify-between">
+            <span className="text-[10px] font-mono text-gray-400 uppercase">Overseas Quota</span>
+            <div className={`text-lg sm:text-xl font-black font-mono mt-0.5 ${overseasCount >= 8 ? 'text-rose-400' : 'text-sky-400'}`}>
+              {overseasCount} <span className="text-xs text-gray-500">/ 8</span>
             </div>
-            <div className={`text-lg sm:text-2xl font-black font-mono tracking-tight mt-0.5 ${overseasCount >= 8 ? 'text-rose-400' : 'text-sky-400'}`}>
-              {overseasCount} <span className="text-[10px] text-gray-500">/ 8 Max</span>
-            </div>
-            <div className="text-[9px] text-gray-400 pt-0.5 border-t border-white/5 flex justify-between">
-              <span>Available:</span>
-              <strong className={overseasCount >= 8 ? 'text-rose-400' : 'text-emerald-400'}>
-                {8 - overseasCount} slots
-              </strong>
-            </div>
+            <span className="text-[10px] text-gray-400 font-mono mt-0.5">{8 - overseasCount} slots open</span>
           </div>
 
-          {/* Card 4: Composition Health */}
-          <div className="p-2.5 rounded-xl bg-slate-900 border border-white/10 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-400 text-[9px] font-black uppercase">
-              <span>Role Balance</span>
-              <Shield size={12} className="text-amber-400" />
-            </div>
-            <div className="text-xs font-black text-white font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+          <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 flex flex-col justify-between">
+            <span className="text-[10px] font-mono text-gray-400 uppercase">Composition</span>
+            <div className="text-xs font-bold text-white font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span className={wkCount >= 2 ? 'text-emerald-400' : 'text-amber-400'}>{wkCount} WK</span>
               <span>•</span>
-              <span className="text-blue-400">{batCount} BAT</span>
+              <span className="text-sky-300">{batCount} BAT</span>
               <span>•</span>
-              <span className="text-red-400">{bowlCount} BOWL</span>
-              <span>•</span>
-              <span className="text-purple-400">{arCount} AR</span>
+              <span className="text-rose-300">{bowlCount} BOWL</span>
             </div>
-            <div className="text-[9px] text-gray-400 pt-0.5 border-t border-white/5 flex justify-between">
-              <span>BCCI Rule:</span>
-              <span className={wkCount >= 2 ? 'text-emerald-400' : 'text-amber-400'}>
-                {wkCount >= 2 ? '✓ 2 WK Satisfied' : '⚠️ Need 2+ WK'}
-              </span>
-            </div>
+            <span className={`text-[10px] font-mono mt-0.5 ${wkCount >= 2 ? 'text-emerald-400' : 'text-amber-400'}`}>
+              {wkCount >= 2 ? '✓ 2+ WK Satisfied' : '⚠️ Need 2+ WK'}
+            </span>
           </div>
-
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mb-2 shrink-0">
-          <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-white/10 w-full sm:w-auto overflow-x-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-2xl border border-white/10 w-full sm:w-auto overflow-x-auto">
             {(['ALL', 'BAT', 'BOWL', 'AR', 'WK'] as const).map((r) => (
               <button
                 key={r}
                 onClick={() => setRoleFilter(r)}
-                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-black cursor-pointer transition-all ${
+                className={`px-3 py-1 rounded-xl text-xs font-black cursor-pointer transition-all ${
                   roleFilter === r
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
@@ -263,21 +226,20 @@ export default function SquadRetainReleasePage() {
             ))}
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
             <input
               type="text"
               placeholder="Search squad player..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border border-white/10 rounded-xl pl-8 pr-3 py-1 text-xs text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-slate-900 border border-white/10 rounded-2xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400"
             />
           </div>
         </div>
 
-        {/* Squad Cards Grid (Retain / Release Toggles) */}
-        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-230px)] pr-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        {/* Squad Cards Grid (Clean Page-Level Scrolling) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {filteredSquad.map((player) => {
               const isReleased = player.is_released
               const ovr = Number(player.Power_Index) || 80
@@ -368,7 +330,6 @@ export default function SquadRetainReleasePage() {
                 </div>
               )
             })}
-          </div>
         </div>
 
         {/* Bottom Banner */}
