@@ -927,7 +927,7 @@ export default function MiniAuctionPage() {
                     </div>
                     <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                       <span className="text-[9px] text-gray-400 block">Cap Impact</span>
-                      <span className="text-amber-300 font-bold">~{((currentBid / (campaign?.purse || 125)) * 100).toFixed(1)}% Purse</span>
+                      <span className="text-amber-300 font-bold">~{((currentBid / ((campaign as any)?.remaining_budget || (campaign as any)?.purse || 125)) * 100).toFixed(1)}% Purse</span>
                     </div>
                     <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                       <span className="text-[9px] text-gray-400 block">Total Bids</span>

@@ -346,9 +346,6 @@ export default function UnifiedTeamSelectHomePage() {
                 </div>
               </div>
             )}
-                <span className="text-[10px] font-mono text-purple-400">₹125.0 Cr Cap</span>
-              </div>
-            </div>
 
             {/* Marquee Core Stars */}
             <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
