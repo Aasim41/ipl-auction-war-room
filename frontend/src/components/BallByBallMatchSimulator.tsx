@@ -29,6 +29,7 @@ import { TournamentFixture } from '../data/scheduleGenerator';
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
 import { getFranchiseAI } from '../data/franchiseAI';
 import TeamLogo from './TeamLogo';
+import { lockOrientation } from '../lib/orientationManager';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
@@ -195,6 +196,16 @@ export default function BallByBallMatchSimulator({
     window.addEventListener('auctionxi_sound_change', handleSoundChange);
     return () => window.removeEventListener('auctionxi_sound_change', handleSoundChange);
   }, []);
+
+  // Lock Screen Orientation to Portrait during Match Simulation for ergonomic mobile play
+  useEffect(() => {
+    if (isOpen) {
+      lockOrientation('portrait');
+    }
+    return () => {
+      lockOrientation('landscape');
+    };
+  }, [isOpen]);
 
   // Squads
   const [bat1Squad, setBat1Squad] = useState<any[]>([]);
