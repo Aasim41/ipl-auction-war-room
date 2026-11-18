@@ -330,10 +330,6 @@ export function Navbar() {
               <span className="text-sm">{currentUser?.avatar || '👑'}</span>
             </button>
           </div>
-            >
-              <span className="text-sm">{currentUser?.avatar || '👑'}</span>
-            </button>
-          </div>
 
         </div>
       </nav>
