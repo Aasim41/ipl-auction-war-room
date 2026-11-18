@@ -45,7 +45,7 @@ const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
 export default function MiniAuctionPage() {
   const router = useRouter()
-  const { getActiveCampaign, addAuctionPlayerToSquad, advancePhase } = useCampaignStore()
+  const { getActiveCampaign, addAuctionPlayerToSquad, recordAuctionSale, updateRivalTeamsData, advancePhase } = useCampaignStore()
   const campaign = getActiveCampaign()
 
   // Full multi-franchise auction pool (includes releases from all teams!)
@@ -56,6 +56,7 @@ export default function MiniAuctionPage() {
   const [bidHistory, setBidHistory] = useState<Array<{ bidder: string; amount: number; isUser?: boolean }>>([])
   const [timer, setTimer] = useState(10)
   const [gavelPhase, setGavelPhase] = useState<'bidding' | 'going_once' | 'going_twice' | 'sold'>('bidding')
+  const [nextLotCountdown, setNextLotCountdown] = useState<number | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [soldLog, setSoldLog] = useState<Array<{ player: DynamicAuctionPlayer; winner: string; price: number }>>([])
   
@@ -127,32 +128,80 @@ export default function MiniAuctionPage() {
     return () => clearInterval(interval)
   }, [timer, gavelPhase, currentPlayer, isAutoSimulating])
 
-  // AI Bots Automatic Counter-Bidding with Utility AI Franchise Personalities
+  // Dynamic live purse & squad inspection across all 10 franchises
+  const getTeamPurse = (teamId: string): number => {
+    if (!campaign) return 0
+    if (teamId === campaign.teamId) return campaign.remainingPurse
+    return campaign.rivalTeamsData?.[teamId]?.remainingPurse ?? (getFranchise(teamId)?.miniAuctionPurse2026 || 15.0)
+  }
+
+  const getTeamSquad = (teamId: string): CampaignPlayer[] => {
+    if (!campaign) return []
+    if (teamId === campaign.teamId) return campaign.squad.filter((p) => !p.is_released)
+    return campaign.rivalTeamsData?.[teamId]?.squad ?? (getFranchise(teamId)?.squad2026 || [])
+  }
+
+  // Strict BCCI Budget & Roster Compliance Validator
+  const canTeamBid = (teamId: string, bidAmount: number, isOverseas: boolean): boolean => {
+    const purse = getTeamPurse(teamId)
+    const squad = getTeamSquad(teamId)
+
+    // Rule 1: Cannot bid more than available purse
+    if (bidAmount > purse) return false
+
+    // Rule 2: Cannot exceed 25 roster limit
+    if (squad.length >= 25) return false
+
+    // Rule 3: Cannot exceed 8 overseas limit
+    if (isOverseas) {
+      const osCount = squad.filter((p) => p.is_overseas).length
+      if (osCount >= 8) return false
+    }
+
+    // Rule 4: BCCI Reserve Purse Rule - Must preserve ₹0.30 Cr per remaining slot needed to reach 18 players
+    const slotsToMin18 = Math.max(0, 18 - squad.length)
+    const reserveNeeded = Math.max(0, slotsToMin18 - 1) * 0.30
+    if (purse - bidAmount < reserveNeeded) return false
+
+    return true
+  }
+
+  // AI Bots Automatic Counter-Bidding with Utility AI Franchise Personalities & Strict Budget Check
   useEffect(() => {
     if (!currentPlayer || gavelPhase === 'sold' || gavelPhase === 'going_twice' || isAutoSimulating) return
 
     const botTimeout = setTimeout(() => {
-      const baseValuation = (currentPlayer.powerIndex / 10) * 1.5
       const availableBots = BOT_TEAMS.filter((t) => t !== campaign?.teamId && t !== highestBidder)
       
       if (availableBots.length > 0) {
         const interestedBots = availableBots.filter((botId) => {
+          const increment = currentBid < 5 ? 0.25 : currentBid < 10 ? 0.5 : 1.0
+          const candidateBid = Math.round((currentBid + increment) * 100) / 100
+
+          // Strict financial and squad compliance
+          if (!canTeamBid(botId, candidateBid, currentPlayer.is_overseas)) return false
+
+          const botPurse = getTeamPurse(botId)
+          const botSquad = getTeamSquad(botId)
           const ai = getFranchiseAI(botId)
+
+          const slotsToMin18 = Math.max(0, 18 - botSquad.length)
+          const reserveNeeded = Math.max(0, slotsToMin18 - 1) * 0.30
+          const maxAffordable = Math.max(0, botPurse - reserveNeeded)
+
+          let valuation = (currentPlayer.powerIndex / 10) * 1.5
           if (ai.id === 'csk') {
             const isSpinOrAnchor = currentPlayer.role === 'BAT' || currentPlayer.role === 'AR'
-            const maxBid = baseValuation * 1.15
-            return currentBid < maxBid && isSpinOrAnchor && Math.random() > 0.4
-          }
-          if (ai.id === 'srh' || ai.id === 'mi') {
+            if (isSpinOrAnchor) valuation *= 1.2
+          } else if (ai.id === 'srh' || ai.id === 'mi') {
             const isPacerOrHitter = currentPlayer.role === 'BOWL' || currentPlayer.powerIndex > 80
-            const maxBid = baseValuation * 1.85
-            return currentBid < maxBid && (isPacerOrHitter ? Math.random() > 0.25 : Math.random() > 0.5)
+            if (isPacerOrHitter) valuation *= 1.35
+          } else if (ai.id === 'rr') {
+            valuation *= 1.05
           }
-          if (ai.id === 'rr') {
-            const maxBid = baseValuation * 1.05
-            return currentBid < maxBid && Math.random() > 0.35
-          }
-          return currentBid < baseValuation * 1.3 && Math.random() > 0.4
+
+          const maxBid = Math.min(maxAffordable, valuation)
+          return candidateBid <= maxBid && Math.random() > 0.35
         })
 
         if (interestedBots.length > 0) {
@@ -171,63 +220,94 @@ export default function MiniAuctionPage() {
           ])
         }
       }
-    }, Math.floor(Math.random() * 2200) + 1000)
+    }, Math.floor(Math.random() * 2000) + 900)
 
     return () => clearTimeout(botTimeout)
-  }, [currentBid, highestBidder, gavelPhase, currentPlayer, isAutoSimulating])
+  }, [currentBid, highestBidder, gavelPhase, currentPlayer, isAutoSimulating, campaign])
 
   // Handle SOLD resolution
   const handleSold = () => {
     if (!currentPlayer || !campaign) return
 
+    // If nobody bid or bidder is still initial auctioneer
+    if (!highestBidder || highestBidder === 'BCCI Auctioneer' || highestBidder === 'none' || bidHistory.length === 0) {
+      gameAudio.playTradeReject()
+      triggerGameHaptic('trade_reject')
+      setGavelPhase('sold')
+      setSoldLog((prev) => [
+        { player: currentPlayer, winner: 'UNSOLD', price: 0 },
+        ...prev
+      ])
+      // Trigger automatic countdown to next lot so it NEVER gets stuck!
+      setNextLotCountdown(3)
+      return
+    }
+
     const isUserWin = highestBidder === campaign.teamId
     const winnerName = isUserWin ? campaign.teamName : (getFranchise(highestBidder)?.name || highestBidder.toUpperCase())
     
+    const campaignPlayer: CampaignPlayer = {
+      player_id: currentPlayer.id,
+      name: currentPlayer.name,
+      role: currentPlayer.role,
+      nationality: currentPlayer.nationality,
+      is_overseas: currentPlayer.is_overseas,
+      price: currentBid,
+      currentPrice: currentBid,
+      Power_Index: currentPlayer.powerIndex,
+      is_retained: true,
+      is_released: false,
+      statsSummary: `Acquired in 2027 Mini-Auction for ₹${currentBid.toFixed(2)} Cr`
+    }
+
+    // Immediately record sale in store! Deducts purse and adds to that team's squad!
+    recordAuctionSale(campaignPlayer, highestBidder, currentBid)
+
     if (isUserWin) {
       gameAudio.playTradeDealSuccess()
       gameAudio.playCrowdRoar('cheer')
       triggerGameHaptic('heavy')
-      addAuctionPlayerToSquad({
-        player_id: currentPlayer.id,
-        name: currentPlayer.name,
-        role: currentPlayer.role,
-        nationality: currentPlayer.nationality,
-        is_overseas: currentPlayer.is_overseas,
-        price: currentBid,
-        currentPrice: currentBid,
-        Power_Index: currentPlayer.powerIndex,
-        is_retained: true,
-        is_released: false,
-        statsSummary: `Acquired in 2027 Mini-Auction for ₹${currentBid.toFixed(2)} Cr`
-      }, currentBid)
+    } else {
+      gameAudio.playAuctionGavel(true)
+      triggerGameHaptic('gavel')
     }
 
     setSoldLog((prev) => [
       { player: currentPlayer, winner: winnerName, price: currentBid },
       ...prev
     ])
+
+    // Trigger automatic countdown to next lot (3 seconds) so it NEVER gets stuck!
+    setNextLotCountdown(3)
   }
+
+  // Automatic transition countdown to next lot
+  useEffect(() => {
+    if (nextLotCountdown === null) return
+    if (nextLotCountdown <= 0) {
+      setNextLotCountdown(null)
+      handleNextPlayer()
+      return
+    }
+    const t = setTimeout(() => {
+      setNextLotCountdown((prev) => (prev !== null ? prev - 1 : null))
+    }, 1000)
+    return () => clearTimeout(t)
+  }, [nextLotCountdown, currentIndex, auctionPool])
 
   // User Bidding Handlers
   const handleUserBid = (increment: number) => {
     if (!campaign || !currentPlayer) return
     const newBid = Math.round((currentBid + increment) * 100) / 100
 
-    if (newBid > campaign.remainingPurse) {
+    if (!canTeamBid(campaign.teamId, newBid, currentPlayer.is_overseas)) {
       gameAudio.playTradeReject()
       triggerGameHaptic('trade_reject')
-      alert(`Cannot bid ₹${newBid} Cr: Exceeds your available purse of ₹${campaign.remainingPurse.toFixed(2)} Cr!`)
+      const squad = getTeamSquad(campaign.teamId)
+      const slotsToMin18 = Math.max(0, 18 - squad.length)
+      const reserveNeeded = Math.max(0, slotsToMin18 - 1) * 0.30
+      alert(`Cannot bid ₹${newBid} Cr! Available purse is ₹${campaign.remainingPurse.toFixed(2)} Cr (Reserve ₹${reserveNeeded.toFixed(2)} Cr needed to reach minimum 18-player squad).`)
       return
-    }
-
-    if (currentPlayer.is_overseas) {
-      const overseasCount = campaign.squad.filter((p) => !p.is_released && p.is_overseas).length
-      if (overseasCount >= 8) {
-        gameAudio.playTradeReject()
-        triggerGameHaptic('trade_reject')
-        alert('Cannot bid: Your 8-player overseas quota is full!')
-        return
-      }
     }
 
     gameAudio.playBiddingPaddle()
@@ -243,6 +323,7 @@ export default function MiniAuctionPage() {
   }
 
   const handleNextPlayer = () => {
+    setNextLotCountdown(null)
     if (currentIndex + 1 < auctionPool.length) {
       const nextIndex = currentIndex + 1
       setCurrentIndex(nextIndex)
@@ -253,7 +334,6 @@ export default function MiniAuctionPage() {
       setTimer(10)
       setGavelPhase('bidding')
     } else {
-      alert('The 2027 Mini-Auction has concluded! Proceeding to Playing XI selection.')
       handleFinishAuction()
     }
   }
