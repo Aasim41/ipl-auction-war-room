@@ -1578,44 +1578,44 @@ export default function MiniAuctionPage() {
       {/* MODAL 4: AI Auto-Auction Results Summary */}
       {autoAuctionSummary && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto touch-pan-y overscroll-contain">
-          <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900 border-2 border-amber-500/50 max-w-4xl w-full shadow-2xl relative animate-scale-up h-auto max-h-[96dvh] flex flex-col overflow-hidden">
+          <div className="p-3 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-900 border-2 border-amber-500/50 max-w-4xl w-full shadow-2xl relative animate-scale-up h-auto max-h-[96dvh] flex flex-col overflow-y-auto sm:overflow-hidden touch-pan-y">
             
-            {/* Responsive 2-Column War Room Layout in Landscape, Stacked in Portrait */}
-            <div className="flex flex-col md:flex-row gap-3 sm:gap-4 flex-1 min-h-0 overflow-hidden">
+            {/* Responsive 2-Column War Room Layout in Landscape/Wide, Stacked with Smooth Scroll in Portrait */}
+            <div className="flex flex-col sm:flex-row landscape:flex-row gap-3 sm:gap-4 flex-1 min-h-0">
               
               {/* Left Column: Official Declaration, BCCI Checkpoints & Action Buttons */}
-              <div className="md:w-5/12 flex flex-col justify-between shrink-0">
+              <div className="sm:w-5/12 landscape:w-5/12 w-full flex flex-col justify-between shrink-0">
                 <div>
-                  <div className="text-left pb-2 border-b border-white/10 shrink-0">
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-black uppercase">
+                  <div className="text-left pb-1.5 border-b border-white/10 shrink-0">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-black uppercase">
                       AUCTION OFFICIALLY CONCLUDED
                     </span>
-                    <h2 className="text-lg sm:text-2xl font-black font-display text-white mt-1">
+                    <h2 className="text-base sm:text-xl font-black font-display text-white mt-1">
                       2027 Squad Successfully Drafted!
                     </h2>
-                    <p className="text-[11px] sm:text-xs text-gray-300 mt-0.5">
+                    <p className="text-[11px] text-gray-300 mt-0.5">
                       AI Director drafted <strong className="text-amber-400">{autoAuctionSummary.purchased.length} new stars</strong> to complete your official roster.
                     </p>
                   </div>
 
                   {/* Checklist of BCCI Requirements (2x2 Grid) */}
-                  <div className="grid grid-cols-2 gap-1.5 my-2.5 text-center font-mono text-xs">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                  <div className="grid grid-cols-2 gap-1.5 my-2 text-center font-mono text-xs">
+                    <div className="p-1.5 rounded-xl bg-slate-950 border border-white/10">
                       <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Roster Size</span>
                       <strong className="text-white text-xs sm:text-sm">{autoAuctionSummary.finalSquadCount} / 25</strong>
                       <span className="text-[8px] sm:text-[9px] text-emerald-400 block">✓ Min 18 Met</span>
                     </div>
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                    <div className="p-1.5 rounded-xl bg-slate-950 border border-white/10">
                       <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Overseas</span>
                       <strong className="text-sky-300 text-xs sm:text-sm">{autoAuctionSummary.finalOverseasCount} / 8</strong>
                       <span className="text-[8px] sm:text-[9px] text-emerald-400 block">✓ Cap Safe</span>
                     </div>
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                    <div className="p-1.5 rounded-xl bg-slate-950 border border-white/10">
                       <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Keepers</span>
                       <strong className="text-indigo-300 text-xs sm:text-sm">{autoAuctionSummary.roleBreakdown.wk} WK</strong>
                       <span className="text-[8px] sm:text-[9px] text-emerald-400 block">✓ Min 1 Met</span>
                     </div>
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                    <div className="p-1.5 rounded-xl bg-slate-950 border border-white/10">
                       <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Purse Left</span>
                       <strong className="text-emerald-400 text-xs sm:text-sm">₹{autoAuctionSummary.finalPurse.toFixed(2)} Cr</strong>
                       <span className="text-[8px] sm:text-[9px] text-gray-500 block">Spend: ₹{autoAuctionSummary.totalSpent.toFixed(2)}Cr</span>
@@ -1646,7 +1646,7 @@ export default function MiniAuctionPage() {
               </div>
 
               {/* Right Column: Scrollable Acquired Recruits with Touch-Pan-Y */}
-              <div className="md:w-7/12 flex flex-col flex-1 min-h-0 bg-slate-950/60 p-2 sm:p-3 rounded-2xl border border-white/10 overflow-hidden">
+              <div className="sm:w-7/12 landscape:w-7/12 w-full flex flex-col flex-1 min-h-[160px] max-h-[55vh] sm:max-h-none bg-slate-950/60 p-2 sm:p-2.5 rounded-2xl border border-white/10 overflow-hidden">
                 <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0">
                   <span className="text-[10px] sm:text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
                     Acquired Recruits ({autoAuctionSummary.purchased.length} New Stars):
@@ -1656,7 +1656,7 @@ export default function MiniAuctionPage() {
                   </span>
                 </div>
 
-                <div className="flex-1 min-h-[140px] overflow-y-auto overscroll-contain touch-pan-y space-y-1.5 pr-1 -webkit-overflow-scrolling-touch">
+                <div className="flex-1 min-h-[120px] overflow-y-auto overscroll-contain touch-pan-y space-y-1.5 pr-1 -webkit-overflow-scrolling-touch">
                   {autoAuctionSummary.purchased.length === 0 ? (
                     <div className="h-full flex items-center justify-center p-4 rounded-xl bg-white/5 text-center text-xs text-gray-400">
                       Your squad was already complete! No additional auction purchases needed.

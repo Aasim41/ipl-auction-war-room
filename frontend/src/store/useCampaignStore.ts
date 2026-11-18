@@ -986,37 +986,58 @@ export const useCampaignStore = create<CampaignStoreState>()(
         return { strategySummary }
       },
 
-      recordMatchResult: (matchNo, resultData) => {
+      recordMatchResult: (matchNo, resultData, userScorecard) => {
         if (!resultData) return
 
         get().updateActiveCampaign((prev) => {
-          const currentFix = (prev.schedule || []).find(f => f.matchNo === matchNo)
-          const targetRound = currentFix?.round || 1
+          // 1. Identify the user's NEXT upcoming match
+          const nextMyMatch = (prev.schedule || []).find(
+            (f) => f.isMyMatch && f.status === 'UPCOMING' && f.matchNo > matchNo
+          )
+          const targetCeiling = nextMyMatch ? nextMyMatch.matchNo : 75
 
-          // 1. Update the user's match
+          const newlySimulatedAiMatches: Array<{ matchNo: number; teamAShort: string; teamBShort: string; resultSummary: string }> = []
+
+          // 2. Update user match AND auto-simulate all unplayed AI matches before user's next match
           const updatedSchedule = (prev.schedule || []).map((f) => {
             if (f.matchNo === matchNo) {
               return {
                 ...f,
                 status: 'COMPLETED' as const,
-                result: resultData
+                result: resultData,
+                scorecard: userScorecard || f.scorecard
               }
             }
 
-            // 2. Simultaneously simulate all other unplayed AI matches in this same round
-            if (f.round === targetRound && f.status !== 'COMPLETED' && f.matchNo !== matchNo) {
-              const aiRes = simulateAIMatch(f)
+            // Automatically simulate every AI match occurring before user's next match with full realistic scorecard
+            if (f.matchNo < targetCeiling && f.status !== 'COMPLETED' && !f.isMyMatch) {
+              const aiSim = simulateAIMatch(f)
+              newlySimulatedAiMatches.push({
+                matchNo: f.matchNo,
+                teamAShort: f.teamAShort,
+                teamBShort: f.teamBShort,
+                resultSummary: `${aiSim.result.winnerName} won by ${aiSim.result.margin}`
+              })
               return {
                 ...f,
                 status: 'COMPLETED' as const,
-                result: aiRes
+                result: aiSim.result,
+                scorecard: aiSim.scorecard
               }
             }
 
             return f
           })
 
-          // 3. Rebuild the entire points table deterministically from ALL completed league matches
+          // 3. Mark user's next match as CURRENT if it exists
+          if (nextMyMatch) {
+            const nextMatchInUpdated = updatedSchedule.find((f) => f.matchNo === nextMyMatch.matchNo)
+            if (nextMatchInUpdated) {
+              nextMatchInUpdated.status = 'CURRENT'
+            }
+          }
+
+          // 4. Rebuild the entire points table deterministically from ALL completed league matches
           const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
           ALL_TEAM_IDS.forEach((id) => {
             pointsMap[id] = { played: 0, won: 0, lost: 0, runsFor: 0, oversFor: 0, runsAgainst: 0, oversAgainst: 0 };
@@ -1075,12 +1096,6 @@ export const useCampaignStore = create<CampaignStoreState>()(
           // Sort Points Table by Points descending, then NRR descending
           updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr);
 
-          // 4. Find the user's next upcoming match and mark it CURRENT
-          const nextMyMatch = updatedSchedule.find(f => f.isMyMatch && f.status === 'UPCOMING');
-          if (nextMyMatch) {
-            nextMyMatch.status = 'CURRENT';
-          }
-
           // 5. Seed Playoffs if League Completed (all 70 matches completed)
           const leagueDone = updatedSchedule.filter(f => f.stage === 'League' && f.status === 'COMPLETED').length >= 70;
           if (leagueDone) {
@@ -1118,11 +1133,20 @@ export const useCampaignStore = create<CampaignStoreState>()(
             }
           }
 
+          const waveSummary = newlySimulatedAiMatches.length > 0 ? {
+            simulatedCount: newlySimulatedAiMatches.length,
+            simulatedMatches: newlySimulatedAiMatches,
+            nextMatchNo: nextMyMatch?.matchNo || 74,
+            nextRivalShort: nextMyMatch ? (nextMyMatch.teamAId === prev.teamId ? nextMyMatch.teamBShort : nextMyMatch.teamAShort) : 'Playoffs'
+          } : null;
+
           return {
             ...prev,
             schedule: updatedSchedule,
             currentMatchIndex: Math.min(matchNo, updatedSchedule.length - 1),
             pointsTable: updatedPoints,
+            activeMatchSimulation: null,
+            lastSimulatedWave: waveSummary,
             lastSaved: new Date().toISOString()
           };
         })
@@ -1133,8 +1157,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           const match = (prev.schedule || []).find(f => f.matchNo === matchNo);
           if (!match || match.status === 'COMPLETED') return prev;
 
-          const res = simulateAIMatch(match);
-          const updatedSchedule = (prev.schedule || []).map(f => f.matchNo === matchNo ? { ...f, status: 'COMPLETED' as const, result: res } : f);
+          const aiSim = simulateAIMatch(match);
+          const updatedSchedule = (prev.schedule || []).map(f => f.matchNo === matchNo ? { ...f, status: 'COMPLETED' as const, result: aiSim.result, scorecard: aiSim.scorecard } : f);
 
           // Rebuild points table from all completed league matches
           const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
@@ -1203,11 +1227,96 @@ export const useCampaignStore = create<CampaignStoreState>()(
         get().updateActiveCampaign((prev) => {
           const updatedSchedule = (prev.schedule || []).map((f) => {
             if (f.round === roundNumber && f.status !== 'COMPLETED') {
-              const res = simulateAIMatch(f);
-              return { ...f, status: 'COMPLETED' as const, result: res };
+              const aiSim = simulateAIMatch(f);
+              return { ...f, status: 'COMPLETED' as const, result: aiSim.result, scorecard: aiSim.scorecard };
             }
             return f;
           });
+
+          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
+          ALL_TEAM_IDS.forEach((id) => {
+            pointsMap[id] = { played: 0, won: 0, lost: 0, runsFor: 0, oversFor: 0, runsAgainst: 0, oversAgainst: 0 };
+          });
+
+          updatedSchedule.forEach((f) => {
+            if (f.status === 'COMPLETED' && f.result && f.stage === 'League') {
+              const r = f.result;
+              const tA = f.teamAId;
+              const tB = f.teamBId;
+              if (pointsMap[tA] && pointsMap[tB]) {
+                pointsMap[tA].played += 1;
+                pointsMap[tB].played += 1;
+                if (r.winnerTeamId === tA) {
+                  pointsMap[tA].won += 1;
+                  pointsMap[tB].lost += 1;
+                } else {
+                  pointsMap[tB].won += 1;
+                  pointsMap[tA].lost += 1;
+                }
+                pointsMap[tA].runsFor += r.teamARuns;
+                pointsMap[tA].oversFor += Math.max(1, r.teamAOvers);
+                pointsMap[tA].runsAgainst += r.teamBRuns;
+                pointsMap[tA].oversAgainst += Math.max(1, r.teamBOvers);
+                pointsMap[tB].runsFor += r.teamBRuns;
+                pointsMap[tB].oversFor += Math.max(1, r.teamBOvers);
+                pointsMap[tB].runsAgainst += r.teamARuns;
+                pointsMap[tB].oversAgainst += Math.max(1, r.teamAOvers);
+              }
+            }
+          });
+
+          const updatedPoints = ALL_TEAM_IDS.map((tId) => {
+            const f = getFranchise(tId);
+            const st = pointsMap[tId];
+            const nrr = st.oversFor > 0 && st.oversAgainst > 0
+              ? (st.runsFor / st.oversFor) - (st.runsAgainst / st.oversAgainst)
+              : 0;
+            return {
+              teamId: tId,
+              teamName: f.name,
+              shortName: f.short,
+              color: f.color,
+              emoji: f.emoji,
+              played: st.played,
+              won: st.won,
+              lost: st.lost,
+              points: st.won * 2,
+              nrr: Math.round(nrr * 1000) / 1000
+            };
+          });
+          updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr);
+
+          return {
+            ...prev,
+            schedule: updatedSchedule,
+            pointsTable: updatedPoints,
+            lastSaved: new Date().toISOString()
+          };
+        });
+      },
+
+      saveActiveMatchSimulation: (matchState) => {
+        get().updateActiveCampaign((prev) => ({
+          ...prev,
+          activeMatchSimulation: matchState,
+          lastSaved: new Date().toISOString()
+        }));
+      },
+
+      clearActiveMatchSimulation: () => {
+        get().updateActiveCampaign((prev) => ({
+          ...prev,
+          activeMatchSimulation: null,
+          lastSaved: new Date().toISOString()
+        }));
+      },
+
+      dismissSimulatedWaveAlert: () => {
+        get().updateActiveCampaign((prev) => ({
+          ...prev,
+          lastSimulatedWave: null
+        }));
+      },
 
           const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
           ALL_TEAM_IDS.forEach((id) => {
