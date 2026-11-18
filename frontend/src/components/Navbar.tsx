@@ -306,28 +306,16 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Right: Live Gaming HUD Stats (Purse + Squad + Profile) - SFX Pill Removed per User Request */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {/* Right: Live Gaming HUD Stats (Purse + Profile) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {activeCamp && (
-              <>
-                {/* Purse Pill */}
-                <div 
-                  className="px-2 py-0.5 sm:py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 text-[11px] sm:text-xs font-mono font-black text-amber-300"
-                  title="Remaining Mini-Auction Purse"
-                >
-                  <Coins size={12} className="text-amber-400 shrink-0" />
-                  <span>₹{remainingPurse.toFixed(1)}Cr</span>
-                </div>
-
-                {/* Squad Count Pill */}
-                <div 
-                  className="px-2 py-0.5 sm:py-1 rounded-xl bg-slate-900 border border-white/10 items-center gap-1 text-[10px] sm:text-[11px] font-mono font-bold text-gray-300 hidden sm:flex"
-                  title="Active squad size (Max 25)"
-                >
-                  <Users size={11} className="text-sky-400 shrink-0" />
-                  <span>{activeCount}/25</span>
-                </div>
-              </>
+              <div 
+                className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1.5 text-xs font-mono font-black text-amber-300"
+                title="Remaining Mini-Auction Purse"
+              >
+                <Coins size={12} className="text-amber-400 shrink-0" />
+                <span>₹{remainingPurse.toFixed(1)}Cr</span>
+              </div>
             )}
 
             {/* GM Profile Pill */}
@@ -336,8 +324,12 @@ export function Navbar() {
                 gameAudio.playUiTap('light')
                 setShowAuthModal(true)
               }}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
+              className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
               title="Manager Profile & Save Slots"
+            >
+              <span className="text-sm">{currentUser?.avatar || '👑'}</span>
+            </button>
+          </div>
             >
               <span className="text-sm">{currentUser?.avatar || '👑'}</span>
             </button>
