@@ -2279,7 +2279,7 @@ export default function BallByBallMatchSimulator({
 
             {/* Tab 1: Interactive Match Arena (Portrait Mobile First) */}
             {activeTab === 'arena' ? (
-              <div className="flex-1 flex flex-col justify-between p-2 sm:p-3 overflow-hidden">
+              <div className="flex-1 flex flex-col gap-2 p-2 sm:p-3 overflow-y-auto overflow-x-hidden scrollbar-none">
                 
                 {/* ─── EXPANDED IPL BROADCAST SCORECARD HUD (ROOMY & NON-STICKING) ─── */}
                 <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/20 flex flex-col gap-2 shadow-2xl shrink-0 my-0.5">
@@ -2437,60 +2437,37 @@ export default function BallByBallMatchSimulator({
                       </div>
                     </div>
                   </div>
+                  {/* Persistent Latest Delivery Commentary Bar */}
+                  {lastBall && (
+                    <div className="mt-1 px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-white/10 flex items-center justify-between text-[10px] sm:text-[11px] font-mono shadow-sm">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className={`px-2 py-0.5 rounded-md font-black text-[9px] sm:text-[10px] ${
+                          lastBall.isWicket ? 'bg-rose-600 text-white animate-pulse' :
+                          lastBall.isSix ? 'bg-amber-400 text-slate-950 font-black' :
+                          lastBall.isFour ? 'bg-sky-400 text-slate-950 font-black' :
+                          lastBall.runs > 0 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-gray-300'
+                        }`}>
+                          {lastBall.isWicket ? 'WICKET!' : lastBall.isSix ? 'SIX (6)' : lastBall.isFour ? 'FOUR (4)' : `${lastBall.runs} RUN${lastBall.runs !== 1 ? 'S' : ''}`}
+                        </span>
+                        <span className="text-gray-200 truncate">
+                          {lastBall.commentary || `${lastBall.striker} faced ${lastBall.bowler}`}
+                        </span>
+                      </div>
+                      <span className="text-amber-300 font-bold text-[10px] shrink-0 ml-2">
+                        {lastBall.over}.{lastBall.ball} ov
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* ─── ARENA FIELD POV: 3D THREE.JS STADIUM OR 2D RADAR ─── */}
-                <div className="relative my-1 min-h-[320px] sm:min-h-[380px] md:min-h-[440px] flex-1 rounded-2xl overflow-hidden shadow-2xl select-none flex flex-col">
-                  {/* View Mode Switcher Pill */}
-                  <div className="absolute top-2 right-3 z-30 flex items-center gap-1 bg-slate-950/90 backdrop-blur-md p-1 rounded-full border border-white/15 shadow-xl">
-                    <button
-                      onClick={() => {
-                        setArenaViewMode('3d');
-                        gameAudio.playUiTap('select');
-                      }}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black flex items-center gap-1 transition-all cursor-pointer ${
-                        arenaViewMode === '3d'
-                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md'
-                          : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      <Sparkles size={11} />
-                      <span>3D Arena</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setArenaViewMode('2d');
-                        gameAudio.playUiTap('select');
-                      }}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black flex items-center gap-1 transition-all cursor-pointer ${
-                        arenaViewMode === '2d'
-                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-slate-950 shadow-md'
-                          : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      <Shield size={11} />
-                      <span>2D Radar</span>
-                    </button>
+                {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR ─── */}
+                <div className="relative my-0.5 h-[200px] sm:h-[235px] shrink-0 rounded-2xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-2xl select-none">
+                  
+                  {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
+                  <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/85 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-sm">
+                    <span>🛡️ {fieldingStrategyLabel}</span>
+                    <span className="text-gray-400">({deepCount} deep)</span>
                   </div>
-
-                  {arenaViewMode === '3d' ? (
-                    <ThreeCricketArena
-                      strikerName={formatPlayerInitial(strikerPlayer?.name)}
-                      strikerRuns={activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0}
-                      nonStrikerName={formatPlayerInitial(nonStrikerPlayer?.name)}
-                      nonStrikerRuns={activeInnings.battingScorecard.find(b => b.name === nonStrikerPlayer?.name)?.runs || 0}
-                      bowlerName={formatPlayerInitial(bowlerPlayer?.name)}
-                      bowlerFigures={`${activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.wickets || 0}/${activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.runs || 0} (${activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'})`}
-                      battingTeamColor={battingTeamColor}
-                      bowlingTeamColor={bowlingTeamColor}
-                      isBallAnimating={isBallAnimating}
-                      lastBall={lastBall}
-                      fieldingStrategy={fieldingStrategyLabel}
-                      deepCount={deepCount}
-                    />
-                  ) : (
-                    /* 2D Enhanced Tactical Field with Separated Creases */
-                    <div className="relative w-full h-full flex-1 rounded-2xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900 via-emerald-950 to-slate-950 shadow-2xl select-none">
                   
                   {/* Stadium Floodlights (Top & Corner Glows) */}
                   <div className="absolute top-0 left-0 w-40 h-40 bg-amber-200/15 rounded-full blur-3xl pointer-events-none" />
@@ -2707,8 +2684,7 @@ export default function BallByBallMatchSimulator({
                     </div>
                   )}
 
-                  </div>
-                )}
+                  {/* Close 2D Tactical Field */}
                 </div>
 
             {/* Opening Lineup Selector Trigger when match is about to begin */}
@@ -2739,6 +2715,30 @@ export default function BallByBallMatchSimulator({
                 </button>
               </div>
             )}
+
+            {/* 💡 Step-by-Step Gameplay Guidance Banner */}
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-emerald-950/40 to-amber-500/10 border border-amber-500/40 flex items-center justify-between gap-2 shadow-lg shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-sm shrink-0">💡</span>
+                <div className="min-w-0 text-[10px] sm:text-[11px] font-mono">
+                  <span className="text-amber-300 font-bold">HOW TO PLAY: </span>
+                  <span className="text-gray-200">
+                    {isUserBatting
+                      ? '1. Pick Shot Intent below ➔ 2. Tap [PLAY SHOT] to score!'
+                      : '1. Pick Delivery below ➔ 2. Tap [BOWL BALL] to attack!'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowHowToPlay(true);
+                  gameAudio.playUiTap('select');
+                }}
+                className="px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[9px] font-bold uppercase tracking-wider shrink-0 cursor-pointer"
+              >
+                Full Guide 📖
+              </button>
+            </div>
 
             {/* ─── USER TACTICAL COMMAND DECK ─── */}
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 border border-white/15 shadow-xl shrink-0 flex flex-col gap-1.5">
