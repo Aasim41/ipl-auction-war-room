@@ -657,61 +657,58 @@ export default function MiniAuctionPage() {
   const displayPurse = getTeamPurse(selectedFranchiseView || campaign.teamId)
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-x-hidden">
-      <CampaignPhaseStepper />
-
-      <main className="w-full flex-1 flex flex-col justify-between px-2 sm:px-3 py-1.5 sm:py-2 overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain">
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3">
         
-        {/* Top Header Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
-          <div className="flex items-center gap-2">
+        {/* Minimal Broadcast Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-white/10 gap-2 shrink-0">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => {
                 gameAudio.playUiTap('light')
                 triggerGameHaptic('light')
                 router.push('/')
               }}
-              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
-              title="Return to Home Dashboard"
+              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Dashboard"
             >
               <ArrowLeft size={13} />
               <span>Back</span>
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-mono font-black uppercase">
-                  PART 3: LIVE MINI-AUCTION ARENA
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-black uppercase">
+                  MINI-AUCTION ARENA
                 </span>
-                <span className="text-[10px] text-gray-400">
-                  Pool of {auctionPool.length} Stars (AI Releases + Marquee)
+                <span className="text-[11px] text-gray-400 font-mono hidden sm:inline">
+                  Lot #{currentIndex + 1} of {auctionPool.length}
                 </span>
               </div>
-              <h1 className="text-lg sm:text-xl font-black font-display text-white">
-                IPL 2027 Gavel Bidding War Room
+              <h1 className="text-base sm:text-lg font-black font-display text-white">
+                Live Gavel Bidding Stage
               </h1>
             </div>
           </div>
 
-          {/* Top Actions: AI Auto-Auction + Sound + Finalize */}
+          {/* Top Actions */}
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setShowAutoAuctionModal(true)}
               disabled={isAutoSimulating || currentIndex >= auctionPool.length - 1}
-              className="px-3 sm:px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] cursor-pointer hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
-              title="Simulate the entire auction automatically based on your squad requirements"
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shrink-0"
+              title="Auto-simulate remaining auction"
             >
-              <Bot size={15} className="text-slate-950" />
-              <span>AI Auto-Complete Auction</span>
+              <Bot size={14} />
+              <span>AI Auto-Auction</span>
             </button>
 
             {(activeSquadCount >= 18 || currentIndex >= auctionPool.length - 1 || soldLog.length > 0) && (
               <button
                 onClick={handleFinishAuction}
-                className="px-3.5 sm:px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer hover:scale-[1.03] active:scale-95 transition-all shrink-0 animate-pulse"
-                title="Proceed to Playing XI & Schedule"
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+                title="Proceed to Playing XI"
               >
-                <span>Proceed to Playing XI</span>
-                <ArrowRight size={14} />
+                <span>Proceed to XI ➔</span>
               </button>
             )}
 
@@ -725,183 +722,47 @@ export default function MiniAuctionPage() {
           </div>
         </div>
 
-        {/* PROMINENT TEAM REQUIREMENTS & WAR ROOM COMMAND HUD */}
-        <div className="rounded-2xl bg-gradient-to-r from-slate-900/95 via-slate-900/90 to-slate-950 border-2 border-amber-500/35 p-2.5 sm:p-3 shadow-[0_0_25px_rgba(245,158,11,0.15)] mb-2.5 shrink-0">
-          
-          {/* HUD Top Bar */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-300 font-display">
-                {campaign.teamName} Official Squad Requirements HUD
-              </span>
-              <span className="text-[10px] text-gray-400 font-mono hidden md:inline">
-                (BCCI Cap: 18–25 Squad • Max 8 Overseas • Min 1 WK • Min 5 Bowlers)
-              </span>
+        {/* Minimal Tactical HUD Strip */}
+        <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-900 border border-white/10 flex flex-wrap items-center justify-between gap-2 shadow-md">
+          <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+            <div className="flex items-center gap-1 text-emerald-300 font-black">
+              <IndianRupee size={13} className="text-emerald-400" />
+              <span>₹{campaign.remainingPurse.toFixed(1)} Cr Purse</span>
             </div>
-
-            <div className="flex items-center gap-2">
-              {activeSquadCount >= 18 && wkCount >= 1 && bowlCount >= 5 && overseasCount <= 8 ? (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-bold flex items-center gap-1">
-                  <CheckCircle2 size={11} />
-                  <span>BCCI Minimums Satisfied</span>
-                </span>
-              ) : (
-                <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-mono font-bold flex items-center gap-1 animate-pulse">
-                  <AlertTriangle size={11} />
-                  <span>Requirements Deficits Open</span>
-                </span>
+            <span className="text-gray-500">•</span>
+            <div className="text-white font-bold">
+              <span>{activeSquadCount}/25 Squad</span>
+              {activeSquadCount < 18 && (
+                <span className="text-amber-400 text-[10px] ml-1">(need {slotsNeededForMin18} for 18)</span>
               )}
             </div>
+            <span className="text-gray-500">•</span>
+            <div className={overseasCount >= 8 ? 'text-rose-400 font-bold' : 'text-sky-300'}>
+              {overseasCount}/8 OS
+            </div>
+            <span className="text-gray-500">•</span>
+            <div className={wkCount < 1 ? 'text-rose-400 font-bold' : 'text-emerald-400'}>
+              {wkCount} WK
+            </div>
+            <span className="text-gray-500">•</span>
+            <div className={bowlCount < 5 ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+              {bowlCount}/5 Bowl
+            </div>
           </div>
 
-          {/* 4 Big Requirements Pillar Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5">
-            
-            {/* 1. Remaining Purse */}
-            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/80 border border-emerald-500/30 flex flex-col justify-between shadow-inner">
-              <div className="flex items-center justify-between text-gray-400 text-[10px] font-bold uppercase">
-                <span className="flex items-center gap-1 text-emerald-300">
-                  <IndianRupee size={12} />
-                  <span>Purse Remaining</span>
-                </span>
-                <span className="text-[9px] font-mono text-gray-500">₹125 Cr Cap</span>
-              </div>
-              <div className="text-xl sm:text-2xl font-black font-mono text-emerald-400 my-0.5">
-                ₹{campaign.remainingPurse.toFixed(2)} <span className="text-xs text-gray-500">Cr</span>
-              </div>
-              <div className="text-[10px] text-gray-400 font-mono truncate">
-                ~₹{avgPursePerSlot} Cr <span className="text-gray-500">/ open slot</span>
-              </div>
-            </div>
-
-            {/* 2. Roster Depth */}
-            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/80 border border-white/10 flex flex-col justify-between shadow-inner">
-              <div className="flex items-center justify-between text-gray-400 text-[10px] font-bold uppercase">
-                <span className="flex items-center gap-1 text-indigo-300">
-                  <Users size={12} />
-                  <span>Roster Depth</span>
-                </span>
-                <span className="text-[9px] font-mono text-gray-500">Min 18 / Max 25</span>
-              </div>
-              <div className="text-xl sm:text-2xl font-black font-mono text-white my-0.5">
-                {activeSquadCount} <span className="text-xs text-gray-500">/ 25</span>
-              </div>
-              <div className="text-[10px] font-bold truncate">
-                {activeSquadCount < 18 ? (
-                  <span className="text-rose-400 font-mono">🚨 Need {slotsNeededForMin18} more for min 18</span>
-                ) : (
-                  <span className="text-emerald-400 font-mono">✓ Min 18 Met ({openSquadSlots} open)</span>
-                )}
-              </div>
-            </div>
-
-            {/* 3. Overseas Quota */}
-            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/80 border border-white/10 flex flex-col justify-between shadow-inner">
-              <div className="flex items-center justify-between text-gray-400 text-[10px] font-bold uppercase">
-                <span className="flex items-center gap-1 text-sky-300">
-                  <Globe size={12} />
-                  <span>Overseas Slots</span>
-                </span>
-                <span className="text-[9px] font-mono text-gray-500">Max 8 Allowed</span>
-              </div>
-              <div className="text-xl sm:text-2xl font-black font-mono text-sky-300 my-0.5">
-                {overseasCount} <span className="text-xs text-gray-500">/ 8</span>
-              </div>
-              <div className="text-[10px] font-bold truncate">
-                {overseasCount >= 8 ? (
-                  <span className="text-rose-400 font-mono">🚫 Cap Reached (No OS bids)</span>
-                ) : (
-                  <span className="text-sky-400 font-mono">✓ {openOverseasSlots} slots available</span>
-                )}
-              </div>
-            </div>
-
-            {/* 4. Positional Quotas */}
-            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/80 border border-white/10 flex flex-col justify-between shadow-inner">
-              <div className="flex items-center justify-between text-gray-400 text-[10px] font-bold uppercase mb-1">
-                <span className="flex items-center gap-1 text-amber-300">
-                  <Shield size={12} />
-                  <span>Role Quotas</span>
-                </span>
-                <span className="text-[9px] font-mono text-gray-500">Target Breakdown</span>
-              </div>
-              <div className="grid grid-cols-2 gap-1 text-[10px] font-mono font-bold">
-                <span className={`px-1.5 py-0.5 rounded text-center border ${
-                  wkCount === 0 
-                    ? 'bg-rose-500/25 text-rose-300 border-rose-500/50 animate-pulse' 
-                    : wkCount === 1 
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
-                    : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                }`}>
-                  WK: {wkCount} {wkCount === 0 ? '🚨 0/1' : wkCount === 1 ? '⚠️ 1' : '✓'}
-                </span>
-                <span className={`px-1.5 py-0.5 rounded text-center border ${
-                  bowlCount < 5 
-                    ? 'bg-rose-500/25 text-rose-300 border-rose-500/50' 
-                    : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                }`}>
-                  BOWL: {bowlCount} {bowlCount < 5 ? `🚨 ${bowlCount}/5` : '✓'}
-                </span>
-                <span className={`px-1.5 py-0.5 rounded text-center border ${
-                  batCount < 4 
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
-                    : 'bg-white/5 text-gray-200 border-white/10'
-                }`}>
-                  BAT: {batCount}
-                </span>
-                <span className="px-1.5 py-0.5 rounded text-center border bg-white/5 text-gray-200 border-white/10">
-                  AR: {arCount}
-                </span>
-              </div>
-              <div className="text-[9px] text-gray-500 font-mono mt-0.5 truncate">
-                Need ≥1 WK • ≥5 Bowlers for Playing XI
-              </div>
-            </div>
-
-          </div>
-
-          {/* Current Player Tactical Fit Recommendation */}
           {tacticalMatchInfo && (
-            <div className={`mt-2 p-1.5 sm:p-2 rounded-xl border flex items-center justify-between gap-2 text-xs transition-all ${
-              tacticalMatchInfo.type === 'urgent'
-                ? 'bg-rose-500/15 border-rose-500/40 text-rose-200'
-                : tacticalMatchInfo.type === 'danger'
-                ? 'bg-rose-950/40 border-rose-500/30 text-rose-300'
-                : tacticalMatchInfo.type === 'warning'
-                ? 'bg-amber-500/15 border-amber-500/30 text-amber-200'
-                : tacticalMatchInfo.type === 'match'
-                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-200'
-                : 'bg-white/5 border-white/10 text-gray-300'
-            }`}>
-              <div className="flex items-center gap-2 truncate">
-                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black font-mono uppercase tracking-wider shrink-0 ${
-                  tacticalMatchInfo.type === 'urgent'
-                    ? 'bg-rose-600 text-white'
-                    : tacticalMatchInfo.type === 'danger'
-                    ? 'bg-rose-800 text-white'
-                    : tacticalMatchInfo.type === 'warning'
-                    ? 'bg-amber-500 text-slate-950 font-black'
-                    : tacticalMatchInfo.type === 'match'
-                    ? 'bg-emerald-500 text-slate-950 font-black'
-                    : 'bg-indigo-600 text-white'
-                }`}>
-                  {tacticalMatchInfo.badge}
-                </span>
-                <span className="text-[11px] truncate font-medium">
-                  {tacticalMatchInfo.text}
-                </span>
-              </div>
-
-              <div className="shrink-0 flex items-center gap-1.5 font-mono text-[10px] text-gray-400">
-                <span>Slot Impact:</span>
-                <strong className="text-white">
-                  {currentPlayer?.is_overseas ? `${overseasCount + 1}/8 OS` : `${overseasCount}/8 OS`} • {activeSquadCount + 1}/25
-                </strong>
-              </div>
+            <div className="flex items-center gap-1.5 text-[11px] font-mono">
+              <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                tacticalMatchInfo.type === 'urgent'
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                  : tacticalMatchInfo.type === 'warning'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+              }`}>
+                {tacticalMatchInfo.badge}
+              </span>
             </div>
           )}
-
         </div>
 
         {/* 2-Pane Auction Stage (Side-by-side in landscape!) */}
