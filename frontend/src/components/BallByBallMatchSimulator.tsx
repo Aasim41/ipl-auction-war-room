@@ -488,26 +488,101 @@ export default function BallByBallMatchSimulator({
     setLastShotTraj(null);
   };
 
-  // Initialize Match Setup on Open
+  const persistMatchState = (overrides?: Partial<any>) => {
+    if (!matchFixture) return;
+    try {
+      const stateToSave = {
+        fixtureMatchNo: matchFixture.matchNo,
+        matchKey: currentMatchKey,
+        tossPhase,
+        userCoinCall,
+        coinResult,
+        tossWinner,
+        tossDecision,
+        tossSummaryText,
+        aBatsFirst,
+        bat1Squad,
+        bowl1Squad,
+        currentInnings,
+        inn1,
+        inn2,
+        strikerIdx,
+        nonStrikerIdx,
+        nextBatterIdx,
+        currentBowlerIdx,
+        battingTactic,
+        bowlingTactic,
+        matchDone,
+        matchResultSummary,
+        potm,
+        lastSavedTime: Date.now(),
+        ...overrides
+      };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auctionxi_active_match_simulation', JSON.stringify(stateToSave));
+      }
+      useCampaignStore.getState().saveActiveMatchSimulation?.(stateToSave);
+    } catch (e) {
+      console.warn('Failed to persist match state:', e);
+    }
+  };
+
+  const [resumedBanner, setResumedBanner] = useState<string | null>(null);
+
+  // Initialize Match Setup on Open (with Match Resumption Support)
   useEffect(() => {
     if (!isOpen) {
       setIsPlaying(false);
       if (timerRef.current) clearInterval(timerRef.current);
-      matchInitializedKeyRef.current = null;
-      setTossPhase('ceremony');
-      setCoinResult(null);
-      setTossWinner(null);
-      setTossDecision(null);
-      setTossSummaryText('');
       return;
     }
 
     if (matchInitializedKeyRef.current === currentMatchKey && inn1) {
       return;
     }
+
+    // Check if there is an in-progress saved match to resume
+    let savedSim = useCampaignStore.getState().getActiveCampaign()?.activeMatchSimulation;
+    if (!savedSim && typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('auctionxi_active_match_simulation');
+        if (raw) savedSim = JSON.parse(raw);
+      } catch (e) {}
+    }
+
+    if (savedSim && (savedSim.fixtureMatchNo === matchFixture?.matchNo || savedSim.matchKey === currentMatchKey) && !savedSim.matchDone && savedSim.inn1) {
+      matchInitializedKeyRef.current = currentMatchKey;
+      setABatsFirst(savedSim.aBatsFirst ?? true);
+      if (savedSim.bat1Squad?.length) setBat1Squad(savedSim.bat1Squad);
+      if (savedSim.bowl1Squad?.length) setBowl1Squad(savedSim.bowl1Squad);
+      setInn1(savedSim.inn1);
+      setInn2(savedSim.inn2);
+      setCurrentInnings(savedSim.currentInnings || 1);
+      setStrikerIdx(savedSim.strikerIdx || 0);
+      setNonStrikerIdx(savedSim.nonStrikerIdx || 1);
+      setNextBatterIdx(savedSim.nextBatterIdx || 2);
+      setCurrentBowlerIdx(savedSim.currentBowlerIdx || 0);
+      setBattingTactic(savedSim.battingTactic || 'ROTATE');
+      setBowlingTactic(savedSim.bowlingTactic || 'GOOD_LENGTH');
+      setTossPhase(savedSim.tossPhase || 'arena');
+      setTossSummaryText(savedSim.tossSummaryText || '');
+      setUserCoinCall(savedSim.userCoinCall || 'heads');
+      setCoinResult(savedSim.coinResult || null);
+      setTossWinner(savedSim.tossWinner || null);
+      setTossDecision(savedSim.tossDecision || null);
+      setMatchDone(false);
+      setIsPlaying(false);
+
+      const activeInn = (savedSim.currentInnings === 2 ? savedSim.inn2 : savedSim.inn1) || savedSim.inn1;
+      const bCount = activeInn?.balls?.length || 0;
+      setResumedBanner(`⚡ Resumed Match: Over ${Math.floor(bCount / 6)}.${bCount % 6} (${activeInn?.totalRuns || 0}/${activeInn?.totalWickets || 0})`);
+      setTimeout(() => setResumedBanner(null), 4000);
+      return;
+    }
+
     matchInitializedKeyRef.current = currentMatchKey;
 
-    // Default setup
+    // Default fresh match setup
     setupMatchTeams(true);
   }, [isOpen, currentMatchKey]);
 
@@ -550,6 +625,11 @@ export default function BallByBallMatchSimulator({
     setTossPhase('arena');
     gameAudio.playUiTap('select');
     triggerGameHaptic('light');
+    persistMatchState({
+      tossPhase: 'arena',
+      tossSummaryText: summary,
+      aBatsFirst: electedToBat
+    });
   };
 
   const handleQuickTossSkip = () => {
@@ -560,6 +640,11 @@ export default function BallByBallMatchSimulator({
       : `${rivalFranchise.name} won the toss and elected to bat first`;
     setTossSummaryText(summary);
     setTossPhase('arena');
+    persistMatchState({
+      tossPhase: 'arena',
+      tossSummaryText: summary,
+      aBatsFirst: userBatsFirst
+    });
   };
 
   // Is User's Team currently batting or bowling?
@@ -1052,6 +1137,36 @@ export default function BallByBallMatchSimulator({
       pomPlayer: potmData.player,
       pomStats: potmData.stats
     };
+
+    const fullScorecard: MatchScorecard = {
+      tossSummary: tossSummaryText || `${fInn1.teamName} batted first`,
+      inn1: {
+        teamName: fInn1.teamName,
+        teamShort: fInn1.teamShort,
+        teamColor: fInn1.teamColor,
+        totalRuns: fInn1.totalRuns,
+        totalWickets: fInn1.totalWickets,
+        oversPlayed: fInn1.oversPlayed,
+        battingScorecard: fInn1.battingScorecard,
+        bowlingFigures: fInn1.bowlingFigures
+      },
+      inn2: {
+        teamName: fInn2.teamName,
+        teamShort: fInn2.teamShort,
+        teamColor: fInn2.teamColor,
+        totalRuns: fInn2.totalRuns,
+        totalWickets: fInn2.totalWickets,
+        oversPlayed: fInn2.oversPlayed,
+        battingScorecard: fInn2.battingScorecard,
+        bowlingFigures: fInn2.bowlingFigures
+      }
+    };
+    (summary as any).scorecard = fullScorecard;
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auctionxi_active_match_simulation');
+    }
+    useCampaignStore.getState().clearActiveMatchSimulation?.();
 
     setMatchResultSummary(summary);
     if (onMatchComplete) {
