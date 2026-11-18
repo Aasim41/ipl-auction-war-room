@@ -231,8 +231,8 @@ export default function TradeWindowPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-13 sm:pt-14 w-full max-w-full overflow-x-hidden touch-pan-y">
-      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
+    <div className="h-[100dvh] min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-11 sm:pt-13 w-full max-w-full overflow-hidden touch-pan-y">
+      <main className="w-full flex-1 flex flex-col px-2 sm:px-3 py-1 sm:py-2 overflow-hidden min-h-0">
         
         {/* Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
@@ -381,15 +381,15 @@ export default function TradeWindowPage() {
         </div>
 
         {/* True 3-Column Side-by-Side Trade Interface (Your Team | Deal Room in Middle | Rival Team) */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch w-full min-h-[440px] flex-1 overflow-hidden">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch w-full flex-1 min-h-0 overflow-hidden">
           
           {/* Column 1 (Left): Your Franchise Squad */}
-          <div className={`flex-1 min-w-0 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+          <div className={`flex-1 min-w-0 h-full p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col shadow-xl transition-all overflow-hidden ${
             mobileTab !== 'my' ? 'hidden sm:flex' : 'flex'
           } ${
             playerOut ? 'ring-2 ring-rose-500/40 shadow-rose-500/10' : ''
           }`}>
-            <div>
+            <div className="shrink-0">
               <div className="flex items-center justify-between pb-1.5 sm:pb-2 mb-2 border-b border-white/10 gap-1">
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                   <TeamLogo teamId={myFranchise.id} size={22} className="shrink-0" />
@@ -414,7 +414,7 @@ export default function TradeWindowPage() {
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-1 sm:space-y-1.5 max-h-[280px] sm:max-h-[380px] pr-0.5">
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1 sm:space-y-1.5 pr-0.5">
               {filteredMySquad.map((p) => {
                 const isSelected = playerOut?.player_id === p.player_id
                 return (
