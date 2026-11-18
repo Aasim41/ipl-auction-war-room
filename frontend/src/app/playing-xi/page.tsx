@@ -595,7 +595,7 @@ export default function PlayingXIPage() {
                     <div className="text-xs font-bold text-white mt-0.5 truncate">
                       {impactPlayer ? formatPlayerInitial(impactPlayer.name) : 'Select Reserve'}
                       <span className="text-[11px] text-gray-400 font-mono ml-1.5 font-normal">
-                        ({impactPlayer?.role} • OVR {impactPlayer?.Power_Index})
+                        ({impactPlayer?.role})
                       </span>
                     </div>
                   </div>
@@ -618,8 +618,9 @@ export default function PlayingXIPage() {
                   </span>
                   <span className="text-[10px] text-gray-400 font-normal hidden sm:inline">(Order 1 to 11 • Tap arrows to reorder)</span>
                 </div>
-                <span className="text-xs font-mono font-bold text-amber-400">
-                  Avg OVR: {Math.round(fullPlayingXI.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0) / 11)}
+                <span className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1">
+                  <CheckCircle2 size={13} />
+                  <span>Verified 11</span>
                 </span>
               </div>
 
@@ -673,10 +674,10 @@ export default function PlayingXIPage() {
                           </div>
                         </div>
 
-                        {/* Right: Stats Summary & Re-order Controls */}
+                        {/* Right: Salary & Re-order Controls */}
                         <div className="flex items-center gap-2 shrink-0">
-                          <div className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono font-bold text-xs">
-                            OVR {player.Power_Index}
+                          <div className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 font-mono font-bold text-xs">
+                            ₹{player.price}Cr
                           </div>
 
                           {/* Move Up/Down Controls */}
@@ -1170,8 +1171,7 @@ export default function PlayingXIPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs font-black text-amber-300 font-mono">OVR {bp.Power_Index}</div>
-                        <span className="text-[10px] text-amber-400 font-bold">Tap to Swap</span>
+                        <span className="text-[10px] text-amber-400 font-bold block">Tap to Swap</span>
                       </div>
                     </div>
                   ))

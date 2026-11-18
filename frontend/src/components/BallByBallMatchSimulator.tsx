@@ -3190,9 +3190,6 @@ export default function BallByBallMatchSimulator({
                               )}
                               <span className="text-[8px] px-1 rounded bg-white/10 text-gray-300 font-mono">{player.role}</span>
                             </div>
-                            <span className="text-[10px] text-gray-400 font-mono">
-                              OVR {player.Power_Index || 80}
-                            </span>
                           </div>
                         </div>
 

@@ -717,18 +717,32 @@ export default function TradeWindowPage() {
               </div>
             </div>
 
-            {/* Execute Button */}
+            {/* Execute Button with Dual Team Colors */}
             <button
               type="button"
               onClick={handleExecuteTrade}
               disabled={!evaluation.acceptable || isTradeLocked || isTradingAnimation}
-              className={`w-full py-2.5 sm:py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer ${
+              style={evaluation.acceptable ? {
+                background: `linear-gradient(135deg, ${myFranchise.color} 0%, #082014 45%, #082014 55%, ${rivalFranchise.color} 100%)`,
+                boxShadow: `0 0 20px ${myFranchise.color}60, 0 0 20px ${rivalFranchise.color}60`
+              } : undefined}
+              className={`w-full py-2.5 sm:py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer border ${
                 evaluation.acceptable
-                  ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.5)] hover:brightness-110 animate-pulse'
-                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.2)]'
+                  ? 'border-white/30 text-white hover:brightness-110 shadow-2xl animate-pulse'
+                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 disabled:opacity-30 disabled:cursor-not-allowed border-transparent shadow-[0_0_20px_rgba(245,158,11,0.2)]'
               }`}
             >
-              {isTradingAnimation ? 'Executing...' : evaluation.acceptable ? '🤝 Confirm & Seal Trade' : 'Confirm Trade'}
+              {isTradingAnimation ? (
+                'Executing Trade...'
+              ) : evaluation.acceptable ? (
+                <div className="flex items-center justify-center gap-2">
+                  <TeamLogo teamId={myFranchise.id} size={18} />
+                  <span>Confirm Trade ({myFranchise.short} ⇄ {rivalFranchise.short})</span>
+                  <TeamLogo teamId={rivalFranchise.id} size={18} />
+                </div>
+              ) : (
+                'Confirm Trade'
+              )}
             </button>
           </div>
 
@@ -791,8 +805,13 @@ export default function TradeWindowPage() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-[11px] sm:text-xs font-black text-amber-300 font-mono">{p.Power_Index}</div>
-                      <span className="text-[8px] sm:text-[9px] text-gray-500 block">{isSelected ? '✓' : 'Request'}</span>
+                      <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all ${
+                        isSelected 
+                          ? 'bg-emerald-500 text-slate-950 font-black shadow-sm' 
+                          : 'bg-white/10 text-gray-300'
+                      }`}>
+                        {isSelected ? '✓ Selected' : 'Request'}
+                      </span>
                     </div>
                   </div>
                 )
