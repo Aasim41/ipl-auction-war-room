@@ -524,10 +524,10 @@ export default function MiniAuctionPage() {
     : inspectingFranchise.squad2026
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-12 sm:pt-14 overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-x-hidden">
       <CampaignPhaseStepper />
 
-      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col justify-between overflow-x-hidden">
+      <main className="w-full flex-1 flex flex-col justify-between px-2 sm:px-3 py-1.5 sm:py-2 overflow-x-hidden">
         
         {/* Top Header Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
@@ -1310,8 +1310,8 @@ export default function MiniAuctionPage() {
 
       {/* MODAL 1: Quick Player Preview Modal from Pool */}
       {previewPlayer && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="p-5 rounded-3xl bg-slate-900 border border-amber-500/30 max-w-md w-full shadow-2xl relative animate-scale-up">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-y-auto touch-pan-y">
+          <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900 border border-amber-500/30 max-w-md w-full shadow-2xl relative animate-scale-up max-h-[94dvh] overflow-y-auto">
             <button
               onClick={() => setPreviewPlayer(null)}
               className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white"
@@ -1370,8 +1370,8 @@ export default function MiniAuctionPage() {
 
       {/* MODAL 2: Full 64-Player Auction Pool Grid */}
       {showFullPoolModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6">
-          <div className="p-4 sm:p-6 rounded-3xl bg-slate-900 border border-white/15 max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl relative animate-scale-up">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto touch-pan-y">
+          <div className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900 border border-white/15 max-w-4xl w-full max-h-[96dvh] flex flex-col shadow-2xl relative animate-scale-up">
             
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
               <div>
@@ -1507,35 +1507,35 @@ export default function MiniAuctionPage() {
 
       {/* MODAL 3: AI Auto-Auction Confirmation Modal */}
       {showAutoAuctionModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="p-6 rounded-3xl bg-slate-900 border border-amber-500/40 max-w-md w-full shadow-2xl relative animate-scale-up">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
-              <Bot size={26} className="text-slate-950" />
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-y-auto touch-pan-y">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-900 border border-amber-500/40 max-w-md w-full shadow-2xl relative animate-scale-up max-h-[94dvh] overflow-y-auto">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center mb-2.5 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+              <Bot size={22} className="text-slate-950" />
             </div>
 
-            <h3 className="text-lg font-black font-display text-white">
+            <h3 className="text-base sm:text-lg font-black font-display text-white">
               AI Franchise Auto-Draft Director
             </h3>
 
-            <p className="text-xs text-gray-300 mt-1 leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-gray-300 mt-1 leading-relaxed">
               Not interested in bidding through all remaining auction lots manually? Let the AI Director complete the auction based on your franchise requirements:
             </p>
 
-            <div className="my-3 p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-1.5 text-[11px] font-mono">
+            <div className="my-2.5 p-2.5 sm:p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-1.5 text-[10px] sm:text-[11px] font-mono">
               <div className="flex items-center gap-1.5 text-emerald-300">
-                <CheckCircle2 size={13} />
+                <CheckCircle2 size={13} className="shrink-0" />
                 <span>Builds squad to meet BCCI 18-player minimum</span>
               </div>
               <div className="flex items-center gap-1.5 text-indigo-300">
-                <CheckCircle2 size={13} />
+                <CheckCircle2 size={13} className="shrink-0" />
                 <span>Prioritizes missing roles (Wicketkeepers, Bowlers, Batsmen)</span>
               </div>
               <div className="flex items-center gap-1.5 text-sky-300">
-                <CheckCircle2 size={13} />
+                <CheckCircle2 size={13} className="shrink-0" />
                 <span>Strictly enforces 8 Overseas player maximum</span>
               </div>
               <div className="flex items-center gap-1.5 text-amber-300">
-                <CheckCircle2 size={13} />
+                <CheckCircle2 size={13} className="shrink-0" />
                 <span>Manages ₹{campaign.remainingPurse.toFixed(2)} Cr budget with price safety</span>
               </div>
             </div>
@@ -1543,17 +1543,17 @@ export default function MiniAuctionPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowAutoAuctionModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase cursor-pointer"
+                className="flex-1 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase cursor-pointer"
               >
-                Cancel & Bid Manually
+                Cancel
               </button>
 
               <button
                 onClick={handleAIAutoCompleteAuction}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-lg cursor-pointer hover:bg-amber-400"
+                className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-lg cursor-pointer hover:bg-amber-400"
               >
                 <Zap size={14} />
-                <span>Simulate Auction</span>
+                <span>Simulate</span>
               </button>
             </div>
           </div>
@@ -1577,99 +1577,124 @@ export default function MiniAuctionPage() {
 
       {/* MODAL 4: AI Auto-Auction Results Summary */}
       {autoAuctionSummary && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="p-6 rounded-3xl bg-slate-900 border-2 border-amber-500/50 max-w-xl w-full shadow-2xl relative animate-scale-up max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto touch-pan-y overscroll-contain">
+          <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900 border-2 border-amber-500/50 max-w-4xl w-full shadow-2xl relative animate-scale-up h-auto max-h-[96dvh] flex flex-col overflow-hidden">
             
-            <div className="text-center pb-3 border-b border-white/10 shrink-0">
-              <span className="px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-black uppercase">
-                AUCTION OFFICIALLY CONCLUDED
-              </span>
-              <h2 className="text-2xl font-black font-display text-white mt-1">
-                2027 Squad Successfully Drafted!
-              </h2>
-              <p className="text-xs text-gray-300">
-                AI Director drafted <strong className="text-amber-400">{autoAuctionSummary.purchased.length} new stars</strong> to complete your official roster.
-              </p>
-            </div>
+            {/* Responsive 2-Column War Room Layout in Landscape, Stacked in Portrait */}
+            <div className="flex flex-col md:flex-row gap-3 sm:gap-4 flex-1 min-h-0 overflow-hidden">
+              
+              {/* Left Column: Official Declaration, BCCI Checkpoints & Action Buttons */}
+              <div className="md:w-5/12 flex flex-col justify-between shrink-0">
+                <div>
+                  <div className="text-left pb-2 border-b border-white/10 shrink-0">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-black uppercase">
+                      AUCTION OFFICIALLY CONCLUDED
+                    </span>
+                    <h2 className="text-lg sm:text-2xl font-black font-display text-white mt-1">
+                      2027 Squad Successfully Drafted!
+                    </h2>
+                    <p className="text-[11px] sm:text-xs text-gray-300 mt-0.5">
+                      AI Director drafted <strong className="text-amber-400">{autoAuctionSummary.purchased.length} new stars</strong> to complete your official roster.
+                    </p>
+                  </div>
 
-            {/* Checklist of BCCI Requirements */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3 shrink-0 text-center font-mono text-xs">
-              <div className="p-2 rounded-xl bg-slate-950 border border-white/10">
-                <span className="text-[9px] text-gray-400 uppercase block">Roster Size</span>
-                <strong className="text-white text-sm">{autoAuctionSummary.finalSquadCount} / 25</strong>
-                <span className="text-[9px] text-emerald-400 block">✓ Min 18 Met</span>
-              </div>
-              <div className="p-2 rounded-xl bg-slate-950 border border-white/10">
-                <span className="text-[9px] text-gray-400 uppercase block">Overseas</span>
-                <strong className="text-sky-300 text-sm">{autoAuctionSummary.finalOverseasCount} / 8</strong>
-                <span className="text-[9px] text-emerald-400 block">✓ Cap Safe</span>
-              </div>
-              <div className="p-2 rounded-xl bg-slate-950 border border-white/10">
-                <span className="text-[9px] text-gray-400 uppercase block">Keepers</span>
-                <strong className="text-indigo-300 text-sm">{autoAuctionSummary.roleBreakdown.wk} WK</strong>
-                <span className="text-[9px] text-emerald-400 block">✓ Min 1 Met</span>
-              </div>
-              <div className="p-2 rounded-xl bg-slate-950 border border-white/10">
-                <span className="text-[9px] text-gray-400 uppercase block">Purse Left</span>
-                <strong className="text-emerald-400 text-sm">₹{autoAuctionSummary.finalPurse.toFixed(2)} Cr</strong>
-                <span className="text-[9px] text-gray-500 block">Spend: ₹{autoAuctionSummary.totalSpent.toFixed(2)}Cr</span>
-              </div>
-            </div>
-
-            {/* List of Acquired Recruits */}
-            <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 my-2">
-              <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">
-                Acquired Players ({autoAuctionSummary.purchased.length}):
-              </span>
-              {autoAuctionSummary.purchased.length === 0 ? (
-                <div className="p-4 rounded-xl bg-white/5 text-center text-xs text-gray-400">
-                  Your squad was already complete! No additional auction purchases needed.
-                </div>
-              ) : (
-                autoAuctionSummary.purchased.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2 rounded-xl bg-slate-950/80 border border-white/10 flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white">{item.player.name}</span>
-                      <span className="px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-mono font-bold">
-                        {item.player.role}
-                      </span>
-                      {item.player.is_overseas && (
-                        <span className="px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 text-[9px] font-mono font-bold">
-                          OS
-                        </span>
-                      )}
+                  {/* Checklist of BCCI Requirements (2x2 Grid) */}
+                  <div className="grid grid-cols-2 gap-1.5 my-2.5 text-center font-mono text-xs">
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                      <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Roster Size</span>
+                      <strong className="text-white text-xs sm:text-sm">{autoAuctionSummary.finalSquadCount} / 25</strong>
+                      <span className="text-[8px] sm:text-[9px] text-emerald-400 block">✓ Min 18 Met</span>
                     </div>
-                    <div className="flex items-center gap-2 font-mono">
-                      <span className="text-amber-400 text-[10px]">{item.player.powerIndex} OVR</span>
-                      <span className="text-emerald-400 font-bold">₹{item.price.toFixed(2)} Cr</span>
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                      <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Overseas</span>
+                      <strong className="text-sky-300 text-xs sm:text-sm">{autoAuctionSummary.finalOverseasCount} / 8</strong>
+                      <span className="text-[8px] sm:text-[9px] text-emerald-400 block">✓ Cap Safe</span>
+                    </div>
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                      <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Keepers</span>
+                      <strong className="text-indigo-300 text-xs sm:text-sm">{autoAuctionSummary.roleBreakdown.wk} WK</strong>
+                      <span className="text-[8px] sm:text-[9px] text-emerald-400 block">✓ Min 1 Met</span>
+                    </div>
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-slate-950 border border-white/10">
+                      <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase block">Purse Left</span>
+                      <strong className="text-emerald-400 text-xs sm:text-sm">₹{autoAuctionSummary.finalPurse.toFixed(2)} Cr</strong>
+                      <span className="text-[8px] sm:text-[9px] text-gray-500 block">Spend: ₹{autoAuctionSummary.totalSpent.toFixed(2)}Cr</span>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
 
-            {/* Bottom Proceed CTA */}
-            <div className="pt-3 border-t border-white/10 flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => {
-                  setAutoAuctionSummary(null);
-                  setSideTab('ledger');
-                }}
-                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase cursor-pointer"
-              >
-                Review Ledger
-              </button>
+                {/* Primary Action Buttons */}
+                <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row gap-2 shrink-0">
+                  <button
+                    onClick={() => {
+                      setAutoAuctionSummary(null);
+                      setSideTab('ledger');
+                    }}
+                    className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase cursor-pointer transition-all active:scale-95 text-center"
+                  >
+                    Review Ledger
+                  </button>
 
-              <button
-                onClick={handleFinishAuction}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer"
-              >
-                <span>Proceed to Playing XI & Schedule</span>
-                <ArrowRight size={14} />
-              </button>
+                  <button
+                    onClick={handleFinishAuction}
+                    className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer transition-all active:scale-95"
+                  >
+                    <span>Proceed to Playing XI & Schedule</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Scrollable Acquired Recruits with Touch-Pan-Y */}
+              <div className="md:w-7/12 flex flex-col flex-1 min-h-0 bg-slate-950/60 p-2 sm:p-3 rounded-2xl border border-white/10 overflow-hidden">
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0">
+                  <span className="text-[10px] sm:text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
+                    Acquired Recruits ({autoAuctionSummary.purchased.length} New Stars):
+                  </span>
+                  <span className="text-[9px] font-mono text-gray-400">
+                    Swipe to browse
+                  </span>
+                </div>
+
+                <div className="flex-1 min-h-[140px] overflow-y-auto overscroll-contain touch-pan-y space-y-1.5 pr-1 -webkit-overflow-scrolling-touch">
+                  {autoAuctionSummary.purchased.length === 0 ? (
+                    <div className="h-full flex items-center justify-center p-4 rounded-xl bg-white/5 text-center text-xs text-gray-400">
+                      Your squad was already complete! No additional auction purchases needed.
+                    </div>
+                  ) : (
+                    autoAuctionSummary.purchased.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2 sm:p-2.5 rounded-xl bg-slate-900 border border-white/10 hover:border-amber-500/40 flex items-center justify-between text-xs transition-all shadow-sm"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-5 h-5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
+                            #{idx + 1}
+                          </span>
+                          <div className="min-w-0 truncate">
+                            <div className="font-bold text-white truncate flex items-center gap-1.5">
+                              <span className="truncate">{item.player.name}</span>
+                              {item.player.is_overseas && (
+                                <span className="px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 text-[8px] font-mono font-bold shrink-0">
+                                  OS
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-gray-400 font-mono">
+                              {item.player.role} • {item.player.formerTeam ? `Ex: ${item.player.formerTeam}` : 'Free Agent'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2.5 font-mono shrink-0 pl-1">
+                          <span className="text-amber-400 text-[10px] font-bold">{item.player.powerIndex} OVR</span>
+                          <span className="text-emerald-400 font-black text-xs sm:text-sm">₹{item.price.toFixed(2)} Cr</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
             </div>
 
           </div>
