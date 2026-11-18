@@ -7,6 +7,7 @@ import { ThemeProvider } from "../components/ThemeProvider";
 import { Navbar } from "../components/Navbar";
 import { AmbientBackground } from "../components/AmbientBackground";
 import { CapacitorDeviceManager } from "../components/CapacitorDeviceManager";
+import { GlobalSwipeManager } from "../components/GlobalSwipeManager";
 
 export const metadata: Metadata = {
   title: "AuctionXI — Official IPL Franchise GM & Tournament Arena",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <CapacitorDeviceManager />
           <AmbientBackground />
           <Navbar />
+          <GlobalSwipeManager />
           <main className="w-full min-h-[100dvh] flex flex-col">
             {children}
           </main>

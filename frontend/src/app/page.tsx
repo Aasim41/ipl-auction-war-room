@@ -25,6 +25,7 @@ import { getFranchiseAI } from '../data/franchiseAI'
 import { OnboardingAuthModal } from '../components/OnboardingAuthModal'
 import { GameLoadingScreen } from '../components/GameLoadingScreen'
 import { GamerOnboardingModal } from '../components/GamerOnboardingModal'
+import ThreeChampionshipCup from '../components/ThreeChampionshipCup'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 const TEAMS = [
@@ -56,6 +57,32 @@ export default function UnifiedTeamSelectHomePage() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showLoading, setShowLoading] = useState(true)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [expandedFortress, setExpandedFortress] = useState(false)
+
+  const touchStartXRef = useRef<number | null>(null)
+  const touchStartYRef = useRef<number | null>(null)
+
+  const handleHeroTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX
+    touchStartYRef.current = e.touches[0].clientY
+  }
+
+  const handleHeroTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return
+    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current
+    const deltaY = e.changedTouches[0].clientY - touchStartYRef.current
+
+    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      const curIdx = TEAMS.findIndex(t => t.id === selectedTeamId)
+      if (deltaX < 0 && curIdx < TEAMS.length - 1) {
+        handleSelectTeamTab(TEAMS[curIdx + 1].id)
+      } else if (deltaX > 0 && curIdx > 0) {
+        handleSelectTeamTab(TEAMS[curIdx - 1].id)
+      }
+    }
+    touchStartXRef.current = null
+    touchStartYRef.current = null
+  }
 
   useEffect(() => {
     setMounted(true)
