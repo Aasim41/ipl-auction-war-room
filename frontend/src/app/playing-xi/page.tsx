@@ -306,11 +306,11 @@ export default function PlayingXIPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-x-hidden touch-pan-y">
-      <main className="w-full flex-1 flex flex-col justify-between px-2 sm:px-3 py-1.5 sm:py-2 overflow-x-hidden">
+    <div className="h-[100dvh] max-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-hidden select-none touch-pan-y">
+      <main className="w-full flex-1 min-h-0 flex flex-col justify-between px-2 sm:px-3 py-1 sm:py-2 overflow-hidden">
         
         {/* Banner with View Toggle (Lineup vs Schedule) */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-3 border-b border-white/10 gap-2 shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-1.5 mb-2 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => {
@@ -332,7 +332,7 @@ export default function PlayingXIPage() {
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-black uppercase">
                   PART 4: TOURNAMENT & MATCH ARENA
                 </span>
-                <span className="text-xs text-gray-400 font-mono">Official 74-Match IPL Campaign</span>
+                <span className="text-xs text-gray-400 font-mono hidden sm:inline">Official 74-Match IPL Campaign</span>
               </div>
               <h1 className="text-base sm:text-lg font-black font-display text-white">
                 {franchise.name} War Room & Matchday Operations
@@ -377,7 +377,7 @@ export default function PlayingXIPage() {
 
         {/* ─── TAB 1: PLAYING XI & PITCH TACTICAL SELECTION ─── */}
         {activeTab === 'xi' && (
-          <div className="space-y-3 flex-1 flex flex-col justify-between">
+          <div className="space-y-2 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
             {/* AI Strategy Toast Feedback */}
             {strategyToast && (
               <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-slate-900 to-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center justify-between gap-2 shadow-lg animate-fadeIn shrink-0">
@@ -450,13 +450,13 @@ export default function PlayingXIPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-12 landscape:grid-cols-12 gap-2.5 sm:gap-3 flex-1 min-h-0 overflow-y-auto md:overflow-hidden landscape:overflow-hidden">
               
               {/* Left 4 Columns: Stadium Vitals, AI Optimizer, & BCCI Compliance */}
-              <div className="lg:col-span-4 space-y-3 flex flex-col justify-between">
+              <div className="md:col-span-4 landscape:col-span-4 space-y-2.5 flex flex-col justify-between overflow-y-auto md:overflow-visible">
                 
                 {/* Stadium & Venue Calibration */}
-                <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
+                <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
                   <label className="text-xs font-black uppercase text-gray-200 block mb-1.5 flex items-center gap-1.5">
                     <MapPin size={13} className="text-amber-400" />
                     Match Fortress Stadium
@@ -471,18 +471,18 @@ export default function PlayingXIPage() {
                     ))}
                   </select>
 
-                  <div className="mt-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
+                  <div className="mt-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
                     <div className="font-bold text-amber-300 text-xs">{currentInsight.title}</div>
                     <div className="text-[11px] text-gray-300 mt-0.5">{currentInsight.behavior}</div>
-                    <div className="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1">
+                    <div className="text-[11px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
                       <Sparkles size={12} /> {currentInsight.boost}
                     </div>
                   </div>
                 </div>
 
                 {/* BCCI Compliance Status Bar */}
-                <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10">
-                  <div className="text-xs font-black uppercase text-gray-300 tracking-wider mb-2.5 flex items-center justify-between">
+                <div className="p-3 rounded-2xl bg-slate-900 border border-white/10">
+                  <div className="text-xs font-black uppercase text-gray-300 tracking-wider mb-2 flex items-center justify-between">
                     <span>BCCI Official Rule Validation</span>
                     {isCompliant ? (
                       <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
@@ -496,17 +496,17 @@ export default function PlayingXIPage() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                    <div className={`p-2 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className={`p-1.5 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
                       <div className="text-[10px] uppercase font-sans text-gray-400">Overseas</div>
-                      <div className="text-sm font-black mt-0.5">{overseasInXI}/4 Max</div>
+                      <div className="text-xs font-black mt-0.5">{overseasInXI}/4 Max</div>
                     </div>
-                    <div className={`p-2 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className={`p-1.5 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
                       <div className="text-[10px] uppercase font-sans text-gray-400">Keeper (WK)</div>
-                      <div className="text-sm font-black mt-0.5">{wkInXI} in XI</div>
+                      <div className="text-xs font-black mt-0.5">{wkInXI} in XI</div>
                     </div>
-                    <div className={`p-2 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
+                    <div className={`p-1.5 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
                       <div className="text-[10px] uppercase font-sans text-gray-400">Bowlers/AR</div>
-                      <div className="text-sm font-black mt-0.5">{bowlersInXI}/5 Min</div>
+                      <div className="text-xs font-black mt-0.5">{bowlersInXI}/5 Min</div>
                     </div>
                   </div>
                 </div>
@@ -515,24 +515,24 @@ export default function PlayingXIPage() {
                 <button
                   onClick={handleAutoOptimize}
                   disabled={isOptimizing}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
+                  className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
                 >
                   <Zap size={14} className={isOptimizing ? 'animate-spin' : ''} />
                   <span>
                     {isOptimizing 
                       ? `Adapting ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} Lineup...` 
-                      : `Auto-Pick Best ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} XI (AI Optimizer)`}
+                      : `Auto-Pick Best ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} XI`}
                   </span>
                 </button>
 
                 {/* Impact Player Slot */}
-                <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
+                <div className="p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1">
                       <Sparkles size={12} /> Impact Player Sub (12th Man)
                     </span>
                     <div className="text-xs font-black text-white mt-0.5">
-                      {impactPlayer ? impactPlayer.name : 'Select Reserve'}
+                      {impactPlayer ? formatPlayerInitial(impactPlayer.name) : 'Select Reserve'}
                     </div>
                     <div className="text-[11px] text-gray-400 font-mono">
                       {impactPlayer?.role} • OVR {impactPlayer?.Power_Index}
@@ -549,8 +549,8 @@ export default function PlayingXIPage() {
               </div>
 
               {/* Right 8 Columns: 2D Pitch Lineup in Proper Batting Order */}
-              <div className="lg:col-span-8 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+              <div className="md:col-span-8 landscape:col-span-8 p-3 sm:p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between min-h-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0">
                   <div className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-2">
                     <span className={lineupMode === 'bat_first' ? 'text-amber-400 font-black' : 'text-sky-400 font-black'}>
                       {lineupMode === 'bat_first' ? '🏏 Matchday Bat-First 11' : '🎯 Matchday Bowl-First 11'}
@@ -563,7 +563,7 @@ export default function PlayingXIPage() {
                 </div>
 
               {/* 11 Players in Real Batting Order */}
-              <div className={`space-y-1.5 overflow-y-auto max-h-[460px] pr-1 rounded-2xl transition-all ${
+              <div className={`space-y-1.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1 rounded-2xl transition-all ${
                 isOptimizing ? 'ring-2 ring-amber-400 p-1 animate-magic-sweep shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''
               }`}>
                 {fullPlayingXI.map((player, index) => {
@@ -579,7 +579,7 @@ export default function PlayingXIPage() {
                         </div>
                         <div className="min-w-0">
                           <div className="font-bold text-xs text-white flex items-center gap-1.5 truncate">
-                            <span className="truncate">{player.name}</span>
+                            <span className="truncate">{formatPlayerInitial(player.name)}</span>
                             {player.is_overseas && (
                               <span className="text-[9px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono shrink-0">
                                 OS ✈

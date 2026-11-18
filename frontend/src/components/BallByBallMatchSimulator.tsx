@@ -542,7 +542,7 @@ export default function BallByBallMatchSimulator({
     }
 
     // Check if there is an in-progress saved match to resume
-    let savedSim = useCampaignStore.getState().getActiveCampaign()?.activeMatchSimulation;
+    let savedSim: any = useCampaignStore.getState().getActiveCampaign()?.activeMatchSimulation;
     if (!savedSim && typeof window !== 'undefined') {
       try {
         const raw = localStorage.getItem('auctionxi_active_match_simulation');

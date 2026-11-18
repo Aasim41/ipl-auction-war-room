@@ -321,6 +321,7 @@ export interface UserCampaign {
   lockedPhases: Array<'trade' | 'retain_release' | 'mini_auction'>
   activeMatchSimulation?: {
     fixtureMatchNo: number;
+    matchKey?: string;
     tossPhase: 'ceremony' | 'arena';
     userCoinCall: 'heads' | 'tails';
     coinResult: 'heads' | 'tails' | null;
