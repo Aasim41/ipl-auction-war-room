@@ -1321,32 +1321,29 @@ export default function BallByBallMatchSimulator({
   const bowlingTeamColor = currentInnings === 1 ? (bowl1Squad[0]?.teamColor || '#38bdf8') : (bat1Squad[0]?.teamColor || '#38bdf8');
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 sm:p-3 md:p-4 bg-black/90 backdrop-blur-xl text-white overflow-hidden select-none">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 bg-slate-950 text-white overflow-hidden select-none">
       <div 
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="relative w-full max-w-6xl bg-slate-950 border-0 sm:border border-white/20 rounded-none sm:rounded-3xl flex flex-col h-[100dvh] sm:h-[94vh] max-h-none sm:max-h-[860px] shadow-2xl overflow-hidden"
+        className="relative w-full h-[100dvh] max-w-lg bg-slate-950 flex flex-col shadow-2xl overflow-hidden sm:border sm:border-white/20 sm:rounded-3xl sm:h-[96dvh]"
       >
         
         {/* Top Header & Navigation Bar */}
-        <div className="px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-900/90 border-b border-white/10 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center gap-1.5 font-display font-black text-xs sm:text-sm">
-              <TeamLogo teamId={myFranchise.short} size={22} />
+        <div className="px-3 py-2 bg-slate-900/90 border-b border-white/10 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 font-display font-black text-xs">
+              <TeamLogo teamId={myFranchise.short} size={20} />
               <span className="text-white font-bold">{myFranchise.short}</span>
-              <span className="text-gray-400 font-sans text-xs">vs</span>
+              <span className="text-gray-400 font-sans text-[11px]">vs</span>
               <span className="text-white font-bold">{rivalFranchise.short}</span>
-              <TeamLogo teamId={rivalFranchise.short} size={22} />
+              <TeamLogo teamId={rivalFranchise.short} size={20} />
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-mono hidden md:inline">
-              📍 {venueName}
-            </span>
             {tossPhase === 'ceremony' ? (
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
-                🪙 COIN TOSS CEREMONY
+              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                🪙 TOSS
               </span>
             ) : (
-              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
                 isUserBatting ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
               }`}>
                 {isUserBatting ? '🏏 BATTING' : '🎯 BOWLING'}
@@ -1355,53 +1352,43 @@ export default function BallByBallMatchSimulator({
           </div>
 
           {/* Tab selector & Sound Toggle */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5">
             {tossPhase === 'ceremony' ? (
               <button
                 onClick={handleQuickTossSkip}
-                className="px-3 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                className="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
                 title="Fast forward toss and jump to match arena"
               >
-                <Zap size={13} className="text-amber-400" />
-                <span className="hidden sm:inline">Quick Toss (Skip)</span>
-                <span className="sm:hidden">Skip</span>
+                <Zap size={12} className="text-amber-400" />
+                <span>Quick Toss</span>
               </button>
             ) : (
-              <>
-                {/* Rival AI Strategy Badge */}
-                <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[11px] font-mono">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
-                  <span className="font-bold">{rivalFranchise.short} AI:</span>
-                  <span className="text-gray-300">{rivalFranchise.short === 'CSK' ? 'Anchor & Spin Choke' : rivalFranchise.short === 'SRH' || rivalFranchise.short === 'MI' ? 'Powerplay Blitzkrieg' : rivalFranchise.short === 'RR' ? 'Moneyball Analytics' : 'Utility AI Matrix'}</span>
-                </div>
-
-                <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
-                  <button
-                    onClick={() => {
-                      setActiveTab('arena');
-                      gameAudio.playUiTap('light');
-                      triggerGameHaptic('light');
-                    }}
-                    className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activeTab === 'arena' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    Arena
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab('scorecard');
-                      gameAudio.playUiTap('light');
-                      triggerGameHaptic('light');
-                    }}
-                    className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    Scorecard
-                  </button>
-                </div>
-              </>
+              <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-white/10">
+                <button
+                  onClick={() => {
+                    setActiveTab('arena');
+                    gameAudio.playUiTap('light');
+                    triggerGameHaptic('light');
+                  }}
+                  className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                    activeTab === 'arena' ? 'bg-amber-500 text-slate-950 font-black' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Arena
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('scorecard');
+                    gameAudio.playUiTap('light');
+                    triggerGameHaptic('light');
+                  }}
+                  className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                    activeTab === 'scorecard' ? 'bg-amber-500 text-slate-950 font-black' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Scorecard
+                </button>
+              </div>
             )}
 
             {/* Sound Toggle */}
@@ -1417,61 +1404,59 @@ export default function BallByBallMatchSimulator({
                   ? 'bg-rose-500/20 border-rose-500/30 text-rose-300 hover:bg-rose-500/30'
                   : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30'
               }`}
-              title={isMuted ? 'Game Audio Muted (Click to Unmute)' : 'Game Audio Active (Click to Mute)'}
+              title={isMuted ? 'Game Audio Muted' : 'Game Audio Active'}
             >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="animate-pulse" />}
+              {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} className="animate-pulse" />}
             </button>
 
             <button
               onClick={onClose}
               className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
             >
-              <X size={18} />
+              <X size={17} />
             </button>
           </div>
         </div>
 
         {/* Dynamic Toss Ceremony View */}
         {tossPhase === 'ceremony' ? (
-          <div className="flex-1 flex flex-col justify-between p-3.5 sm:p-6 overflow-y-auto bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
-            {/* Captains & Team Showcase */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 shrink-0">
+          <div className="flex-1 flex flex-col justify-between p-3 overflow-y-auto touch-pan-y bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+            {/* Captains & Team Showcase - Compact 2-Col for Mobile Portrait */}
+            <div className="grid grid-cols-2 gap-2 shrink-0">
               {/* Your Team Card */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/90 border border-amber-500/30 flex items-center gap-3.5 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 px-2 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold rounded-bl-xl border-l border-b border-amber-500/30">
-                  HOME SQUAD
+              <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-amber-500/30 flex flex-col items-center text-center shadow-md relative overflow-hidden">
+                <div className="absolute top-0 right-0 px-1.5 py-0.2 bg-amber-500/20 text-amber-300 text-[8px] font-mono font-bold rounded-bl-lg">
+                  YOU
                 </div>
-                <div className="w-13 h-13 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1">
-                  <TeamLogo teamId={myFranchise.short} size={42} />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1 mb-1">
+                  <TeamLogo teamId={myFranchise.short} size={28} />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Your Franchise</div>
-                  <h3 className="text-sm sm:text-base font-black text-white truncate">{myFranchise.name}</h3>
-                  <div className="text-xs text-gray-300 font-medium mt-0.5 truncate">
-                    Captain: <span className="font-bold text-white">{mySquad[0]?.name || 'Franchise Captain'} (C)</span>
+                <div className="min-w-0 w-full">
+                  <h3 className="text-xs font-black text-white truncate">{myFranchise.short}</h3>
+                  <div className="text-[10px] text-gray-300 truncate">
+                    {mySquad[0]?.name || 'Captain'} (C)
                   </div>
-                  <div className="text-[10px] text-emerald-400 font-mono mt-0.5">
-                    ✓ Dual Lineups (Bat 1st & Bowl 1st) Ready
+                  <div className="text-[8px] text-emerald-400 font-mono mt-0.5 truncate">
+                    ✓ Dual Lineups Ready
                   </div>
                 </div>
               </div>
 
               {/* Rival Team Card */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center gap-3.5 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 px-2 py-0.5 bg-sky-500/20 text-sky-300 text-[10px] font-mono font-bold rounded-bl-xl border-l border-b border-sky-500/30">
-                  OPPOSITION
+              <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-sky-500/30 flex flex-col items-center text-center shadow-md relative overflow-hidden">
+                <div className="absolute top-0 right-0 px-1.5 py-0.2 bg-sky-500/20 text-sky-300 text-[8px] font-mono font-bold rounded-bl-lg">
+                  OPPONENT
                 </div>
-                <div className="w-13 h-13 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1">
-                  <TeamLogo teamId={rivalFranchise.short} size={42} />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1 mb-1">
+                  <TeamLogo teamId={rivalFranchise.short} size={28} />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Opponent</div>
-                  <h3 className="text-sm sm:text-base font-black text-white truncate">{rivalFranchise.name}</h3>
-                  <div className="text-xs text-gray-300 font-medium mt-0.5 truncate">
-                    Captain: <span className="font-bold text-white">{(rivalFranchise.squad2026?.[0]?.name) || 'Opposition Captain'} (C)</span>
+                <div className="min-w-0 w-full">
+                  <h3 className="text-xs font-black text-white truncate">{rivalFranchise.short}</h3>
+                  <div className="text-[10px] text-gray-300 truncate">
+                    {(rivalFranchise.squad2026?.[0]?.name) || 'Opp Captain'} (C)
                   </div>
-                  <div className="text-[10px] text-purple-300 font-mono mt-0.5 truncate">
-                    Tactics: {rivalFranchise.short === 'CSK' ? 'Anchor & Spin Choke' : rivalFranchise.short === 'SRH' || rivalFranchise.short === 'MI' ? 'Powerplay Blitzkrieg' : rivalFranchise.short === 'RR' ? 'Moneyball Analytics' : 'Aggressive Pace & Batting Depth'}
+                  <div className="text-[8px] text-purple-300 font-mono mt-0.5 truncate">
+                    {rivalFranchise.short === 'CSK' ? 'Spin Choke' : rivalFranchise.short === 'SRH' ? 'Blitzkrieg' : 'Aggressive'}
                   </div>
                 </div>
               </div>
@@ -1658,67 +1643,107 @@ export default function BallByBallMatchSimulator({
               </div>
             )}
 
-            {/* Tab 1: Interactive Match Arena */}
+            {/* Tab 1: Interactive Match Arena (Portrait Mobile First) */}
             {activeTab === 'arena' ? (
-              <div className="flex-1 flex flex-col justify-between p-3 sm:p-4 overflow-y-auto">
+              <div className="flex-1 flex flex-col justify-between p-2 sm:p-3 overflow-hidden">
                 
                 {/* Live Score Ticker Banner */}
-                <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/15 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl shrink-0">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shadow-lg shrink-0 p-1"
-                    >
-                      <TeamLogo teamId={activeInnings.teamShort} size={32} />
+                <div className="p-2 sm:p-2.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/15 flex flex-col gap-1.5 shadow-xl shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1">
+                        <TeamLogo teamId={activeInnings.teamShort} size={26} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight flex items-baseline gap-1.5">
+                          <span>{activeInnings.totalRuns}/{activeInnings.totalWickets}</span>
+                          <span className="text-xs font-sans font-bold text-gray-400">
+                            ({Math.floor(ballsBowled / 6)}.{ballsBowled % 6} / 20 ov)
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 truncate">
+                          <span>CRR: {currRR}</span>
+                          {currentInnings === 2 && (
+                            <span className="text-amber-400 font-bold truncate">
+                              • Need {runsNeeded} off {ballsRemaining}b (RRR: {reqRR})
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight flex items-baseline gap-2">
-                        <span>{activeInnings.totalRuns}/{activeInnings.totalWickets}</span>
-                        <span className="text-xs sm:text-sm font-sans font-bold text-gray-400">
-                          ({Math.floor(ballsBowled / 6)}.{ballsBowled % 6} / 20 ov)
-                        </span>
+
+                    {/* Over Ball Bubbles */}
+                    <div className="flex items-center gap-1 flex-wrap justify-end shrink-0">
+                      {currentOverTrail.map((b, i) => (
+                        <div
+                          key={i}
+                          className={`w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full flex items-center justify-center text-[9px] font-black font-mono shadow-sm ${
+                            b.isWicket 
+                              ? 'bg-rose-600 text-white animate-pulse' 
+                              : b.isSix 
+                              ? 'bg-amber-400 text-slate-950 font-black' 
+                              : b.isFour 
+                              ? 'bg-sky-400 text-slate-950' 
+                              : b.runs > 0 
+                              ? 'bg-slate-700 text-white' 
+                              : 'bg-slate-900 border border-white/20 text-gray-400'
+                          }`}
+                        >
+                          {b.isWicket ? 'W' : b.runs}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* On-Field Live Batter & Bowler Figures Mini-HUD */}
+                <div className="grid grid-cols-2 gap-1.5 shrink-0 my-1">
+                  {/* Batter On Strike */}
+                  <div className="px-2 py-1 rounded-xl bg-slate-900/90 border border-amber-500/30 flex items-center justify-between text-[10px] font-mono shadow-sm">
+                    <div className="truncate mr-1 min-w-0">
+                      <div className="text-amber-300 font-bold truncate flex items-center gap-1">
+                        <span>🏏</span>
+                        <span className="truncate">{strikerPlayer?.name?.split(' ').slice(-1)[0] || 'Striker'}*</span>
                       </div>
-                      <div className="text-[11px] text-gray-400 font-mono flex items-center flex-wrap gap-1.5 mt-0.5">
-                        {tossSummaryText && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25 font-mono">
-                            🪙 {tossSummaryText}
-                          </span>
-                        )}
-                        <span>CRR: {currRR}</span>
-                        {currentInnings === 2 && (
-                          <span className="text-amber-400 font-bold ml-1">
-                            • Need {runsNeeded} off {ballsRemaining} balls (Req RR: {reqRR})
-                          </span>
-                        )}
+                      <div className="text-[8px] text-gray-400 truncate">
+                        Runner: {nonStrikerPlayer?.name?.split(' ').slice(-1)[0] || 'Batter'}
                       </div>
+                    </div>
+                    <div className="text-right text-white font-bold shrink-0">
+                      <span className="text-amber-300 font-black text-xs">
+                        {activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0}
+                      </span>
+                      <span className="text-gray-400 text-[9px]">
+                        ({activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.balls || 0})
+                      </span>
                     </div>
                   </div>
 
-                  {/* Over Ball Bubbles */}
-              <div className="flex items-center gap-1.5 flex-wrap justify-center">
-                <span className="text-[10px] font-mono text-gray-400 uppercase mr-1">Over Trail:</span>
-                {currentOverTrail.map((b, i) => (
-                  <div
-                    key={i}
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono shadow-md ${
-                      b.isWicket 
-                        ? 'bg-rose-600 text-white animate-pulse' 
-                        : b.isSix 
-                        ? 'bg-amber-400 text-slate-950 font-black' 
-                        : b.isFour 
-                        ? 'bg-sky-400 text-slate-950' 
-                        : b.runs > 0 
-                        ? 'bg-slate-700 text-white' 
-                        : 'bg-slate-900 border border-white/20 text-gray-400'
-                    }`}
-                  >
-                    {b.isWicket ? 'W' : b.runs}
+                  {/* Current Bowler */}
+                  <div className="px-2 py-1 rounded-xl bg-slate-900/90 border border-rose-500/30 flex items-center justify-between text-[10px] font-mono shadow-sm">
+                    <div className="truncate mr-1 min-w-0">
+                      <div className="text-rose-300 font-bold truncate flex items-center gap-1">
+                        <span>🎯</span>
+                        <span className="truncate">{bowlerPlayer?.name?.split(' ').slice(-1)[0] || 'Bowler'}</span>
+                      </div>
+                      <div className="text-[8px] text-gray-400 truncate">
+                        {bowlerPlayer?.role || 'Bowler'}
+                      </div>
+                    </div>
+                    <div className="text-right text-white font-bold shrink-0">
+                      <span className="text-rose-300 font-black text-xs">
+                        {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.wickets || 0}/
+                        {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.runs || 0}
+                      </span>
+                      <span className="text-gray-400 text-[8px] block">
+                        ({activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'} ov)
+                      </span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* ─── REALISTIC BROADCAST FIELD POV STADIUM ─── */}
-            <div className="relative my-2 sm:my-3 h-[240px] sm:h-[280px] md:h-[320px] shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden border border-emerald-500/30 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900 via-emerald-950 to-slate-950 shadow-2xl select-none">
+                {/* ─── REALISTIC BROADCAST FIELD POV STADIUM ─── */}
+                <div className="relative my-0.5 h-[200px] sm:h-[220px] shrink-0 rounded-2xl overflow-hidden border border-emerald-500/30 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900 via-emerald-950 to-slate-950 shadow-xl select-none">
               
               {/* Stadium Floodlights (Top & Corner Glows) */}
               <div className="absolute top-0 left-0 w-32 h-32 bg-amber-200/10 rounded-full blur-3xl pointer-events-none" />
