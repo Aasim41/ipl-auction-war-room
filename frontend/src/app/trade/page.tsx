@@ -231,33 +231,33 @@ export default function TradeWindowPage() {
   }
 
   return (
-    <div className="h-[100dvh] min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-11 sm:pt-13 w-full max-w-full overflow-hidden touch-pan-y">
-      <main className="w-full flex-1 flex flex-col px-2 sm:px-3 py-1 sm:py-2 overflow-hidden min-h-0">
+    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain">
+      <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col gap-3">
         
-        {/* Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
-          <div className="flex items-center gap-2">
+        {/* Minimal Broadcast Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-white/10 gap-2 shrink-0">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => {
                 gameAudio.playUiTap('light')
                 triggerGameHaptic('light')
                 router.push('/')
               }}
-              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
-              title="Return to Home Dashboard"
+              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Dashboard"
             >
               <ArrowLeft size={13} />
               <span>Back</span>
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.2 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[9px] font-mono font-black uppercase">
-                  PART 1: TRADING WINDOW
+                <span className="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px] font-mono font-black uppercase">
+                  TRADE WINDOW
                 </span>
-                <span className="text-[10px] text-gray-400">All 10 Franchises Open for Direct Exchange</span>
+                <span className="text-[11px] text-gray-400 font-mono hidden sm:inline">10 Franchises Open</span>
               </div>
               <h1 className="text-base sm:text-lg font-black font-display text-white">
-                IPL 2027 Official Player Trading Desk
+                Player Trading Desk
               </h1>
             </div>
           </div>
@@ -265,18 +265,16 @@ export default function TradeWindowPage() {
           {!isTradeLocked ? (
             <button
               onClick={() => setShowConfirmLock(true)}
-              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
             >
-              <span>Lock Trades & Proceed to Retentions</span>
-              <ArrowRight size={13} />
+              <span>Lock Trades ➔</span>
             </button>
           ) : (
             <button
               onClick={() => router.push('/squad')}
-              className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
             >
-              <span>Proceed to Retain & Release</span>
-              <ArrowRight size={13} />
+              <span>Proceed to Retain & Release ➔</span>
             </button>
           )}
         </div>
@@ -381,25 +379,25 @@ export default function TradeWindowPage() {
         </div>
 
         {/* True 3-Column Side-by-Side Trade Interface (Your Team | Deal Room in Middle | Rival Team) */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch w-full flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch w-full flex-1">
           
           {/* Column 1 (Left): Your Franchise Squad */}
-          <div className={`flex-1 min-w-0 h-full p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col shadow-xl transition-all overflow-hidden ${
+          <div className={`flex-1 min-w-0 p-3 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col shadow-xl transition-all ${
             mobileTab !== 'my' ? 'hidden sm:flex' : 'flex'
           } ${
             playerOut ? 'ring-2 ring-rose-500/40 shadow-rose-500/10' : ''
           }`}>
             <div className="shrink-0">
-              <div className="flex items-center justify-between pb-1.5 sm:pb-2 mb-2 border-b border-white/10 gap-1">
-                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 gap-1">
+                <div className="flex items-center gap-2 min-w-0">
                   <TeamLogo teamId={myFranchise.id} size={22} className="shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="text-[11px] sm:text-xs font-black uppercase text-white truncate">{myFranchise.name}</h3>
-                    <span className="text-[9px] sm:text-[10px] text-gray-400">Squad ({filteredMySquad.length})</span>
+                    <h3 className="text-xs font-black uppercase text-white truncate">{myFranchise.name}</h3>
+                    <span className="text-[10px] text-gray-400">Squad ({filteredMySquad.length})</span>
                   </div>
                 </div>
                 {playerOut && (
-                  <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold animate-pulse truncate max-w-[110px]">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold truncate max-w-[120px]">
                     OUT: {playerOut.name}
                   </span>
                 )}
@@ -407,14 +405,14 @@ export default function TradeWindowPage() {
 
               <input
                 type="text"
-                placeholder="Filter player..."
+                placeholder="Search player..."
                 value={searchMy}
                 onChange={(e) => setSearchMy(e.target.value)}
-                className="w-full mb-2 bg-slate-950 border border-white/10 rounded-xl px-2.5 py-1 text-xs text-white focus:outline-none focus:border-indigo-400"
+                className="w-full mb-2 bg-slate-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400"
               />
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto space-y-1 sm:space-y-1.5 pr-0.5">
+            <div className="flex-1 max-h-[420px] overflow-y-auto space-y-1.5 pr-0.5 overscroll-contain touch-pan-y">
               {filteredMySquad.map((p) => {
                 const isSelected = playerOut?.player_id === p.player_id
                 return (
@@ -577,22 +575,22 @@ export default function TradeWindowPage() {
           </div>
 
           {/* Column 3 (Right): Rival Team Squad */}
-          <div className={`flex-1 min-w-0 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+          <div className={`flex-1 min-w-0 p-3 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
             mobileTab !== 'rival' ? 'hidden sm:flex' : 'flex'
           } ${
             playerIn ? 'ring-2 ring-emerald-500/40 shadow-emerald-500/10' : ''
           }`}>
             <div>
-              <div className="flex items-center justify-between pb-1.5 sm:pb-2 mb-2 border-b border-white/10 gap-1">
-                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 gap-1">
+                <div className="flex items-center gap-2 min-w-0">
                   <TeamLogo teamId={selectedRivalId} size={22} className="shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="text-[11px] sm:text-xs font-black uppercase text-white truncate">{rivalFranchise.name}</h3>
-                    <span className="text-[9px] sm:text-[10px] text-gray-400">Rival Squad ({filteredRivalSquad.length})</span>
+                    <h3 className="text-xs font-black uppercase text-white truncate">{rivalFranchise.name}</h3>
+                    <span className="text-[10px] text-gray-400">Rival Squad ({filteredRivalSquad.length})</span>
                   </div>
                 </div>
                 {playerIn && (
-                  <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold animate-pulse truncate max-w-[110px]">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold truncate max-w-[120px]">
                     IN: {playerIn.name}
                   </span>
                 )}
@@ -600,14 +598,14 @@ export default function TradeWindowPage() {
 
               <input
                 type="text"
-                placeholder="Filter rival..."
+                placeholder="Search rival player..."
                 value={searchRival}
                 onChange={(e) => setSearchRival(e.target.value)}
-                className="w-full mb-2 bg-slate-950 border border-white/10 rounded-xl px-2.5 py-1 text-xs text-white focus:outline-none focus:border-indigo-400"
+                className="w-full mb-2 bg-slate-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400"
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-1 sm:space-y-1.5 max-h-[280px] sm:max-h-[380px] pr-0.5">
+            <div className="flex-1 max-h-[420px] overflow-y-auto space-y-1.5 pr-0.5 overscroll-contain touch-pan-y">
               {filteredRivalSquad.map((p) => {
                 const isSelected = playerIn?.player_id === p.player_id
                 return (
