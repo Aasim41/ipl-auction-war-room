@@ -312,19 +312,6 @@ export default function PlayingXIPage() {
         {/* ─── Sleek Minimal Header & Tab Controls ─── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-white/10 gap-3">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                gameAudio.playUiTap('light');
-                triggerGameHaptic('light');
-                router.push('/');
-              }}
-              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
-              title="Return to Dashboard"
-            >
-              <ArrowLeft size={14} />
-              <span>Back</span>
-            </button>
-
             <span className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shadow-md shrink-0" style={{ backgroundColor: franchise.color }}>
               {franchise.emoji}
             </span>

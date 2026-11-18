@@ -663,18 +663,6 @@ export default function MiniAuctionPage() {
         {/* Minimal Broadcast Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-white/10 gap-2 shrink-0">
           <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => {
-                gameAudio.playUiTap('light')
-                triggerGameHaptic('light')
-                router.push('/')
-              }}
-              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
-              title="Return to Dashboard"
-            >
-              <ArrowLeft size={13} />
-              <span>Back</span>
-            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-black uppercase">
