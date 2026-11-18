@@ -665,6 +665,78 @@ export default function BallByBallMatchSimulator({
 
   // Is User's Team currently batting or bowling?
   const isUserBatting = (currentInnings === 1 && aBatsFirst) || (currentInnings === 2 && !aBatsFirst);
+  const isUserBowling = (currentInnings === 1 && !aBatsFirst) || (currentInnings === 2 && aBatsFirst);
+
+  const getBowlerOversCount = (figures: Array<{ name: string; overs: string }>, bowlerName: string): number => {
+    const fig = figures.find(f => f.name === bowlerName);
+    if (!fig) return 0;
+    const num = parseFloat(fig.overs) || 0;
+    return Math.floor(num);
+  };
+
+  const canBowlerBowl = (bIdx: number): { allowed: boolean; reason?: string } => {
+    const bSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
+    const activeBowlersList = bSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
+    const candidate = activeBowlersList[bIdx];
+    if (!candidate) return { allowed: false, reason: 'Invalid bowler' };
+
+    const curInn = currentInnings === 1 ? inn1 : inn2;
+    if (!curInn) return { allowed: false, reason: 'Match not initialized' };
+
+    if (lastBowlerIdx === bIdx && curInn.balls.length % 6 === 0 && curInn.balls.length > 0) {
+      return { allowed: false, reason: 'Bowler cannot bowl consecutive overs!' };
+    }
+
+    const oversCount = getBowlerOversCount(curInn.bowlingFigures, candidate.name);
+    if (oversCount >= 4) {
+      return { allowed: false, reason: `${candidate.name} has completed their maximum quota of 4 overs!` };
+    }
+
+    return { allowed: true };
+  };
+
+  const handleSelectBowler = (bIdx: number) => {
+    const check = canBowlerBowl(bIdx);
+    if (!check.allowed) {
+      gameAudio.playTradeReject();
+      triggerGameHaptic('trade_reject');
+      alert(check.reason);
+      return;
+    }
+    setCurrentBowlerIdx(bIdx);
+    setShowBowlerModal(false);
+    gameAudio.playUiTap('select');
+    triggerGameHaptic('light');
+  };
+
+  const handlePromoteBatter = (squadIdx: number) => {
+    if (squadIdx <= nextBatterIdx) return;
+    swapBatters(squadIdx, squadIdx - 1);
+  };
+
+  const handleDemoteBatter = (squadIdx: number) => {
+    const curBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
+    if (squadIdx >= curBatSquad.length - 1) return;
+    swapBatters(squadIdx, squadIdx + 1);
+  };
+
+  const swapBatters = (idxA: number, idxB: number) => {
+    if (currentInnings === 1) {
+      const nextSquad = [...bat1Squad];
+      const temp = nextSquad[idxA];
+      nextSquad[idxA] = nextSquad[idxB];
+      nextSquad[idxB] = temp;
+      setBat1Squad(nextSquad);
+    } else {
+      const nextSquad = [...bowl1Squad];
+      const temp = nextSquad[idxA];
+      nextSquad[idxA] = nextSquad[idxB];
+      nextSquad[idxB] = temp;
+      setBowl1Squad(nextSquad);
+    }
+    gameAudio.playUiTap('select');
+    triggerGameHaptic('light');
+  };
 
   // ─── TACTICAL BALL EXECUTION ENGINE ───
   const executeBall = (customTactic?: BattingTactic | BowlingTactic) => {
@@ -693,9 +765,9 @@ export default function BallByBallMatchSimulator({
     const striker = currentBatSquad[strikerIdx]?.name || 'Batter';
     const nonStriker = currentBatSquad[nonStrikerIdx]?.name || 'Non-Striker';
     
-    // Rotate bowlers across 5 main options
-    const activeBowlers = currentBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').slice(0, 5);
-    const bowler = activeBowlers[currentBowlerIdx % activeBowlers.length] || currentBowlSquad[0];
+    // Rotate bowlers across all eligible options
+    const activeBowlers = currentBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
+    const bowler = activeBowlers[currentBowlerIdx % (activeBowlers.length || 1)] || currentBowlSquad[0];
 
     // Target for chase in 2nd innings
     const chaseTarget = currentInnings === 2 ? inn1.totalRuns + 1 : null;
@@ -1042,27 +1114,93 @@ export default function BallByBallMatchSimulator({
       setInn2(updatedInnings);
     }
 
-    // Strike Rotation & Next Batter
+    // Strike Rotation & Next Batter (Locally Scoped to prevent out player persisting)
+    let curStrikerIdx = strikerIdx;
+    let curNonStrikerIdx = nonStrikerIdx;
+    let curNextBatterIdx = nextBatterIdx;
+
     if (isWicket) {
-      if (nextBatterIdx < currentBatSquad.length) {
-        setStrikerIdx(nextBatterIdx);
-        setNextBatterIdx(prev => prev + 1);
+      // Striker is permanently out!
+      // Find the next available batter who is NOT out and NOT currently nonStriker
+      let foundNextIdx: number | null = null;
+      for (let i = curNextBatterIdx; i < currentBatSquad.length; i++) {
+        const candidate = currentBatSquad[i];
+        const candidateBat = updatedBatters.find(b => b.name === candidate.name);
+        if (candidateBat && candidateBat.dismissal === 'not out' && i !== curNonStrikerIdx) {
+          foundNextIdx = i;
+          break;
+        }
+      }
+
+      // If none found forward, search from index 0 for any unbatting reserve
+      if (foundNextIdx === null) {
+        for (let i = 0; i < currentBatSquad.length; i++) {
+          const candidate = currentBatSquad[i];
+          const candidateBat = updatedBatters.find(b => b.name === candidate.name);
+          if (candidateBat && candidateBat.dismissal === 'not out' && i !== curNonStrikerIdx && i !== curStrikerIdx) {
+            foundNextIdx = i;
+            break;
+          }
+        }
+      }
+
+      if (foundNextIdx !== null && newTotalWickets < 10) {
+        curStrikerIdx = foundNextIdx;
+        curNextBatterIdx = Math.max(curNextBatterIdx + 1, foundNextIdx + 1);
       }
     } else if (runs % 2 === 1) {
-      const temp = strikerIdx;
-      setStrikerIdx(nonStrikerIdx);
-      setNonStrikerIdx(temp);
+      const temp = curStrikerIdx;
+      curStrikerIdx = curNonStrikerIdx;
+      curNonStrikerIdx = temp;
     }
 
     // End of Over
     if (ballInOver === 6) {
       // Switch strike at end of over
-      const temp = strikerIdx;
-      setStrikerIdx(nonStrikerIdx);
-      setNonStrikerIdx(temp);
-      // Next bowler
-      setCurrentBowlerIdx(prev => (prev + 1) % activeBowlers.length);
+      const temp = curStrikerIdx;
+      curStrikerIdx = curNonStrikerIdx;
+      curNonStrikerIdx = temp;
+      setLastBowlerIdx(currentBowlerIdx);
+
+      // Next bowler: pick next available bowler who hasn't completed 4 overs
+      let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
+      let attempts = 0;
+      while (attempts < activeBowlers.length) {
+        const candidateName = activeBowlers[nextIdx]?.name;
+        const ovs = getBowlerOversCount(updatedBowlers, candidateName);
+        if (ovs < 4 && nextIdx !== currentBowlerIdx) {
+          break;
+        }
+        nextIdx = (nextIdx + 1) % activeBowlers.length;
+        attempts++;
+      }
+      setCurrentBowlerIdx(nextIdx);
     }
+
+    // Safety Assertions: ensure dismissed player is NEVER at crease if wickets < 10
+    if (newTotalWickets < 10) {
+      const sBat = updatedBatters.find(b => b.name === currentBatSquad[curStrikerIdx]?.name);
+      if (sBat && sBat.dismissal !== 'not out') {
+        const replacementIdx = currentBatSquad.findIndex((p, idx) => {
+          const b = updatedBatters.find(ub => ub.name === p.name);
+          return b && b.dismissal === 'not out' && idx !== curNonStrikerIdx;
+        });
+        if (replacementIdx !== -1) curStrikerIdx = replacementIdx;
+      }
+
+      const nsBat = updatedBatters.find(b => b.name === currentBatSquad[curNonStrikerIdx]?.name);
+      if (nsBat && nsBat.dismissal !== 'not out') {
+        const replacementIdx = currentBatSquad.findIndex((p, idx) => {
+          const b = updatedBatters.find(ub => ub.name === p.name);
+          return b && b.dismissal === 'not out' && idx !== curStrikerIdx;
+        });
+        if (replacementIdx !== -1) curNonStrikerIdx = replacementIdx;
+      }
+    }
+
+    setStrikerIdx(curStrikerIdx);
+    setNonStrikerIdx(curNonStrikerIdx);
+    setNextBatterIdx(curNextBatterIdx);
 
     // Check End of Innings / Match
     const isTargetChased = currentInnings === 2 && chaseTarget !== null && newTotalRuns >= chaseTarget;
@@ -1379,9 +1517,30 @@ export default function BallByBallMatchSimulator({
           return bat;
         });
 
-        if (curNextBatterIdx < currentBatSquad.length) {
-          curStrikerIdx = curNextBatterIdx;
-          curNextBatterIdx++;
+        // Find next batter who is NOT out and NOT currently nonStriker
+        let foundNextIdx: number | null = null;
+        for (let i = curNextBatterIdx; i < currentBatSquad.length; i++) {
+          const candidate = currentBatSquad[i];
+          const candidateBat = curBatters.find(bat => bat.name === candidate.name);
+          if (candidateBat && candidateBat.dismissal === 'not out' && i !== curNonStrikerIdx) {
+            foundNextIdx = i;
+            break;
+          }
+        }
+        if (foundNextIdx === null) {
+          for (let i = 0; i < currentBatSquad.length; i++) {
+            const candidate = currentBatSquad[i];
+            const candidateBat = curBatters.find(bat => bat.name === candidate.name);
+            if (candidateBat && candidateBat.dismissal === 'not out' && i !== curNonStrikerIdx && i !== curStrikerIdx) {
+              foundNextIdx = i;
+              break;
+            }
+          }
+        }
+
+        if (foundNextIdx !== null && curTotalWickets < 10) {
+          curStrikerIdx = foundNextIdx;
+          curNextBatterIdx = Math.max(curNextBatterIdx + 1, foundNextIdx + 1);
         }
       } else {
         curBatters = curBatters.map(bat => {
