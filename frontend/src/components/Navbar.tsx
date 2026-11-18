@@ -262,9 +262,9 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Center: The Full 4-Step Cycle Stepper (Always Fully Visible Across All Devices) */}
-          <div className="flex-1 flex items-center justify-center gap-0.5 sm:gap-1.5 overflow-x-auto scrollbar-none px-0.5">
-            {PHASES.map((phase) => {
+          {/* Center: Minimal 4-Phase Stepper */}
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none px-1">
+            {PHASES.map((phase, idx) => {
               const isActive = pathname === phase.href
               const isLocked = phase.isLocked
 
@@ -273,12 +273,12 @@ export function Navbar() {
                   <div
                     key={phase.id}
                     onClick={() => triggerLockedAlert(phase.label, phase.isConcluded)}
-                    title={phase.isConcluded ? "Phase finalized and locked by BCCI regulations. You cannot go back." : "Complete current phase to unlock."}
-                    className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 bg-slate-900/50 text-gray-500 border border-white/5 cursor-not-allowed opacity-60 hover:opacity-80 transition-opacity"
+                    title={phase.isConcluded ? "Concluded and locked by BCCI regulations" : "Complete current phase to unlock"}
+                    className="px-2 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 bg-slate-900/40 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
                   >
-                    <Lock size={10} className={phase.isConcluded ? "text-amber-500/70" : "text-gray-500"} />
-                    <span className="hidden lg:inline">{phase.label}</span>
-                    <span className="lg:hidden">{phase.shortLabel}</span>
+                    <Lock size={10} className={phase.isConcluded ? "text-amber-500/60" : "text-gray-500"} />
+                    <span className="hidden sm:inline">{phase.shortLabel}</span>
+                    <span className="sm:hidden font-mono">{idx + 1}</span>
                   </div>
                 )
               }
@@ -294,18 +294,15 @@ export function Navbar() {
                       advancePhase('playing_xi')
                     }
                   }}
-                  className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                  className={`px-2 sm:px-2.5 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
                     isActive
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-[0_0_12px_rgba(245,158,11,0.5)] scale-[1.02] border border-amber-400'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30'
                       : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/10'
                   }`}
                 >
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping shrink-0" />
-                  )}
                   <phase.icon size={11} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
-                  <span className="hidden lg:inline">{phase.label}</span>
-                  <span className="lg:hidden">{phase.shortLabel}</span>
+                  <span className="hidden sm:inline">{phase.shortLabel}</span>
+                  <span className="sm:hidden font-mono">{idx + 1}</span>
                 </Link>
               )
             })}
