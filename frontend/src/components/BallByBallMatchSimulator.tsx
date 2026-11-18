@@ -25,11 +25,13 @@ import {
   VolumeX
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';
-import { TournamentFixture } from '../data/scheduleGenerator';
+import { TournamentFixture, MatchScorecard } from '../data/scheduleGenerator';
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
 import { getFranchiseAI } from '../data/franchiseAI';
 import TeamLogo from './TeamLogo';
 import { lockOrientation } from '../lib/orientationManager';
+import { formatPlayerInitial } from '../lib/nameFormatter';
+import { useCampaignStore } from '../store/useCampaignStore';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
@@ -112,6 +114,170 @@ const SHOT_ZONES = [
   { x: 80, y: 80, name: 'Deep Midwicket' },
   { x: 50, y: 85, name: 'Long-On' }
 ];
+
+export interface DynamicFielder {
+  name: string;
+  x: string;
+  y: string;
+  isDeep: boolean;
+}
+
+export function getDynamicFieldPositions(
+  ballsBowled: number,
+  isSpinner: boolean,
+  bowlingTactic: BowlingTactic,
+  isLeftHanded: boolean,
+  battingTactic: BattingTactic
+): { fielders: DynamicFielder[]; strategyLabel: string; deepCount: number } {
+  const over = Math.floor(ballsBowled / 6) + 1; // 1 to 20
+  const isPowerplay = over <= 6; // Overs 1 - 6: Max 2 fielders outside 30-yd circle
+  const isMiddleOvers = over >= 7 && over <= 15; // Overs 7 - 15: Max 4 outside
+
+  let rawFielders: Array<{ name: string; x: number; y: number; isDeep: boolean }> = [];
+  let strategyLabel = '';
+
+  if (isPowerplay) {
+    if (isSpinner) {
+      strategyLabel = 'POWERPLAY (2 DEEP • SPIN TRAP)';
+      rawFielders = [
+        { name: 'Slip', x: 38, y: 72, isDeep: false },
+        { name: 'Short Extra Cover', x: 26, y: 55, isDeep: false },
+        { name: 'Cover Point', x: 18, y: 64, isDeep: false },
+        { name: 'Mid-Off', x: 38, y: 35, isDeep: false },
+        { name: 'Mid-On', x: 62, y: 35, isDeep: false },
+        { name: 'Short Mid-Wicket', x: 74, y: 55, isDeep: false },
+        { name: 'Short Fine', x: 68, y: 76, isDeep: false },
+        // 2 Outside
+        { name: 'Deep Cover', x: 14, y: 44, isDeep: true },
+        { name: 'Deep Mid-Wicket', x: 84, y: 44, isDeep: true },
+      ];
+    } else {
+      // Pace in Powerplay
+      strategyLabel = 'POWERPLAY (2 DEEP • ATTACKING SLIPS)';
+      rawFielders = [
+        { name: '1st Slip', x: 37, y: 74, isDeep: false },
+        { name: 'Gully', x: 30, y: 68, isDeep: false },
+        { name: 'Cover Point', x: 20, y: 58, isDeep: false },
+        { name: 'Extra Cover', x: 28, y: 46, isDeep: false },
+        { name: 'Mid-Off', x: 38, y: 34, isDeep: false },
+        { name: 'Mid-On', x: 62, y: 34, isDeep: false },
+        { name: 'Square Leg', x: 76, y: 60, isDeep: false },
+        // 2 Outside
+        { name: 'Third Man', x: 18, y: 80, isDeep: true },
+        { name: 'Deep Fine Leg', x: 82, y: 80, isDeep: true },
+      ];
+    }
+  } else if (isMiddleOvers) {
+    if (isSpinner) {
+      strategyLabel = 'MIDDLE OVERS (4 DEEP • SPIN CHOKE)';
+      rawFielders = [
+        { name: 'Short Third', x: 32, y: 72, isDeep: false },
+        { name: 'Cover', x: 25, y: 52, isDeep: false },
+        { name: 'Mid-Off', x: 38, y: 36, isDeep: false },
+        { name: 'Short Mid-Wicket', x: 70, y: 54, isDeep: false },
+        { name: 'Square Leg', x: 76, y: 64, isDeep: false },
+        // 4 Outside
+        { name: 'Deep Extra Cover', x: 16, y: 42, isDeep: true },
+        { name: 'Long-Off', x: 28, y: 15, isDeep: true },
+        { name: 'Long-On', x: 72, y: 15, isDeep: true },
+        { name: 'Deep Mid-Wicket', x: 84, y: 45, isDeep: true },
+      ];
+    } else {
+      // Pace in Middle Overs
+      strategyLabel = 'MIDDLE OVERS (4 DEEP • RING PRESSURE)';
+      rawFielders = [
+        { name: 'Point', x: 22, y: 60, isDeep: false },
+        { name: 'Cover', x: 28, y: 48, isDeep: false },
+        { name: 'Mid-On', x: 62, y: 36, isDeep: false },
+        { name: 'Short Mid-Wicket', x: 72, y: 56, isDeep: false },
+        { name: 'Short Fine', x: 68, y: 74, isDeep: false },
+        // 4 Outside
+        { name: 'Third Man', x: 18, y: 82, isDeep: true },
+        { name: 'Deep Point', x: 12, y: 52, isDeep: true },
+        { name: 'Long-Off', x: 28, y: 14, isDeep: true },
+        { name: 'Deep Mid-Wicket', x: 82, y: 42, isDeep: true },
+      ];
+    }
+  } else {
+    // Death Overs (Overs 16 - 20) with 5 Deep Fielders
+    if (bowlingTactic === 'YORKER') {
+      strategyLabel = 'DEATH (5 DEEP • YORKER ROPES)';
+      rawFielders = [
+        { name: 'Extra Cover', x: 26, y: 48, isDeep: false },
+        { name: 'Point', x: 22, y: 62, isDeep: false },
+        { name: 'Mid-Wicket', x: 72, y: 54, isDeep: false },
+        { name: 'Short Fine', x: 68, y: 74, isDeep: false },
+        // 5 Outside guarding ropes
+        { name: 'Third Man', x: 16, y: 84, isDeep: true },
+        { name: 'Long-Off', x: 26, y: 12, isDeep: true },
+        { name: 'Long-On', x: 74, y: 12, isDeep: true },
+        { name: 'Deep Mid-Wicket', x: 85, y: 40, isDeep: true },
+        { name: 'Deep Square Leg', x: 85, y: 68, isDeep: true },
+      ];
+    } else if (bowlingTactic === 'BOUNCER') {
+      strategyLabel = 'DEATH (5 DEEP • HOOK / PULL TRAP)';
+      rawFielders = [
+        { name: 'Point', x: 22, y: 62, isDeep: false },
+        { name: 'Cover', x: 28, y: 48, isDeep: false },
+        { name: 'Mid-Off', x: 38, y: 36, isDeep: false },
+        { name: 'Short Leg', x: 64, y: 68, isDeep: false },
+        // 5 Outside (Leg-side heavy)
+        { name: 'Fine Leg Rope', x: 82, y: 84, isDeep: true },
+        { name: 'Deep Square Leg', x: 88, y: 62, isDeep: true },
+        { name: 'Deep Mid-Wicket', x: 84, y: 40, isDeep: true },
+        { name: 'Long-On', x: 72, y: 12, isDeep: true },
+        { name: 'Third Man', x: 18, y: 82, isDeep: true },
+      ];
+    } else {
+      // Slower / Good length death defense
+      strategyLabel = 'DEATH (5 DEEP • BOUNDARY PATROL)';
+      rawFielders = [
+        { name: 'Cover', x: 26, y: 50, isDeep: false },
+        { name: 'Mid-Off', x: 38, y: 36, isDeep: false },
+        { name: 'Mid-Wicket', x: 72, y: 54, isDeep: false },
+        { name: 'Short Fine', x: 68, y: 74, isDeep: false },
+        // 5 Outside
+        { name: 'Deep Backward Point', x: 12, y: 64, isDeep: true },
+        { name: 'Deep Extra Cover', x: 14, y: 38, isDeep: true },
+        { name: 'Long-Off', x: 26, y: 12, isDeep: true },
+        { name: 'Long-On', x: 74, y: 12, isDeep: true },
+        { name: 'Deep Mid-Wicket', x: 86, y: 45, isDeep: true },
+      ];
+    }
+  }
+
+  // Adjust for Left-Handed batter by mirroring X axis (100 - x)
+  const adjustedFielders: DynamicFielder[] = rawFielders.map((f) => {
+    let finalX = f.x;
+    let finalName = f.name;
+
+    if (isLeftHanded) {
+      finalX = 100 - f.x;
+      if (finalName.includes('Cover') || finalName.includes('Point') || finalName.includes('Third Man')) {
+        finalName = finalName.replace('Cover', 'Mid-Wicket').replace('Point', 'Square Leg').replace('Third Man', 'Fine Leg');
+      } else if (finalName.includes('Mid-Wicket') || finalName.includes('Square Leg') || finalName.includes('Fine Leg')) {
+        finalName = finalName.replace('Mid-Wicket', 'Cover').replace('Square Leg', 'Point').replace('Fine Leg', 'Third Man');
+      }
+    }
+
+    let finalY = f.y;
+    if (battingTactic === 'MAXIMUM' && !f.isDeep) {
+      finalY = Math.max(12, f.y - 3);
+    } else if (battingTactic === 'DEFEND' && !f.isDeep) {
+      finalY = Math.min(80, f.y + 3);
+    }
+
+    return {
+      name: finalName,
+      x: `${finalX}%`,
+      y: `${finalY}%`,
+      isDeep: f.isDeep
+    };
+  });
+
+  const deepCount = adjustedFielders.filter(f => f.isDeep).length;
+  return { fielders: adjustedFielders, strategyLabel, deepCount };
+}
 
 export default function BallByBallMatchSimulator({
   isOpen,
