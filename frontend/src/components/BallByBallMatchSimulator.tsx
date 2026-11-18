@@ -1914,8 +1914,8 @@ export default function BallByBallMatchSimulator({
         className="relative w-full h-[100dvh] max-w-lg bg-slate-950 flex flex-col shadow-2xl overflow-hidden sm:border sm:border-white/20 sm:rounded-3xl sm:h-[96dvh]"
       >
         
-        {/* Top Header & Navigation Bar */}
-        <div className="px-3 py-2 bg-slate-900/90 border-b border-white/10 flex items-center justify-between shrink-0">
+        {/* Top Header & Navigation Bar (Safe Area Status Bar Spacing for Mobile) */}
+        <div className="px-3 pb-2.5 pt-[max(env(safe-area-inset-top,0px),36px)] sm:pt-2.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between shrink-0 z-30">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 font-display font-black text-xs">
               <TeamLogo teamId={myFranchise.short} size={20} />
@@ -2292,26 +2292,62 @@ export default function BallByBallMatchSimulator({
                       </div>
                     </div>
 
-                    {/* Over Ball Bubbles */}
-                    <div className="flex items-center gap-1 flex-wrap justify-end shrink-0">
-                      {currentOverTrail.map((b, i) => (
-                        <div
-                          key={i}
-                          className={`w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono shadow-sm ${
-                            b.isWicket 
-                              ? 'bg-rose-600 text-white animate-pulse' 
-                              : b.isSix 
-                              ? 'bg-amber-400 text-slate-950 font-black' 
-                              : b.isFour 
-                              ? 'bg-sky-400 text-slate-950' 
-                              : b.runs > 0 
-                              ? 'bg-slate-700 text-white' 
-                              : 'bg-slate-900 border border-white/20 text-gray-400'
-                          }`}
+                    {/* Over Ball Bubbles: Strictly 1 Over at a Time (Balls 1 to 6) */}
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setShowPastOversModal(true);
+                            gameAudio.playUiTap('light');
+                          }}
+                          className="text-[9px] font-mono font-bold text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-1 cursor-pointer transition-all"
+                          title="View previous completed overs summary"
                         >
-                          {b.isWicket ? 'W' : b.runs}
-                        </div>
-                      ))}
+                          <span>OVER {currentOverIndex + 1}</span>
+                          {completedOversList.length > 0 && (
+                            <span className="text-gray-400 text-[8px]">({completedOversList.length} done)</span>
+                          )}
+                        </button>
+                        {currentOverBalls.length === 6 && (
+                          <span className="text-[9px] font-mono font-black text-emerald-400 bg-emerald-500/15 px-1 rounded border border-emerald-500/30">
+                            +{currentOverRuns}R {currentOverWickets > 0 ? `(${currentOverWickets}W)` : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 6 }).map((_, slotIdx) => {
+                          const b = currentOverBalls[slotIdx];
+                          if (!b) {
+                            return (
+                              <div
+                                key={slotIdx}
+                                className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-mono bg-slate-900/80 border border-white/10 text-gray-600"
+                              >
+                                •
+                              </div>
+                            );
+                          }
+                          return (
+                            <div
+                              key={slotIdx}
+                              className={`w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono shadow-sm ${
+                                b.isWicket 
+                                  ? 'bg-rose-600 text-white animate-pulse' 
+                                  : b.isSix 
+                                  ? 'bg-amber-400 text-slate-950 font-black' 
+                                  : b.isFour 
+                                  ? 'bg-sky-400 text-slate-950 font-black' 
+                                  : b.runs > 0 
+                                  ? 'bg-slate-700 text-white' 
+                                  : 'bg-slate-900 border border-white/20 text-gray-400'
+                              }`}
+                            >
+                              {b.isWicket ? 'W' : b.runs}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
