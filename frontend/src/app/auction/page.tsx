@@ -40,6 +40,7 @@ import {
 } from '../../data/franchises'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import { getFranchiseAI } from '../../data/franchiseAI'
+import ThreeAuctionStage from '../../components/ThreeAuctionStage'
 
 const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
@@ -63,6 +64,38 @@ export default function MiniAuctionPage() {
   // Right Column View Tabs: 'pool' | 'squads' | 'feed' | 'ledger'
   const [sideTab, setSideTab] = useState<'pool' | 'squads' | 'feed' | 'ledger'>('pool')
   const [selectedFranchiseView, setSelectedFranchiseView] = useState<string>('')
+  const [expandedLot, setExpandedLot] = useState(false)
+
+  const sideTouchStartX = useRef<number | null>(null)
+  const sideTouchStartY = useRef<number | null>(null)
+
+  const handleSideTouchStart = (e: React.TouchEvent) => {
+    sideTouchStartX.current = e.touches[0].clientX
+    sideTouchStartY.current = e.touches[0].clientY
+  }
+
+  const handleSideTouchEnd = (e: React.TouchEvent) => {
+    if (sideTouchStartX.current === null || sideTouchStartY.current === null) return
+    const deltaX = e.changedTouches[0].clientX - sideTouchStartX.current
+    const deltaY = e.changedTouches[0].clientY - sideTouchStartY.current
+
+    const tabs: Array<'pool' | 'squads' | 'feed' | 'ledger'> = ['pool', 'squads', 'feed', 'ledger']
+    const curIdx = tabs.indexOf(sideTab)
+
+    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      if (deltaX < 0 && curIdx < tabs.length - 1) {
+        setSideTab(tabs[curIdx + 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      } else if (deltaX > 0 && curIdx > 0) {
+        setSideTab(tabs[curIdx - 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      }
+    }
+    sideTouchStartX.current = null
+    sideTouchStartY.current = null
+  }
 
   // Auction Pool Filtering & Inspection
   const [poolSearch, setPoolSearch] = useState('')
@@ -826,58 +859,97 @@ export default function MiniAuctionPage() {
 
             {/* Middle: Player Profile Spotlight */}
             {currentPlayer ? (
-              <div className="py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="py-2 flex flex-col gap-3">
                 
-                {/* Player Card */}
-                <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/15 flex items-center justify-center text-2xl shadow-xl shrink-0">
-                    🏏
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="px-2 py-0.2 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-bold font-mono">
-                        {currentPlayer.role}
-                      </span>
-                      {currentPlayer.is_overseas && (
-                        <span className="px-2 py-0.2 rounded bg-sky-500/20 text-sky-300 text-[9px] font-bold font-mono">
-                          OVERSEAS
+                <div 
+                  onClick={() => {
+                    setExpandedLot(!expandedLot);
+                    gameAudio.playUiTap('light');
+                  }}
+                  className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/70 border border-white/10 hover:border-amber-400/40 cursor-pointer transition-all"
+                >
+                  {/* Player Identity */}
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/15 flex items-center justify-center text-2xl shadow-xl shrink-0">
+                      🏏
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="px-2 py-0.2 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-bold font-mono">
+                          {currentPlayer.role}
                         </span>
-                      )}
-                      {currentPlayer.formerTeam && (
-                        <span className="text-[10px] text-gray-400 font-mono">Ex: {currentPlayer.formerTeam}</span>
-                      )}
+                        {currentPlayer.is_overseas && (
+                          <span className="px-2 py-0.2 rounded bg-sky-500/20 text-sky-300 text-[9px] font-bold font-mono">
+                            OVERSEAS ✈
+                          </span>
+                        )}
+                        {currentPlayer.formerTeam && (
+                          <span className="text-[10px] text-gray-400 font-mono">Ex: {currentPlayer.formerTeam}</span>
+                        )}
+                      </div>
+
+                      <h2 className="text-lg sm:text-xl font-black text-white font-display mt-0.5 tracking-tight truncate">
+                        {currentPlayer.name}
+                      </h2>
+                      
+                      <div className="flex items-center gap-2 mt-1 text-[11px] font-mono">
+                        <span>Base: <strong className="text-gray-200">₹{currentPlayer.basePrice} Cr</strong></span>
+                        <span>•</span>
+                        <span>OVR: <strong className="text-amber-400 font-bold">{currentPlayer.powerIndex}</strong></span>
+                        <span className="text-amber-400 text-[9px] ml-1 font-bold">{expandedLot ? '▲ Hide Stats' : '▼ View Stats'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Current Bid Display */}
+                  <div className="text-center sm:text-right p-2.5 rounded-2xl bg-slate-950/90 border border-white/10 w-full sm:w-auto shadow-inner shrink-0">
+                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 block">
+                      Top Bidder
+                    </span>
+                    <div className={`text-xs font-black mt-0.5 flex items-center justify-center sm:justify-end gap-1 ${
+                      isUserHighest ? 'text-emerald-400' : 'text-amber-300'
+                    }`}>
+                      <span>{isUserHighest ? '👑 YOU HOLD BID' : highestBidder.toUpperCase()}</span>
                     </div>
 
-                    <h2 className="text-xl sm:text-2xl font-black text-white font-display mt-0.5 tracking-tight">
-                      {currentPlayer.name}
-                    </h2>
-                    
-                    <p className="text-[11px] text-gray-400 mt-0.5 max-w-sm line-clamp-2">
-                      {currentPlayer.statsSummary}
-                    </p>
-
-                    <div className="flex items-center gap-3 mt-1.5 text-[11px] font-mono">
-                      <span>Base: <strong className="text-gray-200">₹{currentPlayer.basePrice} Cr</strong></span>
-                      <span>•</span>
-                      <span>Rating: <strong className="text-amber-400 font-bold">{currentPlayer.powerIndex} OVR</strong></span>
+                    <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mt-0.5">
+                      ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-500">Cr</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Current Bid Display */}
-                <div className="text-center sm:text-right p-3 rounded-2xl bg-slate-950/80 border border-white/10 w-full sm:w-auto shadow-inner shrink-0">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 block">
-                    Highest Bidder
-                  </span>
-                  <div className={`text-xs font-black mt-0.5 flex items-center justify-center sm:justify-end gap-1 ${
-                    isUserHighest ? 'text-emerald-400' : 'text-amber-300'
-                  }`}>
-                    <span>{isUserHighest ? '👑 YOU HOLD BID' : highestBidder.toUpperCase()}</span>
+                {/* Expandable Lot Telemetry Tray */}
+                {expandedLot && (
+                  <div className="p-3 rounded-2xl bg-slate-950/90 border border-amber-500/30 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono animate-fadeIn">
+                    <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                      <span className="text-[9px] text-gray-400 block">Role Spec</span>
+                      <span className="text-white font-bold">{currentPlayer.role}</span>
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                      <span className="text-[9px] text-gray-400 block">Cap Impact</span>
+                      <span className="text-amber-300 font-bold">~{((currentBid / (campaign?.purse || 125)) * 100).toFixed(1)}% Purse</span>
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                      <span className="text-[9px] text-gray-400 block">Total Bids</span>
+                      <span className="text-sky-300 font-bold">{bidHistory.length} paddles</span>
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                      <span className="text-[9px] text-gray-400 block">Synergy Score</span>
+                      <span className="text-emerald-400 font-bold">✓ 91% Match</span>
+                    </div>
                   </div>
+                )}
 
-                  <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mt-0.5">
-                    ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-500">Cr</span>
-                  </div>
+                {/* 3D Auction Stage & Gavel */}
+                <div className="my-1">
+                  <ThreeAuctionStage 
+                    currentBid={currentBid}
+                    highestBidder={isUserHighest ? 'YOU' : highestBidder}
+                    bidderColor={isUserHighest ? '#10b981' : '#f59e0b'}
+                    gavelPhase={gavelPhase}
+                    playerName={currentPlayer.name}
+                    playerRole={currentPlayer.role}
+                  />
                 </div>
 
               </div>

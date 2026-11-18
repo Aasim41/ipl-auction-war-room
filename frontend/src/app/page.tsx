@@ -218,8 +218,19 @@ export default function UnifiedTeamSelectHomePage() {
           })}
         </div>
 
+        {/* Mobile Franchise Swipe Hint */}
+        <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/80 rounded-xl border border-white/10 text-[10px] font-mono text-gray-400">
+          <span>👈 Swipe</span>
+          <span className="text-amber-400 font-bold uppercase">{activeTeam.name} ({activeTeam.short})</span>
+          <span>Swipe 👉</span>
+        </div>
+
         {/* Minimal Hero Franchise Card */}
-        <div className="p-4 sm:p-6 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col justify-between gap-5 relative overflow-hidden flex-1">
+        <div 
+          onTouchStart={handleHeroTouchStart}
+          onTouchEnd={handleHeroTouchEnd}
+          className="p-4 sm:p-6 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col justify-between gap-4 relative overflow-hidden flex-1"
+        >
           <div 
             className="absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none"
             style={{ backgroundColor: activeTeam.color }}
@@ -265,10 +276,32 @@ export default function UnifiedTeamSelectHomePage() {
               )}
             </div>
 
-            {/* 4 Sleek Key Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-4">
-              <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
-                <span className="text-[10px] font-mono text-gray-400 uppercase block mb-1">Home Fortress</span>
+            {/* 3D Championship Trophy Stage */}
+            <div className="my-3">
+              <ThreeChampionshipCup 
+                franchiseColor={activeTeam.color} 
+                franchiseShort={activeTeam.short}
+                franchiseName={activeTeam.name}
+              />
+            </div>
+
+            {/* 4 Sleek Key Stat Cards with Expandable Home Fortress */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-3">
+              <div 
+                onClick={() => {
+                  setExpandedFortress(!expandedFortress);
+                  gameAudio.playUiTap('light');
+                }}
+                className={`p-3 rounded-2xl border transition-all cursor-pointer ${
+                  expandedFortress
+                    ? 'bg-emerald-950/40 border-emerald-500/50 shadow-md ring-1 ring-emerald-400/40'
+                    : 'bg-slate-950/70 border-white/5 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-mono text-gray-400 uppercase">Home Fortress</span>
+                  <span className="text-[9px] text-emerald-400 font-mono font-bold">{expandedFortress ? '▲ Collapse' : '▼ Expand'}</span>
+                </div>
                 <span className="text-xs font-bold text-white block truncate">{activeStadium.name}</span>
                 <span className="text-[10px] font-mono text-emerald-400">Par {activeStadium.avgFirstInnings} Runs</span>
               </div>
@@ -288,6 +321,31 @@ export default function UnifiedTeamSelectHomePage() {
               <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
                 <span className="text-[10px] font-mono text-gray-400 uppercase block mb-1">Starting Roster</span>
                 <span className="text-xs font-bold text-white block">25 Players</span>
+                <span className="text-[10px] font-mono text-purple-400">₹125.0 Cr Cap</span>
+              </div>
+            </div>
+
+            {/* Expandable Fortress Telemetry Tray */}
+            {expandedFortress && (
+              <div className="p-3 mb-3 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono animate-fadeIn">
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] text-gray-400 block">Pace vs Spin</span>
+                  <span className="text-white font-bold">{activeStadium.pitchType.includes('Spin') ? '65% Spin / 35% Pace' : '60% Pace / 40% Spin'}</span>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] text-gray-400 block">Dew Impact</span>
+                  <span className="text-amber-300 font-bold">{activeStadium.city === 'Mumbai' || activeStadium.city === 'Chennai' ? 'High (Chase Favor)' : 'Moderate'}</span>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] text-gray-400 block">Boundary Size</span>
+                  <span className="text-sky-300 font-bold">{activeStadium.boundarySize} (High 6s)</span>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                  <span className="text-[9px] text-gray-400 block">Historical 1st Inn Par</span>
+                  <span className="text-emerald-400 font-bold">{activeStadium.avgFirstInnings} / 6 in 20 ov</span>
+                </div>
+              </div>
+            )}
                 <span className="text-[10px] font-mono text-purple-400">₹125.0 Cr Cap</span>
               </div>
             </div>
