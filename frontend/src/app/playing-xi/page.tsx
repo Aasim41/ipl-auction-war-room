@@ -444,7 +444,7 @@ export default function PlayingXIPage() {
             <ThreeLineupField
               franchiseColor={franchise.color}
               franchiseShort={franchise.short}
-              players={xiPlayers.map(p => ({ id: p.id, name: p.name, role: p.role }))}
+              players={fullPlayingXI.map((p: CampaignPlayer) => ({ id: p.player_id, name: p.name, role: p.role }))}
               selectedPlayerId={expandedPlayerId}
               onSelectPlayer={(pId) => {
                 setExpandedPlayerId(expandedPlayerId === pId ? null : pId);

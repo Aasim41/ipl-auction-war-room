@@ -337,7 +337,7 @@ export default function TradeWindowPage() {
           rivalColor={rivalFranchise.color}
           rivalShort={rivalFranchise.short}
           cashDelta={cashOffer}
-          dealStatus={validation.acceptable ? 'agreed' : 'pending'}
+          dealStatus={evaluation.acceptable ? 'agreed' : 'pending'}
         />
 
         {/* Lockdown Notice if Window Closed */}
