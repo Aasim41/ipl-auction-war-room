@@ -1578,7 +1578,7 @@ export default function MiniAuctionPage() {
       {/* MODAL 4: AI Auto-Auction Results Summary */}
       {autoAuctionSummary && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto touch-pan-y overscroll-contain">
-          <div className="p-3 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-900 border-2 border-amber-500/50 max-w-4xl w-full shadow-2xl relative animate-scale-up h-auto max-h-[96dvh] flex flex-col overflow-y-auto sm:overflow-hidden touch-pan-y">
+          <div className="p-3 sm:p-4 rounded-2xl sm:rounded-3xl bg-slate-900 border-2 border-amber-500/50 max-w-4xl w-full shadow-2xl relative animate-scale-up h-auto max-h-[96dvh] flex flex-col overflow-y-auto sm:overflow-hidden landscape:overflow-hidden touch-pan-y">
             
             {/* Responsive 2-Column War Room Layout in Landscape/Wide, Stacked with Smooth Scroll in Portrait */}
             <div className="flex flex-col sm:flex-row landscape:flex-row gap-3 sm:gap-4 flex-1 min-h-0">
@@ -1646,7 +1646,7 @@ export default function MiniAuctionPage() {
               </div>
 
               {/* Right Column: Scrollable Acquired Recruits with Touch-Pan-Y */}
-              <div className="sm:w-7/12 landscape:w-7/12 w-full flex flex-col flex-1 min-h-[160px] max-h-[55vh] sm:max-h-none bg-slate-950/60 p-2 sm:p-2.5 rounded-2xl border border-white/10 overflow-hidden">
+              <div className="sm:w-7/12 landscape:w-7/12 w-full flex flex-col flex-1 min-h-[140px] max-h-[55vh] sm:max-h-none landscape:max-h-none bg-slate-950/60 p-2 sm:p-2.5 rounded-2xl border border-white/10 overflow-hidden">
                 <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0">
                   <span className="text-[10px] sm:text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
                     Acquired Recruits ({autoAuctionSummary.purchased.length} New Stars):
@@ -1656,7 +1656,7 @@ export default function MiniAuctionPage() {
                   </span>
                 </div>
 
-                <div className="flex-1 min-h-[120px] overflow-y-auto overscroll-contain touch-pan-y space-y-1.5 pr-1 -webkit-overflow-scrolling-touch">
+                <div className="flex-1 min-h-[100px] overflow-y-auto overscroll-contain touch-pan-y space-y-1.5 pr-1 -webkit-overflow-scrolling-touch">
                   {autoAuctionSummary.purchased.length === 0 ? (
                     <div className="h-full flex items-center justify-center p-4 rounded-xl bg-white/5 text-center text-xs text-gray-400">
                       Your squad was already complete! No additional auction purchases needed.

@@ -645,228 +645,299 @@ export default function PlayingXIPage() {
 
         {/* ─── TAB 2: FULL IPL TOURNAMENT SEASON & SCHEDULE (74 MATCHES) ─── */}
         {activeTab === 'schedule' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
+          <div className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
             
-            {/* Left 7 Columns: Fixtures Schedule with My 14 Matches vs All 74 Matches Toggle */}
-            <div className="lg:col-span-7 p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
-              
-              {/* Filter Tabs & Quick Round Sim */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2">
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-                    <Calendar size={13} className="text-amber-400" />
-                    IPL 2027 Tournament Schedule (74 Matches)
-                  </h3>
-                  <p className="text-[11px] text-gray-400">14 Rounds of 5 Matches each + 4 Playoff Games</p>
+            {/* Auto-Simulated Wave Notification Banner */}
+            {campaign.lastSimulatedWave && campaign.lastSimulatedWave.simulatedCount > 0 && (
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/10 border border-amber-500/40 text-xs shadow-xl animate-fadeIn mb-2 shrink-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={16} className="text-amber-400 shrink-0 animate-pulse" />
+                    <div>
+                      <span className="font-black uppercase tracking-wider text-[11px] text-amber-300">
+                        ⚡ League Progression Wave:
+                      </span>{' '}
+                      <span className="text-gray-200">
+                        {campaign.lastSimulatedWave.simulatedCount} AI matches simulated up to Match #{campaign.lastSimulatedWave.nextMatchNo} (vs {campaign.lastSimulatedWave.nextRivalShort})
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      gameAudio.playUiTap('light');
+                      dismissSimulatedWaveAlert();
+                    }}
+                    className="px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white text-[10px] font-bold cursor-pointer transition-all shrink-0 self-end sm:self-auto"
+                  >
+                    Dismiss
+                  </button>
                 </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* Simulate Current Round Button */}
-                  {(() => {
-                    const nextUnplayed = schedule.find(f => f.status !== 'COMPLETED');
-                    const roundToSim = nextUnplayed?.round || 1;
-                    return nextUnplayed ? (
+                {/* Quick simulated matches list with clickable scorecard pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto mt-1.5 pt-1.5 border-t border-white/10 scrollbar-none py-0.5">
+                  <span className="text-[10px] font-mono text-gray-400 uppercase shrink-0">Scores:</span>
+                  {campaign.lastSimulatedWave.simulatedMatches.map((m) => {
+                    const fix = (campaign.schedule || []).find(f => f.matchNo === m.matchNo);
+                    return (
                       <button
+                        key={m.matchNo}
                         onClick={() => {
-                          gameAudio.playUiTap('select');
-                          triggerGameHaptic('medium');
-                          setIsSimulatingRound(true);
-                          simulateRound(roundToSim);
-                          setTimeout(() => setIsSimulatingRound(false), 600);
+                          if (fix) {
+                            gameAudio.playUiTap('select');
+                            triggerGameHaptic('light');
+                            setViewingScorecardFixture(fix);
+                          }
                         }}
-                        disabled={isSimulatingRound}
-                        className="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
-                        title="Simulate all 5 matches in the current round"
+                        className="px-2 py-0.5 rounded-lg bg-slate-950/80 hover:bg-slate-900 border border-white/10 hover:border-amber-400/50 text-[10px] font-mono text-gray-200 hover:text-white flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
+                        title="View Full Scorecard"
                       >
-                        <Zap size={12} className={isSimulatingRound ? 'animate-spin' : ''} />
-                        <span>{isSimulatingRound ? 'Simulating...' : `⚡ Sim Round ${roundToSim}`}</span>
+                        <span className="text-amber-400 font-bold">#{m.matchNo}</span>
+                        <span>{m.teamAShort} vs {m.teamBShort}</span>
+                        <span className="text-emerald-400 font-bold">📊</span>
                       </button>
-                    ) : null;
-                  })()}
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
-                    <button
-                      onClick={() => setScheduleFilter('all')}
-                      className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                        scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      All 74 Fixtures
-                    </button>
-                    <button
-                      onClick={() => setScheduleFilter('my')}
-                      className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                        scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      My 14 Matches
-                    </button>
+            <div className="grid grid-cols-1 md:grid-cols-12 landscape:grid-cols-12 gap-2.5 sm:gap-3 flex-1 min-h-0 overflow-y-auto md:overflow-hidden landscape:overflow-hidden">
+              
+              {/* Left 7 Columns: Fixtures Schedule with My 14 Matches vs All 74 Matches Toggle */}
+              <div className="md:col-span-7 landscape:col-span-7 p-3 sm:p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between min-h-0 overflow-hidden">
+                
+                {/* Filter Tabs & Quick Round Sim */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+                      <Calendar size={13} className="text-amber-400" />
+                      IPL 2027 Tournament Schedule (74 Matches)
+                    </h3>
+                    <p className="text-[11px] text-gray-400">14 Rounds of 5 Matches each + 4 Playoff Games</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Simulate Current Round Button */}
+                    {(() => {
+                      const nextUnplayed = schedule.find(f => f.status !== 'COMPLETED');
+                      const roundToSim = nextUnplayed?.round || 1;
+                      return nextUnplayed ? (
+                        <button
+                          onClick={() => {
+                            gameAudio.playUiTap('select');
+                            triggerGameHaptic('medium');
+                            setIsSimulatingRound(true);
+                            simulateRound(roundToSim);
+                            setTimeout(() => setIsSimulatingRound(false), 600);
+                          }}
+                          disabled={isSimulatingRound}
+                          className="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
+                          title="Simulate all 5 matches in the current round"
+                        >
+                          <Zap size={12} className={isSimulatingRound ? 'animate-spin' : ''} />
+                          <span>{isSimulatingRound ? 'Simulating...' : `⚡ Sim Round ${roundToSim}`}</span>
+                        </button>
+                      ) : null;
+                    })()}
+
+                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
+                      <button
+                        onClick={() => setScheduleFilter('all')}
+                        className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                          scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        All 74 Fixtures
+                      </button>
+                      <button
+                        onClick={() => setScheduleFilter('my')}
+                        className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                          scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        My 14 Matches
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Fixture cards */}
-              <div className="space-y-2 overflow-y-auto max-h-[460px] pr-1">
-                {(scheduleFilter === 'my' ? myFixtures : schedule).map((fixture) => {
-                  const isCurrent = fixture.status === 'CURRENT';
-                  const isDone = fixture.status === 'COMPLETED';
-                  const isPlayoff = fixture.stage !== 'League';
+                {/* Fixture cards */}
+                <div className="space-y-2 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1">
+                  {(scheduleFilter === 'my' ? myFixtures : schedule).map((fixture) => {
+                    const isCurrent = fixture.status === 'CURRENT';
+                    const isDone = fixture.status === 'COMPLETED';
+                    const isPlayoff = fixture.stage !== 'League';
 
-                  return (
-                    <div
-                      key={fixture.matchNo}
-                      className={`p-3 rounded-2xl border transition-all ${
-                        isCurrent
-                          ? 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-slate-950 border-amber-500/50 shadow-lg shadow-amber-500/10'
-                          : isDone
-                          ? 'bg-slate-950/70 border-white/5 opacity-85'
-                          : isPlayoff
-                          ? 'bg-purple-950/20 border-purple-500/30'
-                          : 'bg-slate-950/90 border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        {/* Match info */}
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className={`w-8 h-8 rounded-xl font-mono font-black text-xs flex items-center justify-center shrink-0 ${
-                            isPlayoff ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-white/10 text-white'
-                          }`}>
-                            #{fixture.matchNo}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-black text-white flex items-center gap-1.5 truncate">
-                              <TeamLogo teamId={fixture.teamAShort} size={18} />
-                              <span style={{ color: fixture.teamAColor }} className="font-bold">{fixture.teamAShort}</span>
-                              <span className="text-gray-400 font-normal text-xs">vs</span>
-                              <span style={{ color: fixture.teamBColor }} className="font-bold">{fixture.teamBShort}</span>
-                              <TeamLogo teamId={fixture.teamBShort} size={18} />
-                              {isPlayoff && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono uppercase ml-1">
-                                  {fixture.stage}
-                                </span>
-                              )}
+                    return (
+                      <div
+                        key={fixture.matchNo}
+                        className={`p-2.5 sm:p-3 rounded-2xl border transition-all ${
+                          isCurrent
+                            ? 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-slate-950 border-amber-500/50 shadow-lg shadow-amber-500/10'
+                            : isDone
+                            ? 'bg-slate-950/70 border-white/5 opacity-85'
+                            : isPlayoff
+                            ? 'bg-purple-950/20 border-purple-500/30'
+                            : 'bg-slate-950/90 border-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          {/* Match info */}
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-8 h-8 rounded-xl font-mono font-black text-xs flex items-center justify-center shrink-0 ${
+                              isPlayoff ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-white/10 text-white'
+                            }`}>
+                              #{fixture.matchNo}
                             </div>
-                            <div className="text-[11px] text-gray-400 font-mono truncate">
-                              Round {fixture.round} • {fixture.stadiumName}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Status or Launch Button */}
-                        <div className="shrink-0">
-                          {isCurrent ? (
-                            <button
-                              onClick={() => handleLaunchMatch(fixture)}
-                              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase flex items-center gap-1 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
-                            >
-                              <Swords size={13} />
-                              <span>Play Match</span>
-                            </button>
-                          ) : isDone ? (
-                            <div className="text-right">
-                              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                                fixture.result?.winnerTeamId === franchise.short.toLowerCase()
-                                  ? 'bg-emerald-500/20 text-emerald-300'
-                                  : 'bg-white/10 text-gray-300'
-                              }`}>
-                                {fixture.result?.winnerName?.split(' ')[0]} Won
-                              </span>
-                              <div className="text-[10px] text-gray-400 mt-0.5 font-mono">
-                                by {fixture.result?.margin}
+                            <div className="min-w-0">
+                              <div className="text-xs font-black text-white flex items-center gap-1.5 truncate">
+                                <TeamLogo teamId={fixture.teamAShort} size={18} />
+                                <span style={{ color: fixture.teamAColor }} className="font-bold">{fixture.teamAShort}</span>
+                                <span className="text-gray-400 font-normal text-xs">vs</span>
+                                <span style={{ color: fixture.teamBColor }} className="font-bold">{fixture.teamBShort}</span>
+                                <TeamLogo teamId={fixture.teamBShort} size={18} />
+                                {isPlayoff && (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono uppercase ml-1">
+                                    {fixture.stage}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-gray-400 font-mono truncate">
+                                Round {fixture.round} • {fixture.stadiumName}
                               </div>
                             </div>
-                          ) : !fixture.isMyMatch ? (
-                            <button
-                              onClick={() => {
-                                gameAudio.playUiTap('select');
-                                triggerGameHaptic('light');
-                                simulateScheduleMatch(fixture.matchNo);
-                              }}
-                              className="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold text-[11px] cursor-pointer hover:scale-105 active:scale-95 transition-all flex items-center gap-1"
-                              title="Simulate this fixture between AI teams and update points table"
-                            >
-                              <Zap size={11} className="text-amber-400" />
-                              <span>Simulate</span>
-                            </button>
-                          ) : (
-                            <span className="text-[10px] text-gray-500 font-mono uppercase">
-                              Upcoming
-                            </span>
-                          )}
+                          </div>
+
+                          {/* Status or Launch Button */}
+                          <div className="shrink-0">
+                            {isCurrent ? (
+                              <button
+                                onClick={() => handleLaunchMatch(fixture)}
+                                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase flex items-center gap-1 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                              >
+                                <Swords size={13} />
+                                <span>Play Match</span>
+                              </button>
+                            ) : isDone ? (
+                              <div className="flex items-center gap-2">
+                                <div className="text-right">
+                                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                                    fixture.result?.winnerTeamId === franchise.short.toLowerCase()
+                                      ? 'bg-emerald-500/20 text-emerald-300'
+                                      : 'bg-white/10 text-gray-300'
+                                  }`}>
+                                    {fixture.result?.winnerName?.split(' ')[0]} Won
+                                  </span>
+                                  <div className="text-[10px] text-gray-400 mt-0.5 font-mono">
+                                    by {fixture.result?.margin}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    gameAudio.playUiTap('select');
+                                    triggerGameHaptic('light');
+                                    setViewingScorecardFixture(fixture);
+                                  }}
+                                  className="px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white text-[11px] font-bold flex items-center gap-1 border border-white/15 cursor-pointer shadow-sm transition-all shrink-0"
+                                  title="View Full Broadcast Scorecard"
+                                >
+                                  <Award size={12} className="text-amber-400" />
+                                  <span>Scorecard</span>
+                                </button>
+                              </div>
+                            ) : !fixture.isMyMatch ? (
+                              <button
+                                onClick={() => {
+                                  gameAudio.playUiTap('select');
+                                  triggerGameHaptic('light');
+                                  simulateScheduleMatch(fixture.matchNo);
+                                }}
+                                className="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold text-[11px] cursor-pointer hover:scale-105 active:scale-95 transition-all flex items-center gap-1"
+                                title="Simulate this fixture between AI teams and update points table"
+                              >
+                                <Zap size={11} className="text-amber-400" />
+                                <span>Simulate</span>
+                              </button>
+                            ) : (
+                              <span className="text-[10px] text-gray-500 font-mono uppercase">
+                                Upcoming
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Right 5 Columns: Live 10-Team Standings Points Table */}
+              <div className="md:col-span-5 landscape:col-span-5 p-3 sm:p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between min-h-0 overflow-hidden">
+                <div className="pb-2 mb-2 border-b border-white/10 shrink-0">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+                    <Trophy size={13} className="text-amber-400" />
+                    IPL 2027 Championship Standings
+                  </h3>
+                  <p className="text-[11px] text-gray-400">Top 4 Franchises Qualify for IPL Playoffs</p>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5 sticky top-0 bg-slate-900">
+                      <tr>
+                        <th className="py-1">Pos</th>
+                        <th className="py-1">Team</th>
+                        <th className="py-1 text-center">P</th>
+                        <th className="py-1 text-center">W</th>
+                        <th className="py-1 text-center">L</th>
+                        <th className="py-1 text-right">NRR</th>
+                        <th className="py-1 text-right font-black text-amber-300">Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-gray-200">
+                      {pointsTable.map((row, idx) => {
+                        const isMyTeam = row.teamId === franchise.short.toLowerCase();
+                        const isTop4 = idx < 4;
+
+                        return (
+                          <tr 
+                            key={row.teamId}
+                            className={`hover:bg-white/5 transition-colors ${
+                              isMyTeam ? 'bg-amber-500/15 font-bold text-amber-200' : ''
+                            }`}
+                          >
+                            <td className="py-1.5">
+                              <span className={`w-5 h-5 rounded-md inline-flex items-center justify-center text-[10px] font-bold ${
+                                isTop4 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-gray-500'
+                              }`}>
+                                {idx + 1}
+                              </span>
+                            </td>
+                            <td className="py-1.5 font-sans flex items-center gap-1.5 truncate">
+                              <TeamLogo teamId={row.shortName} size={18} />
+                              <span className="font-bold truncate">{row.shortName}</span>
+                            </td>
+                            <td className="py-1.5 text-center text-gray-400">{row.played}</td>
+                            <td className="py-1.5 text-center text-emerald-400 font-bold">{row.won}</td>
+                            <td className="py-1.5 text-center text-rose-400 font-bold">{row.lost}</td>
+                            <td className="py-1.5 text-right text-[11px] text-gray-400">
+                              {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
+                            </td>
+                            <td className="py-1.5 text-right font-black text-amber-300">{row.points}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pt-2 border-t border-white/10 text-[11px] text-gray-400 text-center font-sans shrink-0">
+                  Gold positions (1-4) advance to IPL Playoffs (Qualifier 1 & Eliminator).
+                </div>
+              </div>
+
             </div>
-
-            {/* Right 5 Columns: Live 10-Team Standings Points Table */}
-            <div className="lg:col-span-5 p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between">
-              <div className="pb-2 mb-2 border-b border-white/10">
-                <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-                  <Trophy size={13} className="text-amber-400" />
-                  IPL 2027 Championship Standings
-                </h3>
-                <p className="text-[11px] text-gray-400">Top 4 Franchises Qualify for IPL Playoffs</p>
-              </div>
-
-              {/* Table */}
-              <div className="overflow-x-auto flex-1 max-h-[460px]">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5">
-                    <tr>
-                      <th className="py-1">Pos</th>
-                      <th className="py-1">Team</th>
-                      <th className="py-1 text-center">P</th>
-                      <th className="py-1 text-center">W</th>
-                      <th className="py-1 text-center">L</th>
-                      <th className="py-1 text-right">NRR</th>
-                      <th className="py-1 text-right font-black text-amber-300">Pts</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-gray-200">
-                    {pointsTable.map((row, idx) => {
-                      const isMyTeam = row.teamId === franchise.short.toLowerCase();
-                      const isTop4 = idx < 4;
-
-                      return (
-                        <tr 
-                          key={row.teamId}
-                          className={`hover:bg-white/5 transition-colors ${
-                            isMyTeam ? 'bg-amber-500/15 font-bold text-amber-200' : ''
-                          }`}
-                        >
-                          <td className="py-1.5">
-                            <span className={`w-5 h-5 rounded-md inline-flex items-center justify-center text-[10px] font-bold ${
-                              isTop4 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-gray-500'
-                            }`}>
-                              {idx + 1}
-                            </span>
-                          </td>
-                          <td className="py-1.5 font-sans flex items-center gap-1.5 truncate">
-                            <TeamLogo teamId={row.shortName} size={18} />
-                            <span className="font-bold truncate">{row.shortName}</span>
-                          </td>
-                          <td className="py-1.5 text-center text-gray-400">{row.played}</td>
-                          <td className="py-1.5 text-center text-emerald-400 font-bold">{row.won}</td>
-                          <td className="py-1.5 text-center text-rose-400 font-bold">{row.lost}</td>
-                          <td className="py-1.5 text-right text-[11px] text-gray-400">
-                            {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
-                          </td>
-                          <td className="py-1.5 text-right font-black text-amber-300">{row.points}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="pt-2 border-t border-white/10 text-[11px] text-gray-400 text-center font-sans">
-                Gold positions (1-4) advance to IPL Playoffs (Qualifier 1 & Eliminator).
-              </div>
-            </div>
-
           </div>
         )}
 
@@ -919,7 +990,7 @@ export default function PlayingXIPage() {
                     >
                       <div>
                         <div className="font-bold text-xs text-white flex items-center gap-1.5">
-                          <span>{bp.name}</span>
+                          <span>{formatPlayerInitial(bp.name)}</span>
                           {bp.is_overseas && <span className="text-[9px] px-1 rounded bg-sky-500/20 text-sky-300">OS</span>}
                           {bp.role === 'WK' && <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300">WK</span>}
                         </div>
@@ -947,6 +1018,15 @@ export default function PlayingXIPage() {
         </div>
       )}
 
+      {/* ─── DETAILED BROADCAST SCORECARD MODAL ─── */}
+      {viewingScorecardFixture && (
+        <MatchScorecardModal
+          isOpen={viewingScorecardFixture !== null}
+          onClose={() => setViewingScorecardFixture(null)}
+          fixture={viewingScorecardFixture}
+        />
+      )}
+
       {/* ─── LIVE BALL-BY-BALL MATCH SIMULATOR ─── */}
       {showSimulator && (
         <BallByBallMatchSimulator
@@ -963,8 +1043,12 @@ export default function PlayingXIPage() {
           venueName={selectedFixtureForMatch ? selectedFixtureForMatch.stadiumName : currentInsight.title}
           matchFixture={selectedFixtureForMatch || currentMatch}
           onMatchComplete={(res) => {
-            if (currentMatch && res) {
-              recordMatchResult(selectedFixtureForMatch?.matchNo || currentMatch.matchNo, res);
+            if (res) {
+              recordMatchResult(
+                selectedFixtureForMatch?.matchNo || currentMatch?.matchNo || 1,
+                res,
+                (res as any).scorecard
+              );
             }
           }}
         />
