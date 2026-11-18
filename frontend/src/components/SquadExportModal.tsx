@@ -98,7 +98,7 @@ export default function SquadExportModal({ franchise, squad, stadiumName, stadiu
 
     ctx.font = '700 16px sans-serif';
     ctx.fillStyle = '#94a3b8';
-    ctx.fillText(`SQUAD POWER: ${avgPI} / 100 • ${squad.length} PLAYERS`, 1140, 105);
+    ctx.fillText(`OFFICIAL ROSTER • ${squad.length} PLAYERS`, 1140, 105);
     ctx.textAlign = 'left';
 
     // Divider Line
@@ -231,8 +231,8 @@ export default function SquadExportModal({ franchise, squad, stadiumName, stadiu
                 <div className="text-base font-black font-mono text-emerald-400">₹{totalPurseSpend.toFixed(1)} Cr</div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-gray-400">Squad Power</div>
-                <div className="text-base font-black font-mono text-amber-400">{avgPI}/100</div>
+                <div className="text-xs text-gray-400">Squad Roster</div>
+                <div className="text-base font-black font-mono text-amber-400">{squad.length}/25</div>
               </div>
             </div>
           </div>
