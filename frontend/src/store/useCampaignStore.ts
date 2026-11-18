@@ -626,6 +626,28 @@ export const useCampaignStore = create<CampaignStoreState>()(
             updatedActive.lockedPhases = []
             needsUpdate = true
           }
+          if (!updatedActive.rivalTeamsData || Object.keys(updatedActive.rivalTeamsData).length === 0) {
+            const initialRivals: Record<string, { remainingPurse: number; squad: CampaignPlayer[] }> = {}
+            ALL_TEAM_IDS.forEach((tId) => {
+              if (tId !== updatedActive.teamId) {
+                const f = getFranchise(tId)
+                if (f) {
+                  initialRivals[tId] = {
+                    remainingPurse: f.miniAuctionPurse2026 || 15.0,
+                    squad: (f.squad2026 || []).map((p, idx) => ({
+                      ...p,
+                      player_id: p.player_id || `${tId}_${idx + 1}`,
+                      currentPrice: p.price,
+                      is_retained: true,
+                      is_released: false
+                    }))
+                  }
+                }
+              }
+            })
+            updatedActive.rivalTeamsData = initialRivals
+            needsUpdate = true
+          }
 
           // Ensure dual playing 11s (Bat-First & Bowl-First) are populated for matches
           const activeSquad = updatedActive.squad.filter((p) => !p.is_released)
@@ -873,6 +895,75 @@ export const useCampaignStore = create<CampaignStoreState>()(
         }))
 
         return true
+      },
+
+      recordAuctionSale: (player, winnerTeamId, winningPrice) => {
+        get().updateActiveCampaign((prev) => {
+          if (winnerTeamId === prev.teamId) {
+            const newPurse = Math.max(0, Math.round((prev.remainingPurse - winningPrice) * 100) / 100)
+            const newSquad = [
+              ...prev.squad,
+              {
+                ...player,
+                currentPrice: winningPrice,
+                price: winningPrice,
+                is_retained: true,
+                is_released: false,
+                statsSummary: `Acquired in 2027 Mini-Auction for ₹${winningPrice.toFixed(2)} Cr`
+              }
+            ]
+            return {
+              ...prev,
+              remainingPurse: newPurse,
+              squad: newSquad,
+              lastSaved: new Date().toISOString()
+            }
+          } else {
+            const currentRivals = prev.rivalTeamsData ? { ...prev.rivalTeamsData } : {}
+            const botData = currentRivals[winnerTeamId] || {
+              remainingPurse: getFranchise(winnerTeamId)?.miniAuctionPurse2026 || 15.0,
+              squad: (getFranchise(winnerTeamId)?.squad2026 || []).map((p, idx) => ({
+                ...p,
+                player_id: p.player_id || `${winnerTeamId}_${idx + 1}`,
+                currentPrice: p.price,
+                is_retained: true,
+                is_released: false
+              }))
+            }
+
+            const updatedPurse = Math.max(0, Math.round((botData.remainingPurse - winningPrice) * 100) / 100)
+            const updatedSquad = [
+              ...botData.squad,
+              {
+                ...player,
+                currentPrice: winningPrice,
+                price: winningPrice,
+                is_retained: true,
+                is_released: false,
+                statsSummary: `Acquired in 2027 Mini-Auction for ₹${winningPrice.toFixed(2)} Cr`
+              }
+            ]
+
+            currentRivals[winnerTeamId] = {
+              remainingPurse: updatedPurse,
+              squad: updatedSquad
+            }
+
+            return {
+              ...prev,
+              rivalTeamsData: currentRivals,
+              lastSaved: new Date().toISOString()
+            }
+          }
+        })
+      },
+
+      updateRivalTeamsData: (rivalData) => {
+        get().updateActiveCampaign((prev) => ({
+          ...prev,
+          rivalTeamsData: rivalData,
+          lastSaved: new Date().toISOString()
+        }))
       },
 
       executeTrade: (playerOutId, playerIn, rivalTeamId, cashDelta) => {
