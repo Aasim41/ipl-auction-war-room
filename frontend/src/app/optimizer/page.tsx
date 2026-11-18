@@ -240,8 +240,8 @@ export default function OptimizerPage() {
                             </div>
                             <div className="flex justify-between items-center mt-auto pt-2 border-t border-slate-700/50">
                               <span className="text-slate-300 font-mono text-sm">{p.base_price.toFixed(1)} Cr</span>
-                              <div className="flex items-center gap-1 text-yellow-400 text-sm font-bold">
-                                <Zap className="w-3 h-3" /> <span className="scoreboard-text">{p.power_index}</span>
+                              <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold font-mono">
+                                {p.role}
                               </div>
                             </div>
                           </div>

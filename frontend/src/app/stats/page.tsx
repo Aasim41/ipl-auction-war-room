@@ -67,10 +67,10 @@ const RowComponent = ({ index, style, players, onSelect }: { index: number, styl
         </div>
 
         <div className="flex-1 text-center">
-          <div className={`text-2xl font-black scoreboard-text ${p.Power_Index >= 85 ? 'text-emerald-400' : p.Power_Index >= 72 ? 'text-sky-400' : 'text-amber-400'}`}>
-            {p.Power_Index.toFixed(1)}
+          <div className="text-xl font-black text-amber-300 font-mono">
+            {p.role}
           </div>
-          <div className="text-[10px] uppercase text-gray-500 font-semibold tracking-wider">Power Index</div>
+          <div className="text-[10px] uppercase text-gray-500 font-semibold tracking-wider">{p.specific_role || 'Specialist'}</div>
         </div>
 
         <div className="flex-1 text-right">
@@ -164,7 +164,6 @@ export default function StatsHub() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-up">
           <div className="card-profile animate-fade-up">
             <div className="prof-photo" style={{ background: getRoleColorHex(selectedPlayer.role) }}>
-              <div className="prof-photo-num">{selectedPlayer.Power_Index.toFixed(0)}</div>
               <div className="prof-avatar" style={{ color: getRoleColorHex(selectedPlayer.role) }}>{selectedPlayer.role}</div>
               <div className="prof-status-badge">₹{selectedPlayer.base_price} Cr</div>
             </div>
@@ -179,8 +178,8 @@ export default function StatsHub() {
             </div>
             <div className="prof-stats">
               <div className="pstat">
-                <span className="psv">{selectedPlayer.Power_Index.toFixed(1)}</span>
-                <span className="psl">Power Idx</span>
+                <span className="psv">{selectedPlayer.role}</span>
+                <span className="psl">Discipline</span>
               </div>
               <div className="pstat">
                 <span className="psv">{selectedPlayer.batting_sr ? selectedPlayer.batting_sr.toFixed(0) : '-'}</span>

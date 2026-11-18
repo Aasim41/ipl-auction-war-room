@@ -94,8 +94,8 @@ export default function AnalyticsHub() {
           <div className="text-2xl font-black text-white scoreboard-text">{totalPlayers}</div>
         </div>
         <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-900/5 border border-emerald-400/20 card-hover">
-          <div className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">Avg Power Index</div>
-          <div className="text-2xl font-black text-white scoreboard-text">{(players.reduce((s, p) => s + p.Power_Index, 0) / totalPlayers).toFixed(1)}</div>
+          <div className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">Overseas Stars</div>
+          <div className="text-2xl font-black text-white scoreboard-text">{players.filter(p => p.is_overseas).length}</div>
         </div>
         <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/15 to-violet-900/5 border border-violet-400/20 card-hover">
           <div className="text-violet-400 text-xs font-bold uppercase tracking-wider mb-1">Highest Valuation</div>

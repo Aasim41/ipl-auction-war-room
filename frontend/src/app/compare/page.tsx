@@ -131,7 +131,6 @@ export default function ComparePlayers() {
           {playerA && (
             <div className="card-profile">
               <div className="prof-photo" style={{ background: getRoleColorHex(playerA.role) }}>
-                <div className="prof-photo-num">{playerA.Power_Index.toFixed(0)}</div>
                 <div className="prof-avatar" style={{ color: getRoleColorHex(playerA.role) }}>{playerA.role}</div>
                 <div className="prof-status-badge text-black">₹{playerA.base_price} Cr</div>
               </div>
@@ -145,8 +144,8 @@ export default function ComparePlayers() {
               </div>
               <div className="prof-stats">
                 <div className="pstat">
-                  <span className="psv">{playerA.Power_Index.toFixed(1)}</span>
-                  <span className="psl">Power Idx</span>
+                  <span className="psv">{playerA.role}</span>
+                  <span className="psl">Specialty</span>
                 </div>
                 <div className="pstat">
                   <span className="psv">{playerA.batting_sr ? playerA.batting_sr.toFixed(0) : '-'}</span>
@@ -190,7 +189,6 @@ export default function ComparePlayers() {
           {playerB && (
             <div className="card-profile">
               <div className="prof-photo" style={{ background: getRoleColorHex(playerB.role) }}>
-                <div className="prof-photo-num">{playerB.Power_Index.toFixed(0)}</div>
                 <div className="prof-avatar" style={{ color: getRoleColorHex(playerB.role) }}>{playerB.role}</div>
                 <div className="prof-status-badge text-black">₹{playerB.base_price} Cr</div>
               </div>
@@ -204,8 +202,8 @@ export default function ComparePlayers() {
               </div>
               <div className="prof-stats">
                 <div className="pstat">
-                  <span className="psv">{playerB.Power_Index.toFixed(1)}</span>
-                  <span className="psl">Power Idx</span>
+                  <span className="psv">{playerB.role}</span>
+                  <span className="psl">Specialty</span>
                 </div>
                 <div className="pstat">
                   <span className="psv">{playerB.batting_sr ? playerB.batting_sr.toFixed(0) : '-'}</span>
