@@ -319,6 +319,10 @@ export interface UserCampaign {
   currentMatchIndex: number
   pointsTable: TournamentPointsEntry[]
   lockedPhases: Array<'trade' | 'retain_release' | 'mini_auction'>
+  rivalTeamsData?: Record<string, {
+    remainingPurse: number;
+    squad: CampaignPlayer[];
+  }>;
   activeMatchSimulation?: {
     fixtureMatchNo: number;
     matchKey?: string;
@@ -392,6 +396,8 @@ interface CampaignStoreState {
   // Squad Actions
   togglePlayerRetention: (playerId: string) => void
   addAuctionPlayerToSquad: (player: CampaignPlayer, bidAmount: number) => boolean
+  recordAuctionSale: (player: CampaignPlayer, winnerTeamId: string, winningPrice: number) => void
+  updateRivalTeamsData: (rivalData: Record<string, { remainingPurse: number; squad: CampaignPlayer[] }>) => void
   executeTrade: (playerOutId: string, playerIn: CampaignPlayer, rivalTeamId: string, cashDelta: number) => boolean
   setPlayingXI: (playerIds: string[], impactPlayerId?: string, mode?: 'bat_first' | 'bowl_first') => void
   swapPlayingXISlots: (indexA: number, indexB: number, mode?: 'bat_first' | 'bowl_first') => void
@@ -533,6 +539,25 @@ export const useCampaignStore = create<CampaignStoreState>()(
         const pointsTable = generateInitialPointsTable()
         const initialXI = computeOptimalPlayingXI(initialSquad)
 
+        const initialRivals: Record<string, { remainingPurse: number; squad: CampaignPlayer[] }> = {}
+        ALL_TEAM_IDS.forEach((tId) => {
+          if (tId !== teamId) {
+            const f = getFranchise(tId)
+            if (f) {
+              initialRivals[tId] = {
+                remainingPurse: f.miniAuctionPurse2026 || 15.0,
+                squad: (f.squad2026 || []).map((p, idx) => ({
+                  ...p,
+                  player_id: p.player_id || `${tId}_${idx + 1}`,
+                  currentPrice: p.price,
+                  is_retained: true,
+                  is_released: false
+                }))
+              }
+            }
+          }
+        })
+
         const newCampaign: UserCampaign = {
           id: campaignId,
           userId: currentUser.id,
@@ -551,7 +576,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           schedule,
           currentMatchIndex: 0,
           pointsTable,
-          lockedPhases: []
+          lockedPhases: [],
+          rivalTeamsData: initialRivals
         }
 
         set({
