@@ -979,14 +979,52 @@ export const useCampaignStore = create<CampaignStoreState>()(
         let tradeExecuted = false
 
         get().updateActiveCampaign((prev) => {
-          const filteredSquad = prev.squad.filter((p) => p.player_id !== playerOutId)
+          // 1. Update User's Squad: Remove outPlayer, Add playerIn
+          const filteredSquad = prev.squad.filter((p) => p.player_id !== playerOutId && p.name.toLowerCase() !== playerIn.name.toLowerCase())
           const newPlayer: CampaignPlayer = { ...playerIn, is_retained: true, is_released: false }
-          const updatedSquad: CampaignPlayer[] = [
+          const updatedUserSquad: CampaignPlayer[] = [
             ...filteredSquad,
             newPlayer
           ]
 
-          // Also update playing XIs if playerOut was in them
+          // 2. Update Rival Team's Squad in rivalTeamsData:
+          // Remove playerIn from rival, Add outPlayer to rival!
+          const currentRivals = prev.rivalTeamsData ? { ...prev.rivalTeamsData } : {}
+          const existingRivalData = currentRivals[rivalTeamId] || {
+            remainingPurse: getFranchise(rivalTeamId)?.miniAuctionPurse2026 || 15.0,
+            squad: (getFranchise(rivalTeamId)?.squad2026 || []).map((p, idx) => ({
+              ...p,
+              player_id: p.player_id || `${rivalTeamId}_${idx + 1}`,
+              currentPrice: p.price,
+              is_retained: true,
+              is_released: false
+            }))
+          }
+
+          // Remove playerIn from rival squad (both by id and by name)
+          const updatedRivalSquad = existingRivalData.squad.filter(
+            (p) => p.player_id !== playerIn.player_id && p.name.toLowerCase() !== playerIn.name.toLowerCase()
+          )
+
+          // Add outPlayer to rival squad
+          const transferredToRival: CampaignPlayer = {
+            ...outPlayer,
+            currentPrice: outPlayer.price,
+            is_retained: true,
+            is_released: false,
+            statsSummary: `Acquired via Trade from ${prev.teamName}`
+          }
+          updatedRivalSquad.push(transferredToRival)
+
+          // Adjust rival purse (-cashDelta)
+          const updatedRivalPurse = Math.max(0, Math.round((existingRivalData.remainingPurse - cashDelta) * 100) / 100)
+
+          currentRivals[rivalTeamId] = {
+            remainingPurse: updatedRivalPurse,
+            squad: updatedRivalSquad
+          }
+
+          // 3. Also update playing XIs if playerOut was in them
           const replaceInXI = (xi?: string[]) => 
             (xi || []).map(id => id === playerOutId ? newPlayer.player_id : id)
 
@@ -995,7 +1033,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           return {
             ...prev,
             remainingPurse: Math.round((prev.remainingPurse + cashDelta) * 100) / 100,
-            squad: updatedSquad,
+            squad: updatedUserSquad,
+            rivalTeamsData: currentRivals,
             playingXI: replaceInXI(prev.playingXI),
             batFirstXI: replaceInXI(prev.batFirstXI),
             bowlFirstXI: replaceInXI(prev.bowlFirstXI),

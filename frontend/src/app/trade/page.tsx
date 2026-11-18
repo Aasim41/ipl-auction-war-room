@@ -21,7 +21,6 @@ import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
 import { getFranchiseAI, isUntouchablePlayer } from '../../data/franchiseAI'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import TeamLogo from '../../components/TeamLogo'
-import { ThreeTradeTable } from '../../components/ThreeTradeTable'
 
 export default function TradeWindowPage() {
   const router = useRouter()
@@ -139,14 +138,54 @@ export default function TradeWindowPage() {
   const myFranchise = getFranchise(campaign.teamId)
   const rivalFranchise = getFranchise(selectedRivalId)
 
-  // Rival players (using franchise.squad2026 as starting base)
-  const rivalSquad: CampaignPlayer[] = rivalFranchise.squad2026.map((p, idx) => ({
-    ...p,
-    player_id: p.player_id || `${selectedRivalId}_${idx + 1}`,
-    currentPrice: p.price,
-    is_retained: true,
-    is_released: false
-  }))
+  // Resolve Rival Squad from campaign.rivalTeamsData if available, fallback to squad2026
+  const getRivalSquad = (): CampaignPlayer[] => {
+    let squad: CampaignPlayer[] = []
+    if (campaign.rivalTeamsData?.[selectedRivalId]?.squad && campaign.rivalTeamsData[selectedRivalId].squad.length > 0) {
+      squad = [...campaign.rivalTeamsData[selectedRivalId].squad]
+    } else {
+      squad = (rivalFranchise.squad2026 || []).map((p, idx) => ({
+        ...p,
+        player_id: p.player_id || `${selectedRivalId}_${idx + 1}`,
+        currentPrice: p.price,
+        is_retained: true,
+        is_released: false
+      }))
+    }
+
+    // SANITIZATION: A player can NEVER be in two squads at the same time!
+    // 1. Filter out any player who currently exists in the user's active squad (e.g. Naman Dhir)
+    const userPlayerNames = new Set(
+      campaign.squad.filter(p => !p.is_released).map(p => p.name.trim().toLowerCase())
+    )
+    squad = squad.filter(p => !userPlayerNames.has(p.name.trim().toLowerCase()))
+
+    // 2. Also ensure any player traded out to THIS rival is present in this rival's squad!
+    if (campaign.tradedHistory) {
+      campaign.tradedHistory.forEach(th => {
+        if (th.rivalTeam?.toLowerCase() === selectedRivalId.toLowerCase()) {
+          const alreadyInRival = squad.some(p => p.name.trim().toLowerCase() === th.playerOut.trim().toLowerCase())
+          if (!alreadyInRival) {
+            squad.push({
+              player_id: `traded_${selectedRivalId}_${th.playerOut.replace(/\s+/g, '_')}`,
+              name: th.playerOut,
+              role: 'AR',
+              price: 5.0,
+              currentPrice: 5.0,
+              Power_Index: 82,
+              is_retained: true,
+              is_released: false,
+              statsSummary: `Acquired via Trade from ${myFranchise.name}`
+            })
+          }
+        }
+      })
+    }
+
+    return squad
+  }
+
+  const rivalSquad = getRivalSquad()
 
   // Filter squads
   const filteredMySquad = campaign.squad.filter(p => 
@@ -329,16 +368,6 @@ export default function TradeWindowPage() {
             </button>
           )}
         </div>
-
-        {/* 3D Holographic Trade War Room Table */}
-        <ThreeTradeTable
-          myColor={myFranchise.color}
-          myShort={myFranchise.short}
-          rivalColor={rivalFranchise.color}
-          rivalShort={rivalFranchise.short}
-          cashDelta={cashOffer}
-          dealStatus={evaluation.acceptable ? 'agreed' : 'pending'}
-        />
 
         {/* Lockdown Notice if Window Closed */}
         {isTradeLocked && (
