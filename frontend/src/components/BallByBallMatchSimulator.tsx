@@ -1601,6 +1601,24 @@ export default function BallByBallMatchSimulator({
   const battingTeamColor = activeInnings.teamColor || '#f59e0b';
   const bowlingTeamColor = currentInnings === 1 ? (bowl1Squad[0]?.teamColor || '#38bdf8') : (bat1Squad[0]?.teamColor || '#38bdf8');
 
+  const isStrikerLeftHanded = Boolean(
+    strikerPlayer?.battingStyle?.toLowerCase().includes('left') || 
+    ['Rishabh Pant', 'Nicholas Pooran', 'Shivam Dube', 'Shikhar Dhawan', 'Ravindra Jadeja', 'Quinton de Kock', 'Abhishek Sharma', 'Rinku Singh', 'Devdutt Padikkal', 'Phil Salt', 'Travis Head'].some(n => strikerPlayer?.name?.includes(n))
+  );
+
+  const isBowlerSpinner = Boolean(
+    bowlerPlayer?.bowlingStyle?.toLowerCase().includes('spin') || bowlerPlayer?.role === 'SPIN' || 
+    ['Rashid Khan', 'Ravi Bishnoi', 'Yuzvendra Chahal', 'Kuldeep Yadav', 'Varun Chakaravarthy', 'Axar Patel', 'Ravindra Jadeja', 'Sunil Narine', 'R. Ashwin', 'Krunal Pandya', 'Suyash Sharma', 'Rahul Chahar', 'Noor Ahmad', 'Maheesh Theekshana', 'Wanindu Hasaranga'].some(n => bowlerPlayer?.name?.includes(n))
+  );
+
+  const { fielders: dynamicFielders, strategyLabel: fieldingStrategyLabel, deepCount } = getDynamicFieldPositions(
+    ballsBowled,
+    isBowlerSpinner,
+    bowlingTactic,
+    isStrikerLeftHanded,
+    battingTactic
+  );
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 bg-slate-950 text-white overflow-hidden select-none">
       <div 
@@ -1672,6 +1690,31 @@ export default function BallByBallMatchSimulator({
               </div>
             )}
 
+            {/* Restart Match Button (if in Arena phase) */}
+            {tossPhase === 'arena' && !matchDone && (
+              <button
+                onClick={() => {
+                  if (confirm('Restart match from the toss? Any current match scores will be reset.')) {
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('auctionxi_active_match_simulation');
+                    }
+                    useCampaignStore.getState().clearActiveMatchSimulation?.();
+                    matchInitializedKeyRef.current = null;
+                    setTossPhase('ceremony');
+                    setCoinResult(null);
+                    setTossWinner(null);
+                    setTossDecision(null);
+                    setTossSummaryText('');
+                    setupMatchTeams(true);
+                  }
+                }}
+                className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-amber-400 cursor-pointer transition-all"
+                title="Restart match from toss"
+              >
+                <RotateCcw size={15} />
+              </button>
+            )}
+
             {/* Sound Toggle */}
             <button
               onClick={() => {
@@ -1698,6 +1741,14 @@ export default function BallByBallMatchSimulator({
             </button>
           </div>
         </div>
+
+        {/* Resumed Match Toast Notification */}
+        {resumedBanner && (
+          <div className="bg-gradient-to-r from-amber-500/20 via-slate-900 to-amber-500/20 border-b border-amber-500/30 px-3 py-1 text-center text-[10px] font-mono text-amber-300 font-bold flex items-center justify-center gap-1.5 shrink-0 animate-fadeIn">
+            <Sparkles size={12} className="text-amber-400" />
+            <span>{resumedBanner}</span>
+          </div>
+        )}
 
         {/* Dynamic Toss Ceremony View */}
         {tossPhase === 'ceremony' ? (
