@@ -1316,68 +1316,6 @@ export const useCampaignStore = create<CampaignStoreState>()(
           ...prev,
           lastSimulatedWave: null
         }));
-      },
-
-          const pointsMap: Record<string, { played: number, won: number, lost: number, runsFor: number, oversFor: number, runsAgainst: number, oversAgainst: number }> = {};
-          ALL_TEAM_IDS.forEach((id) => {
-            pointsMap[id] = { played: 0, won: 0, lost: 0, runsFor: 0, oversFor: 0, runsAgainst: 0, oversAgainst: 0 };
-          });
-
-          updatedSchedule.forEach((f) => {
-            if (f.status === 'COMPLETED' && f.result && f.stage === 'League') {
-              const r = f.result;
-              const tA = f.teamAId;
-              const tB = f.teamBId;
-              if (pointsMap[tA] && pointsMap[tB]) {
-                pointsMap[tA].played += 1;
-                pointsMap[tB].played += 1;
-                if (r.winnerTeamId === tA) {
-                  pointsMap[tA].won += 1;
-                  pointsMap[tB].lost += 1;
-                } else {
-                  pointsMap[tB].won += 1;
-                  pointsMap[tA].lost += 1;
-                }
-                pointsMap[tA].runsFor += r.teamARuns;
-                pointsMap[tA].oversFor += Math.max(1, r.teamAOvers);
-                pointsMap[tA].runsAgainst += r.teamBRuns;
-                pointsMap[tA].oversAgainst += Math.max(1, r.teamBOvers);
-                pointsMap[tB].runsFor += r.teamBRuns;
-                pointsMap[tB].oversFor += Math.max(1, r.teamBOvers);
-                pointsMap[tB].runsAgainst += r.teamARuns;
-                pointsMap[tB].oversAgainst += Math.max(1, r.teamAOvers);
-              }
-            }
-          });
-
-          const updatedPoints = ALL_TEAM_IDS.map((tId) => {
-            const f = getFranchise(tId);
-            const st = pointsMap[tId];
-            const nrr = st.oversFor > 0 && st.oversAgainst > 0
-              ? (st.runsFor / st.oversFor) - (st.runsAgainst / st.oversAgainst)
-              : 0;
-            return {
-              teamId: tId,
-              teamName: f.name,
-              shortName: f.short,
-              color: f.color,
-              emoji: f.emoji,
-              played: st.played,
-              won: st.won,
-              lost: st.lost,
-              points: st.won * 2,
-              nrr: Math.round(nrr * 1000) / 1000
-            };
-          });
-          updatedPoints.sort((a, b) => b.points - a.points || b.nrr - a.nrr);
-
-          return {
-            ...prev,
-            schedule: updatedSchedule,
-            pointsTable: updatedPoints,
-            lastSaved: new Date().toISOString()
-          };
-        });
       }
     }),
     {

@@ -26,8 +26,10 @@ import {
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore';
 import { getFranchise } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
+import MatchScorecardModal from '../../components/MatchScorecardModal';
 import TeamLogo from '../../components/TeamLogo';
 import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
+import { formatPlayerInitial } from '../../lib/nameFormatter';
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
 
 const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: string, hint: string, favRole: string }> = {
@@ -170,7 +172,8 @@ export default function PlayingXIPage() {
     setPlayingXI,
     recordMatchResult,
     simulateScheduleMatch,
-    simulateRound
+    simulateRound,
+    dismissSimulatedWaveAlert
   } = useCampaignStore();
   
   const [mounted, setMounted] = useState(false);
@@ -181,6 +184,7 @@ export default function PlayingXIPage() {
   const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
   const [showSimulator, setShowSimulator] = useState(false);
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
+  const [viewingScorecardFixture, setViewingScorecardFixture] = useState<TournamentFixture | null>(null);
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
