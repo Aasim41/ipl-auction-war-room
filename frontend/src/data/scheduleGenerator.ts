@@ -1,4 +1,37 @@
 import { IPL_FRANCHISES, FranchiseData, getFranchise } from './franchises';
+import { formatPlayerInitial } from '../lib/nameFormatter';
+
+export interface MatchInningsScorecard {
+  teamName: string;
+  teamShort: string;
+  teamColor: string;
+  totalRuns: number;
+  totalWickets: number;
+  oversPlayed: number;
+  battingScorecard: Array<{
+    name: string;
+    dismissal: string;
+    runs: number;
+    balls: number;
+    fours: number;
+    sixes: number;
+    strikeRate: string;
+  }>;
+  bowlingFigures: Array<{
+    name: string;
+    overs: string;
+    maidens: number;
+    runs: number;
+    wickets: number;
+    economy: string;
+  }>;
+}
+
+export interface MatchScorecard {
+  inn1: MatchInningsScorecard;
+  inn2: MatchInningsScorecard;
+  tossSummary?: string;
+}
 
 export interface TournamentFixture {
   matchNo: number; // 1 to 74
@@ -31,6 +64,7 @@ export interface TournamentFixture {
     pomPlayer: string;
     pomStats: string;
   };
+  scorecard?: MatchScorecard;
 }
 
 export interface TournamentPointsEntry {
