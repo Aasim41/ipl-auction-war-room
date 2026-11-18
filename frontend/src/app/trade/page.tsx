@@ -310,24 +310,96 @@ export default function TradeWindowPage() {
           </div>
         )}
 
+        {/* Rival Franchise Toggle Selector Strip - Prominently Displayed for Mobile & Phone screens */}
+        <div className="mb-2 p-1.5 sm:p-2 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none shrink-0 shadow-lg">
+          <div className="flex items-center gap-1.5 shrink-0 pl-1">
+            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+              <ArrowLeftRight size={11} className="text-amber-400" />
+              <span className="hidden sm:inline">Trade Partner:</span>
+              <span className="sm:hidden">Rival:</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
+            {Object.keys(IPL_FRANCHISES)
+              .filter((tid) => tid !== campaign.teamId)
+              .map((tid) => {
+                const f = IPL_FRANCHISES[tid]
+                const isSelected = tid === selectedRivalId
+                return (
+                  <button
+                    key={tid}
+                    onClick={() => {
+                      gameAudio.playUiTap('select')
+                      triggerGameHaptic('light')
+                      setSelectedRivalId(tid)
+                      setPlayerIn(null)
+                    }}
+                    className={`px-2 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition-all cursor-pointer shrink-0 border ${
+                      isSelected
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/40 scale-105 font-black'
+                        : 'bg-slate-950/80 hover:bg-white/10 text-gray-300 border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <TeamLogo teamId={tid} size={15} />
+                    <span className="text-[10px] font-mono font-bold uppercase">{f.short}</span>
+                  </button>
+                )
+              })}
+          </div>
+        </div>
+
+        {/* Mobile Tab Toggle Bar (Visible only on compact screens) */}
+        <div className="flex sm:hidden items-center justify-center gap-1 mb-2 bg-slate-900/90 p-1 rounded-xl border border-white/10 shrink-0">
+          <button
+            onClick={() => setMobileTab('my')}
+            className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-all ${
+              mobileTab === 'my' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <span>{myFranchise.short} ({filteredMySquad.length})</span>
+            {playerOut && <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />}
+          </button>
+          <button
+            onClick={() => setMobileTab('deal')}
+            className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-all ${
+              mobileTab === 'deal' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <span>🤝 Deal Room</span>
+            {playerOut && playerIn && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+          </button>
+          <button
+            onClick={() => setMobileTab('rival')}
+            className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-all ${
+              mobileTab === 'rival' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <span>{rivalFranchise.short} ({filteredRivalSquad.length})</span>
+            {playerIn && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+          </button>
+        </div>
+
         {/* True 3-Column Side-by-Side Trade Interface (Your Team | Deal Room in Middle | Rival Team) */}
-        <div className="flex flex-row gap-2 sm:gap-3 items-stretch w-full min-h-[440px] flex-1 overflow-hidden">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch w-full min-h-[440px] flex-1 overflow-hidden">
           
           {/* Column 1 (Left): Your Franchise Squad */}
-          <div className={`flex-1 min-w-[250px] max-w-[41%] p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+          <div className={`flex-1 min-w-0 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+            mobileTab !== 'my' ? 'hidden sm:flex' : 'flex'
+          } ${
             playerOut ? 'ring-2 ring-rose-500/40 shadow-rose-500/10' : ''
           }`}>
             <div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-1.5 sm:pb-2 mb-2 border-b border-white/10 gap-1">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-base sm:text-xl">{myFranchise.emoji}</span>
-                  <div>
-                    <h3 className="text-[11px] sm:text-xs font-black uppercase text-white truncate max-w-[130px] sm:max-w-none">{myFranchise.name}</h3>
+              <div className="flex items-center justify-between pb-1.5 sm:pb-2 mb-2 border-b border-white/10 gap-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                  <TeamLogo teamId={myFranchise.id} size={22} className="shrink-0" />
+                  <div className="min-w-0">
+                    <h3 className="text-[11px] sm:text-xs font-black uppercase text-white truncate">{myFranchise.name}</h3>
                     <span className="text-[9px] sm:text-[10px] text-gray-400">Squad ({filteredMySquad.length})</span>
                   </div>
                 </div>
                 {playerOut && (
-                  <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold animate-pulse truncate max-w-[120px]">
+                  <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold animate-pulse truncate max-w-[110px]">
                     OUT: {playerOut.name}
                   </span>
                 )}
@@ -360,7 +432,7 @@ export default function TradeWindowPage() {
                         : 'bg-white/5 border-white/5 hover:bg-white/10 text-gray-300'
                     } ${isTradeLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
-                    <div className="truncate mr-1">
+                    <div className="truncate mr-1 min-w-0">
                       <div className="font-bold text-[11px] sm:text-xs text-white flex items-center gap-1 truncate">
                         <span className="truncate">{p.name}</span>
                         {p.is_overseas && <span className="text-[8px] sm:text-[9px] px-1 rounded bg-sky-500/20 text-sky-300 shrink-0">OS</span>}
@@ -379,8 +451,10 @@ export default function TradeWindowPage() {
             </div>
           </div>
 
-          {/* Column 2 (Middle): Trade Negotiation & Deal Room (Placed in the Middle!) */}
-          <div className="w-[220px] sm:w-[260px] shrink-0 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-950 border border-white/15 flex flex-col justify-between items-center text-center shadow-2xl relative overflow-hidden">
+          {/* Column 2 (Middle): Trade Negotiation & Deal Room */}
+          <div className={`w-full sm:w-[210px] md:w-[250px] shrink-0 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-950 border border-white/15 flex flex-col justify-between items-center text-center shadow-2xl relative overflow-hidden ${
+            mobileTab !== 'deal' ? 'hidden sm:flex' : 'flex'
+          }`}>
             
             {/* Animated Swapping Light Beam */}
             {isTradingAnimation && (
@@ -503,35 +577,22 @@ export default function TradeWindowPage() {
           </div>
 
           {/* Column 3 (Right): Rival Team Squad */}
-          <div className={`flex-1 min-w-[250px] max-w-[41%] p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+          <div className={`flex-1 min-w-0 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-xl transition-all ${
+            mobileTab !== 'rival' ? 'hidden sm:flex' : 'flex'
+          } ${
             playerIn ? 'ring-2 ring-emerald-500/40 shadow-emerald-500/10' : ''
           }`}>
             <div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-1.5 sm:pb-2 mb-2 border-b border-white/10 gap-1">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-base sm:text-xl">{rivalFranchise.emoji}</span>
-                  <div>
-                    <select
-                      value={selectedRivalId}
-                      onChange={(e) => {
-                        setSelectedRivalId(e.target.value)
-                        setPlayerIn(null)
-                      }}
-                      className="bg-slate-950 border border-white/15 text-[10px] sm:text-xs font-black uppercase text-white rounded-lg px-1.5 py-0.5 focus:outline-none cursor-pointer max-w-[130px] sm:max-w-none"
-                    >
-                      {Object.keys(IPL_FRANCHISES)
-                        .filter(tid => tid !== campaign.teamId)
-                        .map(tid => (
-                          <option key={tid} value={tid}>
-                            {IPL_FRANCHISES[tid].name}
-                          </option>
-                        ))}
-                    </select>
-                    <span className="text-[9px] sm:text-[10px] text-gray-400 block mt-0.5">Rival Squad ({filteredRivalSquad.length})</span>
+              <div className="flex items-center justify-between pb-1.5 sm:pb-2 mb-2 border-b border-white/10 gap-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                  <TeamLogo teamId={selectedRivalId} size={22} className="shrink-0" />
+                  <div className="min-w-0">
+                    <h3 className="text-[11px] sm:text-xs font-black uppercase text-white truncate">{rivalFranchise.name}</h3>
+                    <span className="text-[9px] sm:text-[10px] text-gray-400">Rival Squad ({filteredRivalSquad.length})</span>
                   </div>
                 </div>
                 {playerIn && (
-                  <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold animate-pulse truncate max-w-[120px]">
+                  <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold animate-pulse truncate max-w-[110px]">
                     IN: {playerIn.name}
                   </span>
                 )}
