@@ -902,24 +902,38 @@ export default function MiniAuctionPage() {
 
               {/* Live Countdown Timer */}
               <div className="flex items-center gap-2">
-                <div className={`px-2.5 py-0.5 rounded-xl font-mono text-xs font-black flex items-center gap-1 ${
+                <div className={`px-2.5 py-1 rounded-xl font-mono text-xs font-black flex items-center gap-1.5 shadow-sm ${
                   timer <= 3 ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50 animate-pulse' : 'bg-slate-800 text-white border border-white/10'
                 }`}>
-                  <Clock size={12} />
+                  <Clock size={13} className={timer <= 3 ? 'text-rose-400' : 'text-amber-400'} />
                   <span>00:0{timer}s</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ${
+                <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-sm ${
                   gavelPhase === 'sold'
                     ? 'bg-rose-500 text-white'
                     : gavelPhase === 'going_twice'
                     ? 'bg-amber-500 text-slate-950 animate-bounce'
                     : gavelPhase === 'going_once'
-                    ? 'bg-amber-500/30 text-amber-300'
-                    : 'bg-emerald-500/20 text-emerald-300'
+                    ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40'
+                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                 }`}>
                   {gavelPhase.replace('_', ' ')}
                 </span>
               </div>
+            </div>
+
+            {/* Hammer Progress Bar */}
+            <div className="w-full h-1.5 rounded-full bg-slate-950/80 border border-white/5 overflow-hidden my-1">
+              <div 
+                className={`h-full transition-all duration-1000 ${
+                  timer <= 3 
+                    ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-[0_0_8px_rgba(244,63,94,0.8)]' 
+                    : timer <= 6 
+                    ? 'bg-gradient-to-r from-amber-400 to-amber-500' 
+                    : 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                }`}
+                style={{ width: `${Math.max(5, (timer / 10) * 100)}%` }}
+              />
             </div>
 
             {/* Middle: Player Profile Spotlight */}
@@ -931,20 +945,20 @@ export default function MiniAuctionPage() {
                     setExpandedLot(!expandedLot);
                     gameAudio.playUiTap('light');
                   }}
-                  className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/70 border border-white/10 hover:border-amber-400/40 cursor-pointer transition-all"
+                  className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/90 border border-white/15 hover:border-amber-400/40 cursor-pointer transition-all shadow-xl"
                 >
                   {/* Player Identity */}
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/15 flex items-center justify-center text-2xl shadow-xl shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 via-emerald-500/10 to-indigo-500/20 border border-white/20 flex items-center justify-center text-3xl shadow-xl shrink-0">
                       🏏
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.2 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-bold font-mono">
+                        <span className="px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold font-mono">
                           {currentPlayer.role}
                         </span>
                         {currentPlayer.is_overseas && (
-                          <span className="px-2 py-0.2 rounded bg-sky-500/20 text-sky-300 text-[9px] font-bold font-mono">
+                          <span className="px-2 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px] font-bold font-mono">
                             OVERSEAS ✈
                           </span>
                         )}
@@ -953,32 +967,33 @@ export default function MiniAuctionPage() {
                         )}
                       </div>
 
-                      <h2 className="text-lg sm:text-xl font-black text-white font-display mt-0.5 tracking-tight truncate">
+                      <h2 className="text-lg sm:text-2xl font-black text-white font-display mt-0.5 tracking-tight truncate">
                         {currentPlayer.name}
                       </h2>
                       
-                      <div className="flex items-center gap-2 mt-1 text-[11px] font-mono">
-                        <span>Base: <strong className="text-gray-200">₹{currentPlayer.basePrice} Cr</strong></span>
-                        <span>•</span>
-                        <span>OVR: <strong className="text-amber-400 font-bold">{currentPlayer.powerIndex}</strong></span>
-                        <span className="text-amber-400 text-[9px] ml-1 font-bold">{expandedLot ? '▲ Hide Stats' : '▼ View Stats'}</span>
+                      <div className="flex items-center gap-2 mt-1 text-xs font-mono">
+                        <span>Base: <strong className="text-amber-300 font-bold">₹{currentPlayer.basePrice} Cr</strong></span>
+                        <span className="text-amber-400 text-[10px] ml-1 font-bold">{expandedLot ? '▲ Hide Details' : '▼ View Telemetry'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Current Bid Display */}
-                  <div className="text-center sm:text-right p-2.5 rounded-2xl bg-slate-950/90 border border-white/10 w-full sm:w-auto shadow-inner shrink-0">
-                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 block">
-                      Top Bidder
+                  <div className="text-center sm:text-right p-3 rounded-2xl bg-slate-950 border border-white/15 w-full sm:w-auto shadow-2xl shrink-0">
+                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 block mb-0.5">
+                      Top Live Bidder
                     </span>
-                    <div className={`text-xs font-black mt-0.5 flex items-center justify-center sm:justify-end gap-1 ${
+                    <div className={`text-xs font-black flex items-center justify-center sm:justify-end gap-1.5 ${
                       isUserHighest ? 'text-emerald-400' : 'text-amber-300'
                     }`}>
-                      <span>{isUserHighest ? '👑 YOU HOLD BID' : highestBidder.toUpperCase()}</span>
+                      {highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer' && (
+                        <TeamLogo teamId={highestBidder === campaign.teamId ? campaign.teamId : highestBidder} size={18} />
+                      )}
+                      <span>{isUserHighest ? '👑 YOU HOLD BID' : (getFranchise(highestBidder)?.name || highestBidder.toUpperCase())}</span>
                     </div>
 
-                    <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mt-0.5">
-                      ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-500">Cr</span>
+                    <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mt-0.5 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                      ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-400 font-sans">Cr</span>
                     </div>
                   </div>
                 </div>
@@ -1253,10 +1268,6 @@ export default function MiniAuctionPage() {
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-amber-400 font-mono text-[10px] font-bold">
-                              {p.powerIndex} OVR
-                            </span>
-
                             {isLiveNow ? (
                               <span className="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 text-[8px] font-black uppercase font-mono animate-pulse">
                                 ON HAMMER
@@ -1342,7 +1353,6 @@ export default function MiniAuctionPage() {
                         <span className="text-[9px] text-gray-400 font-mono font-bold">{p.role}</span>
                       </div>
                       <div className="flex items-center gap-2 font-mono shrink-0">
-                        <span className="text-amber-400 text-[10px]">{p.Power_Index} OVR</span>
                         <span className="text-emerald-400 font-bold text-[10px]">₹{p.price} Cr</span>
                       </div>
                     </div>
@@ -1481,8 +1491,8 @@ export default function MiniAuctionPage() {
 
             <div className="p-3 rounded-xl bg-slate-950/80 border border-white/10 mb-3 space-y-1">
               <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-gray-400">Power Rating:</span>
-                <strong className="text-amber-400">{previewPlayer.powerIndex} OVR</strong>
+                <span className="text-gray-400">Tactical Role:</span>
+                <strong className="text-amber-400">{previewPlayer.role}</strong>
               </div>
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-gray-400">Base Auction Price:</span>
@@ -1608,9 +1618,6 @@ export default function MiniAuctionPage() {
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="text-amber-400 font-mono text-xs font-bold block">
-                          {p.powerIndex} OVR
-                        </span>
                         {isLiveNow ? (
                           <span className="px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 text-[8px] font-black uppercase font-mono">
                             LIVE
@@ -1826,7 +1833,6 @@ export default function MiniAuctionPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2.5 font-mono shrink-0 pl-1">
-                          <span className="text-amber-400 text-[10px] font-bold">{item.player.powerIndex} OVR</span>
                           <span className="text-emerald-400 font-black text-xs sm:text-sm">₹{item.price.toFixed(2)} Cr</span>
                         </div>
                       </div>

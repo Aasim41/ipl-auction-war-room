@@ -309,9 +309,9 @@ export default function IntegratedAuctionStage({
                 </div>
 
                 <div className="text-right shrink-0">
-                  <span className="text-[9px] text-gray-400 block uppercase font-mono">Power Index</span>
-                  <span className="text-lg font-black font-mono text-amber-400 flex items-center justify-end gap-1">
-                    <Zap size={13} className="fill-amber-400" /> {p.power_index}
+                  <span className="text-[9px] text-gray-400 block uppercase font-mono">Base Price</span>
+                  <span className="text-lg font-black font-mono text-emerald-400">
+                    ₹{p.base_price.toFixed(2)} Cr
                   </span>
                 </div>
               </div>
