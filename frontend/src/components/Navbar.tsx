@@ -166,11 +166,11 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 w-full h-12 sm:h-14 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
-        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-2 sm:px-4 gap-2">
+      <nav className="fixed top-0 left-0 right-0 w-full h-11 sm:h-13 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
+        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-1.5 sm:px-3 gap-1 sm:gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {pathname !== '/' && (
               <button
                 onClick={() => {
@@ -178,22 +178,18 @@ export function Navbar() {
                   triggerGameHaptic('light')
                   handleBack()
                 }}
-                className="px-2 sm:px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-black flex items-center gap-1 border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
                 title="Return to Dashboard"
               >
                 <ArrowLeft size={13} />
-                <span>Back</span>
               </button>
             )}
 
-            <Link href="/" className="flex items-center gap-1.5 group shrink-0">
-              <TeamLogo teamId={franchise.id} size={30} className="transition-transform group-hover:scale-105" />
-              <div className="hidden md:block leading-tight text-left">
-                <span className="font-display font-black text-xs sm:text-sm text-white tracking-wide block">
+            <Link href="/" className="flex items-center gap-1 group shrink-0" title="Home Dashboard">
+              <TeamLogo teamId={franchise.id} size={26} className="transition-transform group-hover:scale-105 shrink-0" />
+              <div className="hidden xl:block leading-tight text-left">
+                <span className="font-display font-black text-xs text-white tracking-wide block">
                   AUCTION<span style={{ color: franchise.color || '#e11d48' }}>XI</span>
-                </span>
-                <span className="text-[10px] text-gray-400 font-mono block">
-                  {franchise.name}
                 </span>
               </div>
             </Link>
@@ -203,11 +199,12 @@ export function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setShowTeamSwitcher(!showTeamSwitcher)}
-                  className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[11px] font-bold flex items-center gap-1.5 cursor-pointer border border-white/10"
+                  className="px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-[10px] sm:text-[11px] font-bold flex items-center gap-1 cursor-pointer border border-white/10 shrink-0"
                   title="Switch franchise campaign save"
                 >
-                  <span className="max-w-[120px] sm:max-w-[160px] truncate">{franchise.name}</span>
-                  <ChevronDown size={11} className="text-gray-400" />
+                  <span className="hidden md:inline max-w-[110px] truncate">{franchise.name}</span>
+                  <span className="md:hidden font-mono font-black uppercase text-[10px]">{franchise.short}</span>
+                  <ChevronDown size={10} className="text-gray-400 shrink-0" />
                 </button>
 
                 {showTeamSwitcher && (
@@ -265,24 +262,23 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Center: The 4 Championship Phases (Strictly locked past phases) */}
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto max-w-[55vw] sm:max-w-none scrollbar-none py-1 px-1">
+          {/* Center: The Full 4-Step Cycle Stepper (Always Fully Visible Across All Devices) */}
+          <div className="flex-1 flex items-center justify-center gap-0.5 sm:gap-1.5 overflow-x-auto scrollbar-none px-0.5">
             {PHASES.map((phase) => {
               const isActive = pathname === phase.href
               const isLocked = phase.isLocked
 
-              // LOCKED PHASES ARE COMPLETELY UNCLICKABLE — STRICT "NO GOING BACK" RULE
               if (isLocked) {
                 return (
                   <div
                     key={phase.id}
                     onClick={() => triggerLockedAlert(phase.label, phase.isConcluded)}
                     title={phase.isConcluded ? "Phase finalized and locked by BCCI regulations. You cannot go back." : "Complete current phase to unlock."}
-                    className="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1.5 shrink-0 bg-slate-900/60 text-gray-500 border border-white/5 cursor-not-allowed opacity-60 hover:opacity-80 transition-opacity"
+                    className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 bg-slate-900/50 text-gray-500 border border-white/5 cursor-not-allowed opacity-60 hover:opacity-80 transition-opacity"
                   >
-                    <Lock size={11} className={phase.isConcluded ? "text-amber-500/70" : "text-gray-500"} />
-                    <span className="hidden md:inline">{phase.label}</span>
-                    <span className="md:hidden">{phase.shortLabel}</span>
+                    <Lock size={10} className={phase.isConcluded ? "text-amber-500/70" : "text-gray-500"} />
+                    <span className="hidden lg:inline">{phase.label}</span>
+                    <span className="lg:hidden">{phase.shortLabel}</span>
                   </div>
                 )
               }
@@ -298,72 +294,46 @@ export function Navbar() {
                       advancePhase('playing_xi')
                     }
                   }}
-                  className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                  className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
                     isActive
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-[0_0_15px_rgba(245,158,11,0.6)] scale-[1.02] border border-amber-400'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-[0_0_12px_rgba(245,158,11,0.5)] scale-[1.02] border border-amber-400'
                       : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/10'
                   }`}
                 >
                   {isActive && (
                     <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping shrink-0" />
                   )}
-                  <phase.icon size={12} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
-                  <span className="hidden md:inline">{phase.label}</span>
-                  <span className="md:hidden">{phase.shortLabel}</span>
+                  <phase.icon size={11} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
+                  <span className="hidden lg:inline">{phase.label}</span>
+                  <span className="lg:hidden">{phase.shortLabel}</span>
                 </Link>
               )
             })}
-
-            {/* Quick Rules Button */}
-            <button
-              onClick={() => setShowRulesModal(true)}
-              className="px-2.5 py-1 rounded-xl text-[11px] font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer shrink-0 hidden lg:flex items-center gap-1"
-            >
-              <Shield size={12} className="text-amber-400" />
-              <span>Rules</span>
-            </button>
           </div>
 
-          {/* Right: Live Gaming HUD Stats (Purse + Squad + Profile) */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Right: Live Gaming HUD Stats (Purse + Squad + Profile) - SFX Pill Removed per User Request */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {activeCamp && (
               <>
                 {/* Purse Pill */}
                 <div 
-                  className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 text-xs font-mono font-black text-amber-300"
+                  className="px-2 py-0.5 sm:py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 text-[11px] sm:text-xs font-mono font-black text-amber-300"
                   title="Remaining Mini-Auction Purse"
                 >
-                  <Coins size={13} className="text-amber-400" />
+                  <Coins size={12} className="text-amber-400 shrink-0" />
                   <span>₹{remainingPurse.toFixed(1)}Cr</span>
                 </div>
 
                 {/* Squad Count Pill */}
                 <div 
-                  className="px-2.5 py-1 rounded-xl bg-slate-900 border border-white/10 flex items-center gap-1 text-[11px] font-mono font-bold text-gray-300 hidden sm:flex"
-                  title="Active squad size (Max 25) & Overseas count (Max 8)"
+                  className="px-2 py-0.5 sm:py-1 rounded-xl bg-slate-900 border border-white/10 items-center gap-1 text-[10px] sm:text-[11px] font-mono font-bold text-gray-300 hidden sm:flex"
+                  title="Active squad size (Max 25)"
                 >
-                  <Users size={12} className="text-sky-400" />
+                  <Users size={11} className="text-sky-400 shrink-0" />
                   <span>{activeCount}/25</span>
-                  <span className={`text-[10px] px-1 rounded ${overseasCount > 8 ? 'bg-rose-500/30 text-rose-300' : 'bg-white/5 text-gray-400'}`}>
-                    {overseasCount} OS
-                  </span>
                 </div>
               </>
             )}
-
-            {/* Audio Sound & Haptics Toggle */}
-            <button
-              onClick={toggleSound}
-              className={`px-2 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer border ${
-                isMuted 
-                  ? 'bg-rose-500/15 border-rose-500/30 text-rose-300 hover:bg-rose-500/25' 
-                  : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
-              }`}
-              title={isMuted ? 'Game Audio Muted (Click to Unmute)' : 'Game Audio Active (Click to Mute)'}
-            >
-              {isMuted ? <VolumeX size={13} /> : <Volume2 size={13} className="animate-pulse" />}
-              <span className="hidden md:inline text-[10px] font-mono font-black">{isMuted ? 'MUTED' : 'SFX'}</span>
-            </button>
 
             {/* GM Profile Pill */}
             <button
@@ -371,13 +341,10 @@ export function Navbar() {
                 gameAudio.playUiTap('light')
                 setShowAuthModal(true)
               }}
-              className="px-2 sm:px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-black cursor-pointer transition-all border border-white/15"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
               title="Manager Profile & Save Slots"
             >
               <span className="text-sm">{currentUser?.avatar || '👑'}</span>
-              <span className="hidden sm:inline text-xs max-w-[80px] truncate">
-                {currentUser?.gamerTag || 'GM'}
-              </span>
             </button>
           </div>
 

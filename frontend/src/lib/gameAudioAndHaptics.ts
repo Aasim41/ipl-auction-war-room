@@ -9,12 +9,10 @@ class ProceduralCricketAudio {
   private isUnlocked: boolean = false;
 
   constructor() {
+    this.muted = false; // Enabled at full volume by default per user specification
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('auctionxi_audio_muted');
-        if (stored !== null) {
-          this.muted = stored === 'true';
-        }
+        localStorage.setItem('auctionxi_audio_muted', 'false');
       } catch {
         // localStorage unavailable
       }
