@@ -1979,22 +1979,23 @@ export default function BallByBallMatchSimulator({
             {activeTab === 'arena' ? (
               <div className="flex-1 flex flex-col justify-between p-2 sm:p-3 overflow-hidden">
                 
-                {/* Live Score Ticker Banner */}
-                <div className="p-2 sm:p-2.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/15 flex flex-col gap-1.5 shadow-xl shrink-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1">
-                        <TeamLogo teamId={activeInnings.teamShort} size={26} />
+                {/* ─── EXPANDED IPL BROADCAST SCORECARD HUD (ROOMY & NON-STICKING) ─── */}
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/20 flex flex-col gap-2 shadow-2xl shrink-0 my-0.5">
+                  {/* Top Row: Team Logo, Big Score, Overs, CRR/RRR & Over Balls */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1 shadow-md">
+                        <TeamLogo teamId={activeInnings.teamShort} size={28} />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight flex items-baseline gap-1.5">
+                        <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight flex items-baseline gap-2">
                           <span>{activeInnings.totalRuns}/{activeInnings.totalWickets}</span>
-                          <span className="text-xs font-sans font-bold text-gray-400">
+                          <span className="text-xs sm:text-sm font-sans font-bold text-gray-400">
                             ({Math.floor(ballsBowled / 6)}.{ballsBowled % 6} / 20 ov)
                           </span>
                         </div>
-                        <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 truncate">
-                          <span>CRR: {currRR}</span>
+                        <div className="text-[11px] text-gray-300 font-mono flex items-center gap-1.5 truncate">
+                          <span className="text-gray-400">CRR: <strong className="text-white">{currRR}</strong></span>
                           {currentInnings === 2 && (
                             <span className="text-amber-400 font-bold truncate">
                               • Need {runsNeeded} off {ballsRemaining}b (RRR: {reqRR})
@@ -2009,7 +2010,7 @@ export default function BallByBallMatchSimulator({
                       {currentOverTrail.map((b, i) => (
                         <div
                           key={i}
-                          className={`w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full flex items-center justify-center text-[9px] font-black font-mono shadow-sm ${
+                          className={`w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono shadow-sm ${
                             b.isWicket 
                               ? 'bg-rose-600 text-white animate-pulse' 
                               : b.isSix 
@@ -2026,50 +2027,50 @@ export default function BallByBallMatchSimulator({
                       ))}
                     </div>
                   </div>
-                </div>
 
-                {/* On-Field Live Batter & Bowler Figures Mini-HUD */}
-                <div className="grid grid-cols-2 gap-1.5 shrink-0 my-1">
-                  {/* Batter On Strike */}
-                  <div className="px-2 py-1 rounded-xl bg-slate-900/90 border border-amber-500/30 flex items-center justify-between text-[10px] font-mono shadow-sm">
-                    <div className="truncate mr-1 min-w-0">
-                      <div className="text-amber-300 font-bold truncate flex items-center gap-1">
-                        <span>🏏</span>
-                        <span className="truncate">{strikerPlayer?.name?.split(' ').slice(-1)[0] || 'Striker'}*</span>
+                  {/* Bottom Row: Live Batter & Bowler Figures Integrated Strip with Proper Names */}
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
+                    {/* Batter On Strike */}
+                    <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-between text-xs font-mono shadow-sm min-w-0">
+                      <div className="truncate mr-1 min-w-0">
+                        <div className="text-amber-300 font-bold truncate flex items-center gap-1 text-[11px] sm:text-xs">
+                          <span>🏏</span>
+                          <span className="truncate">{formatPlayerInitial(strikerPlayer?.name) || 'Striker'}*</span>
+                        </div>
+                        <div className="text-[9px] text-gray-400 truncate">
+                          Runner: {formatPlayerInitial(nonStrikerPlayer?.name) || 'Batter'}
+                        </div>
                       </div>
-                      <div className="text-[8px] text-gray-400 truncate">
-                        Runner: {nonStrikerPlayer?.name?.split(' ').slice(-1)[0] || 'Batter'}
+                      <div className="text-right text-white font-bold shrink-0">
+                        <span className="text-amber-300 font-black text-xs sm:text-sm">
+                          {activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0}
+                        </span>
+                        <span className="text-gray-400 text-[10px] ml-0.5">
+                          ({activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.balls || 0})
+                        </span>
                       </div>
                     </div>
-                    <div className="text-right text-white font-bold shrink-0">
-                      <span className="text-amber-300 font-black text-xs">
-                        {activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0}
-                      </span>
-                      <span className="text-gray-400 text-[9px]">
-                        ({activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.balls || 0})
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Current Bowler */}
-                  <div className="px-2 py-1 rounded-xl bg-slate-900/90 border border-rose-500/30 flex items-center justify-between text-[10px] font-mono shadow-sm">
-                    <div className="truncate mr-1 min-w-0">
-                      <div className="text-rose-300 font-bold truncate flex items-center gap-1">
-                        <span>🎯</span>
-                        <span className="truncate">{bowlerPlayer?.name?.split(' ').slice(-1)[0] || 'Bowler'}</span>
+                    {/* Current Bowler */}
+                    <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/70 border border-rose-500/30 flex items-center justify-between text-xs font-mono shadow-sm min-w-0">
+                      <div className="truncate mr-1 min-w-0">
+                        <div className="text-rose-300 font-bold truncate flex items-center gap-1 text-[11px] sm:text-xs">
+                          <span>🎯</span>
+                          <span className="truncate">{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
+                        </div>
+                        <div className="text-[9px] text-gray-400 truncate">
+                          {bowlerPlayer?.role || 'Bowler'}
+                        </div>
                       </div>
-                      <div className="text-[8px] text-gray-400 truncate">
-                        {bowlerPlayer?.role || 'Bowler'}
+                      <div className="text-right text-white font-bold shrink-0">
+                        <span className="text-rose-300 font-black text-xs sm:text-sm">
+                          {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.wickets || 0}/
+                          {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.runs || 0}
+                        </span>
+                        <span className="text-gray-400 text-[9px] block">
+                          ({activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'} ov)
+                        </span>
                       </div>
-                    </div>
-                    <div className="text-right text-white font-bold shrink-0">
-                      <span className="text-rose-300 font-black text-xs">
-                        {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.wickets || 0}/
-                        {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.runs || 0}
-                      </span>
-                      <span className="text-gray-400 text-[8px] block">
-                        ({activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'} ov)
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -2083,6 +2084,11 @@ export default function BallByBallMatchSimulator({
               <div className="absolute top-2 left-3 flex gap-1 items-center bg-slate-950/70 px-2 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-gray-300 z-10 backdrop-blur-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 <span>FLOODLIGHTS ON</span>
+              </div>
+              <div className="absolute top-2 right-3 flex gap-1 items-center bg-slate-950/85 px-2.5 py-0.5 rounded-full border border-amber-500/40 text-[9px] font-mono text-amber-300 z-10 backdrop-blur-sm shadow-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-bold">{fieldingStrategyLabel}</span>
+                <span className="text-[8px] text-gray-400">({deepCount} deep)</span>
               </div>
 
               {/* SVG Stadium Field Turf & Marking Rings */}
