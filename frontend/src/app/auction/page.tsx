@@ -363,6 +363,16 @@ export default function MiniAuctionPage() {
       let simBat = simSquad.filter((p) => p.role === 'BAT').length
       let simAr = simSquad.filter((p) => p.role === 'AR').length
 
+      const simRivals: Record<string, { remainingPurse: number; squad: CampaignPlayer[] }> = {}
+      BOT_TEAMS.forEach((tk) => {
+        if (tk !== campaign.teamId) {
+          simRivals[tk] = {
+            remainingPurse: getTeamPurse(tk),
+            squad: [...getTeamSquad(tk)]
+          }
+        }
+      })
+
       const newPurchases: Array<{ player: DynamicAuctionPlayer; price: number }> = []
       const newSoldLog: Array<{ player: DynamicAuctionPlayer; winner: string; price: number }> = [...soldLog]
 
@@ -379,7 +389,7 @@ export default function MiniAuctionPage() {
         ) / 100
 
         const slotsToMin18 = Math.max(0, 18 - simSquad.length)
-        const reservePurseNeeded = Math.max(0, slotsToMin18 - 1) * 0.40
+        const reservePurseNeeded = Math.max(0, slotsToMin18 - 1) * 0.30
         const canAfford = (currentPurse - estimatedPrice) >= reservePurseNeeded && currentPurse >= estimatedPrice
         const hasRosterSpace = simSquad.length < 25
         const overseasAllowed = !p.is_overseas || simOverseas < 8
@@ -447,13 +457,48 @@ export default function MiniAuctionPage() {
           newPurchases.push({ player: p, price: estimatedPrice })
           newSoldLog.unshift({ player: p, winner: campaign.teamName, price: estimatedPrice })
         } else {
-          // Rival bot buys
+          // Rival bot buys strictly within budget and reserve rules
           const botTeams = BOT_TEAMS.filter((t) => t !== campaign.teamId)
-          const winningBot = botTeams[Math.floor(Math.random() * botTeams.length)]
-          const winnerName = getFranchise(winningBot)?.name || winningBot.toUpperCase()
-          newSoldLog.unshift({ player: p, winner: winnerName, price: estimatedPrice })
+          const eligibleBots = botTeams.filter((botId) => {
+            const rData = simRivals[botId]
+            if (!rData) return false
+            if (estimatedPrice > rData.remainingPurse) return false
+            if (rData.squad.length >= 25) return false
+            if (p.is_overseas && rData.squad.filter((sp) => sp.is_overseas).length >= 8) return false
+            const slotsNeeded = Math.max(0, 18 - rData.squad.length)
+            const reserveNeeded = Math.max(0, slotsNeeded - 1) * 0.30
+            return (rData.remainingPurse - estimatedPrice) >= reserveNeeded
+          })
+
+          if (eligibleBots.length > 0) {
+            const winningBot = eligibleBots[Math.floor(Math.random() * eligibleBots.length)]
+            const rData = simRivals[winningBot]
+            rData.remainingPurse = Math.round((rData.remainingPurse - estimatedPrice) * 100) / 100
+            const campaignPlayer: CampaignPlayer = {
+              player_id: p.id,
+              name: p.name,
+              role: p.role,
+              nationality: p.nationality,
+              is_overseas: p.is_overseas,
+              price: estimatedPrice,
+              currentPrice: estimatedPrice,
+              Power_Index: p.powerIndex,
+              is_retained: true,
+              is_released: false,
+              statsSummary: `Acquired in 2027 Mini-Auction for ₹${estimatedPrice.toFixed(2)} Cr`
+            }
+            rData.squad.push(campaignPlayer)
+            const winnerName = getFranchise(winningBot)?.name || winningBot.toUpperCase()
+            newSoldLog.unshift({ player: p, winner: winnerName, price: estimatedPrice })
+          } else {
+            // No bot can afford or fit: player is UNSOLD
+            newSoldLog.unshift({ player: p, winner: 'UNSOLD', price: 0 })
+          }
         }
       }
+
+      // Sync rival teams' data in store
+      updateRivalTeamsData(simRivals)
 
       setSoldLog(newSoldLog)
       setCurrentIndex(auctionPool.length - 1)
@@ -599,9 +644,8 @@ export default function MiniAuctionPage() {
   // Inspecting franchise data for the side squad tab
   const inspectingFranchise = getFranchise(selectedFranchiseView || campaign.teamId)
   const isInspectingMyTeam = inspectingFranchise.id === campaign.teamId
-  const displaySquad = isInspectingMyTeam 
-    ? campaign.squad.filter((p) => !p.is_released)
-    : inspectingFranchise.squad2026
+  const displaySquad = getTeamSquad(selectedFranchiseView || campaign.teamId)
+  const displayPurse = getTeamPurse(selectedFranchiseView || campaign.teamId)
 
   return (
     <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-x-hidden">
@@ -867,14 +911,22 @@ export default function MiniAuctionPage() {
                   </div>
                 </div>
                 <div className="text-center">
-                  <span className="px-4 py-1 rounded-full bg-rose-600 text-white font-black text-[11px] font-mono tracking-widest uppercase shadow-lg">
-                    HAMMER DOWN • SOLD!
+                  <span className={`px-4 py-1 rounded-full text-white font-black text-[11px] font-mono tracking-widest uppercase shadow-lg ${
+                    highestBidder === 'none' || highestBidder === 'BCCI Auctioneer' || bidHistory.length === 0
+                      ? 'bg-amber-600'
+                      : 'bg-rose-600'
+                  }`}>
+                    {highestBidder === 'none' || highestBidder === 'BCCI Auctioneer' || bidHistory.length === 0
+                      ? 'HAMMER DOWN • UNSOLD'
+                      : 'HAMMER DOWN • SOLD!'}
                   </span>
                   <h3 className="text-lg sm:text-2xl font-black text-white font-display mt-1 drop-shadow-md">
                     {currentPlayer?.name}
                   </h3>
                   <p className="text-xs text-amber-300 font-mono font-bold mt-0.5">
-                    Acquired by <span className="text-white uppercase font-black">{highestBidder}</span> for ₹{currentBid.toFixed(2)} Cr
+                    {highestBidder === 'none' || highestBidder === 'BCCI Auctioneer' || bidHistory.length === 0
+                      ? 'No qualifying bids received • Returned to pool'
+                      : `Acquired by ${highestBidder === campaign.teamId ? campaign.teamName : (getFranchise(highestBidder)?.name || highestBidder.toUpperCase())} for ₹${currentBid.toFixed(2)} Cr`}
                   </p>
                 </div>
               </div>
@@ -976,19 +1028,35 @@ export default function MiniAuctionPage() {
             {/* Bottom: User Interactive Paddle Controls */}
             <div className="pt-3 border-t border-white/10">
               {gavelPhase === 'sold' ? (
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <CheckCircle2 size={15} className="text-emerald-400" />
-                    <span>HAMMER DOWN: Sold to <strong className="text-amber-300">{highestBidder.toUpperCase()}</strong> for <strong className="text-emerald-400">₹{currentBid.toFixed(2)} Cr</strong>!</span>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5 truncate">
+                    {highestBidder === 'none' || highestBidder === 'BCCI Auctioneer' || bidHistory.length === 0 ? (
+                      <>
+                        <Gavel size={15} className="text-amber-400 shrink-0" />
+                        <span className="truncate">UNSOLD: <strong className="text-gray-300">{currentPlayer.name}</strong> passed without bids.</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                        <span className="truncate">SOLD to <strong className="text-amber-300">{highestBidder === campaign.teamId ? 'YOU' : (getFranchise(highestBidder)?.short || highestBidder.toUpperCase())}</strong> for <strong className="text-emerald-400">₹{currentBid.toFixed(2)} Cr</strong>!</span>
+                      </>
+                    )}
                   </div>
 
-                  <button
-                    onClick={handleNextPlayer}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer shadow-lg"
-                  >
-                    <span>Next Lot</span>
-                    <ArrowRight size={13} />
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                    {nextLotCountdown !== null && (
+                      <span className="text-[10px] font-mono text-gray-400 hidden sm:inline">
+                        Auto-advancing in {nextLotCountdown}s...
+                      </span>
+                    )}
+                    <button
+                      onClick={handleNextPlayer}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg transition-transform active:scale-95"
+                    >
+                      <span>{nextLotCountdown !== null ? `Next (${nextLotCountdown}s)` : 'Next Lot'}</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
@@ -1250,7 +1318,7 @@ export default function MiniAuctionPage() {
                   <div>
                     <span className="text-gray-400 block text-[9px] uppercase">Purse Left</span>
                     <strong className="text-emerald-400">
-                      ₹{isInspectingMyTeam ? campaign.remainingPurse.toFixed(2) : inspectingFranchise.miniAuctionPurse2026.toFixed(2)} Cr
+                      ₹{displayPurse.toFixed(2)} Cr
                     </strong>
                   </div>
                   <div>
