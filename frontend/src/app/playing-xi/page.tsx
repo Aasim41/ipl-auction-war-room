@@ -191,7 +191,7 @@ export default function PlayingXIPage() {
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
 
-  // Mobile Touch Swipe State
+  // Mobile Touch Swipe State & App Swipe Dispatch Listener
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
@@ -204,8 +204,11 @@ export default function PlayingXIPage() {
     if (touchStartX === null || touchStartY === null) return;
     const deltaX = e.changedTouches[0].clientX - touchStartX;
     const deltaY = e.changedTouches[0].clientY - touchStartY;
+    setTouchStartX(null);
+    setTouchStartY(null);
 
-    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+    // Ergonomic 30px swipe threshold
+    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
       if (deltaX < 0 && activeTab === 'xi') {
         setActiveTab('schedule');
         gameAudio.playUiTap('select');
@@ -216,9 +219,32 @@ export default function PlayingXIPage() {
         triggerGameHaptic('light');
       }
     }
+  };
+
+  const handleTouchCancel = () => {
     setTouchStartX(null);
     setTouchStartY(null);
   };
+
+  // Synchronize with GlobalSwipeManager custom event
+  useEffect(() => {
+    const handleAppSwipe = (e: any) => {
+      const direction = e.detail?.direction;
+      if (direction === 'left' && activeTab === 'xi') {
+        e.preventDefault();
+        setActiveTab('schedule');
+        gameAudio.playUiTap('select');
+        triggerGameHaptic('light');
+      } else if (direction === 'right' && activeTab === 'schedule') {
+        e.preventDefault();
+        setActiveTab('xi');
+        gameAudio.playUiTap('select');
+        triggerGameHaptic('light');
+      }
+    };
+    window.addEventListener('app:swipe', handleAppSwipe);
+    return () => window.removeEventListener('app:swipe', handleAppSwipe);
+  }, [activeTab]);
 
   useEffect(() => {
     setMounted(true);
@@ -340,7 +366,8 @@ export default function PlayingXIPage() {
     <div 
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain select-none"
+      onTouchCancel={handleTouchCancel}
+      className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-[calc(max(env(safe-area-inset-top,0px),10px)+2.85rem)] sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
     >
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-4">
         
@@ -413,6 +440,18 @@ export default function PlayingXIPage() {
         {/* ─── TAB 1: PLAYING XI & TACTICAL STRATEGY ─── */}
         {activeTab === 'xi' && (
           <div className="flex flex-col gap-4">
+            {/* 3D Interactive Tactical Cricket Field */}
+            <ThreeLineupField
+              franchiseColor={franchise.color}
+              franchiseShort={franchise.short}
+              players={xiPlayers.map(p => ({ id: p.id, name: p.name, role: p.role }))}
+              selectedPlayerId={expandedPlayerId}
+              onSelectPlayer={(pId) => {
+                setExpandedPlayerId(expandedPlayerId === pId ? null : pId);
+                gameAudio.playUiTap('light');
+                triggerGameHaptic('light');
+              }}
+            />
             {/* AI Strategy Toast Feedback */}
             {strategyToast && (
               <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-slate-900 to-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center justify-between gap-2 shadow-lg animate-fadeIn">

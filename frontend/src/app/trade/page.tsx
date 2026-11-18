@@ -21,6 +21,7 @@ import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
 import { getFranchiseAI, isUntouchablePlayer } from '../../data/franchiseAI'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import TeamLogo from '../../components/TeamLogo'
+import { ThreeTradeTable } from '../../components/ThreeTradeTable'
 
 export default function TradeWindowPage() {
   const router = useRouter()
@@ -55,11 +56,13 @@ export default function TradeWindowPage() {
     if (tradeTouchStartX.current === null || tradeTouchStartY.current === null) return
     const deltaX = e.changedTouches[0].clientX - tradeTouchStartX.current
     const deltaY = e.changedTouches[0].clientY - tradeTouchStartY.current
+    tradeTouchStartX.current = null
+    tradeTouchStartY.current = null
 
     const tabs: Array<'my' | 'deal' | 'rival'> = ['my', 'deal', 'rival']
     const curIdx = tabs.indexOf(mobileTab)
 
-    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
       if (deltaX < 0 && curIdx < tabs.length - 1) {
         setMobileTab(tabs[curIdx + 1])
         gameAudio.playUiTap('select')
@@ -70,9 +73,29 @@ export default function TradeWindowPage() {
         triggerGameHaptic('light')
       }
     }
-    tradeTouchStartX.current = null
-    tradeTouchStartY.current = null
   }
+
+  // Synchronize with GlobalSwipeManager custom event
+  useEffect(() => {
+    const handleAppSwipe = (e: any) => {
+      const direction = e.detail?.direction
+      const tabs: Array<'my' | 'deal' | 'rival'> = ['my', 'deal', 'rival']
+      const curIdx = tabs.indexOf(mobileTab)
+      if (direction === 'left' && curIdx < tabs.length - 1) {
+        e.preventDefault()
+        setMobileTab(tabs[curIdx + 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      } else if (direction === 'right' && curIdx > 0) {
+        e.preventDefault()
+        setMobileTab(tabs[curIdx - 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      }
+    }
+    window.addEventListener('app:swipe', handleAppSwipe)
+    return () => window.removeEventListener('app:swipe', handleAppSwipe)
+  }, [mobileTab])
 
   useEffect(() => {
     setMounted(true)
