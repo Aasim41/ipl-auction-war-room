@@ -2,22 +2,17 @@
 
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { lockOrientation, getCurrentLockedOrientation } from '../lib/orientationManager'
 
 export function CapacitorDeviceManager() {
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    // 1. Lock Screen Orientation to Landscape on Mobile/Capacitor
-    const lockLandscape = async () => {
-      try {
-        const { ScreenOrientation } = await import('@capacitor/screen-orientation')
-        await ScreenOrientation.lock({ orientation: 'landscape' })
-      } catch {
-        // Ignored on standard browsers or unaccelerated web environments
-      }
+    // 1. Maintain Landscape by default across main franchise management screens
+    if (getCurrentLockedOrientation() === 'landscape') {
+      lockOrientation('landscape')
     }
-    lockLandscape()
 
     // 2. Android Hardware Back Button listener
     let backListenerHandle: any = null
