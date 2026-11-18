@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Users, 
@@ -184,6 +184,7 @@ export default function PlayingXIPage() {
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
+  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -192,26 +193,27 @@ export default function PlayingXIPage() {
   const campaign = mounted ? getActiveCampaign() : null;
 
   useEffect(() => {
-    if (campaign) {
-      if (TEAM_HOME_CITY[campaign.teamId]) {
-        setVenue(TEAM_HOME_CITY[campaign.teamId]);
-      }
+    if (!campaign || hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
 
-      // Automatically repair invalid lineups on mount (e.g. bowler opening, >4 overseas, 0 WK)
-      const activeSquad = campaign.squad.filter((p) => !p.is_released);
-      const currentXI = (campaign.playingXI || [])
-        .map((id) => activeSquad.find((p) => p.player_id === id))
-        .filter(Boolean) as CampaignPlayer[];
-      
-      const overseasInXI = currentXI.filter((p) => p.is_overseas).length;
-      const wkInXI = currentXI.filter((p) => p.role === 'WK').length;
-      const bowlersInXI = currentXI.filter((p) => p.role === 'BOWL' || p.role === 'AR').length;
-      const isBowlerOpening = currentXI[0]?.role === 'BOWL';
+    if (TEAM_HOME_CITY[campaign.teamId]) {
+      setVenue(TEAM_HOME_CITY[campaign.teamId]);
+    }
 
-      if (currentXI.length < 11 || overseasInXI > 4 || wkInXI < 1 || bowlersInXI < 5 || isBowlerOpening) {
-        autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bat_first');
-        autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bowl_first');
-      }
+    // Automatically repair invalid lineups on first mount
+    const activeSquad = campaign.squad.filter((p) => !p.is_released);
+    const currentXI = (campaign.playingXI || [])
+      .map((id) => activeSquad.find((p) => p.player_id === id))
+      .filter(Boolean) as CampaignPlayer[];
+    
+    const overseasInXI = currentXI.filter((p) => p.is_overseas).length;
+    const wkInXI = currentXI.filter((p) => p.role === 'WK').length;
+    const bowlersInXI = currentXI.filter((p) => p.role === 'BOWL' || p.role === 'AR').length;
+    const isBowlerOpening = currentXI[0]?.role === 'BOWL';
+
+    if (currentXI.length < 11 || overseasInXI > 4 || wkInXI < 1 || bowlersInXI < 5 || isBowlerOpening) {
+      autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bat_first');
+      autoOptimizePlayingXI(TEAM_HOME_CITY[campaign.teamId] || 'Mumbai', 'csk', 'bowl_first');
     }
   }, [campaign, autoOptimizePlayingXI]);
 
