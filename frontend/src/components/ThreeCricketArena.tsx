@@ -94,8 +94,8 @@ export default function ThreeCricketArena({
     // 2. Camera setup
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     cameraRef.current = camera;
-    camera.position.set(0, 32, 54);
-    camera.lookAt(0, 0, 2);
+    camera.position.set(0, 18, 28);
+    camera.lookAt(0, 1.5, 0);
 
     // 3. WebGL Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
@@ -105,13 +105,13 @@ export default function ThreeCricketArena({
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.35;
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
     // 4. Lighting Rig
-    // Ambient light
-    const ambientLight = new THREE.AmbientLight(0x24324a, 0.9);
+    // Warm, bright stadium floodlight ambience
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambientLight);
 
     // 4 Main Floodlight Spotlights
@@ -123,7 +123,7 @@ export default function ThreeCricketArena({
     ];
 
     lightPositions.forEach(([lx, ly, lz], idx) => {
-      const spotLight = new THREE.SpotLight(0xfffaed, 2.8, 140, Math.PI / 4, 0.45, 1.2);
+      const spotLight = new THREE.SpotLight(0xfffaed, 3.8, 140, Math.PI / 4, 0.45, 1.2);
       spotLight.position.set(lx, ly, lz);
       spotLight.target.position.set(0, 0, 0);
       spotLight.castShadow = true;
@@ -472,8 +472,8 @@ export default function ThreeCricketArena({
       // Handle Camera Modes
       if (camMode === 'broadcast') {
         // High Broadcast Pressbox view with subtle breathing
-        camera.position.set(0, 32, 54);
-        camera.lookAt(0, 2, 0);
+        camera.position.set(0, 18, 28);
+        camera.lookAt(0, 1.5, 0);
       } else if (camMode === 'batsman') {
         // Behind Batter POV looking straight at incoming bowler!
         camera.position.set(0.4, 3.2, 16.5);
