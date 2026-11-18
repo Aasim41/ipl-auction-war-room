@@ -3367,7 +3367,7 @@ export default function BallByBallMatchSimulator({
                       }`}
                     >
                       <div className="text-xs font-bold truncate">{formatPlayerInitial(p.name)}</div>
-                      <div className="text-[9px] font-mono opacity-80">{p.role} • OVR {p.Power_Index}</div>
+                      <div className="text-[9px] font-mono opacity-80">{p.role}</div>
                     </button>
                   ))}
                 </div>
@@ -3393,7 +3393,7 @@ export default function BallByBallMatchSimulator({
                       }`}
                     >
                       <div className="text-xs font-bold truncate">{formatPlayerInitial(p.name)}</div>
-                      <div className="text-[9px] font-mono opacity-80">{p.role} • OVR {p.Power_Index}</div>
+                      <div className="text-[9px] font-mono opacity-80">{p.role}</div>
                     </button>
                   ))}
                 </div>

@@ -343,11 +343,12 @@ export default function SquadRetainReleasePage() {
                       </div>
 
                       <div className="text-right">
-                        <div className="text-sm sm:text-base font-black text-amber-300 font-mono">
-                          {ovr} <span className="text-[9px] text-gray-500 font-normal">OVR</span>
-                        </div>
-                        <span className={`text-[8px] font-bold block ${
-                          ovr >= 90 ? 'text-amber-400' : ovr >= 80 ? 'text-emerald-400' : 'text-blue-400'
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border block ${
+                          ovr >= 90 
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
+                            : ovr >= 80 
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
+                            : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
                         }`}>
                           {formBadge}
                         </span>

@@ -699,8 +699,8 @@ export default function MiniAuctionPage() {
     if (currentPlayer.powerIndex >= 90) {
       return {
         type: 'marquee',
-        badge: `🌟 MARQUEE ICON (${currentPlayer.powerIndex} OVR)`,
-        text: `Elite game-changer with high match-winning win probability.`
+        badge: `🌟 MARQUEE ICON`,
+        text: `Elite game-changer with high match-winning pedigree.`
       }
     }
     return {
