@@ -36,6 +36,10 @@ interface BallByBallMatchSimulatorProps {
   myFranchise: FranchiseData;
   mySquad: any[];
   myPlayingXIIds?: string[];
+  userBatFirstXI?: string[];
+  userBowlFirstXI?: string[];
+  batFirstImpactId?: string;
+  bowlFirstImpactId?: string;
   rivalFranchise: FranchiseData;
   venueName: string;
   matchFixture?: TournamentFixture;
