@@ -691,12 +691,13 @@ export const useCampaignStore = create<CampaignStoreState>()(
           }
 
           // Squad Deduplication Self-Healing: A player cannot be in both user's squad and a rival squad!
-          if (updatedActive.rivalTeamsData && updatedActive.squad) {
+          const rTeams = updatedActive.rivalTeamsData
+          if (rTeams && updatedActive.squad) {
             const activeUserNames = new Set(
               updatedActive.squad.filter(p => !p.is_released).map(p => p.name.trim().toLowerCase())
             )
-            Object.keys(updatedActive.rivalTeamsData).forEach(rTeamId => {
-              const rTeam = updatedActive.rivalTeamsData[rTeamId]
+            Object.keys(rTeams).forEach(rTeamId => {
+              const rTeam = rTeams[rTeamId]
               if (rTeam && rTeam.squad) {
                 const initialLen = rTeam.squad.length
                 rTeam.squad = rTeam.squad.filter(p => !activeUserNames.has(p.name.trim().toLowerCase()))
