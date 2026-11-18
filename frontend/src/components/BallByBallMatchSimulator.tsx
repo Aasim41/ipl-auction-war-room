@@ -33,6 +33,7 @@ import { TournamentFixture, MatchScorecard } from '../data/scheduleGenerator';
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
 import { getFranchiseAI } from '../data/franchiseAI';
 import TeamLogo from './TeamLogo';
+import ThreeCricketArena from './ThreeCricketArena';
 import { lockOrientation } from '../lib/orientationManager';
 import { formatPlayerInitial } from '../lib/nameFormatter';
 import { useCampaignStore } from '../store/useCampaignStore';
@@ -327,6 +328,10 @@ export default function BallByBallMatchSimulator({
   // Tactical management modal states
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [showBattingOrderModal, setShowBattingOrderModal] = useState(false);
+  const [showOpeningPairModal, setShowOpeningPairModal] = useState(false);
+  const [showPastOversModal, setShowPastOversModal] = useState(false);
+  const [arenaViewMode, setArenaViewMode] = useState<'3d' | '2d'>('3d');
+  const [expandedHUDCard, setExpandedHUDCard] = useState<'batter' | 'bowler' | null>(null);
   const [scorecardInningsView, setScorecardInningsView] = useState<1 | 2>(1);
 
   // Event banner
@@ -403,6 +408,54 @@ export default function BallByBallMatchSimulator({
     ? `m_${matchFixture.matchNo}_${matchFixture.teamAId}_vs_${matchFixture.teamBId}` 
     : `${myFranchise.short}_vs_${rivalFranchise.short}`;
 
+  // Calibrate authentic T20 batting order: Openers -> Anchor -> Middle Finishers -> All-rounders -> Frontline Bowlers
+  const calibrateT20BattingOrder = (squad: any[]): any[] => {
+    if (!squad || squad.length === 0) return [];
+    const openers: any[] = [];
+    const topOrder: any[] = [];
+    const middleOrder: any[] = [];
+    const allRounders: any[] = [];
+    const frontlineBowlers: any[] = [];
+
+    const knownOpeners = [
+      'Head', 'Kohli', 'Rohit', 'Jaiswal', 'Gill', 'Gaikwad', 'Salt', 'Buttler',
+      'Abhishek', 'Rahul', 'de Kock', 'Faf', 'Conway', 'Ishan', 'Prabhsimran', 'Warner', 'Dhawan'
+    ];
+
+    squad.forEach(player => {
+      const name = player.name || '';
+      const role = player.role || '';
+      const isKnownOpener = knownOpeners.some(k => name.includes(k));
+
+      if (isKnownOpener || (role === 'BAT' && openers.length < 2)) {
+        openers.push(player);
+      } else if (role === 'BAT' || role === 'WK') {
+        if (topOrder.length < 2) topOrder.push(player);
+        else middleOrder.push(player);
+      } else if (role === 'AR') {
+        allRounders.push(player);
+      } else {
+        frontlineBowlers.push(player);
+      }
+    });
+
+    const ordered = [
+      ...openers,
+      ...topOrder,
+      ...middleOrder,
+      ...allRounders,
+      ...frontlineBowlers
+    ];
+
+    squad.forEach(p => {
+      if (!ordered.some(op => op.name === p.name || (op.player_id && op.player_id === p.player_id))) {
+        ordered.push(p);
+      }
+    });
+
+    return ordered;
+  };
+
   const setupMatchTeams = (userBatsFirst: boolean) => {
     setABatsFirst(userBatsFirst);
     const chosenUserIds = userBatsFirst
@@ -414,10 +467,12 @@ export default function BallByBallMatchSimulator({
       userXI = chosenUserIds.map(id => mySquad.find(p => p.player_id === id)).filter(Boolean);
     }
     if (userXI.length < 11) {
-      userXI = mySquad.slice(0, 11);
+      userXI = calibrateT20BattingOrder(mySquad).slice(0, 11);
     }
 
-    const rivalXI = (rivalFranchise.squad2026 || []).slice(0, 11);
+    // Opponent team always follows authentic broadcast T20 order
+    const rawRivalXI = (rivalFranchise.squad2026 || []).slice(0, 11);
+    const rivalXI = calibrateT20BattingOrder(rawRivalXI).slice(0, 11);
 
     const firstBatTeam = userBatsFirst ? myFranchise : rivalFranchise;
     const firstBowlTeam = userBatsFirst ? rivalFranchise : myFranchise;
@@ -1799,8 +1854,29 @@ export default function BallByBallMatchSimulator({
   const reqRR = ballsRemaining > 0 ? ((runsNeeded / ballsRemaining) * 6).toFixed(2) : '0.00';
   const currRR = ballsBowled > 0 ? ((activeInnings.totalRuns / ballsBowled) * 6).toFixed(2) : '0.00';
 
-  // Last 6 balls trail
-  const currentOverTrail = activeInnings.balls.slice(-6);
+  // Authentic 1-Over-at-a-Time Trail: resets on every new over!
+  const currentOverIndex = (ballsBowled > 0 && ballsBowled % 6 === 0)
+    ? Math.floor((ballsBowled - 1) / 6)
+    : Math.floor(ballsBowled / 6);
+
+  const currentOverBalls = activeInnings.balls.filter(b => b.over === currentOverIndex);
+  const currentOverRuns = currentOverBalls.reduce((acc, b) => acc + b.runs, 0);
+  const currentOverWickets = currentOverBalls.filter(b => b.isWicket).length;
+
+  // Past completed overs history
+  const completedOversList: Array<{ overNum: number; runs: number; wickets: number; balls: SimulatedBall[]; bowlerName: string }> = [];
+  for (let ov = 0; ov < Math.floor(ballsBowled / 6); ov++) {
+    const oBalls = activeInnings.balls.filter(b => b.over === ov);
+    if (oBalls.length > 0) {
+      completedOversList.push({
+        overNum: ov + 1,
+        runs: oBalls.reduce((acc, b) => acc + b.runs, 0),
+        wickets: oBalls.filter(b => b.isWicket).length,
+        balls: oBalls,
+        bowlerName: oBalls[0]?.bowler || 'Bowler'
+      });
+    }
+  }
 
   const currentBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
   const bowlingSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
