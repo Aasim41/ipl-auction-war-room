@@ -188,6 +188,36 @@ export default function PlayingXIPage() {
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
+  const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
+
+  // Mobile Touch Swipe State
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null || touchStartY === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    const deltaY = e.changedTouches[0].clientY - touchStartY;
+
+    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+      if (deltaX < 0 && activeTab === 'xi') {
+        setActiveTab('schedule');
+        gameAudio.playUiTap('select');
+        triggerGameHaptic('light');
+      } else if (deltaX > 0 && activeTab === 'schedule') {
+        setActiveTab('xi');
+        gameAudio.playUiTap('select');
+        triggerGameHaptic('light');
+      }
+    }
+    setTouchStartX(null);
+    setTouchStartY(null);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -306,8 +336,19 @@ export default function PlayingXIPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain">
+    <div 
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain select-none"
+    >
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-4">
+        
+        {/* Mobile Swipe Navigation Indicator */}
+        <div className="flex md:hidden items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-white/10 text-[10px] font-mono text-gray-400 shadow-sm">
+          <span>👈 Swipe for {activeTab === 'xi' ? 'Schedule' : 'Playing XI'}</span>
+          <span className="text-amber-400 font-bold uppercase">{activeTab === 'xi' ? 'Lineup & Tactics' : 'Tournament Schedule'}</span>
+          <span>👉</span>
+        </div>
         
         {/* ─── Sleek Minimal Header & Tab Controls ─── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-white/10 gap-3">
@@ -542,76 +583,111 @@ export default function PlayingXIPage() {
                 isOptimizing ? 'ring-2 ring-amber-400 p-1 rounded-2xl animate-pulse shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''
               }`}>
                 {fullPlayingXI.map((player, index) => {
+                  const isExpanded = expandedPlayerId === player.player_id;
                   return (
                     <div
                       key={player.player_id}
-                      className="p-2 sm:p-2.5 rounded-2xl bg-slate-950/90 border border-white/10 hover:border-amber-400/40 flex items-center justify-between gap-2 transition-all hover:bg-white/5"
+                      className="rounded-2xl bg-slate-950/90 border border-white/10 hover:border-amber-400/40 transition-all overflow-hidden"
                     >
-                      {/* Left: Batting Order & Identity */}
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`w-6 h-6 rounded-lg font-mono font-black text-xs flex items-center justify-center shrink-0 ${
-                          index < 3
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            : index < 7
-                            ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-                            : 'bg-slate-800 text-gray-300 border border-white/10'
-                        }`}>
-                          {index + 1}
+                      {/* Card Header Strip */}
+                      <div 
+                        onClick={() => {
+                          setExpandedPlayerId(isExpanded ? null : player.player_id);
+                          gameAudio.playUiTap('light');
+                        }}
+                        className="p-2 sm:p-2.5 flex items-center justify-between gap-2 cursor-pointer hover:bg-white/5"
+                      >
+                        {/* Left: Batting Order & Identity */}
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-6 h-6 rounded-lg font-mono font-black text-xs flex items-center justify-center shrink-0 ${
+                            index < 3
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                              : index < 7
+                              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                              : 'bg-slate-800 text-gray-300 border border-white/10'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs text-white flex items-center gap-1.5 truncate">
+                              <span className="truncate">{formatPlayerInitial(player.name)}</span>
+                              {player.is_overseas && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono shrink-0">
+                                  OS ✈
+                                </span>
+                              )}
+                              {player.role === 'WK' && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono shrink-0">
+                                  WK 🧤
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-gray-400 font-mono truncate">
+                              <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • {player.role}
+                            </div>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <div className="font-bold text-xs text-white flex items-center gap-1.5 truncate">
-                            <span className="truncate">{formatPlayerInitial(player.name)}</span>
-                            {player.is_overseas && (
-                              <span className="text-[9px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono shrink-0">
-                                OS ✈
-                              </span>
-                            )}
-                            {player.role === 'WK' && (
-                              <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono shrink-0">
-                                WK 🧤
-                              </span>
-                            )}
+
+                        {/* Right: Stats Summary & Re-order Controls */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono font-bold text-xs">
+                            OVR {player.Power_Index}
                           </div>
-                          <div className="text-[11px] text-gray-400 font-mono truncate">
-                            <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • {player.role}
+
+                          {/* Move Up/Down Controls */}
+                          <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => handleMoveSlot(index, 'up')}
+                              disabled={index === 0}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
+                              title="Move up batting order"
+                            >
+                              <ArrowUp size={13} />
+                            </button>
+                            <button
+                              onClick={() => handleMoveSlot(index, 'down')}
+                              disabled={index === fullPlayingXI.length - 1}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
+                              title="Move down batting order"
+                            >
+                              <ArrowDown size={13} />
+                            </button>
                           </div>
+
+                          {/* Swap with Bench Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setBenchDrawerSlotIndex(index);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
+                          >
+                            Swap
+                          </button>
                         </div>
                       </div>
 
-                      {/* Right: Stats Summary & Re-order Controls */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono font-bold text-xs">
-                          OVR {player.Power_Index}
+                      {/* Expandable Player Profile Tray */}
+                      {isExpanded && (
+                        <div className="px-3 py-2.5 bg-slate-900/90 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono animate-fadeIn">
+                          <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                            <span className="text-[10px] text-gray-400 block">Valuation</span>
+                            <span className="text-amber-300 font-bold">₹{((player.price_cr || player.base_price || 2)).toFixed(2)} Cr</span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                            <span className="text-[10px] text-gray-400 block">Skill Profile</span>
+                            <span className="text-white font-bold truncate block">{player.battingStyle || 'Right Hand'}</span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                            <span className="text-[10px] text-gray-400 block">Bowling Style</span>
+                            <span className="text-gray-300 font-bold truncate block">{player.bowlingStyle || 'None / Part-time'}</span>
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                            <span className="text-[10px] text-gray-400 block">Fortress Fit</span>
+                            <span className="text-emerald-400 font-bold">✓ 94% Synergy</span>
+                          </div>
                         </div>
-
-                        {/* Move Up/Down Controls */}
-                        <div className="flex items-center gap-0.5">
-                          <button
-                            onClick={() => handleMoveSlot(index, 'up')}
-                            disabled={index === 0}
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
-                            title="Move up batting order"
-                          >
-                            <ArrowUp size={13} />
-                          </button>
-                          <button
-                            onClick={() => handleMoveSlot(index, 'down')}
-                            disabled={index === fullPlayingXI.length - 1}
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
-                            title="Move down batting order"
-                          >
-                            <ArrowDown size={13} />
-                          </button>
-                        </div>
-
-                        {/* Swap with Bench Button */}
-                        <button
-                          onClick={() => setBenchDrawerSlotIndex(index)}
-                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
-                        >
-                          Swap
-                        </button>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
