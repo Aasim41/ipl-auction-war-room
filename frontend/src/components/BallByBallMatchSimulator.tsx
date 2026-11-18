@@ -1995,26 +1995,26 @@ export default function BallByBallMatchSimulator({
             </div>
 
             {/* ─── USER TACTICAL COMMAND DECK ─── */}
-            <div className="p-3 sm:p-4 rounded-2xl bg-slate-900 border border-white/15 shadow-xl shrink-0">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 border border-white/15 shadow-xl shrink-0 flex flex-col gap-1.5">
               
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-black uppercase text-amber-400 flex items-center gap-1.5">
-                  <Zap size={14} />
-                  {isUserBatting ? 'Choose Batter Intent Before Shot:' : 'Choose Delivery Variation Before Bowl:'}
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase text-amber-400 flex items-center gap-1">
+                  <Zap size={13} />
+                  {isUserBatting ? 'Select Batting Shot Intent:' : 'Select Bowling Delivery:'}
                 </span>
-                <span className="text-[10px] font-mono text-gray-400">
-                  Ball-by-Ball Tactical Mode
+                <span className="text-[9px] font-mono text-gray-400">
+                  Tactical Mode
                 </span>
               </div>
 
-              {/* Tactical Buttons */}
+              {/* 2x2 Tactical Grid for Ergonomic Thumb Control in Portrait */}
               {isUserBatting ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                <div className="grid grid-cols-2 gap-1.5">
                   {[
-                    { id: 'DEFEND', label: '🛡️ Defend (Safe)', desc: 'Protect wicket, 0-1 run' },
+                    { id: 'DEFEND', label: '🛡️ Defend', desc: 'Safe block, 0-1 run' },
                     { id: 'ROTATE', label: '⚖️ Rotate Strike', desc: 'Gap push, 1-2 runs' },
-                    { id: 'ATTACK', label: '⚡ Lofted Attack', desc: 'Infield clear, 4s & 6s' },
-                    { id: 'MAXIMUM', label: '💥 Super Six', desc: 'Helicopter, high risk' }
+                    { id: 'ATTACK', label: '⚡ Lofted Hit', desc: 'Infield clear, 4s & 6s' },
+                    { id: 'MAXIMUM', label: '💥 Maximum', desc: 'Super Six, high risk' }
                   ].map(t => (
                     <button
                       key={t.id}
@@ -2023,23 +2023,23 @@ export default function BallByBallMatchSimulator({
                         gameAudio.playUiTap('select')
                         triggerGameHaptic('light')
                       }}
-                      className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
+                      className={`p-1.5 rounded-xl text-left border transition-all cursor-pointer ${
                         battingTactic === t.id
-                          ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md scale-[1.02]'
+                          ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-sm ring-1 ring-amber-400/50 scale-[1.01]'
                           : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                       }`}
                     >
-                      <strong className="text-xs block font-bold">{t.label}</strong>
-                      <span className="text-[10px] text-gray-400 leading-tight block">{t.desc}</span>
+                      <strong className="text-[11px] block font-bold truncate">{t.label}</strong>
+                      <span className="text-[9px] text-gray-400 leading-tight block truncate">{t.desc}</span>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                <div className="grid grid-cols-2 gap-1.5">
                   {[
-                    { id: 'YORKER', label: '🎯 Yorker (Stumps)', desc: 'Toe-crusher, death overs' },
-                    { id: 'SLOWER', label: '🌀 Slower Cutter', desc: 'Deception, aerial catch' },
-                    { id: 'BOUNCER', label: '⚡ Bouncer (Head)', desc: 'Short ball, top edges' },
+                    { id: 'YORKER', label: '🎯 Yorker', desc: 'Toe-crusher at stumps' },
+                    { id: 'SLOWER', label: '🌀 Slower Ball', desc: 'Off cutter, aerial catch' },
+                    { id: 'BOUNCER', label: '⚡ Bouncer', desc: 'Short ball, top edges' },
                     { id: 'GOOD_LENGTH', label: '📐 Good Length', desc: 'Channel of uncertainty' }
                   ].map(t => (
                     <button
@@ -2049,47 +2049,47 @@ export default function BallByBallMatchSimulator({
                         gameAudio.playUiTap('select')
                         triggerGameHaptic('light')
                       }}
-                      className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
+                      className={`p-1.5 rounded-xl text-left border transition-all cursor-pointer ${
                         bowlingTactic === t.id
-                          ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-md scale-[1.02]'
+                          ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-sm ring-1 ring-sky-400/50 scale-[1.01]'
                           : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                       }`}
                     >
-                      <strong className="text-xs block font-bold">{t.label}</strong>
-                      <span className="text-[10px] text-gray-400 leading-tight block">{t.desc}</span>
+                      <strong className="text-[11px] block font-bold truncate">{t.label}</strong>
+                      <span className="text-[9px] text-gray-400 leading-tight block truncate">{t.desc}</span>
                     </button>
                   ))}
                 </div>
               )}
 
               {/* Execution Action Bar */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 border-t border-white/10">
+              <div className="flex flex-col gap-1.5 pt-1.5 border-t border-white/10">
                 <button
                   onClick={() => executeBall()}
                   disabled={matchDone}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer active:scale-95 transition-all"
                 >
-                  <Play size={16} className="fill-slate-950" />
+                  <Play size={15} className="fill-slate-950" />
                   <span>{isUserBatting ? `PLAY SHOT [${battingTactic}]` : `BOWL BALL [${bowlingTactic}]`}</span>
                 </button>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={handleSimulateOver}
                     disabled={matchDone}
-                    className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
+                    className="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-bold text-white flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
                   >
-                    <FastForward size={14} />
+                    <FastForward size={13} />
                     <span>Simulate Over</span>
                   </button>
 
                   <button
                     onClick={handleInstantResult}
                     disabled={matchDone}
-                    className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all"
+                    className="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
                   >
                     <span>Instant Result</span>
-                    <ChevronRight size={14} />
+                    <ChevronRight size={13} />
                   </button>
                 </div>
               </div>
