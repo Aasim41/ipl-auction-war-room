@@ -166,13 +166,18 @@ export default function TradeWindowPage() {
         if (th.rivalTeam?.toLowerCase() === selectedRivalId.toLowerCase()) {
           const alreadyInRival = squad.some(p => p.name.trim().toLowerCase() === th.playerOut.trim().toLowerCase())
           if (!alreadyInRival) {
+            const originalPlayer = (myFranchise.squad2026 || []).find(
+              p => p.name.trim().toLowerCase() === th.playerOut.trim().toLowerCase()
+            )
             squad.push({
-              player_id: `traded_${selectedRivalId}_${th.playerOut.replace(/\s+/g, '_')}`,
+              player_id: originalPlayer?.player_id || `traded_${selectedRivalId}_${th.playerOut.replace(/\s+/g, '_')}`,
               name: th.playerOut,
-              role: 'AR',
-              price: 5.0,
-              currentPrice: 5.0,
-              Power_Index: 82,
+              role: originalPlayer?.role || 'AR',
+              nationality: originalPlayer?.nationality || 'Indian',
+              is_overseas: originalPlayer?.is_overseas || false,
+              price: originalPlayer?.price || 5.0,
+              currentPrice: originalPlayer?.price || 5.0,
+              Power_Index: originalPlayer?.Power_Index || 82,
               is_retained: true,
               is_released: false,
               statsSummary: `Acquired via Trade from ${myFranchise.name}`

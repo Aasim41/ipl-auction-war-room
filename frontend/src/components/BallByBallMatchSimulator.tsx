@@ -26,14 +26,15 @@ import {
   ArrowUp,
   ArrowDown,
   ListOrdered,
-  Users
+  Users,
+  HelpCircle,
+  Info
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';
 import { TournamentFixture, MatchScorecard } from '../data/scheduleGenerator';
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
 import { getFranchiseAI } from '../data/franchiseAI';
 import TeamLogo from './TeamLogo';
-import ThreeCricketArena from './ThreeCricketArena';
 import { lockOrientation } from '../lib/orientationManager';
 import { formatPlayerInitial } from '../lib/nameFormatter';
 import { useCampaignStore } from '../store/useCampaignStore';
@@ -330,7 +331,7 @@ export default function BallByBallMatchSimulator({
   const [showBattingOrderModal, setShowBattingOrderModal] = useState(false);
   const [showOpeningPairModal, setShowOpeningPairModal] = useState(false);
   const [showPastOversModal, setShowPastOversModal] = useState(false);
-  const [arenaViewMode, setArenaViewMode] = useState<'3d' | '2d'>('3d');
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [expandedHUDCard, setExpandedHUDCard] = useState<'batter' | 'bowler' | null>(null);
   const [scorecardInningsView, setScorecardInningsView] = useState<1 | 2>(1);
 
@@ -2001,6 +2002,20 @@ export default function BallByBallMatchSimulator({
                 <RotateCcw size={15} />
               </button>
             )}
+
+            {/* How to Play Guide Button */}
+            <button
+              onClick={() => {
+                setShowHowToPlay(true);
+                gameAudio.playUiTap('select');
+                triggerGameHaptic('light');
+              }}
+              className="px-2 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+              title="How to Play & Tactical Guide"
+            >
+              <HelpCircle size={13} />
+              <span className="hidden sm:inline">Guide</span>
+            </button>
 
             {/* Sound Toggle */}
             <button
