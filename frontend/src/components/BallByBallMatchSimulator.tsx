@@ -2179,7 +2179,7 @@ export default function BallByBallMatchSimulator({
                 {/* Floating Striker Name & Stat */}
                 <div className="mb-0.5 px-2 py-0.5 rounded-full bg-slate-950/90 border border-amber-400/50 text-[9px] font-mono font-black text-amber-300 whitespace-nowrap shadow-lg flex items-center gap-1">
                   <span>🏏</span>
-                  <span>{strikerPlayer?.name?.split(' ').slice(-1)[0] || 'Batter'}*</span>
+                  <span>{formatPlayerInitial(strikerPlayer?.name) || 'Batter'}*</span>
                 </div>
                 {/* Striker SVG Character (Batter in Stance) */}
                 <svg width="34" height="42" viewBox="0 0 34 42" className={`drop-shadow-md transition-transform duration-300 ${isBallAnimating ? 'scale-110 -rotate-12' : ''}`}>
@@ -2251,7 +2251,7 @@ export default function BallByBallMatchSimulator({
               >
                 <div className="mb-0.5 px-2 py-0.5 rounded-full bg-slate-950/90 border border-rose-500/50 text-[9px] font-mono font-black text-rose-300 whitespace-nowrap shadow-lg flex items-center gap-1">
                   <span>🎯</span>
-                  <span>{bowlerPlayer?.name?.split(' ').slice(-1)[0] || 'Bowler'}</span>
+                  <span>{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
                 </div>
                 <svg width="30" height="38" viewBox="0 0 30 38" className={`drop-shadow-md transition-transform duration-300 ${isBallAnimating ? 'scale-110 translate-y-1' : ''}`}>
                   <ellipse cx="15" cy="36" rx="8" ry="2" fill="#000000" fillOpacity="0.4" />
@@ -2283,24 +2283,14 @@ export default function BallByBallMatchSimulator({
                   {/* Bat resting in crease */}
                   <line x1="16" y1="16" x2="20" y2="28" stroke="#fef08a" strokeWidth="2" strokeLinecap="round" />
                 </svg>
-                <span className="text-[7px] font-mono text-gray-300 bg-slate-950/80 px-1 rounded">🏃 {nonStrikerPlayer?.name?.split(' ').slice(-1)[0] || 'Bat'}</span>
+                <span className="text-[7px] font-mono text-gray-300 bg-slate-950/80 px-1 rounded">🏃 {formatPlayerInitial(nonStrikerPlayer?.name) || 'Bat'}</span>
               </div>
 
-              {/* ─── 9 FIELDERS ACROSS THE FIELD POV ─── */}
-              {[
-                { name: 'Cover Point', x: '14%', y: '50%' },
-                { name: 'Cover', x: '24%', y: '36%' },
-                { name: 'Mid-Off', x: '37%', y: '25%' },
-                { name: 'Mid-On', x: '63%', y: '25%' },
-                { name: 'Deep Mid-Wicket', x: '80%', y: '42%' },
-                { name: 'Square Leg', x: '85%', y: '66%' },
-                { name: 'Third Man', x: '16%', y: '76%' },
-                { name: 'Long-Off', x: '28%', y: '10%' },
-                { name: 'Long-On', x: '72%', y: '10%' },
-              ].map((f, idx) => (
+              {/* ─── 9 DYNAMIC FIELDERS ACROSS THE FIELD POV (DYNAMIC SHIFT ON OVERS/TACTICS) ─── */}
+              {dynamicFielders.map((f, idx) => (
                 <div 
                   key={idx}
-                  className="absolute z-10 flex flex-col items-center pointer-events-none group"
+                  className="absolute z-10 flex flex-col items-center pointer-events-none transition-all duration-700 ease-out"
                   style={{ left: f.x, top: f.y, transform: 'translate(-50%, -50%)' }}
                 >
                   <svg width="18" height="22" viewBox="0 0 18 22" className="drop-shadow-sm">
@@ -2310,7 +2300,12 @@ export default function BallByBallMatchSimulator({
                     <circle cx="9" cy="5" r="3" fill="#0f172a" />
                     <rect x="5.5" y="8" width="7" height="7" rx="1.5" fill={bowlingTeamColor} stroke="#ffffff" strokeWidth="0.5" />
                   </svg>
-                  <span className="text-[7px] font-mono text-gray-400 bg-slate-950/70 px-1 rounded opacity-75">
+                  <span className={`text-[7px] font-mono px-1 rounded shadow-sm flex items-center gap-0.5 whitespace-nowrap ${
+                    f.isDeep 
+                      ? 'bg-rose-950/90 text-rose-300 border border-rose-500/40 font-bold' 
+                      : 'bg-slate-950/80 text-gray-300 border border-white/10'
+                  }`}>
+                    {f.isDeep && <span className="text-[6px]">🚩</span>}
                     {f.name}
                   </span>
                 </div>
@@ -2454,7 +2449,7 @@ export default function BallByBallMatchSimulator({
                   <div className="text-[10px] text-gray-400 font-bold uppercase flex items-center justify-center gap-1">
                     <Trophy size={11} className="text-amber-400" /> Player of the Match
                   </div>
-                  <strong className="text-sm font-black text-amber-300 block">{potm.player}</strong>
+                  <strong className="text-sm font-black text-amber-300 block">{formatPlayerInitial(potm.player)}</strong>
                   <span className="text-[11px] text-gray-400 font-mono">{potm.stats}</span>
                 </div>
               </div>
@@ -2484,7 +2479,7 @@ export default function BallByBallMatchSimulator({
                   <tbody className="divide-y divide-white/5 text-gray-200">
                     {inn1.battingScorecard.map((b, i) => (
                       <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{b.name}</td>
+                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(b.name)}</td>
                         <td className="py-1.5 text-gray-400 text-[11px]">{b.dismissal}</td>
                         <td className="py-1.5 text-right font-black text-amber-300">{b.runs}</td>
                         <td className="py-1.5 text-right text-gray-400">{b.balls}</td>
@@ -2513,7 +2508,7 @@ export default function BallByBallMatchSimulator({
                   <tbody className="divide-y divide-white/5 text-gray-200">
                     {inn1.bowlingFigures.map((bw, i) => (
                       <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{bw.name}</td>
+                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(bw.name)}</td>
                         <td className="py-1.5 text-right">{bw.overs}</td>
                         <td className="py-1.5 text-right text-rose-300">{bw.runs}</td>
                         <td className="py-1.5 text-right font-black text-emerald-400">{bw.wickets}</td>
@@ -2549,7 +2544,7 @@ export default function BallByBallMatchSimulator({
                   <tbody className="divide-y divide-white/5 text-gray-200">
                     {inn2.battingScorecard.map((b, i) => (
                       <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{b.name}</td>
+                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(b.name)}</td>
                         <td className="py-1.5 text-gray-400 text-[11px]">{b.dismissal}</td>
                         <td className="py-1.5 text-right font-black text-amber-300">{b.runs}</td>
                         <td className="py-1.5 text-right text-gray-400">{b.balls}</td>
@@ -2578,7 +2573,7 @@ export default function BallByBallMatchSimulator({
                   <tbody className="divide-y divide-white/5 text-gray-200">
                     {inn2.bowlingFigures.map((bw, i) => (
                       <tr key={i} className="hover:bg-white/5">
-                        <td className="py-1.5 font-sans font-bold text-white">{bw.name}</td>
+                        <td className="py-1.5 font-sans font-bold text-white">{formatPlayerInitial(bw.name)}</td>
                         <td className="py-1.5 text-right">{bw.overs}</td>
                         <td className="py-1.5 text-right text-rose-300">{bw.runs}</td>
                         <td className="py-1.5 text-right font-black text-emerald-400">{bw.wickets}</td>
