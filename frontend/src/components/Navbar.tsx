@@ -167,7 +167,7 @@ export function Navbar() {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 w-full h-11 sm:h-13 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
-        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-1.5 sm:px-3 gap-1 sm:gap-2">
+        <div className="w-full h-full flex items-center justify-between px-2 sm:px-4 gap-1 sm:gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
