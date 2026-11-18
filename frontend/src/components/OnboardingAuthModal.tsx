@@ -143,28 +143,42 @@ export function OnboardingAuthModal({ isOpen, onClose, onSuccess, initialTab = '
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-2 p-1 bg-slate-900 rounded-xl border border-white/10 mb-4">
+        <div className="flex gap-1.5 p-1 bg-slate-900 rounded-xl border border-white/10 mb-4 overflow-x-auto scrollbar-none">
+          <button
+            type="button"
+            onClick={() => { setMode('saves'); setErrorMsg('') }}
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 ${
+              mode === 'saves'
+                ? 'bg-amber-500 text-slate-950 shadow-md'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Trophy size={13} />
+            <span>Franchise Saves ({allCampaigns.length})</span>
+          </button>
           <button
             type="button"
             onClick={() => { setMode('create'); setErrorMsg('') }}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 ${
               mode === 'create'
                 ? 'bg-amber-500 text-slate-950 shadow-md'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            + Create New GM Profile
+            <Plus size={13} />
+            <span>New GM Profile</span>
           </button>
           <button
             type="button"
             onClick={() => { setMode('switch'); setErrorMsg('') }}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 ${
               mode === 'switch'
                 ? 'bg-amber-500 text-slate-950 shadow-md'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Switch Profile ({profileList.length})
+            <Users size={13} />
+            <span>Switch GM ({profileList.length})</span>
           </button>
         </div>
 
@@ -174,7 +188,122 @@ export function OnboardingAuthModal({ isOpen, onClose, onSuccess, initialTab = '
           </div>
         )}
 
-        {mode === 'create' ? (
+        {mode === 'saves' ? (
+          <div className="space-y-3">
+            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              {allCampaigns.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <p className="text-xs">No active franchise saves yet.</p>
+                </div>
+              ) : (
+                allCampaigns.map((c) => {
+                  const f = getFranchise(c.teamId)
+                  const isCurrent = c.id === activeCampaignId
+                  const phaseLabels: Record<string, string> = {
+                    trade: '1. Trade Window',
+                    retain_release: '2. Retentions',
+                    mini_auction: '3. Auction Arena',
+                    playing_xi: '4. Playing XI & Schedule',
+                    match: 'Matchday Live'
+                  }
+
+                  return (
+                    <div
+                      key={c.id}
+                      className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
+                        isCurrent
+                          ? 'bg-amber-500/15 border-amber-500/50 text-white shadow-lg shadow-amber-500/10'
+                          : 'bg-slate-900/90 border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <div 
+                        onClick={() => {
+                          if (!isCurrent) {
+                            switchCampaign(c.id)
+                            gameAudio.playUiTap('select')
+                            triggerGameHaptic('medium')
+                            onClose()
+                          }
+                        }}
+                        className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
+                      >
+                        <TeamLogo teamId={f.id} size={36} className="shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-white flex items-center gap-2">
+                            <span className="truncate">{f.name}</span>
+                            {isCurrent && (
+                              <span className="text-[8px] px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 font-black shrink-0">
+                                ACTIVE
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5 font-mono">
+                            <span className="text-emerald-400 font-bold">₹{c.remainingPurse.toFixed(1)}Cr Purse</span>
+                            <span>•</span>
+                            <span className="text-sky-300">{phaseLabels[c.currentPhase] || c.currentPhase}</span>
+                            <span>•</span>
+                            <span>{c.squad.filter(p => !p.is_released).length} Players</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        {!isCurrent ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              switchCampaign(c.id)
+                              gameAudio.playUiTap('select')
+                              triggerGameHaptic('medium')
+                              onClose()
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-black cursor-pointer shadow-md"
+                          >
+                            Resume Save
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Reset ${f.name} season back to Trade Window?`)) {
+                                resetCampaign(c.id)
+                                onClose()
+                                router.push('/trade')
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all border border-white/5"
+                            title="Reset this season"
+                          >
+                            <RotateCcw size={11} /> Reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+              <Link
+                href="/select-team"
+                onClick={onClose}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-all"
+              >
+                <Plus size={13} className="text-amber-400" />
+                <span>Start New Franchise Campaign</span>
+              </Link>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-gray-300 hover:text-white font-bold text-xs"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ) : mode === 'create' ? (
           <form onSubmit={handleRegister} className="space-y-4">
             
             {/* Gamer Tag */}

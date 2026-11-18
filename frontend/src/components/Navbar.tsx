@@ -42,8 +42,8 @@ export function Navbar() {
 
   const [mounted, setMounted] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalTab, setAuthModalTab] = useState<'saves' | 'create' | 'switch'>('saves')
   const [showRulesModal, setShowRulesModal] = useState(false)
-  const [showTeamSwitcher, setShowTeamSwitcher] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [lockedToast, setLockedToast] = useState<string | null>(null)
   const [isMuted, setIsMuted] = useState(false)
@@ -186,81 +186,27 @@ export function Navbar() {
               </button>
             ) : null}
 
-            <Link href="/" className="flex items-center gap-1.5 group shrink-0" title="Home Dashboard">
-              <TeamLogo teamId={franchise.id} size={24} className="transition-transform group-hover:scale-105 shrink-0" />
-              <span className="font-black text-xs text-white hidden md:inline truncate max-w-[120px]">
+            {/* Franchise Identity Pill - Opens Franchise Saves in GM Modal */}
+            <button
+              type="button"
+              onClick={() => {
+                gameAudio.playUiTap('light')
+                triggerGameHaptic('light')
+                setAuthModalTab('saves')
+                setShowAuthModal(true)
+              }}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white transition-all cursor-pointer border border-white/10 group shrink-0"
+              title="Click to view all Franchise Saves & Careers"
+            >
+              <TeamLogo teamId={franchise.id} size={22} className="transition-transform group-hover:scale-105 shrink-0" />
+              <span className="font-black text-xs text-white hidden md:inline truncate max-w-[130px]">
                 {franchise.name}
               </span>
               <span className="font-mono font-black text-[11px] text-amber-400 sm:hidden">
                 {franchise.short}
               </span>
-            </Link>
-
-            {/* Quick Saves Switcher Dropdown (Desktop/Tablet) */}
-            {activeCamp && (
-              <div className="relative hidden sm:block">
-                <button
-                  onClick={() => setShowTeamSwitcher(!showTeamSwitcher)}
-                  className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer border border-white/10 shrink-0"
-                  title="Switch franchise campaign save"
-                >
-                  <span className="font-mono font-bold uppercase">{franchise.short}</span>
-                  <ChevronDown size={10} className="text-gray-400 shrink-0" />
-                </button>
-
-                {showTeamSwitcher && (
-                  <div className="absolute top-full left-0 mt-2 w-72 bg-slate-900 border border-white/20 rounded-2xl p-2.5 shadow-2xl z-50 text-white backdrop-blur-xl">
-                    <div className="text-[10px] font-black uppercase text-gray-400 tracking-wider mb-2 px-1">
-                      Active Franchise Saves
-                    </div>
-                    <div className="space-y-1 max-h-52 overflow-y-auto">
-                      {Object.values(campaigns).map((c) => {
-                        const f = getFranchise(c.teamId)
-                        const isSelected = c.id === activeCamp.id
-                        return (
-                          <button
-                            key={c.id}
-                            onClick={() => {
-                              switchCampaign(c.id)
-                              setShowTeamSwitcher(false)
-                            }}
-                            className={`w-full text-left p-2 rounded-xl flex items-center justify-between text-xs font-bold cursor-pointer transition-all ${
-                              isSelected ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'hover:bg-white/10 text-gray-300'
-                            }`}
-                          >
-                            <span className="flex items-center gap-2">
-                              <TeamLogo teamId={f.id} size={22} />
-                              <span className="truncate max-w-[130px]">{f.name}</span>
-                            </span>
-                            <span className="text-[10px] font-mono text-gray-400 shrink-0">
-                              ₹{c.remainingPurse.toFixed(1)}Cr
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                    <div className="pt-2 border-t border-white/10 mt-2 flex items-center justify-between">
-                      <Link
-                        href="/select-team"
-                        onClick={() => setShowTeamSwitcher(false)}
-                        className="text-[10px] font-bold text-amber-400 hover:underline flex items-center gap-1"
-                      >
-                        <Plus size={11} /> New Franchise Save
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setShowTeamSwitcher(false)
-                          setShowResetConfirm(true)
-                        }}
-                        className="text-[10px] text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <RotateCcw size={11} /> Reset Season
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+              <ChevronDown size={11} className="text-gray-400 group-hover:text-white transition-colors shrink-0" />
+            </button>
           </div>
 
           {/* Center: Minimal 4-Phase Stepper */}
@@ -324,12 +270,15 @@ export function Navbar() {
 
             {/* GM Profile Pill */}
             <button
+              type="button"
               onClick={() => {
                 gameAudio.playUiTap('light')
+                triggerGameHaptic('light')
+                setAuthModalTab('switch')
                 setShowAuthModal(true)
               }}
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
-              title="Manager Profile & Save Slots"
+              title="Manager Profile & Onboarding"
             >
               <span className="text-sm">{currentUser?.avatar || '👑'}</span>
             </button>
@@ -351,6 +300,7 @@ export function Navbar() {
       {/* Profile & Auth Modal */}
       <OnboardingAuthModal 
         isOpen={showAuthModal} 
+        initialTab={authModalTab}
         onClose={() => setShowAuthModal(false)} 
       />
 

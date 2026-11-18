@@ -317,7 +317,7 @@ export default function TradeWindowPage() {
         counterOfferCash: canAffordCounter ? minCashSweetener : undefined,
         status: 'BARGAINING',
         reason: canAffordCounter
-          ? `❌ REJECTED: ${rivalFranchise.short} demands greater value for ${playerIn.name} (PI: ${powerIn} vs ${powerOut}).`
+          ? `❌ REJECTED: ${rivalFranchise.short} demands greater value for ${playerIn.name}.`
           : `❌ REJECTED: ${rivalFranchise.short} demands +₹${minCashSweetener.toFixed(1)} Cr cash sweetener, which exceeds your remaining purse of ₹${campaign.remainingPurse.toFixed(1)} Cr. Offer a higher-rated player instead.`,
         counterOfferText: canAffordCounter
           ? `🤝 ${rivalFranchise.short} Counter-Offer: Increase cash sweetener to +₹${minCashSweetener.toFixed(1)} Cr to seal the deal.` 
@@ -576,8 +576,13 @@ export default function TradeWindowPage() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-[11px] sm:text-xs font-black text-amber-300 font-mono">{p.Power_Index}</div>
-                      <span className="text-[8px] sm:text-[9px] text-gray-500 block">{isSelected ? '✓' : 'Offer'}</span>
+                      <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all ${
+                        isSelected 
+                          ? 'bg-rose-500 text-white font-black shadow-sm' 
+                          : 'bg-white/10 text-gray-300'
+                      }`}>
+                        {isSelected ? '✓ Offering' : 'Trade Out'}
+                      </span>
                     </div>
                   </div>
                 )
