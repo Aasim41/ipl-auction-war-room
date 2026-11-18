@@ -197,20 +197,30 @@ export default function BallByBallMatchSimulator({
   const [bowl1Squad, setBowl1Squad] = useState<any[]>([]);
   const [aBatsFirst, setABatsFirst] = useState(true);
 
+  // Toss Ceremony State
+  const [tossPhase, setTossPhase] = useState<'ceremony' | 'arena'>('ceremony');
+  const [userCoinCall, setUserCoinCall] = useState<'heads' | 'tails'>('heads');
+  const [isFlippingCoin, setIsFlippingCoin] = useState(false);
+  const [coinResult, setCoinResult] = useState<'heads' | 'tails' | null>(null);
+  const [tossWinner, setTossWinner] = useState<'user' | 'rival' | null>(null);
+  const [tossDecision, setTossDecision] = useState<'bat' | 'bowl' | null>(null);
+  const [tossSummaryText, setTossSummaryText] = useState<string>('');
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const matchInitializedKeyRef = useRef<string | null>(null);
+  const currentMatchKey = matchFixture 
+    ? `m_${matchFixture.matchNo}_${matchFixture.teamAId}_vs_${matchFixture.teamBId}` 
+    : `${myFranchise.short}_vs_${rivalFranchise.short}`;
 
-  // Initialize Match Setup on Open
-  useEffect(() => {
-    if (!isOpen) {
-      setIsPlaying(false);
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
+  const setupMatchTeams = (userBatsFirst: boolean) => {
+    setABatsFirst(userBatsFirst);
+    const chosenUserIds = userBatsFirst
+      ? (userBatFirstXI && userBatFirstXI.length >= 11 ? userBatFirstXI : (myPlayingXIIds || []))
+      : (userBowlFirstXI && userBowlFirstXI.length >= 11 ? userBowlFirstXI : (myPlayingXIIds || []));
 
-    // Determine user starting XI
     let userXI: any[] = [];
-    if (myPlayingXIIds && myPlayingXIIds.length >= 11) {
-      userXI = myPlayingXIIds.map(id => mySquad.find(p => p.player_id === id)).filter(Boolean);
+    if (chosenUserIds.length >= 11) {
+      userXI = chosenUserIds.map(id => mySquad.find(p => p.player_id === id)).filter(Boolean);
     }
     if (userXI.length < 11) {
       userXI = mySquad.slice(0, 11);
@@ -218,19 +228,14 @@ export default function BallByBallMatchSimulator({
 
     const rivalXI = (rivalFranchise.squad2026 || []).slice(0, 11);
 
-    // Coin Toss: 50% chance user bats first
-    const tossWin = Math.random() > 0.5;
-    setABatsFirst(tossWin);
-
-    const firstBatTeam = tossWin ? myFranchise : rivalFranchise;
-    const firstBowlTeam = tossWin ? rivalFranchise : myFranchise;
-    const firstBatSquad = tossWin ? userXI : rivalXI;
-    const firstBowlSquad = tossWin ? rivalXI : userXI;
+    const firstBatTeam = userBatsFirst ? myFranchise : rivalFranchise;
+    const firstBowlTeam = userBatsFirst ? rivalFranchise : myFranchise;
+    const firstBatSquad = userBatsFirst ? userXI : rivalXI;
+    const firstBowlSquad = userBatsFirst ? rivalXI : userXI;
 
     setBat1Squad(firstBatSquad);
     setBowl1Squad(firstBowlSquad);
 
-    // Initialize Empty Innings 1
     const initInn1: InningsState = {
       teamName: firstBatTeam.name,
       teamShort: firstBatTeam.short,
@@ -260,7 +265,6 @@ export default function BallByBallMatchSimulator({
       isComplete: false
     };
 
-    // Initialize Empty Innings 2
     const initInn2: InningsState = {
       teamName: firstBowlTeam.name,
       teamShort: firstBowlTeam.short,
@@ -301,7 +305,79 @@ export default function BallByBallMatchSimulator({
     setIsPlaying(false);
     setActiveTab('arena');
     setLastShotTraj(null);
-  }, [isOpen, myFranchise, mySquad, myPlayingXIIds, rivalFranchise, venueName]);
+  };
+
+  // Initialize Match Setup on Open
+  useEffect(() => {
+    if (!isOpen) {
+      setIsPlaying(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+      matchInitializedKeyRef.current = null;
+      setTossPhase('ceremony');
+      setCoinResult(null);
+      setTossWinner(null);
+      setTossDecision(null);
+      setTossSummaryText('');
+      return;
+    }
+
+    if (matchInitializedKeyRef.current === currentMatchKey && inn1) {
+      return;
+    }
+    matchInitializedKeyRef.current = currentMatchKey;
+
+    // Default setup
+    setupMatchTeams(true);
+  }, [isOpen, currentMatchKey]);
+
+  const handleSpinCoin = () => {
+    if (isFlippingCoin) return;
+    setIsFlippingCoin(true);
+    gameAudio.playBallWhoosh();
+    triggerGameHaptic('medium');
+
+    setTimeout(() => {
+      const outcome: 'heads' | 'tails' = Math.random() > 0.5 ? 'heads' : 'tails';
+      setCoinResult(outcome);
+      setIsFlippingCoin(false);
+
+      const userWon = userCoinCall === outcome;
+      if (userWon) {
+        setTossWinner('user');
+        gameAudio.playConfettiFanfare();
+        triggerGameHaptic('heavy');
+      } else {
+        setTossWinner('rival');
+        // AI Decides based on venue
+        const favorsChase = venueName.toLowerCase().includes('mumbai') || 
+                             venueName.toLowerCase().includes('wankhede') || 
+                             venueName.toLowerCase().includes('bengaluru') || 
+                             venueName.toLowerCase().includes('kolkata');
+        const aiDecision: 'bat' | 'bowl' = favorsChase ? 'bowl' : 'bat';
+        setTossDecision(aiDecision);
+        gameAudio.playTradeReject();
+        triggerGameHaptic('light');
+      }
+    }, 1100);
+  };
+
+  const handleApplyTossDecision = (electedToBat: boolean, summary: string) => {
+    setupMatchTeams(electedToBat);
+    setTossSummaryText(summary);
+    setTossPhase('arena');
+    gameAudio.playUiTap('select');
+    triggerGameHaptic('light');
+  };
+
+  const handleQuickTossSkip = () => {
+    const userBatsFirst = Math.random() > 0.5;
+    setupMatchTeams(userBatsFirst);
+    const summary = userBatsFirst
+      ? `${myFranchise.name} won the toss and elected to bat first`
+      : `${rivalFranchise.name} won the toss and elected to bat first`;
+    setTossSummaryText(summary);
+    setTossPhase('arena');
+  };
 
   // Is User's Team currently batting or bowling?
   const isUserBatting = (currentInnings === 1 && aBatsFirst) || (currentInnings === 2 && !aBatsFirst);
@@ -795,6 +871,9 @@ export default function BallByBallMatchSimulator({
     };
 
     setMatchResultSummary(summary);
+    if (onMatchComplete) {
+      onMatchComplete(summary);
+    }
 
     if (userWon) {
       gameAudio.playConfettiFanfare();
@@ -805,22 +884,398 @@ export default function BallByBallMatchSimulator({
     }
   };
 
-  // Fast forward remaining balls of the over
+  // Pure helper to calculate outcome of 1 ball
+  const computeBallOutcome = (
+    batTactic: BattingTactic,
+    bowlTactic: BowlingTactic,
+    bowlerName: string,
+    currentBowlSquad: any[],
+    strikerName: string
+  ) => {
+    const rand = Math.random();
+    let runs = 0;
+    let isWicket = false;
+    let isFour = false;
+    let isSix = false;
+    let dismissal = '';
+    let commentary = '';
+    const shotZone = SHOT_ZONES[Math.floor(Math.random() * SHOT_ZONES.length)];
+
+    if (batTactic === 'DEFEND') {
+      if (rand < 0.02) {
+        isWicket = true;
+      } else if (rand < 0.75) {
+        runs = 0;
+        commentary = `Solid defensive push into the covers. No run taken.`;
+      } else if (rand < 0.95) {
+        runs = 1;
+        commentary = `Soft hands tap into mid-wicket, scampered through for a single.`;
+      } else {
+        runs = 2;
+        commentary = `Pushed into the gap at sweeper cover, comfortable double.`;
+      }
+    } else if (batTactic === 'ROTATE') {
+      if (rand < 0.05) {
+        isWicket = true;
+      } else if (rand < 0.25) {
+        runs = 0;
+        commentary = `Defended towards point, fielder closes in sharply.`;
+      } else if (rand < 0.75) {
+        runs = 1;
+        commentary = `Worked smoothly off the hips into square leg for one.`;
+      } else if (rand < 0.92) {
+        runs = 2;
+        commentary = `Steered fine of third man, hurried back for a sharp couple!`;
+      } else {
+        runs = 4;
+        isFour = true;
+        commentary = `FOUR! Beautifully timed drive beats mid-off to the rope!`;
+      }
+    } else if (batTactic === 'ATTACK') {
+      if (rand < 0.12) {
+        isWicket = true;
+      } else if (rand < 0.25) {
+        runs = 0;
+        commentary = `Big swing and a miss outside off! Lucky not to edge behind.`;
+      } else if (rand < 0.50) {
+        runs = 1;
+        commentary = `Lofted towards long-on on the bounce for a single.`;
+      } else if (rand < 0.80) {
+        runs = 4;
+        isFour = true;
+        commentary = `⚡ CRACKING 4! Pierces extra cover with blistering power!`;
+      } else {
+        runs = 6;
+        isSix = true;
+        commentary = `🚀 HUGE SIX! Clean strike sailed 95m over deep midwicket!`;
+      }
+    } else {
+      // MAXIMUM
+      if (rand < 0.22) {
+        isWicket = true;
+      } else if (rand < 0.40) {
+        runs = 0;
+        commentary = `Swing across the line, beaten all ends up!`;
+      } else if (rand < 0.65) {
+        runs = 4;
+        isFour = true;
+        commentary = `⚡ FOUR! Muscled over the infield bouncing into the fence!`;
+      } else {
+        runs = 6;
+        isSix = true;
+        commentary = `🚀 MONSTER SIX! Dispatched 106m into the top tier! Unreal power!`;
+      }
+    }
+
+    if (isWicket) {
+      if (bowlTactic === 'YORKER') {
+        dismissal = `b ${bowlerName}`;
+        commentary = `🔥 CLEAN BOWLED! Pinpoint yorker crushes base of off stump!`;
+      } else if (bowlTactic === 'SLOWER') {
+        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Fielder';
+        dismissal = `c ${fielder} b ${bowlerName}`;
+        commentary = `🎯 CAUGHT! Deceptive cutter induces an early loft, caught by ${fielder}!`;
+      } else if (bowlTactic === 'BOUNCER') {
+        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Fielder';
+        dismissal = `c ${fielder} b ${bowlerName}`;
+        commentary = `🎯 TOP EDGE! Hurried by the bouncer, skied high and pouched by ${fielder}!`;
+      } else {
+        dismissal = `c & b ${bowlerName}`;
+        commentary = `🎯 SENSATIONAL C&B! ${bowlerName} snatches a sharp return catch!`;
+      }
+    }
+
+    return { runs, isWicket, isFour, isSix, dismissal, commentary, shotZone };
+  };
+
+  // Simulate Over: Atomically bowls all remaining balls in current over
   const handleSimulateOver = () => {
-    for (let i = 0; i < 6; i++) {
-      executeBall();
-      if (matchDone) break;
+    if (matchDone || !inn1 || !inn2) return;
+    gameAudio.unlockAudio();
+
+    const activeInn = currentInnings === 1 ? inn1 : inn2;
+    const currentBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
+    const currentBowlSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
+    const activeBowlers = currentBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
+    const bowler = activeBowlers[currentBowlerIdx % activeBowlers.length] || currentBowlSquad[0];
+
+    const legalBallsBowled = activeInn.balls.length;
+    const ballsRemainingInOver = 6 - (legalBallsBowled % 6);
+    const ballsToBowl = Math.min(ballsRemainingInOver, 120 - legalBallsBowled);
+    if (ballsToBowl <= 0) return;
+
+    let curTotalRuns = activeInn.totalRuns;
+    let curTotalWickets = activeInn.totalWickets;
+    let curStrikerIdx = strikerIdx;
+    let curNonStrikerIdx = nonStrikerIdx;
+    let curNextBatterIdx = nextBatterIdx;
+    let curBalls = [...activeInn.balls];
+    let curBatters = activeInn.battingScorecard.map(b => ({ ...b }));
+    let curBowlers = activeInn.bowlingFigures.map(bw => ({ ...bw }));
+    let curFOW = [...activeInn.fallOfWickets];
+    let overRunsGained = 0;
+    let overWktsLost = 0;
+    let matchEnded = false;
+    let inningsEnded = false;
+    let lastOutcomeShotZone = null;
+
+    const target = currentInnings === 2 ? (inn1.totalRuns + 1) : null;
+
+    for (let b = 0; b < ballsToBowl; b++) {
+      const ballNo = curBalls.length;
+      const overNum = Math.floor(ballNo / 6);
+      const ballInOverNum = (ballNo % 6) + 1;
+
+      const strikerPlayer = currentBatSquad[curStrikerIdx]?.name || 'Batter';
+      const nonStrikerPlayer = currentBatSquad[curNonStrikerIdx]?.name || 'Non-Striker';
+
+      const outcome = computeBallOutcome(
+        battingTactic,
+        bowlingTactic,
+        bowler.name,
+        currentBowlSquad,
+        strikerPlayer
+      );
+
+      lastOutcomeShotZone = outcome.shotZone;
+      overRunsGained += outcome.runs;
+      curTotalRuns += outcome.runs;
+
+      if (outcome.isWicket) {
+        overWktsLost++;
+        curTotalWickets++;
+        curFOW.push({
+          wicket: curTotalWickets,
+          score: curTotalRuns,
+          player: strikerPlayer,
+          over: `${overNum}.${ballInOverNum}`
+        });
+
+        curBatters = curBatters.map(bat => {
+          if (bat.name === strikerPlayer) {
+            const bl = bat.balls + 1;
+            const sr = ((bat.runs / bl) * 100).toFixed(1);
+            return {
+              ...bat,
+              balls: bl,
+              strikeRate: sr,
+              dismissal: outcome.dismissal
+            };
+          }
+          return bat;
+        });
+
+        if (curNextBatterIdx < currentBatSquad.length) {
+          curStrikerIdx = curNextBatterIdx;
+          curNextBatterIdx++;
+        }
+      } else {
+        curBatters = curBatters.map(bat => {
+          if (bat.name === strikerPlayer) {
+            const r = bat.runs + outcome.runs;
+            const bl = bat.balls + 1;
+            const f = outcome.isFour ? bat.fours + 1 : bat.fours;
+            const s = outcome.isSix ? bat.sixes + 1 : bat.sixes;
+            const sr = ((r / bl) * 100).toFixed(1);
+            return {
+              ...bat,
+              runs: r,
+              balls: bl,
+              fours: f,
+              sixes: s,
+              strikeRate: sr
+            };
+          }
+          return bat;
+        });
+
+        if (outcome.runs % 2 === 1) {
+          const tmp = curStrikerIdx;
+          curStrikerIdx = curNonStrikerIdx;
+          curNonStrikerIdx = tmp;
+        }
+      }
+
+      curBowlers = curBowlers.map(bw => {
+        if (bw.name === bowler.name) {
+          const newR = bw.runs + outcome.runs;
+          const newW = outcome.isWicket ? bw.wickets + 1 : bw.wickets;
+          const currBallsBowled = Math.floor(parseFloat(bw.overs) || 0) * 6 + Math.round(((parseFloat(bw.overs) || 0) % 1) * 10) + 1;
+          const fo = Math.floor(currBallsBowled / 6);
+          const ro = currBallsBowled % 6;
+          const econ = currBallsBowled > 0 ? ((newR / currBallsBowled) * 6).toFixed(2) : '0.00';
+          return {
+            ...bw,
+            runs: newR,
+            wickets: newW,
+            overs: `${fo}.${ro}`,
+            economy: econ
+          };
+        }
+        return bw;
+      });
+
+      curBalls.push({
+        over: overNum,
+        ball: ballInOverNum,
+        striker: strikerPlayer,
+        nonStriker: nonStrikerPlayer,
+        bowler: bowler.name,
+        runs: outcome.runs,
+        isWicket: outcome.isWicket,
+        wicketType: outcome.dismissal,
+        isFour: outcome.isFour,
+        isSix: outcome.isSix,
+        commentary: outcome.commentary,
+        totalRuns: curTotalRuns,
+        totalWickets: curTotalWickets,
+        shotDirection: outcome.shotZone,
+        tacticUsed: isUserBatting ? battingTactic : bowlingTactic
+      });
+
+      if (currentInnings === 2 && target !== null && curTotalRuns >= target) {
+        matchEnded = true;
+        break;
+      }
+      if (curTotalWickets >= 10 || curBalls.length >= 120) {
+        if (currentInnings === 1) {
+          inningsEnded = true;
+        } else {
+          matchEnded = true;
+        }
+        break;
+      }
+    }
+
+    let nextBowlerIdx = currentBowlerIdx;
+    if (!matchEnded && !inningsEnded && curBalls.length % 6 === 0) {
+      const tmp = curStrikerIdx;
+      curStrikerIdx = curNonStrikerIdx;
+      curNonStrikerIdx = tmp;
+      nextBowlerIdx = (currentBowlerIdx + 1) % activeBowlers.length;
+    }
+
+    const updatedInn: InningsState = {
+      ...activeInn,
+      totalRuns: curTotalRuns,
+      totalWickets: curTotalWickets,
+      oversPlayed: Math.min(20, Math.ceil(curBalls.length / 6)),
+      balls: curBalls,
+      battingScorecard: curBatters,
+      bowlingFigures: curBowlers,
+      fallOfWickets: curFOW
+    };
+
+    setStrikerIdx(curStrikerIdx);
+    setNonStrikerIdx(curNonStrikerIdx);
+    setNextBatterIdx(curNextBatterIdx);
+    setCurrentBowlerIdx(nextBowlerIdx);
+    if (lastOutcomeShotZone) setLastShotTraj(lastOutcomeShotZone);
+
+    if (currentInnings === 1) {
+      setInn1(updatedInn);
+    } else {
+      setInn2(updatedInn);
+    }
+
+    if (overWktsLost > 0) {
+      gameAudio.playStumpShatter();
+      gameAudio.playCrowdRoar('wicket');
+      triggerGameHaptic('wicket');
+    } else if (overRunsGained >= 10) {
+      gameAudio.playWillowCrack('six');
+      gameAudio.playCrowdRoar('six');
+      triggerGameHaptic('heavy');
+    } else {
+      gameAudio.playWillowCrack('four');
+      triggerGameHaptic('medium');
+    }
+
+    setEventBanner({
+      text: `⚡ OVER COMPLETED • ${overRunsGained} RUNS${overWktsLost > 0 ? ` • ${overWktsLost} WKT` : ''}`,
+      subtext: `${bowler.name} finishes the over • Score: ${curTotalRuns}/${curTotalWickets}`,
+      color: 'from-amber-500 via-indigo-600 to-slate-900'
+    });
+    setTimeout(() => setEventBanner(null), 1800);
+
+    if (matchEnded) {
+      finalizeMatch(updatedInn);
+    } else if (inningsEnded) {
+      handleInningsTransition(updatedInn);
     }
   };
 
   // Fast forward until match ends
   const handleInstantResult = () => {
-    while (!matchDone) {
-      executeBall();
-      if (currentInnings === 2 && inn2 && inn1 && (inn2.totalRuns >= inn1.totalRuns + 1 || inn2.totalWickets >= 10 || inn2.balls.length >= 120)) {
-        break;
+    if (matchDone || !inn1 || !inn2) return;
+    gameAudio.unlockAudio();
+
+    // 1. Finish Innings 1 if incomplete
+    let wInn1 = { ...inn1 };
+    if (currentInnings === 1) {
+      const bat1 = bat1Squad;
+      const bowl1 = bowl1Squad;
+      const actBowlers = bowl1.filter(p => p.role === 'BOWL' || p.role === 'AR');
+      while (wInn1.balls.length < 120 && wInn1.totalWickets < 10) {
+        const bNo = wInn1.balls.length;
+        const bBowler = actBowlers[Math.floor(bNo / 6) % actBowlers.length]?.name || 'Bowler';
+        const stName = bat1[Math.min(bat1.length - 1, wInn1.totalWickets)]?.name || 'Batter';
+        const out = computeBallOutcome('ROTATE', 'GOOD_LENGTH', bBowler, bowl1, stName);
+        wInn1.totalRuns += out.runs;
+        if (out.isWicket) wInn1.totalWickets++;
+        wInn1.balls.push({
+          over: Math.floor(bNo / 6),
+          ball: (bNo % 6) + 1,
+          striker: stName,
+          nonStriker: 'Partner',
+          bowler: bBowler,
+          runs: out.runs,
+          isWicket: out.isWicket,
+          wicketType: out.dismissal,
+          isFour: out.isFour,
+          isSix: out.isSix,
+          commentary: out.commentary,
+          totalRuns: wInn1.totalRuns,
+          totalWickets: wInn1.totalWickets
+        });
       }
+      wInn1.oversPlayed = Math.min(20, Math.ceil(wInn1.balls.length / 6));
+      setInn1(wInn1);
     }
+
+    // 2. Finish Innings 2
+    let wInn2 = { ...(inn2 || wInn1) };
+    const target = wInn1.totalRuns + 1;
+    const bat2 = bowl1Squad;
+    const bowl2 = bat1Squad;
+    const actBowlers2 = bowl2.filter(p => p.role === 'BOWL' || p.role === 'AR');
+
+    while (wInn2.balls.length < 120 && wInn2.totalWickets < 10 && wInn2.totalRuns < target) {
+      const bNo = wInn2.balls.length;
+      const bBowler = actBowlers2[Math.floor(bNo / 6) % actBowlers2.length]?.name || 'Bowler';
+      const stName = bat2[Math.min(bat2.length - 1, wInn2.totalWickets)]?.name || 'Batter';
+      const out = computeBallOutcome('ATTACK', 'GOOD_LENGTH', bBowler, bowl2, stName);
+      wInn2.totalRuns += out.runs;
+      if (out.isWicket) wInn2.totalWickets++;
+      wInn2.balls.push({
+        over: Math.floor(bNo / 6),
+        ball: (bNo % 6) + 1,
+        striker: stName,
+        nonStriker: 'Partner',
+        bowler: bBowler,
+        runs: out.runs,
+        isWicket: out.isWicket,
+        wicketType: out.dismissal,
+        isFour: out.isFour,
+        isSix: out.isSix,
+        commentary: out.commentary,
+        totalRuns: wInn2.totalRuns,
+        totalWickets: wInn2.totalWickets
+      });
+    }
+    wInn2.oversPlayed = Math.min(20, Math.ceil(wInn2.balls.length / 6));
+    setInn2(wInn2);
+    finalizeMatch(wInn2);
     setActiveTab('scorecard');
   };
 
