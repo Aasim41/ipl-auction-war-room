@@ -1625,7 +1625,41 @@ export default function BallByBallMatchSimulator({
       const tmp = curStrikerIdx;
       curStrikerIdx = curNonStrikerIdx;
       curNonStrikerIdx = tmp;
-      nextBowlerIdx = (currentBowlerIdx + 1) % activeBowlers.length;
+      setLastBowlerIdx(currentBowlerIdx);
+
+      let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
+      let attempts = 0;
+      while (attempts < activeBowlers.length) {
+        const candidateName = activeBowlers[nextIdx]?.name;
+        const ovs = getBowlerOversCount(curBowlers, candidateName);
+        if (ovs < 4 && nextIdx !== currentBowlerIdx) {
+          break;
+        }
+        nextIdx = (nextIdx + 1) % activeBowlers.length;
+        attempts++;
+      }
+      nextBowlerIdx = nextIdx;
+    }
+
+    // Safety Assertions: ensure dismissed player is NEVER at crease if wickets < 10
+    if (curTotalWickets < 10) {
+      const sBat = curBatters.find(b => b.name === currentBatSquad[curStrikerIdx]?.name);
+      if (sBat && sBat.dismissal !== 'not out') {
+        const replacementIdx = currentBatSquad.findIndex((p, idx) => {
+          const b = curBatters.find(ub => ub.name === p.name);
+          return b && b.dismissal === 'not out' && idx !== curNonStrikerIdx;
+        });
+        if (replacementIdx !== -1) curStrikerIdx = replacementIdx;
+      }
+
+      const nsBat = curBatters.find(b => b.name === currentBatSquad[curNonStrikerIdx]?.name);
+      if (nsBat && nsBat.dismissal !== 'not out') {
+        const replacementIdx = currentBatSquad.findIndex((p, idx) => {
+          const b = curBatters.find(ub => ub.name === p.name);
+          return b && b.dismissal === 'not out' && idx !== curStrikerIdx;
+        });
+        if (replacementIdx !== -1) curNonStrikerIdx = replacementIdx;
+      }
     }
 
     const updatedInn: InningsState = {
@@ -1768,10 +1802,12 @@ export default function BallByBallMatchSimulator({
   // Last 6 balls trail
   const currentOverTrail = activeInnings.balls.slice(-6);
 
-  const strikerPlayer = currentInnings === 1 ? bat1Squad[strikerIdx] : bowl1Squad[strikerIdx];
-  const nonStrikerPlayer = currentInnings === 1 ? bat1Squad[nonStrikerIdx] : bowl1Squad[nonStrikerIdx];
+  const currentBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
   const bowlingSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
-  const bowlerPlayer = bowlingSquad.filter(p => p.role === 'BOWL' || p.role === 'AR')[currentBowlerIdx % 5] || bowlingSquad[0];
+  const activeBowlers = bowlingSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
+  const bowlerPlayer = activeBowlers[currentBowlerIdx % (activeBowlers.length || 1)] || bowlingSquad[0];
+  const strikerPlayer = currentBatSquad[strikerIdx] || currentBatSquad[0];
+  const nonStrikerPlayer = currentBatSquad[nonStrikerIdx] || currentBatSquad[1] || currentBatSquad[0];
   const keeperPlayer = bowlingSquad.find(p => p.role === 'WK') || bowlingSquad[1] || bowlingSquad[0];
   const battingTeamColor = activeInnings.teamColor || '#f59e0b';
   const bowlingTeamColor = currentInnings === 1 ? (bowl1Squad[0]?.teamColor || '#38bdf8') : (bat1Squad[0]?.teamColor || '#38bdf8');
