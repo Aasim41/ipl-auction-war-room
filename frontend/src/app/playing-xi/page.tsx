@@ -926,9 +926,9 @@ export default function PlayingXIPage() {
                         gameAudio.playCardSwap();
                         triggerGameHaptic('medium');
                         if (benchDrawerSlotIndex === 11) {
-                          useCampaignStore.getState().setPlayingXI(campaign.playingXI, bp.player_id);
+                          setPlayingXI(activeLineupIds, bp.player_id, lineupMode);
                         } else {
-                          replacePlayingXIPlayer(benchDrawerSlotIndex, bp.player_id);
+                          replacePlayingXIPlayer(benchDrawerSlotIndex, bp.player_id, lineupMode);
                         }
                         setBenchDrawerSlotIndex(null);
                       }}
@@ -972,6 +972,10 @@ export default function PlayingXIPage() {
           myFranchise={franchise}
           mySquad={activeSquad}
           myPlayingXIIds={campaign.playingXI}
+          userBatFirstXI={campaign.batFirstXI || campaign.playingXI}
+          userBowlFirstXI={campaign.bowlFirstXI || campaign.playingXI}
+          batFirstImpactId={campaign.batFirstImpactId || campaign.impactPlayerId}
+          bowlFirstImpactId={campaign.bowlFirstImpactId || campaign.impactPlayerId}
           rivalFranchise={selectedFixtureForMatch ? getFranchise(rivalTeamId) : rivalFranchise}
           venueName={selectedFixtureForMatch ? selectedFixtureForMatch.stadiumName : currentInsight.title}
           matchFixture={selectedFixtureForMatch || currentMatch}
