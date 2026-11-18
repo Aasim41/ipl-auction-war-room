@@ -1,16 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
-/* ─── Theme Tokens ─────────────────────────────────────── */
+/* ─── Authentic Cricket Stadium Night & Turf Tokens ─────────────────── */
 @theme {
-  --color-background: #07090f;
-  --color-background-elevated: #0d1117;
-  --color-foreground: #e8edf5;
-  --color-card: #111827;
-  --color-muted: #1f2937;
-  --color-muted-foreground: #6b7280;
-  --color-border: rgba(255,255,255,0.06);
-  --color-input: #1a1f2e;
+  --color-slate-950: #04120a;
+  --color-slate-900: #082014;
+  --color-slate-850: #0c2b1b;
+  --color-slate-800: #103823;
+  --color-slate-700: #184c31;
+  --color-background: #04120a;
+  --color-background-elevated: #082014;
+  --color-foreground: #f0fdf4;
+  --color-card: #082014;
+  --color-muted: #103823;
+  --color-muted-foreground: #a7f3d0;
+  --color-border: rgba(16, 185, 129, 0.16);
+  --color-input: #0c2b1b;
 }
 
 /* ─── CSS Custom Properties for Dynamic Theming ────────── */
@@ -38,8 +43,8 @@
 
 /* ─── Base Styles ──────────────────────────────────────── */
 html, body {
-  background-color: var(--theme-bg, #07090f) !important;
-  color: #e8edf5;
+  background-color: var(--theme-bg, #04120a) !important;
+  color: #f0fdf4;
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100dvh;
   height: 100%;

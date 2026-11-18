@@ -59,7 +59,8 @@ export default function MiniAuctionPage() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [soldLog, setSoldLog] = useState<Array<{ player: DynamicAuctionPlayer; winner: string; price: number }>>([])
   
-  // Right Column View Tabs: 'pool' | 'squads' | 'feed' | 'ledger'
+  // View Tabs: 'stage' (mobile default) | 'pool' | 'squads' | 'feed' | 'ledger'
+  const [auctionView, setAuctionView] = useState<'stage' | 'pool' | 'squads' | 'feed' | 'ledger'>('stage')
   const [sideTab, setSideTab] = useState<'pool' | 'squads' | 'feed' | 'ledger'>('pool')
   const [selectedFranchiseView, setSelectedFranchiseView] = useState<string>('')
   const [expandedLot, setExpandedLot] = useState(false)
@@ -79,16 +80,20 @@ export default function MiniAuctionPage() {
     sideTouchStartX.current = null
     sideTouchStartY.current = null
 
-    const tabs: Array<'pool' | 'squads' | 'feed' | 'ledger'> = ['pool', 'squads', 'feed', 'ledger']
-    const curIdx = tabs.indexOf(sideTab)
+    const views: Array<'stage' | 'pool' | 'squads' | 'feed' | 'ledger'> = ['stage', 'pool', 'squads', 'feed', 'ledger']
+    const curIdx = views.indexOf(auctionView)
 
     if (Math.abs(deltaX) > 28 && Math.abs(deltaX) > Math.abs(deltaY) * 0.7) {
-      if (deltaX < 0 && curIdx < tabs.length - 1) {
-        setSideTab(tabs[curIdx + 1])
+      if (deltaX < 0 && curIdx < views.length - 1) {
+        const nextView = views[curIdx + 1]
+        setAuctionView(nextView)
+        if (nextView !== 'stage') setSideTab(nextView)
         gameAudio.playUiTap('select')
         triggerGameHaptic('light')
       } else if (deltaX > 0 && curIdx > 0) {
-        setSideTab(tabs[curIdx - 1])
+        const prevView = views[curIdx - 1]
+        setAuctionView(prevView)
+        if (prevView !== 'stage') setSideTab(prevView)
         gameAudio.playUiTap('select')
         triggerGameHaptic('light')
       }
@@ -99,23 +104,27 @@ export default function MiniAuctionPage() {
   useEffect(() => {
     const handleAppSwipe = (e: any) => {
       const direction = e.detail?.direction
-      const tabs: Array<'pool' | 'squads' | 'feed' | 'ledger'> = ['pool', 'squads', 'feed', 'ledger']
-      const curIdx = tabs.indexOf(sideTab)
-      if (direction === 'left' && curIdx < tabs.length - 1) {
+      const views: Array<'stage' | 'pool' | 'squads' | 'feed' | 'ledger'> = ['stage', 'pool', 'squads', 'feed', 'ledger']
+      const curIdx = views.indexOf(auctionView)
+      if (direction === 'left' && curIdx < views.length - 1) {
         e.preventDefault()
-        setSideTab(tabs[curIdx + 1])
+        const nextView = views[curIdx + 1]
+        setAuctionView(nextView)
+        if (nextView !== 'stage') setSideTab(nextView)
         gameAudio.playUiTap('select')
         triggerGameHaptic('light')
       } else if (direction === 'right' && curIdx > 0) {
         e.preventDefault()
-        setSideTab(tabs[curIdx - 1])
+        const prevView = views[curIdx - 1]
+        setAuctionView(prevView)
+        if (prevView !== 'stage') setSideTab(prevView)
         gameAudio.playUiTap('select')
         triggerGameHaptic('light')
       }
     }
     window.addEventListener('app:swipe', handleAppSwipe)
     return () => window.removeEventListener('app:swipe', handleAppSwipe)
-  }, [sideTab])
+  }, [auctionView])
 
   // Auction Pool Filtering & Inspection
   const [poolSearch, setPoolSearch] = useState('')
@@ -814,11 +823,39 @@ export default function MiniAuctionPage() {
           )}
         </div>
 
-        {/* 2-Pane Auction Stage (Side-by-side in landscape!) */}
+        {/* Mobile View Switcher Tabs (5 Tabs: Stage | Pool | Squads | Feed | Sold) */}
+        <div className="flex lg:hidden items-center justify-between gap-1 p-1 rounded-2xl bg-slate-900 border border-white/10 overflow-x-auto scrollbar-none shrink-0">
+          {[
+            { id: 'stage', label: '🔨 Gavel Stage' },
+            { id: 'pool', label: `📋 Pool (${auctionPool.length})` },
+            { id: 'squads', label: '👥 Squads' },
+            { id: 'feed', label: '⚡ Feed' },
+            { id: 'ledger', label: `💰 Sold (${soldLog.length})` },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setAuctionView(tab.id as any);
+                if (tab.id !== 'stage') setSideTab(tab.id as any);
+                gameAudio.playUiTap('select');
+                triggerGameHaptic('light');
+              }}
+              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer flex-1 text-center ${
+                auctionView === tab.id
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                  : 'text-gray-400 hover:text-white bg-white/5'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 2-Pane Auction Stage (Side-by-side on desktop, swipeable tabs on mobile) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1">
           
           {/* Column 1 (Left 7 cols): Live Hammer Stage & Paddle Controls */}
-          <div className="lg:col-span-7 p-3 sm:p-4 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+          <div className={`lg:col-span-7 p-3 sm:p-4 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-2xl relative overflow-hidden ${auctionView === 'stage' ? 'flex' : 'hidden lg:flex'}`}>
             
             {/* Dramatic Gavel Slam Strike Animation Overlay */}
             {gavelPhase === 'sold' && (
@@ -1044,7 +1081,7 @@ export default function MiniAuctionPage() {
           <div 
             onTouchStart={handleSideTouchStart}
             onTouchEnd={handleSideTouchEnd}
-            className="lg:col-span-5 flex flex-col gap-2 rounded-2xl bg-slate-900 border border-white/10 p-3 shadow-xl max-h-[460px] overflow-hidden select-none"
+            className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl bg-slate-900 border border-white/10 p-3 shadow-xl max-h-[520px] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
           >
             {/* Mobile Swipe Hint */}
             <div className="flex sm:hidden items-center justify-between px-2 py-0.5 bg-slate-950/80 rounded-lg border border-white/10 text-[9px] font-mono text-gray-400">
