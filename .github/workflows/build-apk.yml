@@ -59,30 +59,56 @@ jobs:
           cd frontend/android
           ./gradlew assembleDebug --no-daemon --stacktrace
 
+      - name: Prepare APK Release Artifacts
+        run: |
+          mkdir -p release-apks
+          cp frontend/android/app/build/outputs/apk/debug/*.apk release-apks/AuctionXI-debug.apk
+          cp frontend/android/app/build/outputs/apk/debug/*.apk release-apks/AuctionXI-v1.0.apk
+          ls -la release-apks/
+
       - name: Upload AuctionXI APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AuctionXI-Android-Debug-APK
-          path: frontend/android/app/build/outputs/apk/debug/*.apk
+          path: release-apks/*.apk
           retention-days: 14
 
       - name: Publish Direct APK Download to GitHub Releases
-        uses: softprops/action-gh-release@v2
-        if: github.ref == 'refs/heads/main'
-        with:
-          tag_name: v1.0-apk
-          name: "AuctionXI Mobile App v1.0 (Android APK)"
-          body: |
-            ### 🏏 AuctionXI: IPL War Room & Simulator - Mobile App
-            
-            **Direct APK Download**:
-            Download `app-debug.apk` below directly to your Android device to install and test the game.
-            
-            **Features included**:
-            - ⚡ Full IPL 2026 Mega & Mini Auction War Room with live hammer bidding
-            - 🔔 Randomized daily notifications for IPL news and trades
-            - 📈 Autonomous background data ingestion & real-time international tours
-            - 📋 Official BCCI RTM rules and retention slab deductions
-          files: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch')
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v1.0.0-apk"
+          TITLE="AuctionXI Mobile App v1.0 (Android APK)"
+
+          cat << 'EOF' > release_notes.md
+          ### 🏏 AuctionXI: IPL War Room & Tournament Arena (Official Android APK)
+
+          **Direct APK Downloads**:
+          - 📲 **[AuctionXI-v1.0.apk](https://github.com/Aasim41/ipl-auction-war-room/releases/download/v1.0.0-apk/AuctionXI-v1.0.apk)**
+          - 🛠️ **[AuctionXI-debug.apk](https://github.com/Aasim41/ipl-auction-war-room/releases/download/v1.0.0-apk/AuctionXI-debug.apk)**
+
+          Download either APK directly to your Android device to install and play the full game!
+
+          **Championship Features Included**:
+          - 🪙 **Interactive IPL Match Toss Ceremony**: Real 3D coin toss ceremony with Heads/Tails call and Bat/Bowl matchday election.
+          - 🏏 **Dual Team Sheets (Bat-First vs Bowl-First)**: Toggle and optimize separate lineups with complementary 12th man Impact Players.
+          - 🏟️ **Pitch & Venue Calibrated AI**: Wankhede pace bounce, Chepauk spin choke, Chinnaswamy boundary hitting, and Ekana cutters.
+          - 🎯 **Tactical Rival Counters**: Exploits and neutralizes opponent strengths and weaknesses.
+          - 📊 **Official 74-Match IPL Schedule & Live Points Table**: Real-time NRR and standings recomputed deterministically across all 10 teams.
+          - 🔊 **Broadcast Stadium Audio**: Willow cracks, crowd roars, and stump shatter sound effects.
+          - 🔨 **Mega & Mini Auction War Room**: Gavel bidding, RTM cards, and BCCI roster validation.
+          EOF
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists. Updating notes and uploading APKs with --clobber..."
+            gh release edit "$TAG" --title "$TITLE" --notes-file release_notes.md
+            gh release upload "$TAG" release-apks/AuctionXI-v1.0.apk release-apks/AuctionXI-debug.apk --clobber
+          else
+            echo "Creating new GitHub Release $TAG..."
+            gh release create "$TAG" release-apks/AuctionXI-v1.0.apk release-apks/AuctionXI-debug.apk \
+              --title "$TITLE" \
+              --notes-file release_notes.md \
+              --latest
+          fi
+          echo "GitHub Release verified successfully with APK downloads!"
