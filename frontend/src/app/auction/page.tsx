@@ -40,6 +40,7 @@ import {
 } from '../../data/franchises'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import { getFranchiseAI } from '../../data/franchiseAI'
+import TeamLogo from '../../components/TeamLogo'
 const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
 export default function MiniAuctionPage() {
