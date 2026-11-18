@@ -252,46 +252,76 @@ export default function TradeWindowPage() {
       }
     }
 
-    // 4. QUALITY DISPARITY & BARGAINING COUNTER-OFFER
+    // 4. VALUATION, PURSE LIMITS & BARGAINING COUNTER-OFFER
     const qualityGap = powerIn - powerOut
-    let requiredCash = Math.max(0, Math.round((qualityGap * 0.8 + (priceIn - priceOut) * 0.5) * 2) / 2)
+    const priceGap = priceIn - priceOut
 
-    // Personality adjustments
-    if (rivalAI.tradeStyle === 'moneyball') {
-      // RR strictly demands positive financial surplus
-      requiredCash = Math.max(requiredCash, Math.round((priceIn - priceOut + 1.5) * 2) / 2)
-    } else if (rivalAI.tradeStyle === 'aggressive' && qualityGap > 2) {
-      // MI / SRH demand heavy compensation for losing power
-      requiredCash = Math.max(requiredCash, Math.round((qualityGap * 1.1) * 2) / 2)
-    }
-
-    if (qualityGap >= 8 && cashOffer < requiredCash) {
+    // Check user's available purse limit
+    if (cashOffer > campaign.remainingPurse) {
       return {
         acceptable: false,
-        counterOfferCash: requiredCash,
-        status: 'OFFER INSUFFICIENT',
-        reason: `❌ REJECTED: Large quality disparity! ${playerIn.name} (PI: ${powerIn}) is significantly superior to ${playerOut.name} (PI: ${powerOut}). ${rivalFranchise.short} refuses this straight swap.`,
-        counterOfferText: `🤝 ${rivalFranchise.short} Counter-Offer: Pay a cash transfer of +₹${requiredCash.toFixed(1)} Cr to bridge the talent gap.`
+        status: 'PURSE EXCEEDED',
+        reason: `❌ REJECTED: Cash offer of +₹${cashOffer.toFixed(1)} Cr exceeds your available purse (₹${campaign.remainingPurse.toFixed(1)} Cr).`
       }
     }
 
-    // Net value difference calculation
-    const netValueDiff = (powerOut - powerIn) + (cashOffer * 1.5)
+    // Check if user is asking for cash from rival team (negative cashOffer)
+    const rivalPurse = campaign.rivalTeamsData?.[selectedRivalId]?.remainingPurse ?? (rivalFranchise.miniAuctionPurse2026 || 15.0)
+    if (cashOffer < 0) {
+      const demandedCash = Math.abs(cashOffer)
+      if (demandedCash > rivalPurse) {
+        return {
+          acceptable: false,
+          status: 'RIVAL PURSE EXCEEDED',
+          reason: `❌ REJECTED: ${rivalFranchise.short} has only ₹${rivalPurse.toFixed(1)} Cr purse and cannot pay you +₹${demandedCash.toFixed(1)} Cr.`
+        }
+      }
+      if (powerOut < powerIn + demandedCash * 1.5) {
+        return {
+          acceptable: false,
+          counterOfferCash: 0,
+          status: 'UNREASONABLE CASH DEMAND',
+          reason: `❌ REJECTED: ${rivalFranchise.short} will not pay cash unless receiving a significantly higher-rated marquee superstar.`,
+          counterOfferText: `🤝 ${rivalFranchise.short} Counter-Offer: Remove cash demand (₹0.0 Cr) for a straight swap.`
+        }
+      }
+    }
 
-    if (netValueDiff >= 0 || (requiredCash > 0 && cashOffer >= requiredCash)) {
+    // Determine target minimum cash sweetener needed from user
+    let minCashSweetener = 0
+    if (qualityGap > 0 || priceGap > 0) {
+      // Base talent gap: ~0.35 Cr per Power Index point + price adjustment
+      let rawCash = Math.max(0, (qualityGap * 0.35) + (priceGap > 0 ? priceGap * 0.15 : 0))
+      
+      if (rivalAI.tradeStyle === 'moneyball') {
+        rawCash = Math.max(rawCash, (priceGap + 1.0) * 0.35)
+      } else if (rivalAI.tradeStyle === 'aggressive' && qualityGap > 2) {
+        rawCash = Math.max(rawCash, qualityGap * 0.5)
+      }
+      
+      // Round to clean 0.5 Cr step
+      minCashSweetener = Math.max(0.5, Math.ceil(rawCash * 2) / 2)
+    }
+
+    // Is current cash offer sufficient?
+    if (cashOffer >= minCashSweetener) {
       return { 
         acceptable: true, 
         status: 'DEAL APPROVED',
         reason: `🟢 ${rivalFranchise.short} Board Approves: Fair value exchange for ${playerIn.name}. ${rivalAI.tagline}` 
       }
     } else {
-      const deficit = Math.max(0.5, Math.abs(Math.round(netValueDiff / 1.5 * 2) / 2))
+      const canAffordCounter = campaign.remainingPurse >= minCashSweetener
       return { 
         acceptable: false, 
-        counterOfferCash: deficit,
+        counterOfferCash: canAffordCounter ? minCashSweetener : undefined,
         status: 'BARGAINING',
-        reason: `❌ REJECTED: ${rivalFranchise.short} demands greater value for ${playerIn.name}.`,
-        counterOfferText: `🤝 ${rivalFranchise.short} Counter-Offer: Increase cash sweetener to +₹${deficit.toFixed(1)} Cr to seal the deal.` 
+        reason: canAffordCounter
+          ? `❌ REJECTED: ${rivalFranchise.short} demands greater value for ${playerIn.name} (PI: ${powerIn} vs ${powerOut}).`
+          : `❌ REJECTED: ${rivalFranchise.short} demands +₹${minCashSweetener.toFixed(1)} Cr cash sweetener, which exceeds your remaining purse of ₹${campaign.remainingPurse.toFixed(1)} Cr. Offer a higher-rated player instead.`,
+        counterOfferText: canAffordCounter
+          ? `🤝 ${rivalFranchise.short} Counter-Offer: Increase cash sweetener to +₹${minCashSweetener.toFixed(1)} Cr to seal the deal.` 
+          : undefined
       }
     }
   }
@@ -648,23 +678,35 @@ export default function TradeWindowPage() {
                 </div>
 
                 {/* AI Bargaining Counter-Offer */}
-                {evaluation.counterOfferText && evaluation.counterOfferCash && (
-                  <div className="mt-1 p-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-left animate-pulse">
-                    <span className="text-[8px] font-black text-amber-300 block mb-0.5">
+                {evaluation.counterOfferText && evaluation.counterOfferCash !== undefined && (
+                  <div className="mt-1.5 p-2 rounded-xl bg-amber-500/15 border border-amber-500/40 text-left space-y-1.5 shadow-md">
+                    <span className="text-[9px] font-black text-amber-300 block leading-tight">
                       {evaluation.counterOfferText}
                     </span>
                     <button
-                      disabled={isTradeLocked}
-                      onClick={() => {
-                        gameAudio.playUiTap('select')
-                        triggerGameHaptic('medium')
-                        setCashOffer(evaluation.counterOfferCash!)
+                      type="button"
+                      disabled={isTradeLocked || (campaign.remainingPurse < evaluation.counterOfferCash)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (evaluation.counterOfferCash !== undefined) {
+                          gameAudio.playTradeDealSuccess()
+                          triggerGameHaptic('medium')
+                          setCashOffer(evaluation.counterOfferCash)
+                        }
                       }}
-                      className="w-full py-1 rounded bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-[9px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
+                      className="w-full py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 active:scale-95 text-slate-950 font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md"
                     >
-                      <Sparkles size={10} />
+                      <Sparkles size={12} className="animate-spin text-slate-950" />
                       <span>Accept Counter (+₹{evaluation.counterOfferCash.toFixed(1)}Cr)</span>
                     </button>
+                  </div>
+                )}
+
+                {/* Approved deal terms callout */}
+                {evaluation.acceptable && (
+                  <div className="mt-1.5 p-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] flex items-center gap-2 font-bold animate-pulse">
+                    <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <span className="truncate">Terms Agreed! Tap Confirm below to execute.</span>
                   </div>
                 )}
               </div>
@@ -672,11 +714,16 @@ export default function TradeWindowPage() {
 
             {/* Execute Button */}
             <button
+              type="button"
               onClick={handleExecuteTrade}
               disabled={!evaluation.acceptable || isTradeLocked || isTradingAnimation}
-              className="w-full py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer transition-all active:scale-95"
+              className={`w-full py-2.5 sm:py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer ${
+                evaluation.acceptable
+                  ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.5)] hover:brightness-110 animate-pulse'
+                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(245,158,11,0.2)]'
+              }`}
             >
-              {isTradingAnimation ? 'Executing...' : 'Confirm Trade'}
+              {isTradingAnimation ? 'Executing...' : evaluation.acceptable ? '🤝 Confirm & Seal Trade' : 'Confirm Trade'}
             </button>
           </div>
 
