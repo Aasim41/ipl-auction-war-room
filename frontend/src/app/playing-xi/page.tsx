@@ -306,81 +306,87 @@ export default function PlayingXIPage() {
   };
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] bg-slate-950 text-white flex flex-col justify-between pt-11 sm:pt-13 w-full max-w-full overflow-hidden select-none touch-pan-y">
-      <main className="w-full flex-1 min-h-0 flex flex-col justify-between px-2 sm:px-3 py-1 sm:py-2 overflow-hidden">
+    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain">
+      <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-4">
         
-        {/* Banner with View Toggle (Lineup vs Schedule) */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-1.5 mb-2 border-b border-white/10 gap-2 shrink-0">
-          <div className="flex items-center gap-2.5">
+        {/* ─── Sleek Minimal Header & Tab Controls ─── */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 border-b border-white/10 gap-3">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 gameAudio.playUiTap('light');
                 triggerGameHaptic('light');
                 router.push('/');
               }}
-              className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
-              title="Return to Home Dashboard"
+              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Return to Dashboard"
             >
-              <ArrowLeft size={13} />
+              <ArrowLeft size={14} />
               <span>Back</span>
             </button>
-            <span className="w-8 h-8 rounded-xl flex items-center justify-center text-lg shadow-md shrink-0" style={{ backgroundColor: franchise.color }}>
+
+            <span className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shadow-md shrink-0" style={{ backgroundColor: franchise.color }}>
               {franchise.emoji}
             </span>
+
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-black uppercase">
-                  PART 4: TOURNAMENT & MATCH ARENA
+                  MATCHDAY OPS
                 </span>
-                <span className="text-xs text-gray-400 font-mono hidden sm:inline">Official 74-Match IPL Campaign</span>
+                <span className="text-xs text-gray-400 font-mono hidden sm:inline">IPL 2027 Season</span>
               </div>
               <h1 className="text-base sm:text-lg font-black font-display text-white">
-                {franchise.name} War Room & Matchday Operations
+                {franchise.name}
               </h1>
             </div>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-white/10 flex-1 sm:flex-none">
+          {/* View Mode Switcher & Launch Button */}
+          <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-white/10 flex-1 md:flex-none">
               <button
-                onClick={() => setActiveTab('xi')}
-                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                onClick={() => {
+                  gameAudio.playUiTap('select');
+                  setActiveTab('xi');
+                }}
+                className={`flex-1 md:flex-none px-3.5 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'xi' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <Users size={13} />
-                <span className="hidden sm:inline">Playing XI & Field</span>
-                <span className="sm:hidden">Playing XI</span>
+                <Users size={14} />
+                <span>Playing XI</span>
               </button>
               <button
-                onClick={() => setActiveTab('schedule')}
-                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                onClick={() => {
+                  gameAudio.playUiTap('select');
+                  setActiveTab('schedule');
+                }}
+                className={`flex-1 md:flex-none px-3.5 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'schedule' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <Calendar size={13} />
-                <span className="hidden sm:inline">Tournament Schedule (74 Matches)</span>
-                <span className="sm:hidden">Schedule</span>
+                <Calendar size={14} />
+                <span>Schedule (74)</span>
               </button>
             </div>
 
             <button
               onClick={() => handleLaunchMatch()}
-              className="w-full sm:w-auto px-4 py-2 sm:py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
             >
-              <Swords size={13} />
-              <span>Simulate Next Match</span>
+              <Swords size={14} />
+              <span>Simulate Next</span>
             </button>
           </div>
         </div>
 
-        {/* ─── TAB 1: PLAYING XI & PITCH TACTICAL SELECTION ─── */}
+        {/* ─── TAB 1: PLAYING XI & TACTICAL STRATEGY ─── */}
         {activeTab === 'xi' && (
-          <div className="space-y-2 flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+          <div className="flex flex-col gap-4">
             {/* AI Strategy Toast Feedback */}
             {strategyToast && (
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-slate-900 to-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center justify-between gap-2 shadow-lg animate-fadeIn shrink-0">
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-slate-900 to-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center justify-between gap-2 shadow-lg animate-fadeIn">
                 <div className="flex items-center gap-2">
                   <Sparkles size={16} className="text-emerald-400 shrink-0 animate-spin" />
                   <div>
@@ -399,172 +405,154 @@ export default function PlayingXIPage() {
               </div>
             )}
 
-            {/* Dual Playing 11 Strategy Toggle Bar */}
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <span className="text-[11px] font-black uppercase text-gray-400 tracking-wider hidden sm:inline">
-                  Team Sheet:
-                </span>
-                <div className="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-white/10 w-full sm:w-auto">
-                  <button
-                    onClick={() => {
-                      setLineupMode('bat_first');
-                      gameAudio.playUiTap('select');
-                      triggerGameHaptic('light');
-                    }}
-                    className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      lineupMode === 'bat_first'
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <span>🏏 Bat-First XI</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLineupMode('bowl_first');
-                      gameAudio.playUiTap('select');
-                      triggerGameHaptic('light');
-                    }}
-                    className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      lineupMode === 'bowl_first'
-                        ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-md'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <span>🎯 Bowl-First XI</span>
-                  </button>
+            {/* Tactical Control Deck */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-lg">
+              {/* Strategy Selector (Bat-First vs Bowl-First) */}
+              <div className="md:col-span-5 flex flex-col justify-between gap-2.5">
+                <div>
+                  <div className="text-[11px] font-black uppercase text-gray-400 tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <span>Tactical Strategy Mode</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-2xl border border-white/10">
+                    <button
+                      onClick={() => {
+                        setLineupMode('bat_first');
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                      }}
+                      className={`px-3 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        lineupMode === 'bat_first'
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <span>🏏 Bat-First XI</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLineupMode('bowl_first');
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                      }}
+                      className={`px-3 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        lineupMode === 'bowl_first'
+                          ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-md'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <span>🎯 Bowl-First XI</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="text-[11px] text-gray-300 font-mono text-center sm:text-right w-full sm:w-auto">
-                {lineupMode === 'bat_first' ? (
-                  <span className="text-amber-300">
-                    🏏 Deep Batting (Batters #1-#8) • 12th Man: Strike Bowler
-                  </span>
-                ) : (
-                  <span className="text-sky-300">
-                    🎯 Bowling Fortress (5 Frontline Bowlers) • 12th Man: Power Finisher
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-12 landscape:grid-cols-12 gap-2.5 sm:gap-3 flex-1 min-h-0 overflow-y-auto md:overflow-hidden landscape:overflow-hidden">
-              
-              {/* Left 4 Columns: Stadium Vitals, AI Optimizer, & BCCI Compliance */}
-              <div className="md:col-span-4 landscape:col-span-4 space-y-2.5 flex flex-col justify-between overflow-y-auto md:overflow-visible">
-                
-                {/* Stadium & Venue Calibration */}
-                <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 shadow-lg">
-                  <label className="text-xs font-black uppercase text-gray-200 block mb-1.5 flex items-center gap-1.5">
-                    <MapPin size={13} className="text-amber-400" />
-                    Match Fortress Stadium
-                  </label>
+                {/* Venue Fortress Selector */}
+                <div>
+                  <div className="text-[11px] font-black uppercase text-gray-400 tracking-wider mb-1 flex items-center gap-1">
+                    <MapPin size={12} className="text-amber-400" />
+                    <span>Match Venue</span>
+                  </div>
                   <select 
                     value={venue} 
                     onChange={(e) => setVenue(e.target.value)}
-                    className="w-full bg-slate-950 border border-white/20 rounded-xl p-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
+                    className="w-full bg-slate-950 border border-white/15 rounded-xl p-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
                   >
                     {Object.keys(VENUE_INSIGHTS).map(v => (
                       <option key={v} value={v}>{v} — {VENUE_INSIGHTS[v]?.title}</option>
                     ))}
                   </select>
-
-                  <div className="mt-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
-                    <div className="font-bold text-amber-300 text-xs">{currentInsight.title}</div>
-                    <div className="text-[11px] text-gray-300 mt-0.5">{currentInsight.behavior}</div>
-                    <div className="text-[11px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
-                      <Sparkles size={12} /> {currentInsight.boost}
-                    </div>
+                  <div className="mt-1.5 flex items-center justify-between text-[11px] font-mono px-1 text-gray-400">
+                    <span className="text-amber-300 font-bold">{currentInsight.title}</span>
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <Sparkles size={11} /> {currentInsight.boost}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                {/* BCCI Compliance Status Bar */}
-                <div className="p-3 rounded-2xl bg-slate-900 border border-white/10">
-                  <div className="text-xs font-black uppercase text-gray-300 tracking-wider mb-2 flex items-center justify-between">
-                    <span>BCCI Official Rule Validation</span>
+              {/* Rules, Auto-Pick, & Impact Sub */}
+              <div className="md:col-span-7 flex flex-col justify-between gap-2.5">
+                {/* BCCI Validation Badges */}
+                <div className="flex items-center justify-between gap-1.5 bg-slate-950/70 p-2 rounded-2xl border border-white/10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase text-gray-400 font-mono">BCCI Rules:</span>
                     {isCompliant ? (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
                         ✓ Compliant
                       </span>
                     ) : (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
-                        ⚠️ Rule Alert
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">
+                        ⚠️ Rule Warning
                       </span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                    <div className={`p-1.5 rounded-xl border ${overseasInXI <= 4 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                      <div className="text-[10px] uppercase font-sans text-gray-400">Overseas</div>
-                      <div className="text-xs font-black mt-0.5">{overseasInXI}/4 Max</div>
-                    </div>
-                    <div className={`p-1.5 rounded-xl border ${wkInXI >= 1 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                      <div className="text-[10px] uppercase font-sans text-gray-400">Keeper (WK)</div>
-                      <div className="text-xs font-black mt-0.5">{wkInXI} in XI</div>
-                    </div>
-                    <div className={`p-1.5 rounded-xl border ${bowlersInXI >= 5 ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'}`}>
-                      <div className="text-[10px] uppercase font-sans text-gray-400">Bowlers/AR</div>
-                      <div className="text-xs font-black mt-0.5">{bowlersInXI}/5 Min</div>
-                    </div>
+                  <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                    <span className={`px-2 py-0.5 rounded-lg border ${overseasInXI <= 4 ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/40 border-rose-500/30 text-rose-300'}`}>
+                      OS: {overseasInXI}/4
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-lg border ${wkInXI >= 1 ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/40 border-rose-500/30 text-rose-300'}`}>
+                      WK: {wkInXI}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-lg border ${bowlersInXI >= 5 ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300' : 'bg-rose-950/40 border-rose-500/30 text-rose-300'}`}>
+                      Bowl: {bowlersInXI}/5
+                    </span>
                   </div>
                 </div>
 
-                {/* AI Auto-Pick Best XI Button */}
+                {/* Auto-Pick Best XI Button */}
                 <button
                   onClick={handleAutoOptimize}
                   disabled={isOptimizing}
-                  className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
+                  className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
                 >
                   <Zap size={14} className={isOptimizing ? 'animate-spin' : ''} />
                   <span>
                     {isOptimizing 
-                      ? `Adapting ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} Lineup...` 
-                      : `Auto-Pick Best ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} XI`}
+                      ? `Optimizing ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} Strategy...` 
+                      : `⚡ Auto-Pick Best ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} XI`}
                   </span>
                 </button>
 
                 {/* Impact Player Slot */}
-                <div className="p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-center justify-between">
-                  <div>
+                <div className="p-2 sm:p-2.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
                     <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1">
-                      <Sparkles size={12} /> Impact Player Sub (12th Man)
+                      <Sparkles size={11} /> Impact Player Sub (12th Man)
                     </span>
-                    <div className="text-xs font-black text-white mt-0.5">
+                    <div className="text-xs font-bold text-white mt-0.5 truncate">
                       {impactPlayer ? formatPlayerInitial(impactPlayer.name) : 'Select Reserve'}
-                    </div>
-                    <div className="text-[11px] text-gray-400 font-mono">
-                      {impactPlayer?.role} • OVR {impactPlayer?.Power_Index}
+                      <span className="text-[11px] text-gray-400 font-mono ml-1.5 font-normal">
+                        ({impactPlayer?.role} • OVR {impactPlayer?.Power_Index})
+                      </span>
                     </div>
                   </div>
                   <button
                     onClick={() => setBenchDrawerSlotIndex(11)}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 cursor-pointer"
+                    className="px-3 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-bold border border-indigo-500/30 cursor-pointer shrink-0"
                   >
                     Change
                   </button>
                 </div>
+              </div>
+            </div>
 
+            {/* ─── Matchday 11 (Batting Order 1 to 11) ─── */}
+            <div className="p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col gap-2.5">
+              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <div className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-2">
+                  <span className={lineupMode === 'bat_first' ? 'text-amber-400 font-black' : 'text-sky-400 font-black'}>
+                    {lineupMode === 'bat_first' ? '🏏 Matchday Bat-First 11' : '🎯 Matchday Bowl-First 11'}
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-normal hidden sm:inline">(Order 1 to 11 • Tap arrows to reorder)</span>
+                </div>
+                <span className="text-xs font-mono font-bold text-amber-400">
+                  Avg OVR: {Math.round(fullPlayingXI.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0) / 11)}
+                </span>
               </div>
 
-              {/* Right 8 Columns: 2D Pitch Lineup in Proper Batting Order */}
-              <div className="md:col-span-8 landscape:col-span-8 p-3 sm:p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between min-h-0 overflow-hidden">
-                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0">
-                  <div className="text-xs font-black uppercase tracking-wider text-gray-200 flex items-center gap-2">
-                    <span className={lineupMode === 'bat_first' ? 'text-amber-400 font-black' : 'text-sky-400 font-black'}>
-                      {lineupMode === 'bat_first' ? '🏏 Matchday Bat-First 11' : '🎯 Matchday Bowl-First 11'}
-                    </span>
-                    <span className="text-[10px] text-gray-400 font-normal hidden sm:inline">(Order 1 to 11 • Use arrows to adjust)</span>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-amber-400">
-                    Total Squad OVR: {Math.round(fullPlayingXI.reduce((acc, p) => acc + (Number(p.Power_Index) || 80), 0) / 11)}
-                  </span>
-                </div>
-
-              {/* 11 Players in Real Batting Order */}
-              <div className={`space-y-1.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1 rounded-2xl transition-all ${
-                isOptimizing ? 'ring-2 ring-amber-400 p-1 animate-magic-sweep shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''
+              {/* 11 Player Cards List */}
+              <div className={`space-y-1.5 transition-all ${
+                isOptimizing ? 'ring-2 ring-amber-400 p-1 rounded-2xl animate-pulse shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''
               }`}>
                 {fullPlayingXI.map((player, index) => {
                   return (
@@ -574,7 +562,13 @@ export default function PlayingXIPage() {
                     >
                       {/* Left: Batting Order & Identity */}
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-6 h-6 rounded-lg bg-white/10 text-amber-400 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                        <div className={`w-6 h-6 rounded-lg font-mono font-black text-xs flex items-center justify-center shrink-0 ${
+                          index < 3
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            : index < 7
+                            ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                            : 'bg-slate-800 text-gray-300 border border-white/10'
+                        }`}>
                           {index + 1}
                         </div>
                         <div className="min-w-0">
@@ -592,17 +586,15 @@ export default function PlayingXIPage() {
                             )}
                           </div>
                           <div className="text-[11px] text-gray-400 font-mono truncate">
-                            <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • {player.role} • OVR {player.Power_Index}
+                            <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • {player.role}
                           </div>
                         </div>
                       </div>
 
                       {/* Right: Stats Summary & Re-order Controls */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <div className="text-right hidden sm:block">
-                          <div className="text-[11px] font-mono text-gray-300 max-w-[150px] truncate">
-                            {player.statsSummary || `OVR ${player.Power_Index}`}
-                          </div>
+                        <div className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono font-bold text-xs">
+                          OVR {player.Power_Index}
                         </div>
 
                         {/* Move Up/Down Controls */}
@@ -610,7 +602,7 @@ export default function PlayingXIPage() {
                           <button
                             onClick={() => handleMoveSlot(index, 'up')}
                             disabled={index === 0}
-                            className="p-1 rounded bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
                             title="Move up batting order"
                           >
                             <ArrowUp size={13} />
@@ -618,7 +610,7 @@ export default function PlayingXIPage() {
                           <button
                             onClick={() => handleMoveSlot(index, 'down')}
                             disabled={index === fullPlayingXI.length - 1}
-                            className="p-1 rounded bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
                             title="Move down batting order"
                           >
                             <ArrowDown size={13} />
@@ -637,20 +629,18 @@ export default function PlayingXIPage() {
                   );
                 })}
               </div>
-
             </div>
           </div>
-        </div>
-      )}
+        )}
 
         {/* ─── TAB 2: FULL IPL TOURNAMENT SEASON & SCHEDULE (74 MATCHES) ─── */}
         {activeTab === 'schedule' && (
-          <div className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+          <div className="flex flex-col gap-4">
             
             {/* Auto-Simulated Wave Notification Banner */}
             {campaign.lastSimulatedWave && campaign.lastSimulatedWave.simulatedCount > 0 && (
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/10 border border-amber-500/40 text-xs shadow-xl animate-fadeIn mb-2 shrink-0">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5">
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/10 border border-amber-500/40 text-xs shadow-xl animate-fadeIn">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Sparkles size={16} className="text-amber-400 shrink-0 animate-pulse" />
                     <div>
@@ -674,7 +664,7 @@ export default function PlayingXIPage() {
                 </div>
 
                 {/* Quick simulated matches list with clickable scorecard pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto mt-1.5 pt-1.5 border-t border-white/10 scrollbar-none py-0.5">
+                <div className="flex items-center gap-1.5 overflow-x-auto mt-2 pt-2 border-t border-white/10 scrollbar-none py-0.5">
                   <span className="text-[10px] font-mono text-gray-400 uppercase shrink-0">Scores:</span>
                   {campaign.lastSimulatedWave.simulatedMatches.map((m) => {
                     const fix = (campaign.schedule || []).find(f => f.matchNo === m.matchNo);
@@ -701,16 +691,16 @@ export default function PlayingXIPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-12 landscape:grid-cols-12 gap-2.5 sm:gap-3 flex-1 min-h-0 overflow-y-auto md:overflow-hidden landscape:overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               
               {/* Left 7 Columns: Fixtures Schedule with My 14 Matches vs All 74 Matches Toggle */}
-              <div className="md:col-span-7 landscape:col-span-7 p-3 sm:p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between min-h-0 overflow-hidden">
+              <div className="md:col-span-7 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col gap-3">
                 
                 {/* Filter Tabs & Quick Round Sim */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 mb-2 border-b border-white/10 gap-2 shrink-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-white/10 gap-2">
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-                      <Calendar size={13} className="text-amber-400" />
+                      <Calendar size={14} className="text-amber-400" />
                       IPL 2027 Tournament Schedule (74 Matches)
                     </h3>
                     <p className="text-[11px] text-gray-400">14 Rounds of 5 Matches each + 4 Playoff Games</p>
@@ -743,7 +733,7 @@ export default function PlayingXIPage() {
                     <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
                       <button
                         onClick={() => setScheduleFilter('all')}
-                        className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
                           scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
                         }`}
                       >
@@ -751,7 +741,7 @@ export default function PlayingXIPage() {
                       </button>
                       <button
                         onClick={() => setScheduleFilter('my')}
-                        className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
                           scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
                         }`}
                       >
@@ -761,8 +751,8 @@ export default function PlayingXIPage() {
                   </div>
                 </div>
 
-                {/* Fixture cards */}
-                <div className="space-y-2 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1">
+                {/* Fixture cards list */}
+                <div className="space-y-2 max-h-[600px] overflow-y-auto overscroll-contain touch-pan-y pr-1">
                   {(scheduleFilter === 'my' ? myFixtures : schedule).map((fixture) => {
                     const isCurrent = fixture.status === 'CURRENT';
                     const isDone = fixture.status === 'COMPLETED';
@@ -872,17 +862,17 @@ export default function PlayingXIPage() {
               </div>
 
               {/* Right 5 Columns: Live 10-Team Standings Points Table */}
-              <div className="md:col-span-5 landscape:col-span-5 p-3 sm:p-3.5 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between min-h-0 overflow-hidden">
-                <div className="pb-2 mb-2 border-b border-white/10 shrink-0">
+              <div className="md:col-span-5 p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col gap-3">
+                <div className="pb-2 border-b border-white/10">
                   <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-                    <Trophy size={13} className="text-amber-400" />
+                    <Trophy size={14} className="text-amber-400" />
                     IPL 2027 Championship Standings
                   </h3>
                   <p className="text-[11px] text-gray-400">Top 4 Franchises Qualify for IPL Playoffs</p>
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y">
+                <div className="overflow-x-auto max-h-[600px] overflow-y-auto overscroll-contain touch-pan-y">
                   <table className="w-full text-left text-xs font-mono">
                     <thead className="text-[10px] text-gray-400 uppercase border-b border-white/5 sticky top-0 bg-slate-900">
                       <tr>
@@ -907,24 +897,24 @@ export default function PlayingXIPage() {
                               isMyTeam ? 'bg-amber-500/15 font-bold text-amber-200' : ''
                             }`}
                           >
-                            <td className="py-1.5">
+                            <td className="py-2">
                               <span className={`w-5 h-5 rounded-md inline-flex items-center justify-center text-[10px] font-bold ${
                                 isTop4 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-gray-500'
                               }`}>
                                 {idx + 1}
                               </span>
                             </td>
-                            <td className="py-1.5 font-sans flex items-center gap-1.5 truncate">
+                            <td className="py-2 font-sans flex items-center gap-1.5 truncate">
                               <TeamLogo teamId={row.shortName} size={18} />
                               <span className="font-bold truncate">{row.shortName}</span>
                             </td>
-                            <td className="py-1.5 text-center text-gray-400">{row.played}</td>
-                            <td className="py-1.5 text-center text-emerald-400 font-bold">{row.won}</td>
-                            <td className="py-1.5 text-center text-rose-400 font-bold">{row.lost}</td>
-                            <td className="py-1.5 text-right text-[11px] text-gray-400">
+                            <td className="py-2 text-center text-gray-400">{row.played}</td>
+                            <td className="py-2 text-center text-emerald-400 font-bold">{row.won}</td>
+                            <td className="py-2 text-center text-rose-400 font-bold">{row.lost}</td>
+                            <td className="py-2 text-right text-[11px] text-gray-400">
                               {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
                             </td>
-                            <td className="py-1.5 text-right font-black text-amber-300">{row.points}</td>
+                            <td className="py-2 text-right font-black text-amber-300">{row.points}</td>
                           </tr>
                         );
                       })}
@@ -932,7 +922,7 @@ export default function PlayingXIPage() {
                   </table>
                 </div>
 
-                <div className="pt-2 border-t border-white/10 text-[11px] text-gray-400 text-center font-sans shrink-0">
+                <div className="pt-2 border-t border-white/10 text-[11px] text-gray-400 text-center font-sans">
                   Gold positions (1-4) advance to IPL Playoffs (Qualifier 1 & Eliminator).
                 </div>
               </div>
