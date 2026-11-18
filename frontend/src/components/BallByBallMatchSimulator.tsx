@@ -118,6 +118,10 @@ export default function BallByBallMatchSimulator({
   myFranchise,
   mySquad,
   myPlayingXIIds,
+  userBatFirstXI,
+  userBowlFirstXI,
+  batFirstImpactId,
+  bowlFirstImpactId,
   rivalFranchise,
   venueName,
   matchFixture,
@@ -332,11 +336,13 @@ export default function BallByBallMatchSimulator({
 
   const handleSpinCoin = () => {
     if (isFlippingCoin) return;
+    gameAudio.unlockAudio();
     setIsFlippingCoin(true);
-    gameAudio.playBallWhoosh();
+    gameAudio.playCoinFlip();
     triggerGameHaptic('medium');
 
     setTimeout(() => {
+      gameAudio.playCoinClink();
       const outcome: 'heads' | 'tails' = Math.random() > 0.5 ? 'heads' : 'tails';
       setCoinResult(outcome);
       setIsFlippingCoin(false);
