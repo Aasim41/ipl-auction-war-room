@@ -26,6 +26,7 @@ import TacticalMatchupModal from '../../components/TacticalMatchupModal'
 import SquadExportModal from '../../components/SquadExportModal'
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
+import { ThreeSquadLocker } from '../../components/ThreeSquadLocker'
 
 export default function SquadRetainReleasePage() {
   const router = useRouter()
@@ -53,11 +54,13 @@ export default function SquadRetainReleasePage() {
     if (squadTouchStartX.current === null || squadTouchStartY.current === null) return
     const deltaX = e.changedTouches[0].clientX - squadTouchStartX.current
     const deltaY = e.changedTouches[0].clientY - squadTouchStartY.current
+    squadTouchStartX.current = null
+    squadTouchStartY.current = null
 
     const roles: Array<'ALL' | 'BAT' | 'AR' | 'WK' | 'BOWL'> = ['ALL', 'BAT', 'AR', 'WK', 'BOWL']
     const curIdx = roles.indexOf(roleFilter)
 
-    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
       if (deltaX < 0 && curIdx < roles.length - 1) {
         setRoleFilter(roles[curIdx + 1])
         gameAudio.playUiTap('select')
@@ -68,9 +71,29 @@ export default function SquadRetainReleasePage() {
         triggerGameHaptic('light')
       }
     }
-    squadTouchStartX.current = null
-    squadTouchStartY.current = null
   }
+
+  // Synchronize with GlobalSwipeManager custom event
+  useEffect(() => {
+    const handleAppSwipe = (e: any) => {
+      const direction = e.detail?.direction
+      const roles: Array<'ALL' | 'BAT' | 'AR' | 'WK' | 'BOWL'> = ['ALL', 'BAT', 'AR', 'WK', 'BOWL']
+      const curIdx = roles.indexOf(roleFilter)
+      if (direction === 'left' && curIdx < roles.length - 1) {
+        e.preventDefault()
+        setRoleFilter(roles[curIdx + 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      } else if (direction === 'right' && curIdx > 0) {
+        e.preventDefault()
+        setRoleFilter(roles[curIdx - 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      }
+    }
+    window.addEventListener('app:swipe', handleAppSwipe)
+    return () => window.removeEventListener('app:swipe', handleAppSwipe)
+  }, [roleFilter])
   const isRetainLocked = campaign?.lockedPhases?.includes('retain_release')
 
   const squadList = campaign?.squad || []
@@ -143,7 +166,15 @@ export default function SquadRetainReleasePage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-12 sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-pan-y overscroll-y-contain">
+    <div 
+      onTouchStart={handleSquadTouchStart}
+      onTouchEnd={handleSquadTouchEnd}
+      onTouchCancel={() => {
+        squadTouchStartX.current = null
+        squadTouchStartY.current = null
+      }}
+      className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-[calc(max(env(safe-area-inset-top,0px),10px)+2.85rem)] sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
+    >
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3.5">
         
         {/* Minimal Header */}
@@ -186,6 +217,14 @@ export default function SquadRetainReleasePage() {
             </button>
           </div>
         </div>
+
+        {/* 3D Franchise Vault & Trophy Locker */}
+        <ThreeSquadLocker
+          franchiseColor={franchise.color}
+          franchiseShort={franchise.short}
+          totalPlayers={campaign.squad.length}
+          activeRole={roleFilter}
+        />
 
         {/* Minimal 4 Vitals Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
