@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { 
   User, 
   Shield, 
@@ -11,9 +13,16 @@ import {
   ArrowRight, 
   Trash2, 
   Trophy,
-  Users
+  Users,
+  Plus,
+  RotateCcw,
+  Coins,
+  CheckCircle2
 } from 'lucide-react'
 import { useCampaignStore, UserProfile } from '../store/useCampaignStore'
+import { getFranchise } from '../data/franchises'
+import TeamLogo from './TeamLogo'
+import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 const AVATAR_OPTIONS = [
   { emoji: '👑', label: 'Royal Captain' },
@@ -30,9 +39,11 @@ interface OnboardingAuthModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
+  initialTab?: 'saves' | 'create' | 'switch'
 }
 
-export function OnboardingAuthModal({ isOpen, onClose, onSuccess }: OnboardingAuthModalProps) {
+export function OnboardingAuthModal({ isOpen, onClose, onSuccess, initialTab = 'saves' }: OnboardingAuthModalProps) {
+  const router = useRouter()
   const { 
     profiles, 
     currentUserId, 
@@ -41,19 +52,32 @@ export function OnboardingAuthModal({ isOpen, onClose, onSuccess }: OnboardingAu
     loginProfile, 
     switchProfile,
     deleteProfile,
-    campaigns
+    campaigns,
+    activeCampaignId,
+    switchCampaign,
+    resetCampaign
   } = useCampaignStore()
 
-  const [mode, setMode] = useState<'create' | 'switch'>('create')
+  const [mode, setMode] = useState<'saves' | 'create' | 'switch'>(initialTab)
   const [gamerTag, setGamerTag] = useState('')
   const [selectedAvatar, setSelectedAvatar] = useState('👑')
   const [pin, setPin] = useState('')
   const [pinInput, setPinInput] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [confirmResetId, setConfirmResetId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialTab)
+      setErrorMsg('')
+    }
+  }, [isOpen, initialTab])
 
   if (!isOpen) return null
 
   const profileList = Object.values(profiles)
+  const activeCampaign = activeCampaignId ? campaigns[activeCampaignId] : null
+  const allCampaigns = Object.values(campaigns)
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault()
