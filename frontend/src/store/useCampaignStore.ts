@@ -642,13 +642,22 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       updateActiveCampaign: (updater) => {
-        const { activeCampaignId, campaigns } = get()
-        if (!activeCampaignId || !campaigns[activeCampaignId]) return
-        const updated = updater(campaigns[activeCampaignId])
+        const state = get()
+        let activeId = state.activeCampaignId
+        if (!activeId || !state.campaigns[activeId]) {
+          const userCamps = Object.values(state.campaigns).filter((c) => c.userId === state.currentUserId)
+          if (userCamps.length > 0) {
+            const sorted = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())
+            activeId = sorted[0].id
+          }
+        }
+        if (!activeId || !state.campaigns[activeId]) return
+        const updated = updater(state.campaigns[activeId])
         set({
+          activeCampaignId: activeId,
           campaigns: {
-            ...campaigns,
-            [activeCampaignId]: {
+            ...state.campaigns,
+            [activeId]: {
               ...updated,
               lastSaved: new Date().toISOString()
             }
@@ -815,17 +824,32 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
         if (campaign.remainingPurse + cashDelta < 0) return false
 
+        let tradeExecuted = false
+
         get().updateActiveCampaign((prev) => {
           const filteredSquad = prev.squad.filter((p) => p.player_id !== playerOutId)
+          const newPlayer: CampaignPlayer = { ...playerIn, is_retained: true, is_released: false }
           const updatedSquad: CampaignPlayer[] = [
             ...filteredSquad,
-            { ...playerIn, is_retained: true, is_released: false }
+            newPlayer
           ]
+
+          // Also update playing XIs if playerOut was in them
+          const replaceInXI = (xi?: string[]) => 
+            (xi || []).map(id => id === playerOutId ? newPlayer.player_id : id)
+
+          tradeExecuted = true
 
           return {
             ...prev,
             remainingPurse: Math.round((prev.remainingPurse + cashDelta) * 100) / 100,
             squad: updatedSquad,
+            playingXI: replaceInXI(prev.playingXI),
+            batFirstXI: replaceInXI(prev.batFirstXI),
+            bowlFirstXI: replaceInXI(prev.bowlFirstXI),
+            impactPlayerId: prev.impactPlayerId === playerOutId ? newPlayer.player_id : prev.impactPlayerId,
+            batFirstImpactId: prev.batFirstImpactId === playerOutId ? newPlayer.player_id : prev.batFirstImpactId,
+            bowlFirstImpactId: prev.bowlFirstImpactId === playerOutId ? newPlayer.player_id : prev.bowlFirstImpactId,
             tradedHistory: [
               ...prev.tradedHistory,
               {
@@ -839,7 +863,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
           }
         })
 
-        return true
+        return tradeExecuted
       },
 
       setPlayingXI: (playerIds, impactPlayerId, mode = 'bat_first') => {

@@ -18,13 +18,18 @@ import {
 } from 'lucide-react'
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
 import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
-import { getFranchiseAI } from '../../data/franchiseAI'
+import { getFranchiseAI, isUntouchablePlayer } from '../../data/franchiseAI'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
+import TeamLogo from '../../components/TeamLogo'
 
 export default function TradeWindowPage() {
   const router = useRouter()
-  const { getActiveCampaign, executeTrade, advancePhase } = useCampaignStore()
-  const campaign = getActiveCampaign()
+  const campaigns = useCampaignStore((state) => state.campaigns)
+  const getActiveCampaign = useCampaignStore((state) => state.getActiveCampaign)
+  const executeTrade = useCampaignStore((state) => state.executeTrade)
+  const advancePhase = useCampaignStore((state) => state.advancePhase)
+  const [mounted, setMounted] = useState(false)
+  const campaign = mounted ? getActiveCampaign() : null
 
   const [selectedRivalId, setSelectedRivalId] = useState<string>('csk')
   const [playerOut, setPlayerOut] = useState<CampaignPlayer | null>(null)
@@ -33,9 +38,9 @@ export default function TradeWindowPage() {
   const [tradeMessage, setTradeMessage] = useState<string | null>(null)
   const [searchMy, setSearchMy] = useState('')
   const [searchRival, setSearchRival] = useState('')
-  const [mounted, setMounted] = useState(false)
   const [isTradingAnimation, setIsTradingAnimation] = useState(false)
   const [showConfirmLock, setShowConfirmLock] = useState(false)
+  const [mobileTab, setMobileTab] = useState<'my' | 'deal' | 'rival'>('my')
 
   useEffect(() => {
     setMounted(true)
@@ -114,10 +119,7 @@ export default function TradeWindowPage() {
     const priceIn = Number(playerIn.currentPrice || playerIn.price) || 5
 
     // 1. UNTOUCHABLE FRANCHISE CORNERSTONE PROTECTION
-    const isUntouchable = rivalAI.untouchables.some(u => 
-      playerIn.name.toLowerCase().includes(u.toLowerCase()) || 
-      u.toLowerCase().includes(playerIn.name.toLowerCase())
-    )
+    const isUntouchable = isUntouchablePlayer(playerIn.name, rivalAI.untouchables)
     if (isUntouchable) {
       return { 
         acceptable: false, 
