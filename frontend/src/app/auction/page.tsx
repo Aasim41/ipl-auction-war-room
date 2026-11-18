@@ -1026,7 +1026,17 @@ export default function MiniAuctionPage() {
           </div>
 
           {/* Column 2 (Right 5 cols): Multi-Tab Live War Room (Pool | Squads & Purses | Feed | Sold) */}
-          <div className="lg:col-span-5 flex flex-col gap-2 rounded-2xl bg-slate-900 border border-white/10 p-3 shadow-xl max-h-[460px] overflow-hidden">
+          <div 
+            onTouchStart={handleSideTouchStart}
+            onTouchEnd={handleSideTouchEnd}
+            className="lg:col-span-5 flex flex-col gap-2 rounded-2xl bg-slate-900 border border-white/10 p-3 shadow-xl max-h-[460px] overflow-hidden select-none"
+          >
+            {/* Mobile Swipe Hint */}
+            <div className="flex sm:hidden items-center justify-between px-2 py-0.5 bg-slate-950/80 rounded-lg border border-white/10 text-[9px] font-mono text-gray-400">
+              <span>👈 Swipe</span>
+              <span className="text-amber-400 font-bold uppercase">{sideTab} tab</span>
+              <span>Swipe 👉</span>
+            </div>
             
             {/* Tab Navigation: 4 Tabs */}
             <div className="flex items-center gap-1 pb-2 border-b border-white/10">

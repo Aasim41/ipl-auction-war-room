@@ -41,6 +41,38 @@ export default function TradeWindowPage() {
   const [isTradingAnimation, setIsTradingAnimation] = useState(false)
   const [showConfirmLock, setShowConfirmLock] = useState(false)
   const [mobileTab, setMobileTab] = useState<'my' | 'deal' | 'rival'>('my')
+  const [expandedTradePlayerId, setExpandedTradePlayerId] = useState<string | null>(null)
+
+  const tradeTouchStartX = React.useRef<number | null>(null)
+  const tradeTouchStartY = React.useRef<number | null>(null)
+
+  const handleTradeTouchStart = (e: React.TouchEvent) => {
+    tradeTouchStartX.current = e.touches[0].clientX
+    tradeTouchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTradeTouchEnd = (e: React.TouchEvent) => {
+    if (tradeTouchStartX.current === null || tradeTouchStartY.current === null) return
+    const deltaX = e.changedTouches[0].clientX - tradeTouchStartX.current
+    const deltaY = e.changedTouches[0].clientY - tradeTouchStartY.current
+
+    const tabs: Array<'my' | 'deal' | 'rival'> = ['my', 'deal', 'rival']
+    const curIdx = tabs.indexOf(mobileTab)
+
+    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      if (deltaX < 0 && curIdx < tabs.length - 1) {
+        setMobileTab(tabs[curIdx + 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      } else if (deltaX > 0 && curIdx > 0) {
+        setMobileTab(tabs[curIdx - 1])
+        gameAudio.playUiTap('select')
+        triggerGameHaptic('light')
+      }
+    }
+    tradeTouchStartX.current = null
+    tradeTouchStartY.current = null
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -335,6 +367,13 @@ export default function TradeWindowPage() {
           </div>
         </div>
 
+        {/* Mobile Swipe Hint */}
+        <div className="flex sm:hidden items-center justify-between px-2 py-0.5 mb-1 bg-slate-950/80 rounded-lg border border-white/10 text-[9px] font-mono text-gray-400">
+          <span>👈 Swipe</span>
+          <span className="text-amber-400 font-bold uppercase">{mobileTab === 'my' ? `${myFranchise.short} Squad` : mobileTab === 'deal' ? 'Deal Room' : `${rivalFranchise.short} Squad`}</span>
+          <span>Swipe 👉</span>
+        </div>
+
         {/* Mobile Tab Toggle Bar (Visible only on compact screens) */}
         <div className="flex sm:hidden items-center justify-center gap-1 mb-2 bg-slate-900/90 p-1 rounded-xl border border-white/10 shrink-0">
           <button
@@ -367,7 +406,11 @@ export default function TradeWindowPage() {
         </div>
 
         {/* True 3-Column Side-by-Side Trade Interface (Your Team | Deal Room in Middle | Rival Team) */}
-        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch w-full flex-1">
+        <div 
+          onTouchStart={handleTradeTouchStart}
+          onTouchEnd={handleTradeTouchEnd}
+          className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch w-full flex-1 select-none"
+        >
           
           {/* Column 1 (Left): Your Franchise Squad */}
           <div className={`flex-1 min-w-0 p-3 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col shadow-xl transition-all ${
