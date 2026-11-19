@@ -119,7 +119,7 @@ const TEAM_HOME_CITY: Record<string, string> = {
 };
 
 // Dynamic Tactical Role Generator based on actual player capabilities
-export function getPlayerTacticalBadge(player: CampaignPlayer, slotIndex: number): string {
+function getPlayerTacticalBadge(player: CampaignPlayer, slotIndex: number): string {
   if (!player) return `#${slotIndex + 1} Squad Member`;
 
   // Specialist Bowler
