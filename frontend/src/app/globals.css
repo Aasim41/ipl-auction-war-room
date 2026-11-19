@@ -20,31 +20,32 @@
 
 /* ─── Standardized Safe Mobile Phone Status Bar & Page Offsets ───── */
 :root {
-  --mobile-status-height: max(env(safe-area-inset-top, 0px), 38px);
   --navbar-height: 3.5rem; /* 56px */
 }
 
-.safe-page-top {
-  padding-top: calc(max(env(safe-area-inset-top, 0px), 38px) + 3.85rem) !important;
+.app-safe-navbar {
+  padding-top: max(env(safe-area-inset-top, 0px), 6px);
+  padding-left: max(env(safe-area-inset-left, 0px), 8px);
+  padding-right: max(env(safe-area-inset-right, 0px), 8px);
 }
 
-@media (min-width: 640px) {
-  .safe-page-top {
-    padding-top: 4.25rem !important;
-  }
+.safe-page-top {
+  padding-top: calc(max(env(safe-area-inset-top, 0px), 6px) + 3.85rem) !important;
+  padding-left: max(env(safe-area-inset-left, 0px), 8px) !important;
+  padding-right: max(env(safe-area-inset-right, 0px), 8px) !important;
 }
 
 /* Mobile Phone Landscape Safety (Screen height <= 520px on rotated phones) */
 @media (max-height: 520px) {
   .app-safe-navbar {
-    padding-top: max(env(safe-area-inset-top, 0px), 24px) !important;
-    padding-left: max(env(safe-area-inset-left, 0px), 12px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 12px) !important;
+    padding-top: max(env(safe-area-inset-top, 0px), 14px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 16px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 16px) !important;
   }
   .safe-page-top {
-    padding-top: calc(max(env(safe-area-inset-top, 0px), 24px) + 3.45rem) !important;
-    padding-left: max(env(safe-area-inset-left, 0px), 12px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 12px) !important;
+    padding-top: calc(max(env(safe-area-inset-top, 0px), 14px) + 3.6rem) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 16px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 16px) !important;
   }
 }
 
