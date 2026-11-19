@@ -331,7 +331,6 @@ export default function BallByBallMatchSimulator({
   const [showBattingOrderModal, setShowBattingOrderModal] = useState(false);
   const [showOpeningPairModal, setShowOpeningPairModal] = useState(false);
   const [showPastOversModal, setShowPastOversModal] = useState(false);
-  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [expandedHUDCard, setExpandedHUDCard] = useState<'batter' | 'bowler' | null>(null);
   const [scorecardInningsView, setScorecardInningsView] = useState<1 | 2>(1);
 
@@ -622,34 +621,39 @@ export default function BallByBallMatchSimulator({
       } catch (e) {}
     }
 
-    if (savedSim && (savedSim.fixtureMatchNo === matchFixture?.matchNo || savedSim.matchKey === currentMatchKey) && !savedSim.matchDone && savedSim.inn1) {
-      matchInitializedKeyRef.current = currentMatchKey;
-      setABatsFirst(savedSim.aBatsFirst ?? true);
-      if (savedSim.bat1Squad?.length) setBat1Squad(savedSim.bat1Squad);
-      if (savedSim.bowl1Squad?.length) setBowl1Squad(savedSim.bowl1Squad);
-      setInn1(savedSim.inn1);
-      setInn2(savedSim.inn2);
-      setCurrentInnings(savedSim.currentInnings || 1);
-      setStrikerIdx(savedSim.strikerIdx || 0);
-      setNonStrikerIdx(savedSim.nonStrikerIdx || 1);
-      setNextBatterIdx(savedSim.nextBatterIdx || 2);
-      setCurrentBowlerIdx(savedSim.currentBowlerIdx || 0);
-      setBattingTactic(savedSim.battingTactic || 'ROTATE');
-      setBowlingTactic(savedSim.bowlingTactic || 'GOOD_LENGTH');
-      setTossPhase(savedSim.tossPhase || 'arena');
-      setTossSummaryText(savedSim.tossSummaryText || '');
-      setUserCoinCall(savedSim.userCoinCall || 'heads');
-      setCoinResult(savedSim.coinResult || null);
-      setTossWinner(savedSim.tossWinner || null);
-      setTossDecision(savedSim.tossDecision || null);
-      setMatchDone(false);
-      setIsPlaying(false);
+    if (savedSim && savedSim.matchKey === currentMatchKey && !savedSim.matchDone && savedSim.inn1) {
+      const savedTeams = [savedSim.inn1?.teamShort?.toLowerCase(), savedSim.inn2?.teamShort?.toLowerCase()].filter(Boolean);
+      const currentTeams = [myFranchise.short.toLowerCase(), rivalFranchise.short.toLowerCase()];
+      const teamsMatch = currentTeams.every(t => savedTeams.includes(t));
+      if (teamsMatch) {
+        matchInitializedKeyRef.current = currentMatchKey;
+        setABatsFirst(savedSim.aBatsFirst ?? true);
+        if (savedSim.bat1Squad?.length) setBat1Squad(savedSim.bat1Squad);
+        if (savedSim.bowl1Squad?.length) setBowl1Squad(savedSim.bowl1Squad);
+        setInn1(savedSim.inn1);
+        setInn2(savedSim.inn2);
+        setCurrentInnings(savedSim.currentInnings || 1);
+        setStrikerIdx(savedSim.strikerIdx || 0);
+        setNonStrikerIdx(savedSim.nonStrikerIdx || 1);
+        setNextBatterIdx(savedSim.nextBatterIdx || 2);
+        setCurrentBowlerIdx(savedSim.currentBowlerIdx || 0);
+        setBattingTactic(savedSim.battingTactic || 'ROTATE');
+        setBowlingTactic(savedSim.bowlingTactic || 'GOOD_LENGTH');
+        setTossPhase(savedSim.tossPhase || 'arena');
+        setTossSummaryText(savedSim.tossSummaryText || '');
+        setUserCoinCall(savedSim.userCoinCall || 'heads');
+        setCoinResult(savedSim.coinResult || null);
+        setTossWinner(savedSim.tossWinner || null);
+        setTossDecision(savedSim.tossDecision || null);
+        setMatchDone(false);
+        setIsPlaying(false);
 
-      const activeInn = (savedSim.currentInnings === 2 ? savedSim.inn2 : savedSim.inn1) || savedSim.inn1;
-      const bCount = activeInn?.balls?.length || 0;
-      setResumedBanner(`⚡ Resumed Match: Over ${Math.floor(bCount / 6)}.${bCount % 6} (${activeInn?.totalRuns || 0}/${activeInn?.totalWickets || 0})`);
-      setTimeout(() => setResumedBanner(null), 4000);
-      return;
+        const activeInn = (savedSim.currentInnings === 2 ? savedSim.inn2 : savedSim.inn1) || savedSim.inn1;
+        const bCount = activeInn?.balls?.length || 0;
+        setResumedBanner(`⚡ Resumed Match: Over ${Math.floor(bCount / 6)}.${bCount % 6} (${activeInn?.totalRuns || 0}/${activeInn?.totalWickets || 0})`);
+        setTimeout(() => setResumedBanner(null), 4000);
+        return;
+      }
     }
 
     matchInitializedKeyRef.current = currentMatchKey;
@@ -738,10 +742,6 @@ export default function BallByBallMatchSimulator({
 
     const curInn = currentInnings === 1 ? inn1 : inn2;
     if (!curInn) return { allowed: false, reason: 'Match not initialized' };
-
-    if (lastBowlerIdx === bIdx && curInn.balls.length % 6 === 0 && curInn.balls.length > 0) {
-      return { allowed: false, reason: 'Bowler cannot bowl consecutive overs!' };
-    }
 
     const oversCount = getBowlerOversCount(curInn.bowlingFigures, candidate.name);
     if (oversCount >= 4) {
@@ -1218,19 +1218,25 @@ export default function BallByBallMatchSimulator({
       curNonStrikerIdx = temp;
       setLastBowlerIdx(currentBowlerIdx);
 
-      // Next bowler: pick next available bowler who hasn't completed 4 overs
-      let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
-      let attempts = 0;
-      while (attempts < activeBowlers.length) {
-        const candidateName = activeBowlers[nextIdx]?.name;
-        const ovs = getBowlerOversCount(updatedBowlers, candidateName);
-        if (ovs < 4 && nextIdx !== currentBowlerIdx) {
-          break;
+      // Bowler spell allotment: bowler continues their spell up to 4 overs unless quota is exhausted
+      const curBowlerName = activeBowlers[currentBowlerIdx]?.name;
+      const curBowlerOvers = getBowlerOversCount(updatedBowlers, curBowlerName);
+      if (curBowlerOvers >= 4) {
+        // Full spell complete (4 overs): automatically assign next available bowler who has overs remaining
+        let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
+        let attempts = 0;
+        while (attempts < activeBowlers.length) {
+          const candidateName = activeBowlers[nextIdx]?.name;
+          const ovs = getBowlerOversCount(updatedBowlers, candidateName);
+          if (ovs < 4) {
+            break;
+          }
+          nextIdx = (nextIdx + 1) % activeBowlers.length;
+          attempts++;
         }
-        nextIdx = (nextIdx + 1) % activeBowlers.length;
-        attempts++;
+        setCurrentBowlerIdx(nextIdx);
       }
-      setCurrentBowlerIdx(nextIdx);
+      // If curBowlerOvers < 4, current bowler continues their spell!
     }
 
     // Safety Assertions: ensure dismissed player is NEVER at crease if wickets < 10
