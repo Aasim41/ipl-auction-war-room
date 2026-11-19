@@ -1028,78 +1028,7 @@ export default function PlayingXIPage() {
           </div>
         )}
 
-        {/* ─── TAB 3: STANDINGS & POINTS TABLE (FULL WIDTH VIEW) ─── */}
-        {activeTab === 'standings' && (
-          <div className="p-3.5 sm:p-5 rounded-3xl bg-slate-900/95 border border-white/10 shadow-2xl flex flex-col gap-3">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-white/10 gap-2">
-              <div>
-                <h3 className="text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-                  <Trophy size={16} className="text-amber-400" />
-                  IPL 2027 Official Championship Standings
-                </h3>
-                <p className="text-xs text-gray-400">Top 4 franchises qualify for IPL Playoffs (Qualifier 1 & Eliminator)</p>
-              </div>
-              <div className="px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold">
-                10 Teams Contending
-              </div>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="text-[10px] text-gray-400 uppercase border-b border-white/10 bg-slate-950/60">
-                  <tr>
-                    <th className="py-2.5 px-3">Pos</th>
-                    <th className="py-2.5 px-3">Team</th>
-                    <th className="py-2.5 px-2 text-center">Played</th>
-                    <th className="py-2.5 px-2 text-center text-emerald-400">Won</th>
-                    <th className="py-2.5 px-2 text-center text-rose-400">Lost</th>
-                    <th className="py-2.5 px-3 text-right">NRR</th>
-                    <th className="py-2.5 px-4 text-right font-black text-amber-300">Points</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-gray-200">
-                  {pointsTable.map((row, idx) => {
-                    const isMyTeam = row.teamId === franchise.short.toLowerCase();
-                    const isTop4 = idx < 4;
-
-                    return (
-                      <tr 
-                        key={row.teamId}
-                        className={`hover:bg-white/5 transition-colors ${
-                          isMyTeam ? 'bg-amber-500/20 font-bold text-amber-200' : ''
-                        }`}
-                      >
-                        <td className="py-3 px-3">
-                          <span className={`w-6 h-6 rounded-lg inline-flex items-center justify-center text-xs font-bold ${
-                            isTop4 ? 'bg-amber-500 text-slate-950 font-black shadow-sm' : 'text-gray-400 bg-white/5'
-                          }`}>
-                            {idx + 1}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 font-sans flex items-center gap-2">
-                          <TeamLogo teamId={row.shortName} size={22} />
-                          <span className="font-bold text-sm text-white">{row.shortName}</span>
-                          {isMyTeam && (
-                            <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded font-mono">
-                              YOU
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-2 text-center text-gray-300 font-bold">{row.played}</td>
-                        <td className="py-3 px-2 text-center text-emerald-400 font-black">{row.won}</td>
-                        <td className="py-3 px-2 text-center text-rose-400 font-black">{row.lost}</td>
-                        <td className="py-3 px-3 text-right text-gray-300 font-mono">
-                          {row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}
-                        </td>
-                        <td className="py-3 px-4 text-right font-black text-base text-amber-400">{row.points}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
 
       </main>
 

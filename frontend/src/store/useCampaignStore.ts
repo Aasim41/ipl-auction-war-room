@@ -130,6 +130,97 @@ export function computeOptimalPlayingXI(
     return { ...p, tacticalScore: score }
   })
 
+  // Helper for natural authentic cricket batting position hierarchy
+  const getBattingPositionScore = (p: CampaignPlayer): number => {
+    const n = p.name.toLowerCase()
+    const s = (p.statsSummary || '').toLowerCase()
+    const role = p.role
+
+    // 1. Definite Openers (preferred pos: 1 - 2)
+    if (
+      n.includes('kohli') || n.includes('rohit') || n.includes('gaikwad') ||
+      n.includes('gill') || n.includes('head') || n.includes('jaiswal') ||
+      n.includes('salt') || n.includes('conway') || n.includes('buttler') ||
+      n.includes('abhishek') || n.includes('rahul') || n.includes('faf') ||
+      n.includes('warner') || n.includes('shaw') || n.includes('prabhsimran') ||
+      s.includes('opener') || s.includes('opening')
+    ) {
+      return 1.0
+    }
+
+    // 2. Top-Order Anchors (preferred pos: 3)
+    if (
+      n.includes('patidar') || n.includes('samson') || n.includes('tilak') ||
+      n.includes('tripathi') || n.includes('williamson') || n.includes('nitish rana') ||
+      (role === 'BAT' && s.includes('anchor'))
+    ) {
+      return 3.0
+    }
+
+    // 3. Middle-Order Nucleus (preferred pos: 4)
+    if (
+      n.includes('suryakumar') || n.includes('shreyas') || n.includes('pooran') ||
+      n.includes('maxwell') || n.includes('badoni') || n.includes('wadhera')
+    ) {
+      return 4.0
+    }
+
+    // 4. Middle-Order / Primary WK / Heavy Hitter (preferred pos: 5)
+    if (
+      n.includes('pant') || n.includes('klaasen') || n.includes('miller') ||
+      n.includes('hetmyer') || n.includes('rinku') || n.includes('jurel') ||
+      n.includes('dhoni') || n.includes('karthik') || (role === 'WK')
+    ) {
+      return 5.0
+    }
+
+    // 5. Batting All-Rounders & Finishers (preferred pos: 6)
+    if (
+      n.includes('hardik') || n.includes('russell') || n.includes('stoinis') ||
+      n.includes('tim david') || n.includes('dube') || n.includes('tewatia') ||
+      n.includes('livingstone') || n.includes('green') || n.includes('venkatesh') ||
+      (role === 'AR' && (s.includes('bat') || s.includes('power') || s.includes('finish')))
+    ) {
+      return 6.0
+    }
+
+    // 6. Bowling All-Rounders (preferred pos: 7 - 8)
+    if (role === 'AR') {
+      if (n.includes('jadeja') || n.includes('axar') || n.includes('rashid') || n.includes('curran') || n.includes('krunal') || n.includes('sundar')) {
+        return 7.0
+      }
+      return 7.5
+    }
+
+    // 7. Bowlers who can bat (preferred pos: 8)
+    if (
+      n.includes('cummins') || n.includes('harshit') || n.includes('shardul') ||
+      n.includes('chahar') || n.includes('ashwin') || n.includes('starc') ||
+      s.includes('all-rounder')
+    ) {
+      return 8.0
+    }
+
+    // 8. Specialist Bowlers (preferred pos: 9 - 10)
+    if (
+      n.includes('kuldeep') || n.includes('chahal') || n.includes('varun') ||
+      n.includes('bishnoi') || n.includes('bumrah') || n.includes('shami') ||
+      n.includes('siraj') || n.includes('arshdeep') || n.includes('boult') ||
+      n.includes('rabada')
+    ) {
+      return 9.5
+    }
+
+    // 9. Tailenders (preferred pos: 10 - 11)
+    if (role === 'BOWL') {
+      return 10.5
+    }
+
+    if (role === 'BAT') return 3.5
+    if (role === 'WK') return 4.5
+    return 8.5
+  }
+
   // Group by role sorted by tactical score
   const wks = scoredSquad.filter((p) => p.role === 'WK').sort((a, b) => b.tacticalScore - a.tacticalScore)
   const bats = scoredSquad.filter((p) => p.role === 'BAT').sort((a, b) => b.tacticalScore - a.tacticalScore)
@@ -156,39 +247,51 @@ export function computeOptimalPlayingXI(
     add(primaryWk)
   }
 
-  // 2. Openers: Top 2 opening batsmen
-  const openerPool = [...bats, ...wks].sort((a, b) => {
-    const isOpA = (a.statsSummary || '').toLowerCase().includes('open') ? 30 : 0
-    const isOpB = (b.statsSummary || '').toLowerCase().includes('open') ? 30 : 0
-    return (b.tacticalScore + isOpB) - (a.tacticalScore + isOpA)
-  })
+  // 2. Exact difference between Bat-First and Bowl-First:
+  // Bat-First: EXACTLY ONE EXTRA BATTER (target 6 specialist batters/WK)
+  // Bowl-First: EXACTLY ONE EXTRA BOWLER (target 5 specialist batters/WK, with an extra frontline bowler)
+  const targetBatters = mode === 'bat_first' ? 6 : 5
+  const targetBowlers = mode === 'bat_first' ? 3 : 4
 
-  for (const p of openerPool) {
-    if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length >= 3) break
-    if (canSelect(p)) add(p)
-  }
-
-  // 3. Middle Order & Finishers based on Bat-First vs Bowl-First
-  const maxBats = mode === 'bat_first' ? 5 : 4
+  // Pick Specialist Batters up to target
   for (const p of bats) {
-    if (selected.filter((s) => s.role === 'BAT').length >= maxBats) break
+    if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length >= targetBatters) break
     if (canSelect(p)) add(p)
   }
 
-  // 4. All-Rounders
+  // If squad is short on pure BAT, fill batting slots with secondary WK
+  if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length < targetBatters) {
+    for (const p of wks) {
+      if (selected.filter((s) => s.role === 'BAT' || s.role === 'WK').length >= targetBatters) break
+      if (canSelect(p)) add(p)
+    }
+  }
+
+  // 3. All-Rounders (up to 2 in XI to maintain squad balance)
   for (const p of ars) {
-    if (selected.filter((s) => s.role === 'AR').length >= 3) break
+    if (selected.filter((s) => s.role === 'AR').length >= 2) break
     if (canSelect(p)) add(p)
   }
 
-  // 5. Frontline Bowlers (Ensure bowlers + ars >= 5)
-  const minBowlers = mode === 'bowl_first' ? 5 : 4
+  // 4. Frontline Bowlers (Ensure minimum bowlers according to mode)
   for (const p of bowls) {
-    if (selected.filter((s) => s.role === 'BOWL').length >= minBowlers) break
+    if (selected.filter((s) => s.role === 'BOWL').length >= targetBowlers) break
     if (canSelect(p)) add(p)
   }
 
-  // 6. Fill remaining up to 11
+  // 5. Fill remaining slots up to 11 while enforcing at least 5 total bowling options (BOWL + AR >= 5)
+  const totalBowlingOptions = () => selected.filter((s) => s.role === 'BOWL' || s.role === 'AR').length
+
+  // If bowling options < 5, prioritize bowlers or all-rounders
+  if (totalBowlingOptions() < 5) {
+    const bowlingPool = [...bowls, ...ars].sort((a, b) => b.tacticalScore - a.tacticalScore)
+    for (const p of bowlingPool) {
+      if (totalBowlingOptions() >= 5 || selected.length >= 11) break
+      if (canSelect(p)) add(p)
+    }
+  }
+
+  // Fill any remaining spots up to 11
   const sortedRemaining = [...scoredSquad].sort((a, b) => b.tacticalScore - a.tacticalScore)
   for (const p of sortedRemaining) {
     if (selected.length >= 11) break
@@ -203,87 +306,42 @@ export function computeOptimalPlayingXI(
     }
   }
 
-  // 7. Sort into authentic cricket order 1 to 11
-  const orderedXI: CampaignPlayer[] = []
-  const pool = [...selected]
-
-  const takeOne = (predicate: (p: CampaignPlayer) => boolean): CampaignPlayer | undefined => {
-    const idx = pool.findIndex(predicate)
-    if (idx !== -1) {
-      const [item] = pool.splice(idx, 1)
-      return item
+  // 6. Sort into authentic cricket order 1 to 11 based on preferred positions
+  const orderedXI = [...selected].sort((a, b) => {
+    const posA = getBattingPositionScore(a)
+    const posB = getBattingPositionScore(b)
+    if (Math.abs(posA - posB) > 0.05) {
+      return posA - posB
     }
-    return undefined
-  }
-
-  // 1-2: Openers
-  for (let i = 0; i < 2; i++) {
-    const opener = takeOne((p) => (p.role === 'BAT' || p.role === 'WK') && (p.statsSummary || '').toLowerCase().includes('open'))
-      || takeOne((p) => p.role === 'BAT' || p.role === 'WK')
-      || takeOne((p) => p.role === 'AR')
-      || pool.shift()
-    if (opener) orderedXI.push(opener)
-  }
-
-  // 3-4: Top Order Anchors
-  for (let i = 0; i < 2; i++) {
-    const top = takeOne((p) => p.role === 'BAT')
-      || takeOne((p) => p.role === 'WK')
-      || takeOne((p) => p.role === 'AR')
-      || pool.shift()
-    if (top) orderedXI.push(top)
-  }
-
-  // 5: Wicketkeeper or Middle-Order Anchor
-  const mid = takeOne((p) => p.role === 'WK')
-    || takeOne((p) => p.role === 'BAT')
-    || takeOne((p) => p.role === 'AR')
-    || pool.shift()
-  if (mid) orderedXI.push(mid)
-
-  // 6-7: Finishers & All-Rounders
-  for (let i = 0; i < 2; i++) {
-    const fin = takeOne((p) => p.role === 'AR')
-      || takeOne((p) => p.role === 'BAT')
-      || takeOne((p) => p.role === 'WK')
-      || pool.shift()
-    if (fin) orderedXI.push(fin)
-  }
-
-  // 8-11: Bowlers (ARs before pure bowlers, express pacers bat last)
-  pool.sort((a, b) => {
-    if (a.role === 'AR' && b.role !== 'AR') return -1
-    if (b.role === 'AR' && a.role !== 'AR') return 1
-    const aIsPace = isExpressPacer(a)
-    const bIsPace = isExpressPacer(b)
-    if (aIsPace && !bIsPace) return 1
-    if (!aIsPace && bIsPace) return -1
-    return 0
+    return (b.tacticalScore || 80) - (a.tacticalScore || 80)
   })
 
-  while (pool.length > 0) {
-    orderedXI.push(pool.shift()!)
-  }
+  // Sanity check: Ensure pure bowlers bat at positions 8-11, and top order is pure BAT/WK/AR
+  const nonBowlers = orderedXI.filter((p) => p.role !== 'BOWL')
+  const pureBowlers = orderedXI.filter((p) => p.role === 'BOWL')
+  
+  // Final ordered 11: Top batters/ARs first, followed by bowlers sorted by batting capability
+  const finalXI = [...nonBowlers, ...pureBowlers].slice(0, 11)
 
-  // 8. TACTICAL IMPACT PLAYER (12th Man) SELECTION
-  const bench = scoredSquad.filter((p) => !orderedXI.some((o) => o.player_id === p.player_id))
+  // 7. Tactical Impact Player (12th Man) Selection
+  const bench = scoredSquad.filter((p) => !finalXI.some((o) => o.player_id === p.player_id))
   let impact: CampaignPlayer | undefined
   if (mode === 'bat_first') {
-    // If batting first: 12th man should be the best frontline bowler/spinner to bowl in 2nd innings!
+    // Batting first: 12th man is the premier specialist bowler/spinner to bowl in 2nd innings
     impact = bench.filter((p) => p.role === 'BOWL' || p.role === 'AR').sort((a, b) => b.tacticalScore - a.tacticalScore)[0] 
       || bench.sort((a, b) => b.tacticalScore - a.tacticalScore)[0]
   } else {
-    // If bowling first: 12th man should be the best explosive finisher/batter to chase in 2nd innings!
+    // Bowling first: 12th man is the premier specialist batter/WK to chase in 2nd innings
     impact = bench.filter((p) => p.role === 'BAT' || p.role === 'WK' || isPowerhitter(p)).sort((a, b) => b.tacticalScore - a.tacticalScore)[0]
       || bench.sort((a, b) => b.tacticalScore - a.tacticalScore)[0]
   }
 
-  const pacerCount = orderedXI.slice(0, 11).filter(isExpressPacer).length
-  const spinCount = orderedXI.slice(0, 11).filter(isSpinner).length
-  const strategySummary = `Calibrated for ${venue} vs ${rival.toUpperCase()} (${mode === 'bat_first' ? 'Bat First' : 'Bowl First'}): Configured ${pacerCount} Express Pacers + ${spinCount} Spinners, with ${impact?.name || '12th Man'} lined up as tactical Impact Sub!`
+  const pacerCount = finalXI.filter(isExpressPacer).length
+  const spinCount = finalXI.filter(isSpinner).length
+  const strategySummary = `Calibrated for ${venue} vs ${rival.toUpperCase()} (${mode === 'bat_first' ? 'Bat First • +1 Batter' : 'Bowl First • +1 Bowler'}): ${pacerCount} Pacers + ${spinCount} Spinners, with ${impact?.name || '12th Man'} as Impact Sub!`
 
   return {
-    xiIds: orderedXI.slice(0, 11).map((p) => p.player_id),
+    xiIds: finalXI.map((p) => p.player_id),
     impactId: impact?.player_id,
     strategySummary
   }
