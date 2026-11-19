@@ -43,6 +43,7 @@ export function Navbar() {
 
   const [mounted, setMounted] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showGameModeModal, setShowGameModeModal] = useState(false)
   const [authModalTab, setAuthModalTab] = useState<'saves' | 'create' | 'switch'>('saves')
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -115,18 +116,31 @@ export function Navbar() {
     setTimeout(() => setLockedToast(null), 3500)
   }
 
-  // The 4 Core Sequential Phases
-  const phaseOrder: Record<string, number> = {
+  // Adaptive Sequential Phases based on Mode
+  const isScratchMode = activeCamp?.mode === 'scratch_inception'
+
+  const officialPhaseOrder: Record<string, number> = {
     'trade': 1,
     'retain_release': 2,
     'mini_auction': 3,
     'playing_xi': 4,
     'match': 4
   }
-  const currentPhaseOrder = phaseOrder[activeCamp?.currentPhase || 'trade'] || 1
+
+  const scratchPhaseOrder: Record<string, number> = {
+    'draft': 1,
+    'mini_auction': 2,
+    'playing_xi': 3,
+    'match': 3
+  }
+
+  const currentPhaseOrder = isScratchMode
+    ? (scratchPhaseOrder[activeCamp?.currentPhase || 'draft'] || 1)
+    : (officialPhaseOrder[activeCamp?.currentPhase || 'trade'] || 1)
+
   const activeSquadCount = activeCamp?.squad?.filter((p: any) => !p.is_released).length || 0
 
-  const PHASES = [
+  const OFFICIAL_PHASES = [
     { 
       id: 'trade', 
       label: currentPhaseOrder > 1 ? '1. Trade (Closed)' : '1. Trade Window', 
@@ -164,6 +178,38 @@ export function Navbar() {
       isLocked: currentPhaseOrder < 4 && activeSquadCount < 18
     },
   ]
+
+  const SCRATCH_PHASES = [
+    {
+      id: 'draft',
+      label: currentPhaseOrder > 1 ? '1. Draft (Concluded)' : '1. Foundation Draft',
+      shortLabel: '1. Draft',
+      href: '/draft',
+      icon: Zap,
+      isConcluded: currentPhaseOrder > 1 || lockedPhases.includes('draft'),
+      isLocked: currentPhaseOrder !== 1
+    },
+    {
+      id: 'mini_auction',
+      label: currentPhaseOrder > 2 ? '2. Auction (Concluded)' : '2. Mega Auction',
+      shortLabel: '2. Auction',
+      href: '/auction',
+      icon: Gavel,
+      isConcluded: currentPhaseOrder > 2 || lockedPhases.includes('mini_auction'),
+      isLocked: currentPhaseOrder < 2
+    },
+    {
+      id: 'playing_xi',
+      label: '3. Playing XI & Schedule',
+      shortLabel: '3. Play',
+      href: '/playing-xi',
+      icon: Calendar,
+      isConcluded: false,
+      isLocked: currentPhaseOrder < 3 && activeSquadCount < 18
+    }
+  ]
+
+  const PHASES = isScratchMode ? SCRATCH_PHASES : OFFICIAL_PHASES
 
   return (
     <>
@@ -256,8 +302,23 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Right: Live Gaming HUD Stats (Purse + Profile) */}
+          {/* Right: Live Gaming HUD Stats (Purse + Mode + Profile) */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Mode Switcher Pill */}
+            <button
+              type="button"
+              onClick={() => {
+                gameAudio.playUiTap('light')
+                triggerGameHaptic('light')
+                setShowGameModeModal(true)
+              }}
+              className="px-2 py-1 rounded-xl bg-gradient-to-r from-amber-500/15 via-sky-500/15 to-purple-500/15 border border-white/10 hover:border-amber-400/40 active:scale-95 text-white flex items-center gap-1 text-[10px] font-mono font-bold cursor-pointer transition-all shrink-0"
+              title="Click to Switch Game Mode (Official Squads vs Build From Scratch)"
+            >
+              <Zap size={11} className={isScratchMode ? "text-sky-400" : "text-amber-400"} />
+              <span className="hidden sm:inline">{isScratchMode ? 'Scratch' : 'Official'}</span>
+            </button>
+
             {activeCamp && (
               <div 
                 className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-mono font-black text-amber-300"
@@ -297,6 +358,12 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Game Mode Selector Modal */}
+      <GameModeSelectionModal
+        isOpen={showGameModeModal}
+        onClose={() => setShowGameModeModal(false)}
+      />
 
       {/* Profile & Auth Modal */}
       <OnboardingAuthModal 
