@@ -3137,8 +3137,8 @@ export default function BallByBallMatchSimulator({
                   <Target size={16} />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-black text-white font-display">Bowler Rotation Manager</h3>
-                  <p className="text-[10px] text-gray-400 font-mono">Max 4 overs per bowler • No consecutive overs</p>
+                  <h3 className="text-sm sm:text-base font-black text-white font-display">Bowler Spell & Tactics</h3>
+                  <p className="text-[10px] text-gray-400 font-mono">Bowler is allotted for their full spell (up to 4 overs) • Change anytime</p>
                 </div>
               </div>
               <button
@@ -3155,8 +3155,7 @@ export default function BallByBallMatchSimulator({
                 const ovsCount = getBowlerOversCount(activeInnings.bowlingFigures, b.name);
                 const fig = activeInnings.bowlingFigures.find(f => f.name === b.name);
                 const isQuotaFull = ovsCount >= 4;
-                const isConsecutive = lastBowlerIdx === bIdx && activeInnings.balls.length % 6 === 0 && activeInnings.balls.length > 0;
-                const isDisabled = isQuotaFull || isConsecutive;
+                const isDisabled = isQuotaFull;
 
                 return (
                   <div
@@ -3196,12 +3195,10 @@ export default function BallByBallMatchSimulator({
                           ? 'bg-rose-600 text-white cursor-default'
                           : isQuotaFull
                           ? 'bg-white/10 text-gray-500 cursor-not-allowed'
-                          : isConsecutive
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 cursor-not-allowed'
                           : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md active:scale-95'
                       }`}
                     >
-                      {isCurrent ? 'Current' : isQuotaFull ? 'Quota Full 🔒' : isConsecutive ? 'Last Bowler ⚠️' : 'Select ➔'}
+                      {isCurrent ? 'Current Spell' : isQuotaFull ? 'Quota Full 🔒' : 'Allot Spell ➔'}
                     </button>
                   </div>
                 );
@@ -3379,131 +3376,6 @@ export default function BallByBallMatchSimulator({
                 className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase cursor-pointer"
               >
                 Back to Match
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── HOW TO PLAY INTERACTIVE TACTICAL GUIDE MODAL ─── */}
-      {showHowToPlay && (
-        <div className="fixed inset-0 z-[1000] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
-          <div className="w-full max-w-lg bg-slate-900 border border-emerald-500/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-                  🏏
-                </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-black text-white font-display">How to Play Match Simulator</h3>
-                  <p className="text-[10px] text-gray-400 font-mono">Ball-by-ball tactical masterclass</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowHowToPlay(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center text-xs cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Content Body */}
-            <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1 text-xs">
-              
-              {/* Quick 2-Step Flow */}
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-emerald-950/40 to-amber-500/10 border border-amber-500/40">
-                <div className="text-xs font-bold text-amber-300 mb-1 flex items-center gap-1.5">
-                  <span>⚡ Quick Play in 2 Taps:</span>
-                </div>
-                <div className="space-y-1 text-[11px] text-gray-200 font-mono">
-                  <div>1️⃣ <strong>Select Intent</strong>: Tap one of the 4 tactics (Batting or Bowling).</div>
-                  <div>2️⃣ <strong>Execute Delivery</strong>: Tap the big glowing <strong>[PLAY SHOT]</strong> or <strong>[BOWL BALL]</strong> button!</div>
-                </div>
-              </div>
-
-              {/* Batting Tactics Breakdown */}
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-2">
-                <div className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                  <span>🏏 Batting Tactics:</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-white block">🛡️ Defend</strong>
-                    <span className="text-gray-400">Guarantees safety, 0-1 run, lowest wicket risk.</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-white block">⚖️ Rotate Strike</strong>
-                    <span className="text-gray-400">Pushes ball into gaps for 1-2 runs, rotates strike.</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-amber-300 block">⚡ Lofted Hit</strong>
-                    <span className="text-gray-400">Attacks over the 30-yd ring for 4s & 6s.</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-amber-400 block">💥 Maximum</strong>
-                    <span className="text-gray-400">Super Six high risk. Boundary or deep catch!</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bowling Tactics Breakdown */}
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-2">
-                <div className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
-                  <span>🎯 Bowling Tactics:</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-rose-300 block">🎯 Yorker</strong>
-                    <span className="text-gray-400">Attacks base of stumps. Clean bowled & LBW hunter.</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-rose-300 block">🌀 Slower Ball</strong>
-                    <span className="text-gray-400">Deceptive cutter. Induces mistimed catches.</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-rose-300 block">⚡ Bouncer</strong>
-                    <span className="text-gray-400">Short ball into body. Top edges to slips & keeper.</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <strong className="text-rose-300 block">📐 Good Length</strong>
-                    <span className="text-gray-400">Economic corridor of uncertainty. Restricts runs.</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Field Radar & Strategy Guide */}
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-1.5 text-[11px] font-mono">
-                <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                  <span>🏟️ Tactical Field Radar:</span>
-                </div>
-                <p className="text-gray-300">
-                  • <strong>Dashed White Ring</strong>: 30-yard inner fielding circle.<br />
-                  • <strong>Red Flag Fielders (🚩)</strong>: Deep boundary fielders saving 4s and catching sixes.<br />
-                  • <strong>Powerplay</strong>: First 6 overs allow max 2 fielders in the deep. Attack during this window!
-                </p>
-              </div>
-
-              {/* Fast Forward Tools */}
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-1 text-[11px] font-mono">
-                <div className="text-xs font-bold text-sky-400 flex items-center gap-1.5">
-                  <span>⏩ Speed Controls:</span>
-                </div>
-                <p className="text-gray-300">
-                  • <strong>Simulate Over</strong>: Fast-forwards the remaining balls of the over.<br />
-                  • <strong>Instant Result</strong>: Instantly calculates final scores, match result & tournament points.
-                </p>
-              </div>
-
-            </div>
-
-            {/* Footer */}
-            <div className="pt-3 border-t border-white/10 shrink-0 flex justify-end">
-              <button
-                onClick={() => setShowHowToPlay(false)}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer shadow-lg"
-              >
-                Got It, Let's Play! 🏏
               </button>
             </div>
           </div>
