@@ -49,53 +49,58 @@ export function AmbientBackground() {
       {/* ─── Stadium Floodlight Beams (Angled Across Arena) ─── */}
       {/* Left Beam angled down-right */}
       <div
-        className="absolute -top-20 left-0 w-[800px] h-[700px] pointer-events-none origin-top-left rotate-[28deg] opacity-[0.07] transition-all duration-1000"
+        className="absolute -top-20 left-0 w-[850px] h-[750px] pointer-events-none origin-top-left rotate-[28deg] opacity-[0.16] transition-all duration-1000"
         style={{
-          background: 'linear-gradient(90deg, rgba(255,255,255,0.7) 0%, var(--accent-primary) 30%, transparent 85%)',
-          filter: 'blur(45px)',
+          background: 'linear-gradient(90deg, rgba(255,255,255,0.85) 0%, var(--accent-primary) 35%, transparent 85%)',
+          filter: 'blur(35px)',
         }}
       />
       {/* Right Beam angled down-left */}
       <div
-        className="absolute -top-20 right-0 w-[800px] h-[700px] pointer-events-none origin-top-right -rotate-[28deg] opacity-[0.07] transition-all duration-1000"
+        className="absolute -top-20 right-0 w-[850px] h-[750px] pointer-events-none origin-top-right -rotate-[28deg] opacity-[0.16] transition-all duration-1000"
         style={{
-          background: 'linear-gradient(270deg, rgba(255,255,255,0.7) 0%, var(--accent-primary) 30%, transparent 85%)',
-          filter: 'blur(45px)',
+          background: 'linear-gradient(270deg, rgba(255,255,255,0.85) 0%, var(--accent-primary) 35%, transparent 85%)',
+          filter: 'blur(35px)',
         }}
       />
 
       {/* ─── Center Ground Glow & Outfield Oval Curve ─── */}
       <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] h-[480px] pointer-events-none"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] h-[550px] pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at 50% 100%, rgba(13, 48, 26, 0.25) 0%, color-mix(in srgb, var(--accent-primary) 12%, transparent) 45%, transparent 75%)',
-          filter: 'blur(50px)',
+          background: 'radial-gradient(ellipse at 50% 100%, rgba(34, 197, 94, 0.22) 0%, rgba(16, 185, 129, 0.12) 35%, transparent 75%)',
+          filter: 'blur(45px)',
         }}
       />
 
       {/* ─── Ground Pitch Markings & Boundary Line Watermark ─── */}
       <svg
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] opacity-[0.045] pointer-events-none"
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[950px] h-[380px] opacity-[0.18] pointer-events-none"
         viewBox="0 0 900 360"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Outfield Boundary Oval */}
-        <ellipse cx="450" cy="300" rx="420" ry="180" stroke="white" strokeWidth="2" strokeDasharray="12 12" />
+        <ellipse cx="450" cy="300" rx="420" ry="180" stroke="#4ade80" strokeWidth="2.5" strokeDasharray="10 10" />
         {/* 30-Yard Inner Circle */}
-        <ellipse cx="450" cy="300" rx="260" ry="110" stroke="white" strokeWidth="1.5" strokeDasharray="6 6" />
-        {/* Cricket Pitch Strip in center */}
-        <rect x="420" y="250" width="60" height="100" rx="4" stroke="white" strokeWidth="1.5" />
-        {/* Crease lines */}
-        <line x1="410" y1="265" x2="490" y2="265" stroke="white" strokeWidth="1.5" />
-        <line x1="410" y1="335" x2="490" y2="335" stroke="white" strokeWidth="1.5" />
-        {/* Wickets */}
-        <circle cx="445" cy="265" r="2.5" fill="white" />
-        <circle cx="450" cy="265" r="2.5" fill="white" />
-        <circle cx="455" cy="265" r="2.5" fill="white" />
-        <circle cx="445" cy="335" r="2.5" fill="white" />
-        <circle cx="450" cy="335" r="2.5" fill="white" />
-        <circle cx="455" cy="335" r="2.5" fill="white" />
+        <ellipse cx="450" cy="300" rx="260" ry="110" stroke="#86efac" strokeWidth="2" strokeDasharray="8 8" />
+        {/* Cricket Pitch Strip in center (Clay Turf) */}
+        <rect x="415" y="240" width="70" height="115" rx="6" fill="rgba(217, 119, 6, 0.15)" stroke="#fbbf24" strokeWidth="2" />
+        {/* Bowling and Popping Crease lines */}
+        <line x1="405" y1="260" x2="495" y2="260" stroke="#fef08a" strokeWidth="2" />
+        <line x1="405" y1="335" x2="495" y2="335" stroke="#fef08a" strokeWidth="2" />
+        {/* Return creases */}
+        <line x1="415" y1="250" x2="415" y2="270" stroke="#fef08a" strokeWidth="1.5" />
+        <line x1="485" y1="250" x2="485" y2="270" stroke="#fef08a" strokeWidth="1.5" />
+        <line x1="415" y1="325" x2="415" y2="345" stroke="#fef08a" strokeWidth="1.5" />
+        <line x1="485" y1="325" x2="485" y2="345" stroke="#fef08a" strokeWidth="1.5" />
+        {/* Wickets (3 Stumps at each end) */}
+        <circle cx="445" cy="260" r="3" fill="#ffffff" />
+        <circle cx="450" cy="260" r="3" fill="#ffffff" />
+        <circle cx="455" cy="260" r="3" fill="#ffffff" />
+        <circle cx="445" cy="335" r="3" fill="#ffffff" />
+        <circle cx="450" cy="335" r="3" fill="#ffffff" />
+        <circle cx="455" cy="335" r="3" fill="#ffffff" />
       </svg>
 
       {/* ─── Stadium Name Watermark in Night Sky ─── */}

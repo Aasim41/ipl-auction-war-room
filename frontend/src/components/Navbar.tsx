@@ -214,8 +214,22 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 w-full pt-[max(env(safe-area-inset-top,0px),28px)] sm:pt-0 h-[calc(max(env(safe-area-inset-top,0px),28px)+3.15rem)] sm:h-14 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
-        <div className="w-full h-full flex items-center justify-between px-2.5 sm:px-4 gap-1.5 sm:gap-2">
+      <nav className="fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
+        {/* Mobile Phone Status Bar Buffer with Top Frame & Border */}
+        <div className="sm:hidden w-full h-[max(env(safe-area-inset-top,0px),38px)] bg-slate-950/90 border-b border-white/10 flex items-center justify-between px-3 text-[10px] font-mono text-emerald-400/80 pointer-events-none select-none shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-bold tracking-widest text-[9px] uppercase text-emerald-400">AUCTIONXI LIVE</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[9px] text-gray-400">
+            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-bold text-amber-400">
+              {isScratchMode ? '⚡ SCRATCH' : '🏆 OFFICIAL'}
+            </span>
+          </div>
+        </div>
+
+        {/* Interactive Navbar Controls Row */}
+        <div className="w-full h-14 flex items-center justify-between px-2.5 sm:px-4 gap-1.5 sm:gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
           <div className="flex items-center gap-1.5 shrink-0">
