@@ -623,6 +623,7 @@ export default function MiniAuctionPage() {
       // Sync rival teams' data in store
       updateRivalTeamsData(simRivals)
 
+      newSoldLog.forEach((s) => soldPlayerIdsRef.current.add(s.player.id))
       setSoldLog(newSoldLog)
       setCurrentIndex(auctionPool.length - 1)
       setGavelPhase('sold')
@@ -1410,7 +1411,7 @@ export default function MiniAuctionPage() {
                 <div className="flex-1 overflow-y-auto space-y-1 pr-1 max-h-56">
                   {displaySquad.map((p, idx) => (
                     <div
-                      key={p.player_id || idx}
+                      key={`${p.player_id || p.name}_${idx}`}
                       className="p-1.5 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between text-[11px]"
                     >
                       <div className="flex items-center gap-1.5 truncate">
@@ -1483,7 +1484,7 @@ export default function MiniAuctionPage() {
                     </div>
                   ) : (
                     soldLog.map((s, idx) => (
-                      <div key={idx} className="p-2 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-xs">
+                      <div key={`${s.player.id}_${s.winner}_${idx}`} className="p-2 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-xs">
                         <div>
                           <span className="font-bold text-white block">{s.player.name}</span>
                           <span className="text-[10px] text-gray-400">Sold to: <strong className="text-amber-300">{s.winner}</strong></span>
