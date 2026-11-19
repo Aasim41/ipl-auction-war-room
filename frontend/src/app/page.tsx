@@ -49,11 +49,13 @@ export default function UnifiedTeamSelectHomePage() {
     getActiveCampaign, 
     createCampaign, 
     switchCampaign, 
-    currentUser 
+    currentUser,
+    createScratchCampaign
   } = useCampaignStore()
 
   const [mounted, setMounted] = useState(false)
   const [selectedTeamId, setSelectedTeamId] = useState<string>('rcb')
+  const [selectedGameMode, setSelectedGameMode] = useState<'official_season' | 'scratch_inception'>('official_season')
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showLoading, setShowLoading] = useState(true)
   const [showGameModeModal, setShowGameModeModal] = useState(false)
@@ -105,10 +107,14 @@ export default function UnifiedTeamSelectHomePage() {
   useEffect(() => {
     setMounted(true)
     const hasLoaded = sessionStorage.getItem('auctionxi_boot_complete')
-    const hasChosenMode = sessionStorage.getItem('auctionxi_game_mode_selected')
+    const savedMode = (sessionStorage.getItem('auctionxi_game_mode_selected') || localStorage.getItem('auctionxi_preferred_game_mode')) as any
+    if (savedMode === 'scratch_inception' || savedMode === 'official_season') {
+      setSelectedGameMode(savedMode)
+    }
+
     if (hasLoaded) {
       setShowLoading(false)
-      if (!hasChosenMode) {
+      if (!savedMode) {
         setShowGameModeModal(true)
       }
     }
@@ -117,6 +123,9 @@ export default function UnifiedTeamSelectHomePage() {
     const activeCamp = getActiveCampaign()
     if (activeCamp) {
       setSelectedTeamId(activeCamp.teamId)
+      if (activeCamp.mode) {
+        setSelectedGameMode(activeCamp.mode)
+      }
     } else if (theme) {
       setSelectedTeamId(theme)
     }
@@ -129,26 +138,45 @@ export default function UnifiedTeamSelectHomePage() {
     triggerGameHaptic('light')
   }
 
-  const handleEnterWarRoom = (teamId: string) => {
-    gameAudio.playTradeDealSuccess()
-    triggerGameHaptic('heavy')
+  const handleLaunchFranchise = (teamId: string) => {
     setTheme(teamId)
 
-    // Check if an existing campaign exists for this team
-    const existing = Object.values(campaigns).find(c => c.teamId === teamId)
-    if (existing) {
-      switchCampaign(existing.id)
-      const targetUrl = existing.currentPhase === 'playing_xi' || existing.currentPhase === 'match'
-        ? '/playing-xi'
-        : existing.currentPhase === 'mini_auction'
-        ? '/auction'
-        : existing.currentPhase === 'retain_release'
-        ? '/squad'
-        : '/trade'
-      router.push(targetUrl)
+    if (selectedGameMode === 'scratch_inception') {
+      gameAudio.playConfettiFanfare()
+      triggerGameHaptic('heavy')
+      const scratchCampaignId = `${currentUser.id}_${teamId}_scratch_2027`
+      if (campaigns[scratchCampaignId]) {
+        switchCampaign(scratchCampaignId)
+        const c = campaigns[scratchCampaignId]
+        const targetUrl = (c.currentPhase === 'playing_xi' || c.currentPhase === 'match')
+          ? '/playing-xi'
+          : c.currentPhase === 'mini_auction'
+          ? '/auction'
+          : '/draft'
+        router.push(targetUrl)
+      } else {
+        createScratchCampaign(teamId)
+        router.push('/draft')
+      }
     } else {
-      createCampaign(teamId)
-      router.push('/trade')
+      gameAudio.playTradeDealSuccess()
+      triggerGameHaptic('heavy')
+      const officialCampaignId = `${currentUser.id}_${teamId}_2027`
+      const existing = campaigns[officialCampaignId] || Object.values(campaigns).find(c => c.teamId === teamId && c.mode !== 'scratch_inception')
+      if (existing) {
+        switchCampaign(existing.id)
+        const targetUrl = existing.currentPhase === 'playing_xi' || existing.currentPhase === 'match'
+          ? '/playing-xi'
+          : existing.currentPhase === 'mini_auction'
+          ? '/auction'
+          : existing.currentPhase === 'retain_release'
+          ? '/squad'
+          : '/trade'
+        router.push(targetUrl)
+      } else {
+        createCampaign(teamId)
+        router.push('/trade')
+      }
     }
   }
 
@@ -156,10 +184,12 @@ export default function UnifiedTeamSelectHomePage() {
   const activeStadium = STADIUMS[activeTeam.id] || STADIUMS.rcb
   const activeFranchiseAI = getFranchiseAI(activeTeam.id)
   const activeFranchise = getFranchise(activeTeam.id)
-  const existingCampaign = Object.values(campaigns).find(c => c.teamId === activeTeam.id)
+  const existingCampaign = selectedGameMode === 'scratch_inception'
+    ? Object.values(campaigns).find(c => c.teamId === activeTeam.id && c.mode === 'scratch_inception')
+    : Object.values(campaigns).find(c => c.teamId === activeTeam.id && c.mode !== 'scratch_inception')
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden flex flex-col justify-between text-white bg-slate-950 pt-[calc(max(env(safe-area-inset-top,0px),12px)+2.85rem)] sm:pt-14 pb-16 touch-manipulation select-none">
+    <div className="min-h-screen relative overflow-x-hidden flex flex-col justify-between text-white bg-transparent safe-page-top pb-16 touch-manipulation select-none">
       
       {/* Optional Cinematic Loading Screen */}
       {showLoading && (
