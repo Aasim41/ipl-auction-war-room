@@ -313,7 +313,7 @@ export function computeOptimalPlayingXI(
     if (Math.abs(posA - posB) > 0.05) {
       return posA - posB
     }
-    return (b.tacticalScore || 80) - (a.tacticalScore || 80)
+    return (((b as any).tacticalScore || Number(b.Power_Index) || 80) - ((a as any).tacticalScore || Number(a.Power_Index) || 80))
   })
 
   // Sanity check: Ensure pure bowlers bat at positions 8-11, and top order is pure BAT/WK/AR
