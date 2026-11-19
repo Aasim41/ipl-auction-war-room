@@ -17,6 +17,126 @@ export interface CampaignPlayer extends IPLPlayer {
 }
 
 // Intelligent Cricket Lineup Builder & Tactical Optimizer
+// Natural authentic cricket batting position score hierarchy (1: Opener ... 11: Tailender)
+export function getCricketBattingOrderScore(p: CampaignPlayer): number {
+  const n = p.name.toLowerCase()
+  const s = (p.statsSummary || '').toLowerCase()
+  const role = p.role
+
+  // 1. Definite Openers (preferred pos: 1.0 - 2.0)
+  if (
+    n.includes('kohli') || n.includes('rohit') || n.includes('gaikwad') ||
+    n.includes('gill') || n.includes('head') || n.includes('jaiswal') ||
+    n.includes('salt') || n.includes('conway') || n.includes('buttler') ||
+    n.includes('abhishek') || n.includes('rahul') || n.includes('faf') ||
+    n.includes('warner') || n.includes('shaw') || n.includes('prabhsimran') ||
+    n.includes('kock') || n.includes('narine') ||
+    s.includes('opener') || s.includes('opening')
+  ) {
+    if (n.includes('kohli') || n.includes('rohit') || n.includes('gaikwad') || n.includes('head') || n.includes('salt') || n.includes('buttler')) {
+      return 1.1
+    }
+    return 1.8
+  }
+
+  // 2. Top-Order Anchors / One Down (preferred pos: 3.0)
+  if (
+    n.includes('patidar') || n.includes('samson') || n.includes('tilak') ||
+    n.includes('tripathi') || n.includes('williamson') || n.includes('sudharsan') ||
+    n.includes('marsh') || (role === 'BAT' && s.includes('anchor'))
+  ) {
+    return 3.0
+  }
+
+  // 3. Middle-Order Nucleus / Two Down (preferred pos: 4.0)
+  if (
+    n.includes('suryakumar') || n.includes('surya') || n.includes('shreyas') || n.includes('s. iyer') ||
+    n.includes('pooran') || n.includes('maxwell') || n.includes('parag') ||
+    n.includes('badoni') || n.includes('wadhera') || n.includes('nitish rana')
+  ) {
+    return 4.0
+  }
+
+  // 4. Middle-Order / Primary WK / Heavy Hitter (preferred pos: 5.0)
+  if (
+    n.includes('pant') || n.includes('klaasen') || n.includes('miller') ||
+    n.includes('hetmyer') || n.includes('rinku') || n.includes('stubbs') ||
+    n.includes('jurel') || n.includes('karthik') || n.includes('jitesh') ||
+    (role === 'WK')
+  ) {
+    return 5.0
+  }
+
+  // 5. Batting All-Rounders & Finishers (preferred pos: 6.0)
+  if (
+    n.includes('hardik') || n.includes('h. pandya') || n.includes('russell') ||
+    n.includes('stoinis') || n.includes('tim david') || n.includes('dube') ||
+    n.includes('green') || n.includes('venkatesh') || n.includes('v. iyer') ||
+    n.includes('dhoni') || n.includes('tewatia') || n.includes('shashank') ||
+    n.includes('livingstone') ||
+    (role === 'AR' && (s.includes('bat') || s.includes('power') || s.includes('finish')))
+  ) {
+    return 6.0
+  }
+
+  // 6. Bowling All-Rounders (preferred pos: 7.0 - 7.5)
+  if (role === 'AR') {
+    if (
+      n.includes('jadeja') || n.includes('axar') || n.includes('rashid') ||
+      n.includes('curran') || n.includes('krunal') || n.includes('k. pandya') ||
+      n.includes('sundar') || n.includes('nitish reddy') || n.includes('jansen') ||
+      n.includes('shardul')
+    ) {
+      return 7.0
+    }
+    return 7.4
+  }
+
+  // 7. Bowlers Who Can Bat / Lower Order Weapons (preferred pos: 8.0)
+  if (
+    n.includes('cummins') || n.includes('harshit') || n.includes('ashwin') ||
+    n.includes('chahar') || n.includes('starc') || n.includes('coetzee') ||
+    n.includes('bhuvneshwar') || s.includes('all-rounder')
+  ) {
+    return 8.0
+  }
+
+  // 8. Specialist Bowlers (preferred pos: 9.0 - 10.0)
+  if (
+    n.includes('kuldeep') || n.includes('chahal') || n.includes('varun') ||
+    n.includes('bishnoi') || n.includes('siraj') || n.includes('shami') ||
+    n.includes('arshdeep') || n.includes('boult') || n.includes('pathirana') ||
+    n.includes('rabada') || n.includes('nortje')
+  ) {
+    return 9.5
+  }
+
+  // 9. Tailenders (preferred pos: 10.5 - 11.0)
+  if (role === 'BOWL') {
+    if (n.includes('bumrah') || n.includes('dayal') || n.includes('mohit') || n.includes('sandeep') || n.includes('mayank')) {
+      return 10.8
+    }
+    return 10.2
+  }
+
+  if (role === 'BAT') return 3.5
+  if (role === 'WK') return 4.5
+  return 8.5
+}
+
+// Sort any list of players into an authentic cricket batting order (1 to 11)
+export function sortCricketBattingOrder(players: CampaignPlayer[]): CampaignPlayer[] {
+  return [...players].sort((a, b) => {
+    const scoreA = getCricketBattingOrderScore(a)
+    const scoreB = getCricketBattingOrderScore(b)
+    if (Math.abs(scoreA - scoreB) > 0.08) {
+      return scoreA - scoreB
+    }
+    // Tie-break by power index or price
+    return (Number(b.Power_Index) || 80) - (Number(a.Power_Index) || 80)
+  })
+}
+
 // Calibrates XI based on: Pitch/Venue characteristics, Rival Strengths/Weaknesses, and Bat-First vs Bowl-First tactics
 export function computeOptimalPlayingXI(
   activeSquad: CampaignPlayer[],
@@ -100,31 +220,25 @@ export function computeOptimalPlayingXI(
 
     // 2. RIVAL WEAKNESS / STRENGTH COUNTER FACTOR
     if (rival === 'csk') {
-      // Counter CSK: pace yorkers at death (Dhoni/Jadeja) + wrist spin in middle overs
       if (s.includes('yorker') || s.includes('death')) score += 10
       if (isSpinner(p)) score += 8
     } else if (rival === 'srh' || rival === 'kkr') {
-      // Counter SRH/KKR: New ball swing to dismiss Head/Abhishek/Narine in powerplay
       if (isExpressPacer(p) && (s.includes('swing') || s.includes('powerplay') || p.name.includes('Boult') || p.name.includes('Starc') || p.name.includes('Bumrah'))) score += 16
     } else if (rival === 'mi') {
-      // Counter MI: Middle-order mystery spin & wide yorkers
       if (isSpinner(p) || s.includes('yorker')) score += 12
     } else if (rival === 'rr') {
-      // Counter RR: Pace variation & change of length
       if (s.includes('cutter') || s.includes('variation')) score += 10
     }
 
     // 3. TACTICAL MODE FACTOR (Bat First vs Bowl First)
     if (mode === 'bat_first') {
-      // Optimize for setting huge target: Boost batting depth
-      if (p.role === 'BAT') score += 12
+      if (p.role === 'BAT') score += 14
       if (p.role === 'AR') score += 10
       if (p.role === 'WK') score += 8
     } else {
-      // Optimize for restricting opposition: Boost 5-6 frontline bowling weapons
-      if (p.role === 'BOWL') score += 16
-      if (p.role === 'AR') score += 8
-      if (isExpressPacer(p) || isSpinner(p)) score += 10
+      if (p.role === 'BOWL') score += 18
+      if (p.role === 'AR') score += 10
+      if (isExpressPacer(p) || isSpinner(p)) score += 12
     }
 
     return { ...p, tacticalScore: score }
@@ -306,21 +420,12 @@ export function computeOptimalPlayingXI(
     }
   }
 
-  // 6. Sort into authentic cricket order 1 to 11 based on preferred positions
-  const orderedXI = [...selected].sort((a, b) => {
-    const posA = getBattingPositionScore(a)
-    const posB = getBattingPositionScore(b)
-    if (Math.abs(posA - posB) > 0.05) {
-      return posA - posB
-    }
-    return (((b as any).tacticalScore || Number(b.Power_Index) || 80) - ((a as any).tacticalScore || Number(a.Power_Index) || 80))
-  })
+  // 6. Sort into authentic cricket order 1 to 11 using full player-level batting position hierarchy
+  const orderedXI = sortCricketBattingOrder(selected)
 
-  // Sanity check: Ensure pure bowlers bat at positions 8-11, and top order is pure BAT/WK/AR
+  // Ensure top order (1-6) has zero pure tailenders and bowlers strictly occupy slots 8-11
   const nonBowlers = orderedXI.filter((p) => p.role !== 'BOWL')
   const pureBowlers = orderedXI.filter((p) => p.role === 'BOWL')
-  
-  // Final ordered 11: Top batters/ARs first, followed by bowlers sorted by batting capability
   const finalXI = [...nonBowlers, ...pureBowlers].slice(0, 11)
 
   // 7. Tactical Impact Player (12th Man) Selection
