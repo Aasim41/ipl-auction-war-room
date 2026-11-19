@@ -352,11 +352,14 @@ export interface UserCampaign {
   userId: string
   teamId: string
   teamName: string
-  currentPhase: 'rules' | 'trade' | 'retain_release' | 'mini_auction' | 'playing_xi' | 'match'
+  mode?: 'official_season' | 'scratch_inception'
+  currentPhase: 'rules' | 'trade' | 'retain_release' | 'mini_auction' | 'playing_xi' | 'match' | 'draft'
   totalPurse: number
   remainingPurse: number
   squad: CampaignPlayer[]
   releasedStars: CampaignPlayer[]
+  draftPicks?: Record<string, CampaignPlayer[]>
+  currentDraftRound?: number
   tradedHistory: Array<{
     date: string
     playerOut: string
