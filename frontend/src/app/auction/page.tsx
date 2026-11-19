@@ -146,50 +146,60 @@ export default function MiniAuctionPage() {
     rulesSatisfied: boolean
   } | null>(null)
 
-  // Initialize Dynamic Auction Pool (All 10 Franchises)
+  // Initialize Dynamic Auction Pool once per campaign
+  const poolInitializedRef = useRef<string | null>(null)
   useEffect(() => {
     if (!campaign) return
-    const pool = generateDynamicAuctionPool(campaign.teamId, campaign.releasedStars || [])
+    if (poolInitializedRef.current === campaign.id) return
+    poolInitializedRef.current = campaign.id
+
+    const pool = generateDynamicAuctionPool(
+      campaign.teamId, 
+      campaign.releasedStars || [],
+      campaign.squad,
+      campaign.rivalTeamsData,
+      campaign.tradedHistory
+    )
     setAuctionPool(pool)
     if (pool.length > 0) {
       setCurrentBid(pool[0].basePrice)
     }
     setSelectedFranchiseView(campaign.teamId)
-  }, [campaign])
+  }, [campaign?.id])
 
   const currentPlayer = auctionPool[currentIndex]
   const isUserHighest = highestBidder === campaign?.teamId
 
-  // Live Timer & Gavel Countdown with Procedural Sound & Haptics
+  // Live Timer: pure decrement every 1s (NO state mutations inside setState!)
   useEffect(() => {
     if (!currentPlayer || gavelPhase === 'sold' || isAutoSimulating) return
 
     const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          if (gavelPhase === 'bidding') {
-            gameAudio.playAuctionGavel(false)
-            setGavelPhase('going_once')
-            return 3
-          } else if (gavelPhase === 'going_once') {
-            gameAudio.playAuctionGavel(false)
-            setGavelPhase('going_twice')
-            return 3
-          } else if (gavelPhase === 'going_twice') {
-            gameAudio.playAuctionGavel(true)
-            triggerGameHaptic('gavel')
-            setGavelPhase('sold')
-            handleSold()
-            return 0
-          }
-          return 0
-        }
-        return prev - 1
-      })
+      setTimer((prev) => (prev > 0 ? prev - 1 : 0))
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [timer, gavelPhase, currentPlayer, isAutoSimulating])
+  }, [gavelPhase, currentPlayer?.id, isAutoSimulating])
+
+  // Gavel countdown phase transitions: runs purely in useEffect when timer reaches 0
+  useEffect(() => {
+    if (timer > 0 || !currentPlayer || gavelPhase === 'sold' || isAutoSimulating) return
+
+    if (gavelPhase === 'bidding') {
+      gameAudio.playAuctionGavel(false)
+      setGavelPhase('going_once')
+      setTimer(3)
+    } else if (gavelPhase === 'going_once') {
+      gameAudio.playAuctionGavel(false)
+      setGavelPhase('going_twice')
+      setTimer(3)
+    } else if (gavelPhase === 'going_twice') {
+      gameAudio.playAuctionGavel(true)
+      triggerGameHaptic('gavel')
+      setGavelPhase('sold')
+      handleSold()
+    }
+  }, [timer, gavelPhase, currentPlayer?.id, isAutoSimulating])
 
   // Dynamic live purse & squad inspection across all 10 franchises
   const getTeamPurse = (teamId: string): number => {
@@ -298,8 +308,13 @@ export default function MiniAuctionPage() {
   }, [currentBid, highestBidder, gavelPhase, currentPlayer, isAutoSimulating, campaign])
 
   // Handle SOLD resolution
+  const soldPlayerIdsRef = useRef<Set<string>>(new Set())
   const handleSold = () => {
     if (!currentPlayer || !campaign) return
+
+    // Prevent duplicate sold processing for the same player lot
+    if (soldPlayerIdsRef.current.has(currentPlayer.id)) return
+    soldPlayerIdsRef.current.add(currentPlayer.id)
 
     // If nobody bid or bidder is still initial auctioneer
     if (!highestBidder || highestBidder === 'BCCI Auctioneer' || highestBidder === 'none' || bidHistory.length === 0) {
