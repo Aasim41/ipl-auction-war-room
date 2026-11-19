@@ -946,7 +946,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
           }
 
           // Strict Lockdown Self-Healing: guarantee that if a phase is past, it's locked!
-          const requiredLocks: Array<'trade' | 'retain_release' | 'mini_auction'> = []
+          const requiredLocks: Array<'trade' | 'retain_release' | 'mini_auction' | 'draft'> = []
           if (updatedActive.currentPhase === 'retain_release') {
             requiredLocks.push('trade')
           } else if (updatedActive.currentPhase === 'mini_auction') {
@@ -1086,7 +1086,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       advancePhase: (nextPhase) => {
         get().updateActiveCampaign((prev) => {
-          const locked: Array<'trade' | 'retain_release' | 'mini_auction'> = [...(prev.lockedPhases || [])]
+          const locked: Array<'trade' | 'retain_release' | 'mini_auction' | 'draft'> = [...(prev.lockedPhases || [])]
           
           // Enforce "once a cycle is started there is no going back"
           if (nextPhase === 'retain_release' && !locked.includes('trade')) {
