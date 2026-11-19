@@ -484,7 +484,7 @@ export interface UserCampaign {
   schedule: TournamentFixture[]
   currentMatchIndex: number
   pointsTable: TournamentPointsEntry[]
-  lockedPhases: Array<'trade' | 'retain_release' | 'mini_auction'>
+  lockedPhases: Array<'trade' | 'retain_release' | 'mini_auction' | 'draft'>
   rivalTeamsData?: Record<string, {
     remainingPurse: number;
     squad: CampaignPlayer[];

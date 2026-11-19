@@ -19,7 +19,8 @@ import {
   ChevronDown,
   AlertCircle,
   Volume2,
-  VolumeX
+  VolumeX,
+  Zap
 } from 'lucide-react'
 import { useCampaignStore } from '../store/useCampaignStore'
 import { getFranchise } from '../data/franchises'
