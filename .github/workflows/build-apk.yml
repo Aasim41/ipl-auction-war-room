@@ -30,6 +30,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
@@ -57,7 +58,15 @@ jobs:
       - name: Build Android Debug APK
         run: |
           cd frontend/android
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          for attempt in 1 2 3; do
+            if ./gradlew assembleDebug --no-daemon --stacktrace; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              sleep $((attempt * 30))
+            fi
+          done
+          exit 1
 
       - name: Prepare APK Release Artifacts
         run: |
