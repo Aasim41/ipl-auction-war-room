@@ -178,7 +178,7 @@ export default function InauguralDraftPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between pt-[calc(max(env(safe-area-inset-top,0px),12px)+2.85rem)] sm:pt-14 pb-12 select-none overflow-x-hidden">
+    <div className="min-h-screen bg-transparent text-white flex flex-col justify-between safe-page-top pb-12 select-none overflow-x-hidden">
       
       {/* Dynamic Background Mesh */}
       <div className="fixed inset-0 pointer-events-none -z-10">

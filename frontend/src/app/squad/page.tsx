@@ -172,7 +172,7 @@ export default function SquadRetainReleasePage() {
         squadTouchStartX.current = null
         squadTouchStartY.current = null
       }}
-      className="min-h-[100dvh] bg-slate-950 text-white flex flex-col pt-[calc(max(env(safe-area-inset-top,0px),10px)+2.85rem)] sm:pt-14 pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
+      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
     >
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3.5">
         
