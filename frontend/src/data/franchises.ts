@@ -2876,8 +2876,27 @@ export function generateDynamicAuctionPool(
     'nicholas pooran', 'mayank yadav', 'ravi bishnoi',
     'rashid khan', 'sai sudharsan', 'shashank singh', 'prabhsimran singh',
     'rajat patidar', 'matheesha pathirana', 'shivam dube', 'tilak varma',
-    'harshit rana', 'ramandeep singh', 'nitish kumar reddy', 'ayush badoni'
+    'harshit rana', 'ramandeep singh', 'nitish kumar reddy', 'ayush badoni',
+    'phil salt', 'venkatesh iyer', 'cameron green', 'shreyas iyer', 'rishabh pant',
+    'kl rahul', 'jos buttler', 'arshdeep singh', 'yuzvendra chahal', 'mohammed siraj',
+    'mitchell starc', 'trent boult', 'mohammed shami', 'jofra archer', 'david miller',
+    'glenn maxwell', 'ishan kishan', 'faf du plessis', 'marcus stoinis', 'sam curran',
+    'liam livingstone', 'quinton de kock', 'anrich nortje', 'kagiso rabada'
   ])
+
+  // Collect active names from ALL rival teams so players currently on team rosters are NOT added to the auction pool!
+  const allRivalActiveNames = new Set<string>()
+  Object.entries(IPL_FRANCHISES).forEach(([teamKey, franchise]) => {
+    if (teamKey === normUserTeam) return
+    const rivalSquad = rivalTeamsData?.[teamKey]?.squad?.length
+      ? rivalTeamsData[teamKey].squad
+      : franchise.squad2026 || []
+    rivalSquad.forEach((p: any) => {
+      if (!p.is_released) {
+        allRivalActiveNames.add(p.name.trim().toLowerCase())
+      }
+    })
+  })
 
   // 1. Add all user-released stars first
   userReleasedPlayers.forEach((p, idx) => {
@@ -2921,7 +2940,7 @@ export function generateDynamicAuctionPool(
         const scoreB = (b.Power_Index || 78) - (b.price > 5 ? 5 : 0)
         return scoreA - scoreB
       })
-      .slice(0, 4) // Each rival AI releases 3-4 fringe/rotation players
+      .slice(0, 3) // Each rival AI releases 2-3 fringe/rotation players
 
     releaseCandidates.forEach((rp: any, idx: number) => {
       // Ensure no duplicates in pool
@@ -2942,14 +2961,15 @@ export function generateDynamicAuctionPool(
     })
   })
 
-  // 3. Add Marquee Free Agents & International Stars (ONLY if NOT currently in active user squad or traded)
+  // 3. Add Free Agents & International Stars (ONLY if NOT currently in ANY team's active squad or traded)
   RELEASED_AUCTION_POOL.forEach((mp, idx) => {
     const cleanName = mp.name.trim().toLowerCase()
     const isAlreadyInPool = pool.some((p) => p.name.trim().toLowerCase() === cleanName)
     const isInUserSquad = userActiveNames.has(cleanName)
+    const isInRivalSquad = allRivalActiveNames.has(cleanName)
     const isTraded = tradedNames.has(cleanName)
 
-    if (!isAlreadyInPool && !isInUserSquad && !isTraded) {
+    if (!isAlreadyInPool && !isInUserSquad && !isInRivalSquad && !isTraded) {
       pool.push({
         id: `marquee_${idx + 1}`,
         name: mp.name,
@@ -2960,7 +2980,7 @@ export function generateDynamicAuctionPool(
         powerIndex: mp.powerIndex,
         formerTeam: mp.formerTeam,
         statsSummary: mp.reason,
-        releaseReason: 'Marquee Auction Lot'
+        releaseReason: 'Mega Auction Open Lot'
       })
     }
   })
