@@ -177,7 +177,7 @@ export default function PlayingXIPage() {
   } = useCampaignStore();
   
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'xi' | 'schedule' | 'standings'>('xi');
+  const [activeTab, setActiveTab] = useState<'xi' | 'schedule'>('xi');
   const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('all');
   const [lineupMode, setLineupMode] = useState<'bat_first' | 'bowl_first'>('bat_first');
   const [strategyToast, setStrategyToast] = useState<string | null>(null);
@@ -208,7 +208,7 @@ export default function PlayingXIPage() {
 
     // Ergonomic 30px swipe threshold
     if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
-      const tabs: Array<'xi' | 'schedule' | 'standings'> = ['xi', 'schedule', 'standings'];
+      const tabs: Array<'xi' | 'schedule'> = ['xi', 'schedule'];
       const curIdx = tabs.indexOf(activeTab);
       if (deltaX < 0 && curIdx < tabs.length - 1) {
         setActiveTab(tabs[curIdx + 1]);
@@ -231,7 +231,7 @@ export default function PlayingXIPage() {
   useEffect(() => {
     const handleAppSwipe = (e: any) => {
       const direction = e.detail?.direction;
-      const tabs: Array<'xi' | 'schedule' | 'standings'> = ['xi', 'schedule', 'standings'];
+      const tabs: Array<'xi' | 'schedule'> = ['xi', 'schedule'];
       const curIdx = tabs.indexOf(activeTab);
       if (direction === 'left' && curIdx < tabs.length - 1) {
         e.preventDefault();
@@ -378,7 +378,7 @@ export default function PlayingXIPage() {
         <div className="flex md:hidden items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-white/10 text-[10px] font-mono text-gray-400 shadow-sm">
           <span>👈 Swipe</span>
           <span className="text-amber-400 font-bold uppercase">
-            {activeTab === 'xi' ? 'Lineup & Tactics' : activeTab === 'schedule' ? 'Tournament Schedule' : 'IPL Standings'}
+            {activeTab === 'xi' ? 'Lineup & Tactics' : 'Tournament Schedule & Standings'}
           </span>
           <span>Swipe 👉</span>
         </div>
@@ -428,19 +428,7 @@ export default function PlayingXIPage() {
                 }`}
               >
                 <Calendar size={14} />
-                <span>Schedule (74)</span>
-              </button>
-              <button
-                onClick={() => {
-                  gameAudio.playUiTap('select');
-                  setActiveTab('standings');
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeTab === 'standings' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Trophy size={14} />
-                <span>Points Table</span>
+                <span>Schedule & Standings (74)</span>
               </button>
             </div>
 
