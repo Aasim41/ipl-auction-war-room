@@ -18,32 +18,28 @@
   --color-input: #0c2b1b;
 }
 
-/* ─── CSS Custom Properties for Dynamic Theming ────────── */
+/* ─── CSS Custom Properties for Dynamic Franchise Theming ────────── */
 :root {
   --accent-primary: #fbbf24;
   --accent-secondary: #f59e0b;
-  --accent-glow: rgba(251, 191, 36, 0.15);
-  --theme-bg: color-mix(in srgb, var(--accent-primary) 30%, #000000);
+  --accent-glow: rgba(251, 191, 36, 0.20);
+  --theme-bg: #030c06;
 }
 
-.theme-csk  { --accent-primary: #fbbf24; --accent-secondary: #f59e0b; --accent-glow: rgba(251,191,36,0.15); }
-.theme-mi   { --accent-primary: #2563eb; --accent-secondary: #3b82f6; --accent-glow: rgba(37,99,235,0.15); }
-.theme-rcb  { --accent-primary: #dc2626; --accent-secondary: #ef4444; --accent-glow: rgba(220,38,38,0.15); }
-.theme-kkr  { --accent-primary: #7c3aed; --accent-secondary: #8b5cf6; --accent-glow: rgba(124,58,237,0.15); }
-.theme-srh  { --accent-primary: #ea580c; --accent-secondary: #f97316; --accent-glow: rgba(234,88,12,0.15); }
-.theme-rr   { --accent-primary: #db2777; --accent-secondary: #ec4899; --accent-glow: rgba(219,39,119,0.15); }
-.theme-dc   { --accent-primary: #0284c7; --accent-secondary: #0ea5e9; --accent-glow: rgba(2,132,199,0.15); }
-.theme-pbks { --accent-primary: #b91c1c; --accent-secondary: #dc2626; --accent-glow: rgba(185,28,28,0.15); }
-.theme-lsg  { --accent-primary: #0891b2; --accent-secondary: #06b6d4; --accent-glow: rgba(8,145,178,0.15); }
-.theme-gt   { --accent-primary: #0d9488; --accent-secondary: #14b8a6; --accent-glow: rgba(13,148,136,0.15); }
-
-.theme-csk, .theme-mi, .theme-rcb, .theme-kkr, .theme-srh, .theme-rr, .theme-dc, .theme-pbks, .theme-lsg, .theme-gt {
-  --theme-bg: color-mix(in srgb, var(--accent-primary) 30%, #000000);
-}
+.theme-csk  { --accent-primary: #fbbf24; --accent-secondary: #f59e0b; --accent-glow: rgba(251,191,36,0.22); }
+.theme-mi   { --accent-primary: #2563eb; --accent-secondary: #3b82f6; --accent-glow: rgba(37,99,235,0.22); }
+.theme-rcb  { --accent-primary: #dc2626; --accent-secondary: #ef4444; --accent-glow: rgba(220,38,38,0.22); }
+.theme-kkr  { --accent-primary: #7c3aed; --accent-secondary: #8b5cf6; --accent-glow: rgba(124,58,237,0.22); }
+.theme-srh  { --accent-primary: #ea580c; --accent-secondary: #f97316; --accent-glow: rgba(234,88,12,0.22); }
+.theme-rr   { --accent-primary: #db2777; --accent-secondary: #ec4899; --accent-glow: rgba(219,39,119,0.22); }
+.theme-dc   { --accent-primary: #0284c7; --accent-secondary: #0ea5e9; --accent-glow: rgba(2,132,199,0.22); }
+.theme-pbks { --accent-primary: #b91c1c; --accent-secondary: #dc2626; --accent-glow: rgba(185,28,28,0.22); }
+.theme-lsg  { --accent-primary: #0891b2; --accent-secondary: #06b6d4; --accent-glow: rgba(8,145,178,0.22); }
+.theme-gt   { --accent-primary: #0d9488; --accent-secondary: #14b8a6; --accent-glow: rgba(13,148,136,0.22); }
 
 /* ─── Base Styles ──────────────────────────────────────── */
 html, body {
-  background-color: var(--theme-bg, #04120a) !important;
+  background-color: #030c06 !important;
   color: #f0fdf4;
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100dvh;
@@ -66,57 +62,45 @@ html, body {
   }
 }
 
-/* ─── Authentic Cricket Stadium Night Floodlight & Turf Atmosphere ─── */
+/* ─── Authentic Cricket Stadium Night Floodlight, Pitch & Turf Atmosphere ─── */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -2;
   background: 
-    radial-gradient(ellipse 90% 60% at 50% 100%, rgba(20, 83, 45, 0.22) 0%, transparent 60%),
-    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(254, 240, 138, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 50% at 80% 10%, rgba(254, 240, 138, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(186, 121, 71, 0.04) 0%, transparent 60%),
-    linear-gradient(180deg, #050b07 0%, #07130b 50%, #040905 100%);
-  animation: stadium-lights 18s ease-in-out infinite alternate;
+    /* Dual Corner Floodlight Beams */
+    radial-gradient(circle 500px at 10% 0%, rgba(255, 255, 255, 0.12) 0%, rgba(254, 240, 138, 0.05) 35%, transparent 75%),
+    radial-gradient(circle 500px at 90% 0%, rgba(255, 255, 255, 0.12) 0%, rgba(254, 240, 138, 0.05) 35%, transparent 75%),
+    /* Center Clay 22-Yard Cricket Pitch Strip */
+    radial-gradient(ellipse 260px 800px at 50% 50%, rgba(160, 110, 65, 0.08) 0%, rgba(120, 80, 45, 0.03) 50%, transparent 85%),
+    /* Outfield 30-Yard Circle & Boundary Lawn Glow */
+    radial-gradient(ellipse 950px 650px at 50% 60%, rgba(34, 197, 94, 0.12) 0%, rgba(16, 185, 129, 0.05) 60%, transparent 90%),
+    /* Franchise Ambient Night Aurora */
+    radial-gradient(ellipse 800px 350px at 50% 0%, var(--accent-glow, rgba(251, 191, 36, 0.10)) 0%, transparent 70%),
+    /* Deep Stadium Night Sky to Turf Gradient */
+    linear-gradient(180deg, #020804 0%, #05140a 40%, #081d0f 70%, #030a05 100%);
+  pointer-events: none;
 }
+
+/* Freshly Manicured Turf Outfield Mow Stripes & Lawn Fiber Depth */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.04;
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(20, 83, 45, 0.3) 0px,
-    rgba(20, 83, 45, 0.3) 60px,
-    rgba(5, 46, 22, 0.1) 60px,
-    rgba(5, 46, 22, 0.1) 120px
-  );
+  opacity: 0.09;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 55px,
+      transparent 55px,
+      transparent 110px
+    ),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 110px 100%, 24px 24px;
   pointer-events: none;
-}
-@keyframes stadium-lights {
-  0% {
-    background: 
-      radial-gradient(ellipse 90% 60% at 50% 100%, rgba(20, 83, 45, 0.22) 0%, transparent 60%),
-      radial-gradient(ellipse 70% 50% at 20% 10%, rgba(254, 240, 138, 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse 70% 50% at 80% 10%, rgba(254, 240, 138, 0.06) 0%, transparent 50%),
-      linear-gradient(180deg, #050b07 0%, #07130b 50%, #040905 100%);
-  }
-  50% {
-    background: 
-      radial-gradient(ellipse 95% 65% at 50% 105%, rgba(22, 101, 52, 0.25) 0%, transparent 65%),
-      radial-gradient(ellipse 75% 55% at 25% 15%, rgba(253, 224, 71, 0.07) 0%, transparent 55%),
-      radial-gradient(ellipse 75% 55% at 75% 15%, rgba(253, 224, 71, 0.07) 0%, transparent 55%),
-      linear-gradient(180deg, #040a06 0%, #061109 50%, #030804 100%);
-  }
-  100% {
-    background: 
-      radial-gradient(ellipse 90% 60% at 50% 100%, rgba(20, 83, 45, 0.20) 0%, transparent 60%),
-      radial-gradient(ellipse 70% 50% at 15% 10%, rgba(254, 240, 138, 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse 70% 50% at 85% 10%, rgba(254, 240, 138, 0.05) 0%, transparent 50%),
-      linear-gradient(180deg, #050b07 0%, #07130b 50%, #040905 100%);
-  }
 }
 
 /* ─── Typography ───────────────────────────────────────── */
