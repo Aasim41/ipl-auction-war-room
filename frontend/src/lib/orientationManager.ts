@@ -6,7 +6,7 @@
 
 export type ScreenOrientationType = 'portrait' | 'landscape';
 
-let currentLockedOrientation: ScreenOrientationType = 'portrait';
+let currentLockedOrientation: ScreenOrientationType = 'landscape';
 
 export async function lockOrientation(target: ScreenOrientationType): Promise<void> {
   currentLockedOrientation = target;
