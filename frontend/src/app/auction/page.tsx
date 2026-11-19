@@ -828,13 +828,7 @@ export default function MiniAuctionPage() {
               </button>
             )}
 
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition-colors"
-              title="Toggle Audio"
-            >
-              {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
-            </button>
+
           </div>
         </div>
 
