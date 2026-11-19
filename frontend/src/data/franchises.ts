@@ -2777,10 +2777,43 @@ export interface DynamicAuctionPlayer {
 
 export function generateDynamicAuctionPool(
   userTeamId: string, 
-  userReleasedPlayers: IPLPlayer[] = []
+  userReleasedPlayers: IPLPlayer[] = [],
+  currentCampaignSquad: Array<{ name: string; player_id?: string; is_released?: boolean }> = [],
+  rivalTeamsData?: Record<string, { remainingPurse: number; squad: Array<{ name: string; is_released?: boolean }> }>,
+  tradedHistory?: Array<{ playerOut: string; playerIn: string; rivalTeam: string }>
 ): DynamicAuctionPlayer[] {
   const pool: DynamicAuctionPlayer[] = []
   const normUserTeam = (userTeamId || 'rcb').toLowerCase()
+
+  // Set of all traded players (traded players MUST NEVER be released by BCCI rules)
+  const tradedNames = new Set<string>()
+  if (tradedHistory) {
+    tradedHistory.forEach((t) => {
+      if (t.playerOut) tradedNames.add(t.playerOut.trim().toLowerCase())
+      if (t.playerIn) tradedNames.add(t.playerIn.trim().toLowerCase())
+    })
+  }
+
+  // Set of players currently retained/active in user squad
+  const userActiveNames = new Set<string>(
+    currentCampaignSquad
+      .filter((p) => !p.is_released)
+      .map((p) => p.name.trim().toLowerCase())
+  )
+
+  // Protected franchise marquee icons that can NEVER be released by any AI team
+  const UNTOUCHABLE_MARQUEE_NAMES = new Set([
+    'virat kohli', 'jasprit bumrah', 'ms dhoni', 'rohit sharma', 'hardik pandya',
+    'suryakumar yadav', 'ravindra jadeja', 'ruturaj gaikwad', 'shubman gill',
+    'sunil narine', 'andre russell', 'rinku singh', 'varun chakaravarthy',
+    'heinrich klaasen', 'pat cummins', 'travis head', 'abhishek sharma',
+    'sanju samson', 'yashasvi jaiswal', 'riyan parag', 'dhruv jurel',
+    'axar patel', 'kuldeep yadav', 'tristan stubbs',
+    'nicholas pooran', 'mayank yadav', 'ravi bishnoi',
+    'rashid khan', 'sai sudharsan', 'shashank singh', 'prabhsimran singh',
+    'rajat patidar', 'matheesha pathirana', 'shivam dube', 'tilak varma',
+    'harshit rana', 'ramandeep singh', 'nitish kumar reddy', 'ayush badoni'
+  ])
 
   // 1. Add all user-released stars first
   userReleasedPlayers.forEach((p, idx) => {
@@ -2802,24 +2835,34 @@ export function generateDynamicAuctionPool(
   Object.entries(IPL_FRANCHISES).forEach(([teamKey, franchise]) => {
     if (teamKey === normUserTeam) return // skip user franchise
 
-    // AI selects 3 to 5 players to release based on:
-    // a) Overseas surplus (keep max 7-8 overseas)
-    // b) High cost with lower power index
-    // c) Backup rotation
-    const squad = [...franchise.squad2026]
-    
-    // Sort candidates for release: lower Power_Index first, then high price
-    const releaseCandidates = squad
-      .filter(p => !['Virat Kohli', 'Jasprit Bumrah', 'MS Dhoni', 'Rohit Sharma', 'Hardik Pandya', 'Ruturaj Gaikwad', 'Shubman Gill', 'Rishabh Pant', 'Sunil Narine', 'Heinrich Klaasen', 'Pat Cummins', 'Sanju Samson', 'Yashasvi Jaiswal', 'Axar Patel', 'Shreyas Iyer', 'Rashid Khan'].includes(p.name))
-      .sort((a, b) => {
-        // Prefer releasing lower power index or high salary with lower index
-        const scoreA = a.Power_Index - (a.price > 5 ? 5 : 0)
-        const scoreB = b.Power_Index - (b.price > 5 ? 5 : 0)
+    // Use current updated squad from rivalTeamsData if available, fallback to squad2026
+    const currentRivalSquad = rivalTeamsData?.[teamKey]?.squad?.length
+      ? rivalTeamsData[teamKey].squad
+      : franchise.squad2026
+
+    // Exclude:
+    // a) Untouchable marquee players
+    // b) Players who were traded to this team (cannot release newly traded players)
+    // c) Players currently active in user squad
+    const releaseCandidates = currentRivalSquad
+      .filter((p: any) => {
+        const cleanName = p.name.trim().toLowerCase()
+        if (UNTOUCHABLE_MARQUEE_NAMES.has(cleanName)) return false
+        if (tradedNames.has(cleanName)) return false
+        if (userActiveNames.has(cleanName)) return false
+        return true
+      })
+      .sort((a: any, b: any) => {
+        const scoreA = (a.Power_Index || 78) - (a.price > 5 ? 5 : 0)
+        const scoreB = (b.Power_Index || 78) - (b.price > 5 ? 5 : 0)
         return scoreA - scoreB
       })
-      .slice(0, 4) // Each rival AI releases 4 players
+      .slice(0, 4) // Each rival AI releases 3-4 fringe/rotation players
 
-    releaseCandidates.forEach((rp, idx) => {
+    releaseCandidates.forEach((rp: any, idx: number) => {
+      // Ensure no duplicates in pool
+      if (pool.some((p) => p.name.trim().toLowerCase() === rp.name.trim().toLowerCase())) return
+
       pool.push({
         id: `ai_${teamKey}_${idx + 1}`,
         name: rp.name,
@@ -2827,7 +2870,7 @@ export function generateDynamicAuctionPool(
         nationality: rp.nationality,
         is_overseas: rp.is_overseas,
         basePrice: Math.min(2.0, Math.max(0.3, rp.price >= 8 ? 2.0 : rp.price >= 3 ? 1.5 : 0.75)),
-        powerIndex: rp.Power_Index,
+        powerIndex: rp.Power_Index || 78.0,
         formerTeam: franchise.name,
         statsSummary: rp.statsSummary || `${rp.name} • Released by ${franchise.short}`,
         releaseReason: `Released by ${franchise.short} to create auction purse`
@@ -2835,10 +2878,14 @@ export function generateDynamicAuctionPool(
     })
   })
 
-  // 3. Add Marquee Free Agents & International Stars
+  // 3. Add Marquee Free Agents & International Stars (ONLY if NOT currently in active user squad or traded)
   RELEASED_AUCTION_POOL.forEach((mp, idx) => {
-    // Avoid duplicates if already in pool
-    if (!pool.some(p => p.name.toLowerCase() === mp.name.toLowerCase())) {
+    const cleanName = mp.name.trim().toLowerCase()
+    const isAlreadyInPool = pool.some((p) => p.name.trim().toLowerCase() === cleanName)
+    const isInUserSquad = userActiveNames.has(cleanName)
+    const isTraded = tradedNames.has(cleanName)
+
+    if (!isAlreadyInPool && !isInUserSquad && !isTraded) {
       pool.push({
         id: `marquee_${idx + 1}`,
         name: mp.name,

@@ -976,6 +976,12 @@ export const useCampaignStore = create<CampaignStoreState>()(
       recordAuctionSale: (player, winnerTeamId, winningPrice) => {
         get().updateActiveCampaign((prev) => {
           if (winnerTeamId === prev.teamId) {
+            // Check if player is already in user squad
+            const alreadyExists = prev.squad.some(
+              (p) => p.player_id === player.player_id || p.name.toLowerCase() === player.name.toLowerCase()
+            )
+            if (alreadyExists) return prev
+
             const newPurse = Math.max(0, Math.round((prev.remainingPurse - winningPrice) * 100) / 100)
             const newSquad = [
               ...prev.squad,
@@ -1006,6 +1012,12 @@ export const useCampaignStore = create<CampaignStoreState>()(
                 is_released: false
               }))
             }
+
+            // Check if player is already in bot squad
+            const alreadyExists = botData.squad.some(
+              (p) => p.player_id === player.player_id || p.name.toLowerCase() === player.name.toLowerCase()
+            )
+            if (alreadyExists) return prev
 
             const updatedPurse = Math.max(0, Math.round((botData.remainingPurse - winningPrice) * 100) / 100)
             const updatedSquad = [
