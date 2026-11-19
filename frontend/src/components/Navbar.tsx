@@ -25,6 +25,7 @@ import { useCampaignStore } from '../store/useCampaignStore'
 import { getFranchise } from '../data/franchises'
 import { OnboardingAuthModal } from './OnboardingAuthModal'
 import { BCCIRulesModal } from './BCCIRulesModal'
+import GameModeSelectionModal from './GameModeSelectionModal'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 import TeamLogo from './TeamLogo'
 

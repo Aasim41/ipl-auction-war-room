@@ -56,6 +56,7 @@ export default function UnifiedTeamSelectHomePage() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('rcb')
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showLoading, setShowLoading] = useState(true)
+  const [showGameModeModal, setShowGameModeModal] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [expandedFortress, setExpandedFortress] = useState(false)
 
@@ -162,6 +163,7 @@ export default function UnifiedTeamSelectHomePage() {
           onComplete={() => {
             setShowLoading(false)
             sessionStorage.setItem('auctionxi_boot_complete', 'true')
+            setShowGameModeModal(true)
           }}
         />
       )}
@@ -184,6 +186,19 @@ export default function UnifiedTeamSelectHomePage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('medium')
+                triggerGameHaptic('light')
+                setShowGameModeModal(true)
+              }}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-sky-500/20 to-purple-500/20 hover:from-amber-500/30 text-amber-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-amber-500/30 transition-all shrink-0 shadow-sm"
+              title="Switch Game Mode: Official Squads vs Build From Scratch"
+            >
+              <Zap size={13} className="text-amber-400" />
+              <span className="hidden sm:inline">Mode:</span>
+              <span>{getActiveCampaign()?.mode === 'scratch_inception' ? 'Scratch ⚡' : 'Official 🏆'}</span>
+            </button>
             <button
               onClick={() => {
                 gameAudio.playUiTap('medium')
@@ -436,6 +451,11 @@ export default function UnifiedTeamSelectHomePage() {
       </main>
 
       {/* Modals */}
+      <GameModeSelectionModal
+        isOpen={showGameModeModal}
+        onClose={() => setShowGameModeModal(false)}
+      />
+
       <OnboardingAuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
