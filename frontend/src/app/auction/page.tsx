@@ -158,7 +158,8 @@ export default function MiniAuctionPage() {
       campaign.releasedStars || [],
       campaign.squad,
       campaign.rivalTeamsData,
-      campaign.tradedHistory
+      campaign.tradedHistory,
+      campaign.mode === 'scratch_inception'
     )
     setAuctionPool(pool)
     if (pool.length > 0) {

@@ -2780,10 +2780,74 @@ export function generateDynamicAuctionPool(
   userReleasedPlayers: IPLPlayer[] = [],
   currentCampaignSquad: Array<{ name: string; player_id?: string; is_released?: boolean }> = [],
   rivalTeamsData?: Record<string, { remainingPurse: number; squad: Array<{ name: string; is_released?: boolean }> }>,
-  tradedHistory?: Array<{ playerOut: string; playerIn: string; rivalTeam: string }>
+  tradedHistory?: Array<{ playerOut: string; playerIn: string; rivalTeam: string }>,
+  isScratchMode?: boolean
 ): DynamicAuctionPlayer[] {
   const pool: DynamicAuctionPlayer[] = []
   const normUserTeam = (userTeamId || 'rcb').toLowerCase()
+
+  // ─── MEGA INCEPTION SCRATCH MODE: ALL PLAYERS EXCEPT THE DRAFTED 3 GO TO MEGA AUCTION ───
+  if (isScratchMode) {
+    const allDraftedNames = new Set<string>()
+    currentCampaignSquad.forEach(p => {
+      if (!p.is_released) allDraftedNames.add(p.name.trim().toLowerCase())
+    })
+    if (rivalTeamsData) {
+      Object.values(rivalTeamsData).forEach(r => {
+        (r.squad || []).forEach(p => {
+          if (!p.is_released) allDraftedNames.add(p.name.trim().toLowerCase())
+        })
+      })
+    }
+
+    const seenNames = new Set<string>()
+    let idCounter = 1
+
+    // 1. Add top marquee free agents who were not drafted
+    RELEASED_AUCTION_POOL.forEach((mp) => {
+      const cleanName = mp.name.trim().toLowerCase()
+      if (!allDraftedNames.has(cleanName) && !seenNames.has(cleanName)) {
+        seenNames.add(cleanName)
+        pool.push({
+          id: `scratch_pool_${idCounter++}`,
+          name: mp.name,
+          role: mp.role,
+          nationality: mp.is_overseas ? 'Overseas' : 'Indian',
+          is_overseas: mp.is_overseas,
+          basePrice: mp.basePrice,
+          powerIndex: mp.powerIndex,
+          formerTeam: mp.formerTeam,
+          statsSummary: mp.reason,
+          releaseReason: 'Mega Auction Open Lot'
+        })
+      }
+    })
+
+    // 2. Add all non-drafted players from all 10 franchise rosters
+    Object.entries(IPL_FRANCHISES).forEach(([, franchise]) => {
+      (franchise.squad2026 || []).forEach((p) => {
+        const cleanName = p.name.trim().toLowerCase()
+        if (!allDraftedNames.has(cleanName) && !seenNames.has(cleanName)) {
+          seenNames.add(cleanName)
+          const base = p.price >= 12 ? 2.0 : p.price >= 6 ? 1.5 : p.price >= 2 ? 1.0 : p.price >= 0.5 ? 0.5 : 0.3
+          pool.push({
+            id: `scratch_pool_${idCounter++}`,
+            name: p.name,
+            role: p.role,
+            nationality: p.nationality,
+            is_overseas: p.is_overseas,
+            basePrice: base,
+            powerIndex: p.Power_Index || 78.0,
+            formerTeam: franchise.name,
+            statsSummary: p.statsSummary || `${p.name} • ${p.role} (${p.nationality})`,
+            releaseReason: 'Mega Auction Open Pool'
+          })
+        }
+      })
+    })
+
+    return pool.sort((a, b) => b.powerIndex - a.powerIndex)
+  }
 
   // Set of all traded players (traded players MUST NEVER be released by BCCI rules)
   const tradedNames = new Set<string>()
