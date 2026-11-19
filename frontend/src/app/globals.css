@@ -18,6 +18,22 @@
   --color-input: #0c2b1b;
 }
 
+/* ─── Standardized Safe Mobile Phone Status Bar & Page Offsets ───── */
+:root {
+  --mobile-status-height: max(env(safe-area-inset-top, 0px), 38px);
+  --navbar-height: 3.5rem; /* 56px */
+}
+
+.safe-page-top {
+  padding-top: calc(max(env(safe-area-inset-top, 0px), 38px) + 3.85rem) !important;
+}
+
+@media (min-width: 640px) {
+  .safe-page-top {
+    padding-top: 4.25rem !important;
+  }
+}
+
 /* ─── CSS Custom Properties for Dynamic Franchise Theming ────────── */
 :root {
   --accent-primary: #fbbf24;
@@ -69,37 +85,37 @@ body::before {
   inset: 0;
   z-index: -2;
   background: 
-    /* Dual Corner Floodlight Beams */
-    radial-gradient(circle 500px at 10% 0%, rgba(255, 255, 255, 0.12) 0%, rgba(254, 240, 138, 0.05) 35%, transparent 75%),
-    radial-gradient(circle 500px at 90% 0%, rgba(255, 255, 255, 0.12) 0%, rgba(254, 240, 138, 0.05) 35%, transparent 75%),
-    /* Center Clay 22-Yard Cricket Pitch Strip */
-    radial-gradient(ellipse 260px 800px at 50% 50%, rgba(160, 110, 65, 0.08) 0%, rgba(120, 80, 45, 0.03) 50%, transparent 85%),
-    /* Outfield 30-Yard Circle & Boundary Lawn Glow */
-    radial-gradient(ellipse 950px 650px at 50% 60%, rgba(34, 197, 94, 0.12) 0%, rgba(16, 185, 129, 0.05) 60%, transparent 90%),
+    /* Dual Corner Halogen Floodlight Towers */
+    radial-gradient(circle 650px at 5% 0%, rgba(255, 255, 255, 0.22) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
+    radial-gradient(circle 650px at 95% 0%, rgba(255, 255, 255, 0.22) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
+    /* Center Clay 22-Yard Cricket Pitch Strip Glow */
+    radial-gradient(ellipse 220px 750px at 50% 55%, rgba(180, 130, 80, 0.14) 0%, rgba(135, 90, 50, 0.06) 45%, transparent 80%),
+    /* Inner 30-Yard Circle & Outfield Lush Turf Radiance */
+    radial-gradient(ellipse 950px 700px at 50% 65%, rgba(34, 197, 94, 0.20) 0%, rgba(16, 185, 129, 0.10) 50%, transparent 90%),
     /* Franchise Ambient Night Aurora */
-    radial-gradient(ellipse 800px 350px at 50% 0%, var(--accent-glow, rgba(251, 191, 36, 0.10)) 0%, transparent 70%),
-    /* Deep Stadium Night Sky to Turf Gradient */
-    linear-gradient(180deg, #020804 0%, #05140a 40%, #081d0f 70%, #030a05 100%);
+    radial-gradient(ellipse 800px 350px at 50% 0%, var(--accent-glow, rgba(251, 191, 36, 0.12)) 0%, transparent 70%),
+    /* Deep Stadium Night Sky to Emerald Turf Base */
+    linear-gradient(180deg, #010603 0%, #03140a 35%, #052614 70%, #020e06 100%);
   pointer-events: none;
 }
 
-/* Freshly Manicured Turf Outfield Mow Stripes & Lawn Fiber Depth */
+/* Freshly Manicured Turf Outfield Mow Stripes & Pitch Grain Depth */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.09;
+  opacity: 0.18;
   background-image: 
     repeating-linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.08) 0px,
-      rgba(255, 255, 255, 0.08) 55px,
-      transparent 55px,
-      transparent 110px
+      rgba(34, 197, 94, 0.18) 0px,
+      rgba(34, 197, 94, 0.18) 50px,
+      transparent 50px,
+      transparent 100px
     ),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
-  background-size: 110px 100%, 24px 24px;
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+  background-size: 100px 100%, 20px 20px;
   pointer-events: none;
 }
 
