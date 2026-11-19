@@ -10,8 +10,13 @@ import { CapacitorDeviceManager } from "../components/CapacitorDeviceManager";
 import { GlobalSwipeManager } from "../components/GlobalSwipeManager";
 
 export const metadata: Metadata = {
-  title: "AuctionXI — Official IPL Franchise GM & Tournament Arena",
-  description: "Official IPL 2027 Franchise GM Simulator: Mega/Mini Auction War Room, Dual Lineup Strategy, and 74-Match Championship.",
+  title: "IPL GM: War Room — Franchise Simulator & Auction Arena",
+  description: "Elite IPL T20 Franchise GM War Room: Mega & Mini Auction, Dual Lineup Strategy, and 74-Match Championship.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -20,7 +25,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#07090f",
+  themeColor: "#030c06",
 };
 
 export default function RootLayout({
@@ -30,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="w-full h-full">
-      <body className="antialiased w-full h-full min-h-[100dvh] bg-[#07090f] text-slate-100 overflow-x-hidden">
+      <body className="antialiased w-full h-full min-h-[100dvh] bg-[#030c06] text-slate-100 overflow-x-hidden">
         <ThemeProvider>
           <CapacitorDeviceManager />
           <AmbientBackground />

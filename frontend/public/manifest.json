@@ -1,0 +1,21 @@
+{
+  "short_name": "IPL GM",
+  "name": "IPL GM: War Room",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#030c06",
+  "theme_color": "#030c06",
+  "display": "fullscreen",
+  "orientation": "landscape"
+}

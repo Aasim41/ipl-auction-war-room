@@ -14,19 +14,14 @@ import {
   Lock,
   Calendar,
   RotateCcw,
-  Plus,
   Coins,
   ChevronDown,
-  AlertCircle,
-  Volume2,
-  VolumeX,
-  Zap
+  AlertCircle
 } from 'lucide-react'
 import { useCampaignStore } from '../store/useCampaignStore'
 import { getFranchise } from '../data/franchises'
 import { OnboardingAuthModal } from './OnboardingAuthModal'
 import { BCCIRulesModal } from './BCCIRulesModal'
-import GameModeSelectionModal from './GameModeSelectionModal'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 import TeamLogo from './TeamLogo'
 
@@ -44,35 +39,14 @@ export function Navbar() {
 
   const [mounted, setMounted] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [showGameModeModal, setShowGameModeModal] = useState(false)
   const [authModalTab, setAuthModalTab] = useState<'saves' | 'create' | 'switch'>('saves')
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [lockedToast, setLockedToast] = useState<string | null>(null)
-  const [isMuted, setIsMuted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    setIsMuted(gameAudio.isMuted())
-
-    const handleSoundChange = (e: any) => {
-      if (e?.detail) {
-        setIsMuted(e.detail.isMuted)
-      }
-    }
-    window.addEventListener('auctionxi_sound_change', handleSoundChange)
-    return () => window.removeEventListener('auctionxi_sound_change', handleSoundChange)
   }, [])
-
-  const toggleSound = () => {
-    gameAudio.unlockAudio()
-    const nextMuted = gameAudio.toggleMute()
-    setIsMuted(nextMuted)
-    triggerGameHaptic('light')
-    if (!nextMuted) {
-      gameAudio.playUiTap('select')
-    }
-  }
 
   if (pathname === '/select-team') return null
 
@@ -186,7 +160,7 @@ export function Navbar() {
       label: currentPhaseOrder > 1 ? '1. Draft (Concluded)' : '1. Foundation Draft',
       shortLabel: '1. Draft',
       href: '/draft',
-      icon: Zap,
+      icon: Users,
       isConcluded: currentPhaseOrder > 1 || lockedPhases.includes('draft'),
       isLocked: currentPhaseOrder !== 1
     },
@@ -214,23 +188,12 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="app-safe-navbar fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
-        {/* Mobile Phone Status Bar Buffer with Top Frame & Border */}
-        <div className="sm:hidden w-full h-[max(env(safe-area-inset-top,0px),38px)] bg-slate-950/90 border-b border-white/10 flex items-center justify-between px-3 text-[10px] font-mono text-emerald-400/80 pointer-events-none select-none shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-bold tracking-widest text-[9px] uppercase text-emerald-400">IPL GM WAR ROOM</span>
-          </div>
-          <div className="text-[9px] text-gray-500 font-mono">
-            <span>BCCI T20</span>
-          </div>
-        </div>
-
+      <nav className="app-safe-navbar fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-t-2 border-t-emerald-500/30 border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
         {/* Interactive Navbar Controls Row */}
-        <div className="w-full h-14 flex items-center justify-between px-2.5 sm:px-4 gap-1.5 sm:gap-2">
+        <div className="w-full h-13 sm:h-14 flex items-center justify-between px-3 sm:px-5 gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {pathname !== '/' ? (
               <button
                 onClick={() => {
@@ -238,10 +201,10 @@ export function Navbar() {
                   triggerGameHaptic('light')
                   handleBack()
                 }}
-                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center sm:gap-1 text-xs font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
+                className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
                 title="Return to Dashboard"
               >
-                <ArrowLeft size={14} />
+                <ArrowLeft size={14} className="text-amber-400" />
                 <span className="hidden sm:inline">Back</span>
               </button>
             ) : null}
@@ -255,22 +218,22 @@ export function Navbar() {
                 setAuthModalTab('saves')
                 setShowAuthModal(true)
               }}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white transition-all cursor-pointer border border-white/10 group shrink-0"
+              className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white transition-all cursor-pointer border border-white/10 group shrink-0"
               title="Click to view all Franchise Saves & Careers"
             >
-              <TeamLogo teamId={franchise.id} size={22} className="transition-transform group-hover:scale-105 shrink-0" />
-              <span className="font-black text-xs text-white hidden md:inline truncate max-w-[130px]">
+              <TeamLogo teamId={franchise.id} size={24} className="transition-transform group-hover:scale-105 shrink-0" />
+              <span className="font-black text-xs text-white hidden md:inline truncate max-w-[140px]">
                 {franchise.name}
               </span>
-              <span className="font-mono font-black text-[11px] text-amber-400 sm:hidden">
+              <span className="font-mono font-black text-xs text-amber-400 sm:hidden">
                 {franchise.short}
               </span>
-              <ChevronDown size={11} className="text-gray-400 group-hover:text-white transition-colors shrink-0" />
+              <ChevronDown size={12} className="text-gray-400 group-hover:text-white transition-colors shrink-0" />
             </button>
           </div>
 
-          {/* Center: Minimal 4-Phase Stepper */}
-          <div className="flex items-center justify-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none px-1">
+          {/* Center: Minimal Sequential Phase Stepper */}
+          <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto scrollbar-none px-1">
             {PHASES.map((phase, idx) => {
               const isActive = pathname === phase.href
               const isLocked = phase.isLocked
@@ -281,7 +244,7 @@ export function Navbar() {
                     key={phase.id}
                     onClick={() => triggerLockedAlert(phase.label, phase.isConcluded)}
                     title={phase.isConcluded ? "Concluded and locked by BCCI regulations" : "Complete current phase to unlock"}
-                    className="px-2 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 bg-slate-900/40 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
+                    className="px-2 sm:px-2.5 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 bg-slate-900/40 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
                   >
                     <Lock size={10} className={phase.isConcluded ? "text-amber-500/60" : "text-gray-500"} />
                     <span className="hidden sm:inline">{phase.shortLabel}</span>
@@ -301,13 +264,13 @@ export function Navbar() {
                       advancePhase('playing_xi')
                     }
                   }}
-                  className={`px-2 sm:px-2.5 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
                     isActive
                       ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30'
                       : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/10'
                   }`}
                 >
-                  <phase.icon size={11} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
+                  <phase.icon size={12} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
                   <span className="hidden sm:inline">{phase.shortLabel}</span>
                   <span className="sm:hidden font-mono">{idx + 1}</span>
                 </Link>
@@ -315,31 +278,15 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Right: Live Gaming HUD Stats (Purse + Mode + Profile) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Mode Switcher Pill */}
-            <button
-              type="button"
-              onClick={() => {
-                gameAudio.playUiTap('light')
-                triggerGameHaptic('light')
-                setShowGameModeModal(true)
-              }}
-              className="px-2 py-1 rounded-xl bg-gradient-to-r from-amber-500/15 via-sky-500/15 to-purple-500/15 border border-white/10 hover:border-amber-400/40 active:scale-95 text-white flex items-center gap-1 text-[10px] font-mono font-bold cursor-pointer transition-all shrink-0"
-              title="Click to Switch Game Mode (Official Squads vs Build From Scratch)"
-            >
-              <Zap size={11} className={isScratchMode ? "text-sky-400" : "text-amber-400"} />
-              <span className="hidden sm:inline">{isScratchMode ? 'Scratch' : 'Official'}</span>
-            </button>
-
+          {/* Right: Purse + GM Profile (No mode badge, no sound button) */}
+          <div className="flex items-center gap-2 shrink-0">
             {activeCamp && (
               <div 
-                className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-mono font-black text-amber-300"
-                title="Remaining Mini-Auction Purse"
+                className="px-2.5 sm:px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 sm:gap-1.5 text-xs font-mono font-black text-amber-300"
+                title="Remaining Purse"
               >
-                <Coins size={12} className="text-amber-400 shrink-0" />
-                <span className="hidden sm:inline">₹{remainingPurse.toFixed(1)}Cr</span>
-                <span className="sm:hidden">₹{Math.round(remainingPurse)}Cr</span>
+                <Coins size={13} className="text-amber-400 shrink-0" />
+                <span>₹{remainingPurse.toFixed(1)}Cr</span>
               </div>
             )}
 
@@ -352,8 +299,8 @@ export function Navbar() {
                 setAuthModalTab('switch')
                 setShowAuthModal(true)
               }}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
-              title="Manager Profile & Onboarding"
+              className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
+              title="Manager Profile & Careers"
             >
               <span className="text-sm">{currentUser?.avatar || '👑'}</span>
             </button>
@@ -372,59 +319,18 @@ export function Navbar() {
         </div>
       )}
 
-      {/* Game Mode Selector Modal */}
-      <GameModeSelectionModal
-        isOpen={showGameModeModal}
-        onClose={() => setShowGameModeModal(false)}
-      />
-
-      {/* Profile & Auth Modal */}
-      <OnboardingAuthModal 
-        isOpen={showAuthModal} 
+      {/* Onboarding & Career Management Modal */}
+      <OnboardingAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
         initialTab={authModalTab}
-        onClose={() => setShowAuthModal(false)} 
       />
 
-      {/* BCCI Official Rules Modal */}
+      {/* BCCI Official Regulations & Handbook Modal */}
       <BCCIRulesModal
         isOpen={showRulesModal}
         onClose={() => setShowRulesModal(false)}
       />
-
-      {/* Reset Season Confirmation Modal */}
-      {showResetConfirm && activeCamp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="bg-slate-950 border border-rose-500/30 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto mb-3">
-              <RotateCcw size={24} />
-            </div>
-            <h3 className="text-base font-black text-white mb-1">
-              Reset {franchise.name} Season?
-            </h3>
-            <p className="text-xs text-gray-400 mb-5 leading-relaxed">
-              This will restart the IPL 2027 cycle for this franchise back to the Trade Window with the original 2026 squad and full purse.
-            </p>
-            <div className="flex gap-2.5">
-              <button
-                onClick={() => setShowResetConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  resetCampaign(activeCamp.id)
-                  setShowResetConfirm(false)
-                  router.push('/trade')
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-black text-white cursor-pointer shadow-lg shadow-rose-600/30"
-              >
-                Confirm Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
