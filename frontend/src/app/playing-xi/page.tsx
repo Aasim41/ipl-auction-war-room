@@ -337,6 +337,30 @@ export default function PlayingXIPage() {
   const rivalFranchise = getFranchise(rivalTeamId);
   const pointsTable = campaign.pointsTable || [];
 
+  // Strictly align teams, squads, and logos with the active fixture being played
+  const activeMatchFixture = selectedFixtureForMatch || currentMatch;
+  const isUserPlayingInFixture = activeMatchFixture
+    ? (activeMatchFixture.teamAId === campaign.teamId || activeMatchFixture.teamBId === campaign.teamId)
+    : true;
+
+  let simMyFranchise = franchise;
+  let simRivalFranchise = rivalFranchise;
+  let simMySquad = activeSquad;
+
+  if (activeMatchFixture) {
+    if (isUserPlayingInFixture) {
+      simMyFranchise = franchise;
+      const rivalId = activeMatchFixture.teamAId === campaign.teamId ? activeMatchFixture.teamBId : activeMatchFixture.teamAId;
+      simRivalFranchise = getFranchise(rivalId);
+      simMySquad = activeSquad;
+    } else {
+      // AI vs AI fixture clicked from schedule
+      simMyFranchise = getFranchise(activeMatchFixture.teamAId);
+      simRivalFranchise = getFranchise(activeMatchFixture.teamBId);
+      simMySquad = simMyFranchise.squad2026 || [];
+    }
+  }
+
   const handleLaunchMatch = (fixture?: TournamentFixture) => {
     gameAudio.playUiTap('select');
     triggerGameHaptic('light');
@@ -1119,21 +1143,24 @@ export default function PlayingXIPage() {
       {showSimulator && (
         <BallByBallMatchSimulator
           isOpen={showSimulator}
-          onClose={() => setShowSimulator(false)}
-          myFranchise={franchise}
-          mySquad={activeSquad}
-          myPlayingXIIds={campaign.playingXI}
-          userBatFirstXI={campaign.batFirstXI || campaign.playingXI}
-          userBowlFirstXI={campaign.bowlFirstXI || campaign.playingXI}
-          batFirstImpactId={campaign.batFirstImpactId || campaign.impactPlayerId}
-          bowlFirstImpactId={campaign.bowlFirstImpactId || campaign.impactPlayerId}
-          rivalFranchise={selectedFixtureForMatch ? getFranchise(rivalTeamId) : rivalFranchise}
-          venueName={selectedFixtureForMatch ? selectedFixtureForMatch.stadiumName : currentInsight.title}
-          matchFixture={selectedFixtureForMatch || currentMatch}
+          onClose={() => {
+            setShowSimulator(false);
+            setSelectedFixtureForMatch(null);
+          }}
+          myFranchise={simMyFranchise}
+          mySquad={simMySquad}
+          myPlayingXIIds={isUserPlayingInFixture ? campaign.playingXI : undefined}
+          userBatFirstXI={isUserPlayingInFixture ? (campaign.batFirstXI || campaign.playingXI) : undefined}
+          userBowlFirstXI={isUserPlayingInFixture ? (campaign.bowlFirstXI || campaign.playingXI) : undefined}
+          batFirstImpactId={isUserPlayingInFixture ? (campaign.batFirstImpactId || campaign.impactPlayerId) : undefined}
+          bowlFirstImpactId={isUserPlayingInFixture ? (campaign.bowlFirstImpactId || campaign.impactPlayerId) : undefined}
+          rivalFranchise={simRivalFranchise}
+          venueName={activeMatchFixture ? activeMatchFixture.stadiumName : currentInsight.title}
+          matchFixture={activeMatchFixture}
           onMatchComplete={(res) => {
             if (res) {
               recordMatchResult(
-                selectedFixtureForMatch?.matchNo || currentMatch?.matchNo || 1,
+                activeMatchFixture?.matchNo || 1,
                 res,
                 (res as any).scorecard
               );
