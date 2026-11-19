@@ -231,7 +231,7 @@ export default function UnifiedTeamSelectHomePage() {
             >
               <Zap size={13} className="text-amber-400" />
               <span className="hidden sm:inline">Mode:</span>
-              <span>{getActiveCampaign()?.mode === 'scratch_inception' ? 'Scratch ⚡' : 'Official 🏆'}</span>
+              <span>{selectedGameMode === 'scratch_inception' ? 'Scratch ⚡' : 'Official 🏆'}</span>
             </button>
             <button
               onClick={() => {
@@ -470,15 +470,25 @@ export default function UnifiedTeamSelectHomePage() {
 
           {/* Single High-Impact Primary CTA */}
           <button
-            onClick={() => handleEnterWarRoom(activeTeam.id)}
+            onClick={() => handleLaunchFranchise(activeTeam.id)}
             className="w-full py-3.5 sm:py-4 rounded-2xl font-display text-sm sm:text-base font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl cursor-pointer hover:scale-[1.01] active:scale-95 transition-all text-slate-950"
             style={{
               backgroundColor: activeTeam.color,
               boxShadow: `0 0 25px ${activeTeam.color}60`
             }}
           >
-            <span>{existingCampaign ? `RESUME ${activeTeam.name.toUpperCase()} CAMPAIGN` : `SELECT ${activeTeam.name.toUpperCase()} & ENTER WAR ROOM`}</span>
-            <ArrowRight size={16} />
+            {selectedGameMode === 'scratch_inception' ? (
+              <>
+                <Sparkles size={16} />
+                <span>{existingCampaign ? `RESUME ${activeTeam.name.toUpperCase()} DRAFT & MEGA AUCTION` : `SELECT ${activeTeam.name.toUpperCase()} & LAUNCH ₹120 CR DRAFT`}</span>
+                <ArrowRight size={16} />
+              </>
+            ) : (
+              <>
+                <span>{existingCampaign ? `RESUME ${activeTeam.name.toUpperCase()} CAMPAIGN` : `SELECT ${activeTeam.name.toUpperCase()} & ENTER WAR ROOM`}</span>
+                <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </div>
 
@@ -487,6 +497,7 @@ export default function UnifiedTeamSelectHomePage() {
       {/* Modals */}
       <GameModeSelectionModal
         isOpen={showGameModeModal}
+        onSelectMode={(mode) => setSelectedGameMode(mode)}
         onClose={() => setShowGameModeModal(false)}
       />
 
