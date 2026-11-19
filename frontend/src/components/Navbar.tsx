@@ -214,7 +214,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 w-full pt-[max(env(safe-area-inset-top,0px),8px)] sm:pt-0 h-[calc(max(env(safe-area-inset-top,0px),8px)+2.75rem)] sm:h-13 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
+      <nav className="fixed top-0 left-0 right-0 w-full pt-[max(env(safe-area-inset-top,0px),28px)] sm:pt-0 h-[calc(max(env(safe-area-inset-top,0px),28px)+3.15rem)] sm:h-14 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 z-50 shadow-2xl overflow-x-hidden">
         <div className="w-full h-full flex items-center justify-between px-2.5 sm:px-4 gap-1.5 sm:gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
