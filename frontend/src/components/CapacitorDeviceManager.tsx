@@ -9,10 +9,8 @@ export function CapacitorDeviceManager() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // 1. Maintain Landscape by default across main franchise management screens
-    if (getCurrentLockedOrientation() === 'landscape') {
-      lockOrientation('landscape')
-    }
+    // 1. Lock to Portrait by default on mobile phones for optimal thumb reach & scroll performance
+    lockOrientation('portrait')
 
     // 2. Android Hardware Back Button listener
     let backListenerHandle: any = null
