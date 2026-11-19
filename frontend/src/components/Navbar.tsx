@@ -219,12 +219,10 @@ export function Navbar() {
         <div className="sm:hidden w-full h-[max(env(safe-area-inset-top,0px),38px)] bg-slate-950/90 border-b border-white/10 flex items-center justify-between px-3 text-[10px] font-mono text-emerald-400/80 pointer-events-none select-none shrink-0">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-bold tracking-widest text-[9px] uppercase text-emerald-400">AUCTIONXI LIVE</span>
+            <span className="font-bold tracking-widest text-[9px] uppercase text-emerald-400">IPL GM WAR ROOM</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[9px] text-gray-400">
-            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-bold text-amber-400">
-              {isScratchMode ? '⚡ SCRATCH' : '🏆 OFFICIAL'}
-            </span>
+          <div className="text-[9px] text-gray-500 font-mono">
+            <span>BCCI T20</span>
           </div>
         </div>
 
