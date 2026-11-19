@@ -382,21 +382,57 @@ export default function MiniAuctionPage() {
     return () => clearTimeout(t)
   }, [nextLotCountdown, currentIndex, auctionPool])
 
+  // User Bidding Eligibility Check & Dynamic Feedback Message
+  const [biddingBlockedMsg, setBiddingBlockedMsg] = useState<string | null>(null)
+
+  const getUserBiddingStatus = () => {
+    if (!campaign || !currentPlayer) return { canBid: false, type: 'info', reason: 'No player currently on auction block' }
+    if (isUserHighest) {
+      return { canBid: false, type: 'info', reason: `You currently hold the highest bid (₹${currentBid.toFixed(2)} Cr)!` }
+    }
+    if (currentPlayer.is_overseas && overseasCount >= 8) {
+      return { canBid: false, type: 'danger', reason: 'Bidding Closed: Overseas quota is full (8/8)! You cannot acquire more overseas players.' }
+    }
+    if (activeSquadCount >= 25) {
+      return { canBid: false, type: 'danger', reason: 'Bidding Closed: Squad roster is full (25/25)!' }
+    }
+    const minNextBid = Math.round((currentBid + 0.2) * 100) / 100
+    if (minNextBid > campaign.remainingPurse) {
+      return { canBid: false, type: 'danger', reason: `Bidding Closed: Next bid (+₹0.20 Cr = ₹${minNextBid.toFixed(2)} Cr) exceeds remaining purse (₹${campaign.remainingPurse.toFixed(2)} Cr)!` }
+    }
+    const slotsToMin18 = Math.max(0, 18 - activeSquadCount)
+    const reserveNeeded = Math.max(0, slotsToMin18 - 1) * 0.30
+    if (campaign.remainingPurse - minNextBid < reserveNeeded) {
+      return { canBid: false, type: 'warning', reason: `Bidding Closed: BCCI Reserve Rule — must reserve ₹${reserveNeeded.toFixed(2)} Cr for remaining ${slotsToMin18} slots to reach 18 players!` }
+    }
+    return { canBid: true, type: 'success', reason: null }
+  }
+
   // User Bidding Handlers
   const handleUserBid = (increment: number) => {
     if (!campaign || !currentPlayer) return
-    const newBid = Math.round((currentBid + increment) * 100) / 100
+    const status = getUserBiddingStatus()
+    if (!status.canBid) {
+      gameAudio.playTradeReject()
+      triggerGameHaptic('trade_reject')
+      setBiddingBlockedMsg(status.reason)
+      setTimeout(() => setBiddingBlockedMsg(null), 4500)
+      return
+    }
 
+    const newBid = Math.round((currentBid + increment) * 100) / 100
     if (!canTeamBid(campaign.teamId, newBid, currentPlayer.is_overseas)) {
       gameAudio.playTradeReject()
       triggerGameHaptic('trade_reject')
       const squad = getTeamSquad(campaign.teamId)
       const slotsToMin18 = Math.max(0, 18 - squad.length)
       const reserveNeeded = Math.max(0, slotsToMin18 - 1) * 0.30
-      alert(`Cannot bid ₹${newBid} Cr! Available purse is ₹${campaign.remainingPurse.toFixed(2)} Cr (Reserve ₹${reserveNeeded.toFixed(2)} Cr needed to reach minimum 18-player squad).`)
+      setBiddingBlockedMsg(`Cannot bid ₹${newBid} Cr! Available purse is ₹${campaign.remainingPurse.toFixed(2)} Cr (Reserve ₹${reserveNeeded.toFixed(2)} Cr needed).`)
+      setTimeout(() => setBiddingBlockedMsg(null), 4500)
       return
     }
 
+    setBiddingBlockedMsg(null)
     gameAudio.playBiddingPaddle()
     triggerGameHaptic('paddle')
     setCurrentBid(newBid)
@@ -1072,35 +1108,51 @@ export default function MiniAuctionPage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
-                  <div className="text-[11px] text-gray-300 text-center sm:text-left">
-                    <span>Purse: <strong className="text-emerald-400 font-mono">₹{campaign.remainingPurse.toFixed(2)} Cr</strong></span>
-                    <span className="block text-[10px] text-gray-500 font-mono">OS: {overseasCount}/8 • Squad: {activeSquadCount}/25</span>
-                  </div>
+                <div className="flex flex-col gap-2">
+                  {/* Real-time Bid Validation Feedback Banner */}
+                  {(!getUserBiddingStatus().canBid || biddingBlockedMsg) && (
+                    <div className={`p-2 rounded-xl text-xs font-bold flex items-center gap-2 animate-fade-in ${
+                      (biddingBlockedMsg || getUserBiddingStatus().type === 'danger')
+                        ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300'
+                        : getUserBiddingStatus().type === 'warning'
+                        ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
+                        : 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300'
+                    }`}>
+                      <AlertTriangle size={14} className="shrink-0" />
+                      <span className="truncate">{biddingBlockedMsg || getUserBiddingStatus().reason}</span>
+                    </div>
+                  )}
 
-                  {/* Paddle Buttons */}
-                  <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                    <button
-                      onClick={() => handleUserBid(0.2)}
-                      disabled={isUserHighest || currentBid + 0.2 > campaign.remainingPurse}
-                      className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black text-xs uppercase cursor-pointer transition-all shadow-md"
-                    >
-                      +₹20L
-                    </button>
-                    <button
-                      onClick={() => handleUserBid(0.5)}
-                      disabled={isUserHighest || currentBid + 0.5 > campaign.remainingPurse}
-                      className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black text-xs uppercase cursor-pointer transition-all shadow-md"
-                    >
-                      +₹50L
-                    </button>
-                    <button
-                      onClick={() => handleUserBid(1.0)}
-                      disabled={isUserHighest || currentBid + 1.0 > campaign.remainingPurse}
-                      className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed text-slate-950 font-black text-xs uppercase cursor-pointer transition-all shadow-[0_0_12px_rgba(245,158,11,0.4)]"
-                    >
-                      +₹1.0 Cr
-                    </button>
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                    <div className="text-[11px] text-gray-300 text-center sm:text-left">
+                      <span>Purse: <strong className="text-emerald-400 font-mono">₹{campaign.remainingPurse.toFixed(2)} Cr</strong></span>
+                      <span className="block text-[10px] text-gray-500 font-mono">OS: {overseasCount}/8 • Squad: {activeSquadCount}/25</span>
+                    </div>
+
+                    {/* Paddle Buttons */}
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                      <button
+                        onClick={() => handleUserBid(0.2)}
+                        disabled={!getUserBiddingStatus().canBid}
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black text-xs uppercase cursor-pointer transition-all shadow-md"
+                      >
+                        +₹20L
+                      </button>
+                      <button
+                        onClick={() => handleUserBid(0.5)}
+                        disabled={!getUserBiddingStatus().canBid}
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black text-xs uppercase cursor-pointer transition-all shadow-md"
+                      >
+                        +₹50L
+                      </button>
+                      <button
+                        onClick={() => handleUserBid(1.0)}
+                        disabled={!getUserBiddingStatus().canBid}
+                        className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed text-slate-950 font-black text-xs uppercase cursor-pointer transition-all shadow-[0_0_12px_rgba(245,158,11,0.4)]"
+                      >
+                        +₹1.0 Cr
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1121,8 +1173,8 @@ export default function MiniAuctionPage() {
               <span>Swipe 👉</span>
             </div>
             
-            {/* Tab Navigation: 4 Tabs */}
-            <div className="flex items-center gap-1 pb-2 border-b border-white/10">
+            {/* Tab Navigation: 4 Tabs - HIDE ON MOBILE TO PREVENT REPEATED NAVBARS */}
+            <div className="hidden lg:flex items-center gap-1 pb-2 border-b border-white/10">
               <button
                 onClick={() => setSideTab('pool')}
                 className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
