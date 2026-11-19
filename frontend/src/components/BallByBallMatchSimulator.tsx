@@ -2561,20 +2561,20 @@ export default function BallByBallMatchSimulator({
                     className="absolute z-20 flex flex-col items-center pointer-events-none transition-transform duration-300"
                     style={{ left: '52%', top: '72%', transform: 'translate(-50%, -50%)' }}
                   >
-                    <div className="mb-1 px-2.5 py-0.5 rounded-full bg-slate-950/95 border border-amber-400 text-[10px] font-mono font-black text-amber-300 whitespace-nowrap shadow-xl flex items-center gap-1 backdrop-blur-md">
+                    <div className="mb-0.5 px-1.5 py-0.2 rounded-full bg-slate-950/90 border border-amber-400 text-[8px] font-mono font-bold text-amber-300 whitespace-nowrap shadow-md flex items-center gap-0.5 backdrop-blur-md">
                       <span>🏏</span>
                       <span>{formatPlayerInitial(strikerPlayer?.name) || 'Batter'}*</span>
-                      <span className="text-white text-[9px]">({activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0})</span>
+                      <span className="text-white text-[7.5px]">({activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0})</span>
                     </div>
                     <div className={`relative flex items-center justify-center transition-transform duration-300 ${isBallAnimating ? 'scale-125' : ''}`}>
-                      <div className="absolute -inset-1.5 rounded-full bg-amber-400/40 blur-sm animate-pulse" />
+                      <div className="absolute -inset-1 rounded-full bg-amber-400/30 blur-xs animate-pulse" />
                       <div 
-                        className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-sm shadow-2xl font-bold"
+                        className="w-5.5 h-5.5 rounded-full border border-white flex items-center justify-center text-[10px] shadow-lg font-bold"
                         style={{ backgroundColor: battingTeamColor }}
                       >
                         🏏
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border border-slate-950 flex items-center justify-center text-[7px] text-slate-950 font-black">
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border border-slate-950 flex items-center justify-center text-[6px] text-slate-950 font-black">
                         ★
                       </div>
                     </div>
@@ -2586,12 +2586,12 @@ export default function BallByBallMatchSimulator({
                     style={{ left: '50%', top: '86%', transform: 'translate(-50%, -50%)' }}
                   >
                     <div 
-                      className="w-8 h-8 rounded-full border border-white/80 flex items-center justify-center text-xs shadow-lg"
+                      className="w-4.5 h-4.5 rounded-full border border-white/70 flex items-center justify-center text-[9px] shadow-sm"
                       style={{ backgroundColor: bowlingTeamColor }}
                     >
                       🧤
                     </div>
-                    <span className="text-[8px] font-mono font-bold text-gray-200 bg-slate-950/90 px-1.5 py-0.2 rounded border border-white/10 mt-0.5">
+                    <span className="text-[7px] font-mono text-gray-200 bg-slate-950/80 px-1 py-0.2 rounded border border-white/10 mt-0.5">
                       WK
                     </span>
                   </div>
@@ -2602,12 +2602,12 @@ export default function BallByBallMatchSimulator({
                     style={{ left: '40%', top: '85%', transform: 'translate(-50%, -50%)' }}
                   >
                     <div 
-                      className="w-6.5 h-6.5 rounded-full border border-white/60 flex items-center justify-center text-[10px] shadow-md opacity-90"
+                      className="w-4 h-4 rounded-full border border-white/50 flex items-center justify-center text-[8px] shadow-xs opacity-90"
                       style={{ backgroundColor: bowlingTeamColor }}
                     >
                       ⚡
                     </div>
-                    <span className="text-[8px] font-mono text-gray-300">Slip</span>
+                    <span className="text-[7px] font-mono text-gray-300">Slip</span>
                   </div>
 
                   {/* 4. BOWLER (At Bowling Crease - Offset Left to prevent overlap) */}
@@ -2615,14 +2615,14 @@ export default function BallByBallMatchSimulator({
                     className="absolute z-20 flex flex-col items-center pointer-events-none transition-transform duration-300"
                     style={{ left: '36%', top: '12%', transform: 'translate(-50%, -50%)' }}
                   >
-                    <div className="mb-1 px-2.5 py-0.5 rounded-full bg-slate-950/95 border border-rose-500 text-[10px] font-mono font-black text-rose-300 whitespace-nowrap shadow-xl flex items-center gap-1 backdrop-blur-md">
+                    <div className="mb-0.5 px-1.5 py-0.2 rounded-full bg-slate-950/90 border border-rose-500 text-[8px] font-mono font-bold text-rose-300 whitespace-nowrap shadow-md flex items-center gap-0.5 backdrop-blur-md">
                       <span>🎯</span>
                       <span>{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
                     </div>
                     <div className={`relative flex items-center justify-center transition-transform duration-300 ${isBallAnimating ? 'scale-125 translate-y-1' : ''}`}>
-                      <div className="absolute -inset-1 rounded-full bg-rose-500/40 blur-sm animate-pulse" />
+                      <div className="absolute -inset-1 rounded-full bg-rose-500/30 blur-xs animate-pulse" />
                       <div 
-                        className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-sm shadow-2xl font-bold"
+                        className="w-5.5 h-5.5 rounded-full border border-white flex items-center justify-center text-[10px] shadow-lg font-bold"
                         style={{ backgroundColor: bowlingTeamColor }}
                       >
                         🔴
@@ -2636,37 +2636,37 @@ export default function BallByBallMatchSimulator({
                     style={{ left: '68%', top: '24%', transform: 'translate(-50%, -50%)' }}
                   >
                     <div 
-                      className="w-8 h-8 rounded-full border-2 border-amber-400/80 flex items-center justify-center text-xs shadow-md"
+                      className="w-4.5 h-4.5 rounded-full border border-amber-400/70 flex items-center justify-center text-[9px] shadow-xs"
                       style={{ backgroundColor: battingTeamColor }}
                     >
                       🏃
                     </div>
-                    <div className="text-[9px] font-mono font-bold text-amber-200 bg-slate-950/95 px-2 py-0.5 rounded-full border border-white/20 mt-1 whitespace-nowrap shadow-lg">
+                    <div className="text-[7.5px] font-mono font-bold text-amber-200 bg-slate-950/90 px-1.5 py-0.2 rounded-full border border-white/20 mt-0.5 whitespace-nowrap shadow-sm">
                       {formatPlayerInitial(nonStrikerPlayer?.name) || 'Runner'}
                     </div>
                   </div>
 
-                  {/* ─── 9 DYNAMIC BROADCAST FIELDERS (HIGH VISIBILITY POSITION BADGES) ─── */}
+                  {/* ─── 9 DYNAMIC BROADCAST FIELDERS (COMPACT TACTICAL MARKERS) ─── */}
                   {dynamicFielders.map((f, idx) => (
                     <div 
                       key={idx}
                       className="absolute z-10 flex flex-col items-center pointer-events-none transition-all duration-700 ease-out"
                       style={{ left: f.x, top: f.y, transform: 'translate(-50%, -50%)' }}
                     >
-                      <div className={`w-5.5 h-5.5 rounded-full border flex items-center justify-center text-[10px] shadow-lg ${
+                      <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shadow-md ${
                         f.isDeep 
-                          ? 'border-rose-400 bg-rose-950 text-rose-300 ring-2 ring-rose-500/50' 
-                          : 'border-emerald-400 bg-slate-950 text-emerald-300'
+                          ? 'border-rose-400 bg-rose-950 ring-1 ring-rose-500/50' 
+                          : 'border-emerald-400 bg-slate-950'
                       }`}>
                         <div 
-                          className="w-3 h-3 rounded-full"
+                          className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: bowlingTeamColor }}
                         />
                       </div>
-                      <span className={`mt-0.5 text-[9px] sm:text-[10px] font-bold font-mono px-2 py-0.5 rounded-full shadow-xl flex items-center gap-1 whitespace-nowrap border backdrop-blur-md ${
+                      <span className={`mt-0.5 text-[7.5px] font-bold font-mono px-1 py-0.2 rounded-full shadow-md flex items-center gap-0.5 whitespace-nowrap border backdrop-blur-md ${
                         f.isDeep 
-                          ? 'bg-rose-950/95 text-rose-200 border-rose-500 font-black' 
-                          : 'bg-slate-950/95 text-emerald-200 border-emerald-500/80 font-bold'
+                          ? 'bg-rose-950/90 text-rose-200 border-rose-500/80' 
+                          : 'bg-slate-950/90 text-emerald-200 border-emerald-500/70'
                       }`}>
                         {f.isDeep && <span>🚩</span>}
                         <span>{f.name}</span>
@@ -2686,59 +2686,6 @@ export default function BallByBallMatchSimulator({
                   {/* Close 2D Tactical Field */}
                 </div>
 
-            {/* Opening Lineup Selector Trigger when match is about to begin */}
-            {ballsBowled === 0 && (
-              <div className="p-2 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/15 border border-amber-500/40 flex items-center justify-between gap-2 shadow-lg mb-1 shrink-0 animate-fadeIn">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-base shrink-0">🏏</span>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-amber-300 truncate">
-                      {isUserBatting ? 'Match Setup: Choose Opening Batters' : 'Match Setup: Choose Opening Bowler'}
-                    </div>
-                    <div className="text-[10px] text-gray-300 font-mono truncate">
-                      {isUserBatting 
-                        ? `Striker: ${formatPlayerInitial(strikerPlayer?.name)}* • Runner: ${formatPlayerInitial(nonStrikerPlayer?.name)}`
-                        : `Opening Bowler: ${formatPlayerInitial(bowlerPlayer?.name)}`}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    if (isUserBatting) setShowOpeningPairModal(true);
-                    else setShowBowlerModal(true);
-                    gameAudio.playUiTap('select');
-                  }}
-                  className="px-2.5 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] uppercase tracking-wider shrink-0 cursor-pointer shadow-md"
-                >
-                  Change
-                </button>
-              </div>
-            )}
-
-            {/* 💡 Step-by-Step Gameplay Guidance Banner */}
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-emerald-950/40 to-amber-500/10 border border-amber-500/40 flex items-center justify-between gap-2 shadow-lg shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-sm shrink-0">💡</span>
-                <div className="min-w-0 text-[10px] sm:text-[11px] font-mono">
-                  <span className="text-amber-300 font-bold">HOW TO PLAY: </span>
-                  <span className="text-gray-200">
-                    {isUserBatting
-                      ? '1. Pick Shot Intent below ➔ 2. Tap [PLAY SHOT] to score!'
-                      : '1. Pick Delivery below ➔ 2. Tap [BOWL BALL] to attack!'}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowHowToPlay(true);
-                  gameAudio.playUiTap('select');
-                }}
-                className="px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[9px] font-bold uppercase tracking-wider shrink-0 cursor-pointer"
-              >
-                Full Guide 📖
-              </button>
-            </div>
-
             {/* ─── USER TACTICAL COMMAND DECK ─── */}
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 border border-white/15 shadow-xl shrink-0 flex flex-col gap-1.5">
               
@@ -2751,56 +2698,6 @@ export default function BallByBallMatchSimulator({
                   Tactical Mode
                 </span>
               </div>
-
-              {/* 1-Tap Quick Rotation Bar for Ergonomic Dugout Strategy */}
-              {isUserBowling && (
-                <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none border-b border-white/10 mb-0.5">
-                  <span className="text-[9px] font-mono font-bold text-rose-300 uppercase shrink-0 flex items-center gap-1">
-                    <Target size={10} /> Bowler:
-                  </span>
-                  {activeBowlers.map((b, bIdx) => {
-                    const isCurrent = (currentBowlerIdx % (activeBowlers.length || 1)) === bIdx;
-                    const ovs = getBowlerOversCount(activeInnings.bowlingFigures, b.name);
-                    const isMax = ovs >= 4;
-                    return (
-                      <button
-                        key={b.player_id || b.name}
-                        onClick={() => handleSelectBowler(bIdx)}
-                        disabled={isMax}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-mono flex items-center gap-1 shrink-0 cursor-pointer transition-all ${
-                          isCurrent
-                            ? 'bg-rose-500 text-white font-black shadow-md ring-1 ring-rose-400'
-                            : isMax
-                            ? 'bg-white/5 text-gray-500 opacity-40 cursor-not-allowed'
-                            : 'bg-white/10 hover:bg-white/20 text-gray-200'
-                        }`}
-                      >
-                        <span>{formatPlayerInitial(b.name)}</span>
-                        <span className="text-[8px] opacity-75">({ovs}/4)</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {isUserBatting && (
-                <div className="flex items-center justify-between py-1 border-b border-white/10 mb-0.5 text-[10px] font-mono">
-                  <span className="text-gray-400">Next Batter In:</span>
-                  <span className="text-amber-300 font-bold truncate max-w-[170px]">
-                    #{nextBatterIdx + 1} {formatPlayerInitial(currentBatSquad[nextBatterIdx]?.name) || 'Reserve'}
-                  </span>
-                  <button
-                    onClick={() => {
-                      gameAudio.playUiTap('select');
-                      triggerGameHaptic('light');
-                      setShowBattingOrderModal(true);
-                    }}
-                    className="px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold border border-amber-500/40 cursor-pointer"
-                  >
-                    Adjust Order ➔
-                  </button>
-                </div>
-              )}
 
               {/* 2x2 Tactical Grid for Ergonomic Thumb Control in Portrait */}
               {isUserBatting ? (
@@ -2865,7 +2762,7 @@ export default function BallByBallMatchSimulator({
                   className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer active:scale-95 transition-all"
                 >
                   <Play size={15} className="fill-slate-950" />
-                  <span>{isUserBatting ? `PLAY SHOT [${battingTactic}]` : `BOWL BALL [${bowlingTactic}]`}</span>
+                  <span>{isUserBatting ? 'Bat' : 'Bowl'}</span>
                 </button>
 
                 <div className="grid grid-cols-2 gap-2">
