@@ -1117,15 +1117,15 @@ export default function MiniAuctionPage() {
                 <div className="flex flex-col gap-2">
                   {/* Real-time Bid Validation Feedback Banner */}
                   {(!getUserBiddingStatus().canBid || biddingBlockedMsg) && (
-                    <div className={`p-2 rounded-xl text-xs font-bold flex items-center gap-2 animate-fade-in ${
+                    <div className={`p-2.5 rounded-xl text-xs font-bold flex items-start gap-2 shadow-lg animate-fade-in ${
                       (biddingBlockedMsg || getUserBiddingStatus().type === 'danger')
-                        ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300'
+                        ? 'bg-rose-950/80 border border-rose-500/50 text-rose-300'
                         : getUserBiddingStatus().type === 'warning'
-                        ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
-                        : 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300'
+                        ? 'bg-amber-950/80 border border-amber-500/50 text-amber-300'
+                        : 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-300'
                     }`}>
-                      <AlertTriangle size={14} className="shrink-0" />
-                      <span className="truncate">{biddingBlockedMsg || getUserBiddingStatus().reason}</span>
+                      <AlertTriangle size={15} className="shrink-0 mt-0.5" />
+                      <span className="leading-snug break-words flex-1">{biddingBlockedMsg || getUserBiddingStatus().reason}</span>
                     </div>
                   )}
 
@@ -1135,26 +1135,38 @@ export default function MiniAuctionPage() {
                       <span className="block text-[10px] text-gray-500 font-mono">OS: {overseasCount}/8 • Squad: {activeSquadCount}/25</span>
                     </div>
 
-                    {/* Paddle Buttons */}
+                    {/* Paddle Buttons (Active or tap-to-explain when restricted) */}
                     <div className="flex items-center gap-1.5 w-full sm:w-auto">
                       <button
                         onClick={() => handleUserBid(0.2)}
-                        disabled={!getUserBiddingStatus().canBid}
-                        className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black text-xs uppercase cursor-pointer transition-all shadow-md"
+                        className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md ${
+                          !getUserBiddingStatus().canBid
+                            ? 'bg-slate-800 text-gray-400 border border-white/10 hover:border-amber-400/40 opacity-75'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                        }`}
+                        title={!getUserBiddingStatus().canBid ? (getUserBiddingStatus().reason || 'Bidding unavailable') : 'Bid +₹20L'}
                       >
                         +₹20L
                       </button>
                       <button
                         onClick={() => handleUserBid(0.5)}
-                        disabled={!getUserBiddingStatus().canBid}
-                        className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black text-xs uppercase cursor-pointer transition-all shadow-md"
+                        className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md ${
+                          !getUserBiddingStatus().canBid
+                            ? 'bg-slate-800 text-gray-400 border border-white/10 hover:border-amber-400/40 opacity-75'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                        }`}
+                        title={!getUserBiddingStatus().canBid ? (getUserBiddingStatus().reason || 'Bidding unavailable') : 'Bid +₹50L'}
                       >
                         +₹50L
                       </button>
                       <button
                         onClick={() => handleUserBid(1.0)}
-                        disabled={!getUserBiddingStatus().canBid}
-                        className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed text-slate-950 font-black text-xs uppercase cursor-pointer transition-all shadow-[0_0_12px_rgba(245,158,11,0.4)]"
+                        className={`flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md ${
+                          !getUserBiddingStatus().canBid
+                            ? 'bg-slate-800 text-gray-400 border border-white/10 hover:border-amber-400/40 opacity-75'
+                            : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                        }`}
+                        title={!getUserBiddingStatus().canBid ? (getUserBiddingStatus().reason || 'Bidding unavailable') : 'Bid +₹1.0 Cr'}
                       >
                         +₹1.0 Cr
                       </button>
@@ -1295,14 +1307,14 @@ export default function MiniAuctionPage() {
                       <span>No players found matching &quot;{poolSearch}&quot;</span>
                     </div>
                   ) : (
-                    filteredAuctionPool.map((p) => {
+                    filteredAuctionPool.map((p, pIdx) => {
                       const originalIndex = auctionPool.findIndex((ap) => ap.id === p.id)
                       const isLiveNow = originalIndex === currentIndex
                       const soldRecord = soldLog.find((s) => s.player.id === p.id)
 
                       return (
                         <div
-                          key={p.id}
+                          key={`pool_item_${p.id}_${pIdx}`}
                           onClick={() => setPreviewPlayer(p)}
                           className={`p-1.5 sm:p-2 rounded-xl border flex items-center justify-between text-[11px] cursor-pointer transition-all hover:border-amber-400/50 ${
                             isLiveNow
@@ -1647,14 +1659,14 @@ export default function MiniAuctionPage() {
             {/* Grid of Players */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {filteredAuctionPool.map((p) => {
+                {filteredAuctionPool.map((p, pIdx) => {
                   const originalIndex = auctionPool.findIndex((ap) => ap.id === p.id)
                   const isLiveNow = originalIndex === currentIndex
                   const soldRecord = soldLog.find((s) => s.player.id === p.id)
 
                   return (
                     <div
-                      key={p.id}
+                      key={`modal_pool_${p.id}_${pIdx}`}
                       className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
                         isLiveNow
                           ? 'bg-amber-500/15 border-amber-500/70 shadow-md ring-1 ring-amber-400'

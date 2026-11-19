@@ -25,6 +25,7 @@ import { getFranchiseAI } from '../data/franchiseAI'
 import { OnboardingAuthModal } from '../components/OnboardingAuthModal'
 import { GameLoadingScreen } from '../components/GameLoadingScreen'
 import { GamerOnboardingModal } from '../components/GamerOnboardingModal'
+import GameModeSelectionModal from '../components/GameModeSelectionModal'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 
 const TEAMS = [

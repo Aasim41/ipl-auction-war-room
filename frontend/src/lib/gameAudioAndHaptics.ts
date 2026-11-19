@@ -407,6 +407,11 @@ class ProceduralCricketAudio {
     }
   }
 
+  // 5b. Auction Gavel Bang (Direct alias for hammer strike)
+  public playGavelBang(isSold: boolean = true) {
+    this.playAuctionGavel(isSold);
+  }
+
   // 6. Bidding Paddle Snappy Click
   public playBiddingPaddle() {
     if (this.muted) return;
