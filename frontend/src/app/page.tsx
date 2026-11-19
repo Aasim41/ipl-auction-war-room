@@ -106,25 +106,26 @@ export default function UnifiedTeamSelectHomePage() {
 
   useEffect(() => {
     setMounted(true)
-    const hasLoaded = sessionStorage.getItem('auctionxi_boot_complete')
-    const savedMode = (sessionStorage.getItem('auctionxi_game_mode_selected') || localStorage.getItem('auctionxi_preferred_game_mode')) as any
+    const activeCamp = getActiveCampaign()
+    const isSeasonDone = activeCamp?.schedule?.length ? activeCamp.schedule.every(f => f.status === 'COMPLETED') : false
+    const hasBooted = localStorage.getItem('auctionxi_boot_complete')
+    const savedMode = (localStorage.getItem('auctionxi_game_mode_selected') || localStorage.getItem('auctionxi_preferred_game_mode')) as any
+
     if (savedMode === 'scratch_inception' || savedMode === 'official_season') {
       setSelectedGameMode(savedMode)
     }
 
-    if (hasLoaded) {
-      setShowLoading(false)
-      if (!savedMode) {
-        setShowGameModeModal(true)
-      }
-    }
-
-    // Default to active campaign or current theme
-    const activeCamp = getActiveCampaign()
-    if (activeCamp) {
+    if (activeCamp && !isSeasonDone) {
+      // Existing active tournament in progress: keep team synchronized
       setSelectedTeamId(activeCamp.teamId)
       if (activeCamp.mode) {
         setSelectedGameMode(activeCamp.mode)
+      }
+      setShowLoading(false)
+    } else if (hasBooted) {
+      setShowLoading(false)
+      if (!savedMode || isSeasonDone) {
+        setShowGameModeModal(true)
       }
     } else if (theme) {
       setSelectedTeamId(theme)
@@ -196,8 +197,29 @@ export default function UnifiedTeamSelectHomePage() {
         <GameLoadingScreen
           onComplete={() => {
             setShowLoading(false)
-            sessionStorage.setItem('auctionxi_boot_complete', 'true')
-            setShowGameModeModal(true)
+            localStorage.setItem('auctionxi_boot_complete', 'true')
+            const activeCamp = getActiveCampaign()
+            const isSeasonDone = activeCamp?.schedule?.length ? activeCamp.schedule.every(f => f.status === 'COMPLETED') : false
+
+            if (activeCamp && !isSeasonDone) {
+              // Directly resume user's active campaign phase
+              const targetUrl = (activeCamp.currentPhase === 'playing_xi' || activeCamp.currentPhase === 'match')
+                ? '/playing-xi'
+                : activeCamp.currentPhase === 'mini_auction'
+                ? '/auction'
+                : activeCamp.currentPhase === 'retain_release'
+                ? '/squad'
+                : activeCamp.currentPhase === 'draft'
+                ? '/draft'
+                : '/trade'
+              router.push(targetUrl)
+            } else {
+              // Brand new cycle or finished season: prompt mode selection
+              const savedMode = localStorage.getItem('auctionxi_game_mode_selected')
+              if (!savedMode || isSeasonDone) {
+                setShowGameModeModal(true)
+              }
+            }
           }}
         />
       )}
@@ -220,19 +242,6 @@ export default function UnifiedTeamSelectHomePage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                gameAudio.playUiTap('medium')
-                triggerGameHaptic('light')
-                setShowGameModeModal(true)
-              }}
-              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-sky-500/20 to-purple-500/20 hover:from-amber-500/30 text-amber-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-amber-500/30 transition-all shrink-0 shadow-sm"
-              title="Switch Game Mode: Official Squads vs Build From Scratch"
-            >
-              <Zap size={13} className="text-amber-400" />
-              <span className="hidden sm:inline">Mode:</span>
-              <span>{selectedGameMode === 'scratch_inception' ? 'Scratch ⚡' : 'Official 🏆'}</span>
-            </button>
             <button
               onClick={() => {
                 gameAudio.playUiTap('medium')
