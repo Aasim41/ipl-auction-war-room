@@ -214,7 +214,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
+      <nav className="app-safe-navbar fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
         {/* Mobile Phone Status Bar Buffer with Top Frame & Border */}
         <div className="sm:hidden w-full h-[max(env(safe-area-inset-top,0px),38px)] bg-slate-950/90 border-b border-white/10 flex items-center justify-between px-3 text-[10px] font-mono text-emerald-400/80 pointer-events-none select-none shrink-0">
           <div className="flex items-center gap-1.5">
