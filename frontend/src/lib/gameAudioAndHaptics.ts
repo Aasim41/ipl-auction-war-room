@@ -671,6 +671,7 @@ export type GameHapticType =
   | 'paddle' 
   | 'gavel' 
   | 'trade_success' 
+  | 'trade_deal_success' 
   | 'trade_reject' 
   | 'lock';
 
@@ -694,7 +695,7 @@ export async function triggerGameHaptic(type: GameHapticType = 'light') {
       setTimeout(async () => {
         await Haptics.impact({ style: ImpactStyle.Medium });
       }, 110);
-    } else if (type === 'trade_success') {
+    } else if (type === 'trade_success' || type === 'trade_deal_success') {
       await Haptics.notification({ type: NotificationType.Success });
     } else if (type === 'trade_reject') {
       await Haptics.notification({ type: NotificationType.Warning });
@@ -725,7 +726,7 @@ export async function triggerGameHaptic(type: GameHapticType = 'light') {
         navigator.vibrate([250, 70, 350]);
       } else if (type === 'gavel') {
         navigator.vibrate([120, 50, 180]);
-      } else if (type === 'trade_success') {
+      } else if (type === 'trade_success' || type === 'trade_deal_success') {
         navigator.vibrate([80, 50, 120]);
       } else if (type === 'trade_reject') {
         navigator.vibrate([180, 60, 180]);
