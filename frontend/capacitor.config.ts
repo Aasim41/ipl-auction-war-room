@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.auctionxi.app',
-  appName: 'AuctionXI',
+  appName: 'IPL GM: War Room',
   webDir: 'out',
   server: {
     androidScheme: 'https',
