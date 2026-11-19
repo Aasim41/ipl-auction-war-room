@@ -443,6 +443,9 @@ interface CampaignStoreState {
   
   // Campaign Actions
   createCampaign: (teamId: string) => UserCampaign
+  createScratchCampaign: (teamId: string) => UserCampaign
+  recordDraftPick: (teamId: string, player: CampaignPlayer, roundDeduction: number) => void
+  completeDraftPhase: (allPicks: Record<string, CampaignPlayer[]>) => void
   switchCampaign: (campaignId: string) => void
   getActiveCampaign: () => UserCampaign | null
   getUserCampaigns: () => UserCampaign[]
@@ -624,6 +627,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
           userId: currentUser.id,
           teamId,
           teamName: franchise.name,
+          mode: 'official_season',
           currentPhase: 'rules',
           totalPurse: franchise.totalPurse || 125.0,
           remainingPurse: franchise.miniAuctionPurse2026 || 18.5,
@@ -647,6 +651,108 @@ export const useCampaignStore = create<CampaignStoreState>()(
         })
 
         return newCampaign
+      },
+
+      createScratchCampaign: (teamId: string) => {
+        const { currentUser, campaigns } = get()
+        const franchise = getFranchise(teamId)
+        const campaignId = `${currentUser.id}_${teamId}_scratch`
+
+        // In scratch inception mode, all 10 franchises start with EMPTY squads and 120.0 Cr purse
+        const initialRivals: Record<string, { remainingPurse: number; squad: CampaignPlayer[] }> = {}
+        ALL_TEAM_IDS.forEach((tId) => {
+          if (tId !== teamId) {
+            initialRivals[tId] = {
+              remainingPurse: 120.0,
+              squad: []
+            }
+          }
+        })
+
+        const schedule = generateTournamentSchedule(teamId)
+        const pointsTable = generateInitialPointsTable()
+
+        const newCampaign: UserCampaign = {
+          id: campaignId,
+          userId: currentUser.id,
+          teamId,
+          teamName: franchise.name,
+          mode: 'scratch_inception',
+          currentPhase: 'draft',
+          totalPurse: 120.0,
+          remainingPurse: 120.0,
+          squad: [],
+          releasedStars: [],
+          tradedHistory: [],
+          playingXI: [],
+          rulesAcknowledged: true,
+          lastSaved: new Date().toISOString(),
+          schedule,
+          currentMatchIndex: 0,
+          pointsTable,
+          lockedPhases: ['trade', 'retain_release'],
+          rivalTeamsData: initialRivals,
+          draftPicks: {},
+          currentDraftRound: 1
+        }
+
+        set({
+          campaigns: { ...campaigns, [campaignId]: newCampaign },
+          activeCampaignId: campaignId
+        })
+
+        return newCampaign
+      },
+
+      recordDraftPick: (teamId: string, player: CampaignPlayer, roundDeduction: number) => {
+        const active = get().getActiveCampaign()
+        if (!active) return
+
+        if (teamId === active.teamId) {
+          const updatedSquad = [...active.squad, { ...player, currentPrice: roundDeduction, is_retained: true, is_released: false }]
+          const updatedPurse = Math.max(0, active.remainingPurse - roundDeduction)
+          const curPicks = { ...(active.draftPicks || {}) }
+          curPicks[teamId] = [...(curPicks[teamId] || []), player]
+
+          get().updateActiveCampaign((prev) => ({
+            ...prev,
+            squad: updatedSquad,
+            remainingPurse: updatedPurse,
+            draftPicks: curPicks,
+            lastSaved: new Date().toISOString()
+          }))
+        } else {
+          const rivals = { ...(active.rivalTeamsData || {}) }
+          const rival = rivals[teamId] || { remainingPurse: 120.0, squad: [] }
+          const updatedRivalSquad = [...rival.squad, { ...player, currentPrice: roundDeduction, is_retained: true, is_released: false }]
+          const updatedRivalPurse = Math.max(0, rival.remainingPurse - roundDeduction)
+          rivals[teamId] = {
+            remainingPurse: updatedRivalPurse,
+            squad: updatedRivalSquad
+          }
+          const curPicks = { ...(active.draftPicks || {}) }
+          curPicks[teamId] = [...(curPicks[teamId] || []), player]
+
+          get().updateActiveCampaign((prev) => ({
+            ...prev,
+            rivalTeamsData: rivals,
+            draftPicks: curPicks,
+            lastSaved: new Date().toISOString()
+          }))
+        }
+      },
+
+      completeDraftPhase: (allPicks: Record<string, CampaignPlayer[]>) => {
+        const active = get().getActiveCampaign()
+        if (!active) return
+
+        get().updateActiveCampaign((prev) => ({
+          ...prev,
+          currentPhase: 'mini_auction',
+          lockedPhases: ['trade', 'retain_release'],
+          draftPicks: allPicks,
+          lastSaved: new Date().toISOString()
+        }))
       },
 
       switchCampaign: (campaignId: string) => {
