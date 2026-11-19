@@ -27,7 +27,6 @@ import {
   ArrowDown,
   ListOrdered,
   Users,
-  HelpCircle,
   Info
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';

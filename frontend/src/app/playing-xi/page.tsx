@@ -345,7 +345,7 @@ export default function PlayingXIPage() {
 
   let simMyFranchise = franchise;
   let simRivalFranchise = rivalFranchise;
-  let simMySquad = activeSquad;
+  let simMySquad: any[] = activeSquad;
 
   if (activeMatchFixture) {
     if (isUserPlayingInFixture) {
