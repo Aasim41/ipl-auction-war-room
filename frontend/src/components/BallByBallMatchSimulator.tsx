@@ -1689,18 +1689,25 @@ export default function BallByBallMatchSimulator({
       curNonStrikerIdx = tmp;
       setLastBowlerIdx(currentBowlerIdx);
 
-      let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
-      let attempts = 0;
-      while (attempts < activeBowlers.length) {
-        const candidateName = activeBowlers[nextIdx]?.name;
-        const ovs = getBowlerOversCount(curBowlers, candidateName);
-        if (ovs < 4 && nextIdx !== currentBowlerIdx) {
-          break;
+      // Bowler spell allotment: bowler continues their spell up to 4 overs unless quota is exhausted
+      const curBowlerName = activeBowlers[currentBowlerIdx]?.name;
+      const curBowlerOvers = getBowlerOversCount(curBowlers, curBowlerName);
+      if (curBowlerOvers >= 4) {
+        let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
+        let attempts = 0;
+        while (attempts < activeBowlers.length) {
+          const candidateName = activeBowlers[nextIdx]?.name;
+          const ovs = getBowlerOversCount(curBowlers, candidateName);
+          if (ovs < 4) {
+            break;
+          }
+          nextIdx = (nextIdx + 1) % activeBowlers.length;
+          attempts++;
         }
-        nextIdx = (nextIdx + 1) % activeBowlers.length;
-        attempts++;
+        nextBowlerIdx = nextIdx;
+      } else {
+        nextBowlerIdx = currentBowlerIdx;
       }
-      nextBowlerIdx = nextIdx;
     }
 
     // Safety Assertions: ensure dismissed player is NEVER at crease if wickets < 10
@@ -2009,20 +2016,6 @@ export default function BallByBallMatchSimulator({
               </button>
             )}
 
-            {/* How to Play Guide Button */}
-            <button
-              onClick={() => {
-                setShowHowToPlay(true);
-                gameAudio.playUiTap('select');
-                triggerGameHaptic('light');
-              }}
-              className="px-2 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
-              title="How to Play & Tactical Guide"
-            >
-              <HelpCircle size={13} />
-              <span className="hidden sm:inline">Guide</span>
-            </button>
-
             {/* Sound Toggle */}
             <button
               onClick={() => {
@@ -2292,8 +2285,8 @@ export default function BallByBallMatchSimulator({
                   {/* Top Row: Team Logo, Big Score, Overs, CRR/RRR & Over Balls */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 shrink-0 p-1 shadow-md">
-                        <TeamLogo teamId={activeInnings.teamShort} size={28} />
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-transparent shrink-0 p-0.5">
+                        <TeamLogo teamId={activeInnings.teamShort} size={32} />
                       </div>
                       <div className="min-w-0">
                         <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight flex items-baseline gap-2">
@@ -2391,10 +2384,10 @@ export default function BallByBallMatchSimulator({
                               triggerGameHaptic('light');
                               setShowBattingOrderModal(true);
                             }}
-                            className="mt-1 px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-[9px] font-bold text-amber-300 flex items-center gap-1 cursor-pointer w-fit"
+                            className="mt-1 px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-[9px] font-bold text-amber-300 flex items-center gap-1 cursor-pointer w-fit shadow-xs"
                           >
                             <ListOrdered size={10} />
-                            <span>Order</span>
+                            <span>Batting Order</span>
                           </button>
                         )}
                       </div>
@@ -2416,7 +2409,7 @@ export default function BallByBallMatchSimulator({
                           <span className="truncate">{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
                         </div>
                         <div className="text-[9px] text-gray-400 truncate">
-                          {bowlerPlayer?.role || 'Bowler'}
+                          Spell: {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'}/4 ov
                         </div>
                         {isUserBowling && (
                           <button
@@ -2425,10 +2418,10 @@ export default function BallByBallMatchSimulator({
                               triggerGameHaptic('light');
                               setShowBowlerModal(true);
                             }}
-                            className="mt-1 px-2 py-0.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-[9px] font-bold text-rose-300 flex items-center gap-1 cursor-pointer w-fit"
+                            className="mt-1 px-2 py-0.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-[9px] font-bold text-rose-300 flex items-center gap-1 cursor-pointer w-fit shadow-xs"
                           >
                             <Target size={10} />
-                            <span>Rotate</span>
+                            <span>Change Bowler</span>
                           </button>
                         )}
                       </div>
