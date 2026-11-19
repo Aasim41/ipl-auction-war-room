@@ -106,27 +106,61 @@ export default function UnifiedTeamSelectHomePage() {
 
   useEffect(() => {
     setMounted(true)
-    const activeCamp = getActiveCampaign()
+
+    // Check active campaign safely with localStorage fallback for hydration resilience
+    let activeCamp = getActiveCampaign()
+    if (!activeCamp && typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('auctionxi-user-campaign-v3')
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          const cId = parsed.state?.activeCampaignId
+          const camps = parsed.state?.campaigns
+          if (cId && camps && camps[cId]) {
+            activeCamp = camps[cId]
+          } else if (camps && Object.values(camps).length > 0) {
+            const sorted = (Object.values(camps) as any[]).sort((a: any, b: any) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())
+            activeCamp = sorted[0]
+          }
+        }
+      } catch (e) {}
+    }
+
     const isSeasonDone = activeCamp?.schedule?.length ? activeCamp.schedule.every(f => f.status === 'COMPLETED') : false
-    const hasBooted = localStorage.getItem('auctionxi_boot_complete')
-    const savedMode = (localStorage.getItem('auctionxi_game_mode_selected') || localStorage.getItem('auctionxi_preferred_game_mode')) as any
+    const hasBooted = typeof window !== 'undefined' ? localStorage.getItem('auctionxi_boot_complete') : null
+    const savedMode = typeof window !== 'undefined' ? (localStorage.getItem('auctionxi_game_mode_selected') || localStorage.getItem('auctionxi_preferred_game_mode')) as any : null
 
     if (savedMode === 'scratch_inception' || savedMode === 'official_season') {
       setSelectedGameMode(savedMode)
     }
 
     if (activeCamp && !isSeasonDone) {
-      // Existing active tournament in progress: keep team synchronized
+      // Existing active tournament in progress: immediately resume to the current phase!
       setSelectedTeamId(activeCamp.teamId)
+      setTheme(activeCamp.teamId)
       if (activeCamp.mode) {
         setSelectedGameMode(activeCamp.mode)
       }
       setShowLoading(false)
-    } else if (hasBooted) {
-      setShowLoading(false)
-      if (!savedMode || isSeasonDone) {
-        setShowGameModeModal(true)
-      }
+      setShowGameModeModal(false)
+
+      const targetUrl = (activeCamp.currentPhase === 'playing_xi' || activeCamp.currentPhase === 'match')
+        ? '/playing-xi'
+        : activeCamp.currentPhase === 'mini_auction'
+        ? '/auction'
+        : activeCamp.currentPhase === 'retain_release'
+        ? '/squad'
+        : activeCamp.currentPhase === 'draft'
+        ? '/draft'
+        : '/trade'
+      router.replace(targetUrl)
+      return
+    }
+
+    // New Cycle or Completed Season:
+    setShowLoading(false)
+    if (isSeasonDone || !hasBooted || !savedMode) {
+      setShowGameModeModal(true)
     } else if (theme) {
       setSelectedTeamId(theme)
     }
@@ -198,11 +232,28 @@ export default function UnifiedTeamSelectHomePage() {
           onComplete={() => {
             setShowLoading(false)
             localStorage.setItem('auctionxi_boot_complete', 'true')
-            const activeCamp = getActiveCampaign()
+            
+            let activeCamp = getActiveCampaign()
+            if (!activeCamp && typeof window !== 'undefined') {
+              try {
+                const raw = localStorage.getItem('auctionxi-user-campaign-v3')
+                if (raw) {
+                  const parsed = JSON.parse(raw)
+                  const cId = parsed.state?.activeCampaignId
+                  const camps = parsed.state?.campaigns
+                  if (cId && camps && camps[cId]) {
+                    activeCamp = camps[cId]
+                  } else if (camps && Object.values(camps).length > 0) {
+                    const sorted = (Object.values(camps) as any[]).sort((a: any, b: any) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())
+                    activeCamp = sorted[0]
+                  }
+                }
+              } catch (e) {}
+            }
+
             const isSeasonDone = activeCamp?.schedule?.length ? activeCamp.schedule.every(f => f.status === 'COMPLETED') : false
 
             if (activeCamp && !isSeasonDone) {
-              // Directly resume user's active campaign phase
               const targetUrl = (activeCamp.currentPhase === 'playing_xi' || activeCamp.currentPhase === 'match')
                 ? '/playing-xi'
                 : activeCamp.currentPhase === 'mini_auction'
@@ -212,13 +263,9 @@ export default function UnifiedTeamSelectHomePage() {
                 : activeCamp.currentPhase === 'draft'
                 ? '/draft'
                 : '/trade'
-              router.push(targetUrl)
+              router.replace(targetUrl)
             } else {
-              // Brand new cycle or finished season: prompt mode selection
-              const savedMode = localStorage.getItem('auctionxi_game_mode_selected')
-              if (!savedMode || isSeasonDone) {
-                setShowGameModeModal(true)
-              }
+              setShowGameModeModal(true)
             }
           }}
         />
@@ -506,7 +553,10 @@ export default function UnifiedTeamSelectHomePage() {
       {/* Modals */}
       <GameModeSelectionModal
         isOpen={showGameModeModal}
-        onSelectMode={(mode) => setSelectedGameMode(mode)}
+        onSelectMode={(mode) => {
+          setSelectedGameMode(mode)
+          setShowGameModeModal(false)
+        }}
         onClose={() => setShowGameModeModal(false)}
       />
 
