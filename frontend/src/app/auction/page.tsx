@@ -322,10 +322,12 @@ export default function MiniAuctionPage() {
       gameAudio.playTradeReject()
       triggerGameHaptic('trade_reject')
       setGavelPhase('sold')
-      setSoldLog((prev) => [
-        { player: currentPlayer, winner: 'UNSOLD', price: 0 },
-        ...prev
-      ])
+      setSoldLog((prev) => {
+        if (prev.some((e) => e.player.id === currentPlayer.id || e.player.name.toLowerCase() === currentPlayer.name.toLowerCase())) {
+          return prev
+        }
+        return [{ player: currentPlayer, winner: 'UNSOLD', price: 0 }, ...prev]
+      })
       // Trigger automatic countdown to next lot so it NEVER gets stuck!
       setNextLotCountdown(3)
       return
@@ -360,10 +362,12 @@ export default function MiniAuctionPage() {
       triggerGameHaptic('gavel')
     }
 
-    setSoldLog((prev) => [
-      { player: currentPlayer, winner: winnerName, price: currentBid },
-      ...prev
-    ])
+    setSoldLog((prev) => {
+      if (prev.some((e) => e.player.id === currentPlayer.id || e.player.name.toLowerCase() === currentPlayer.name.toLowerCase())) {
+        return prev
+      }
+      return [{ player: currentPlayer, winner: winnerName, price: currentBid }, ...prev]
+    })
 
     // Trigger automatic countdown to next lot (3 seconds) so it NEVER gets stuck!
     setNextLotCountdown(3)

@@ -23,7 +23,7 @@ import {
   Layers,
   Award
 } from 'lucide-react';
-import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore';
+import { useCampaignStore, CampaignPlayer, sortCricketBattingOrder, computeOptimalPlayingXI } from '../../store/useCampaignStore';
 import { getFranchise } from '../../data/franchises';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
 import MatchScorecardModal from '../../components/MatchScorecardModal';
@@ -304,9 +304,14 @@ export default function PlayingXIPage() {
     .map(id => activeSquad.find(p => p.player_id === id))
     .filter(Boolean) as CampaignPlayer[];
 
-  // Fallback if playingXI is incomplete
-  const fullPlayingXI: CampaignPlayer[] = [...playingXIObjects];
-  if (fullPlayingXI.length < 11) {
+  // Fallback if playingXI is incomplete: compute optimal balanced cricket lineup
+  let fullPlayingXI: CampaignPlayer[] = [...playingXIObjects];
+  if (fullPlayingXI.length < 11 && activeSquad.length >= 11) {
+    const autoXI = computeOptimalPlayingXI(activeSquad, { venueCity: venue, mode: lineupMode });
+    fullPlayingXI = autoXI.xiIds
+      .map(id => activeSquad.find(p => p.player_id === id))
+      .filter(Boolean) as CampaignPlayer[];
+  } else if (fullPlayingXI.length < 11) {
     activeSquad.forEach(p => {
       if (fullPlayingXI.length < 11 && !fullPlayingXI.some(x => x.player_id === p.player_id)) {
         fullPlayingXI.push(p);
