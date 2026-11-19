@@ -105,8 +105,12 @@ export default function UnifiedTeamSelectHomePage() {
   useEffect(() => {
     setMounted(true)
     const hasLoaded = sessionStorage.getItem('auctionxi_boot_complete')
+    const hasChosenMode = sessionStorage.getItem('auctionxi_game_mode_selected')
     if (hasLoaded) {
       setShowLoading(false)
+      if (!hasChosenMode) {
+        setShowGameModeModal(true)
+      }
     }
 
     // Default to active campaign or current theme
