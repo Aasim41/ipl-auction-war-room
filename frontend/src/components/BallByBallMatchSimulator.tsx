@@ -54,8 +54,8 @@ interface BallByBallMatchSimulatorProps {
   onMatchComplete?: (result: TournamentFixture['result']) => void;
 }
 
-export type BattingTactic = 'DEFEND' | 'ROTATE' | 'ATTACK' | 'MAXIMUM';
-export type BowlingTactic = 'YORKER' | 'SLOWER' | 'BOUNCER' | 'GOOD_LENGTH';
+export type BattingTactic = 'DEFEND' | 'ROTATE' | 'ATTACK' | 'MAXIMUM' | '0' | '1' | '2' | '3' | '4' | '6' | 'DEFEND_OVER' | 'NORMAL_OVER' | 'ATTACK_OVER';
+export type BowlingTactic = 'YORKER' | 'SLOWER' | 'BOUNCER' | 'GOOD_LENGTH' | 'DEFEND' | 'NORMAL' | 'ATTACK';
 
 interface SimulatedBall {
   over: number;
