@@ -30,6 +30,7 @@ import { GameLoadingScreen } from '../components/GameLoadingScreen'
 import { GamerOnboardingModal } from '../components/GamerOnboardingModal'
 import GameModeSelectionModal from '../components/GameModeSelectionModal'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
+import TeamLogo from '../components/TeamLogo'
 
 const TEAMS = [
   { id: 'csk',  name: 'Chennai Super Kings',         short: 'CSK',  color: '#fbbf24', emoji: '🦁', titles: '5x Champions', stadium: 'Chepauk (M. A. Chidambaram)', city: 'Chennai' },
@@ -326,7 +327,7 @@ export default function UnifiedTeamSelectHomePage() {
               <button
                 key={t.id}
                 onClick={() => handleSelectTeamTab(t.id)}
-                className={`px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border ${
+                className={`px-2.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border ${
                   isSelected
                     ? 'scale-[1.04] shadow-lg text-slate-950 font-black'
                     : 'bg-slate-900/80 text-gray-300 hover:text-white border-white/10 hover:bg-white/10'
@@ -337,7 +338,7 @@ export default function UnifiedTeamSelectHomePage() {
                   boxShadow: isSelected ? `0 0 16px ${t.color}60` : undefined
                 }}
               >
-                <span>{t.emoji}</span>
+                <TeamLogo teamId={t.id} size={16} />
                 <span>{t.short}</span>
                 {hasSave && (
                   <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-slate-950 animate-ping' : 'bg-emerald-400'}`} />
@@ -370,13 +371,13 @@ export default function UnifiedTeamSelectHomePage() {
             <div className="flex items-start justify-between pb-2.5 border-b border-white/10 gap-3">
               <div className="flex items-center gap-3">
                 <div 
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shadow-xl border shrink-0"
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center p-1 shadow-xl border shrink-0"
                   style={{
-                    backgroundColor: `${activeTeam.color}25`,
-                    borderColor: `${activeTeam.color}50`
+                    backgroundColor: `${activeTeam.color}20`,
+                    borderColor: `${activeTeam.color}40`
                   }}
                 >
-                  {activeTeam.emoji}
+                  <TeamLogo teamId={activeTeam.id} size={32} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
