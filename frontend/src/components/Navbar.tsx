@@ -17,7 +17,8 @@ import {
   Coins,
   ChevronDown,
   AlertCircle,
-  Play
+  Play,
+  Trophy
 } from 'lucide-react'
 import { useCampaignStore } from '../store/useCampaignStore'
 import { getFranchise } from '../data/franchises'
@@ -307,6 +308,23 @@ export function Navbar() {
                 <span>₹{remainingPurse.toFixed(1)}Cr</span>
               </div>
             )}
+
+            {/* Trophy Cabinet & Honors */}
+            <Link
+              href="/trophies"
+              onClick={() => {
+                gameAudio.playUiTap('select');
+                triggerGameHaptic('light');
+              }}
+              className={`p-1.5 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                pathname === '/trophies'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                  : 'bg-white/5 hover:bg-white/10 text-amber-300 border-white/10'
+              }`}
+              title="Trophy Cabinet & Honors"
+            >
+              <Trophy size={14} className={pathname === '/trophies' ? 'text-slate-950' : 'text-amber-400'} />
+            </Link>
 
             {/* GM Profile Pill */}
             <button

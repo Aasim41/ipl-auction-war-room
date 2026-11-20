@@ -387,9 +387,18 @@ export default function UnifiedTeamSelectHomePage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-400 font-mono mt-0.5">
-                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                    <Link
+                      href="/trophies"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                      }}
+                      className="text-amber-400 font-bold flex items-center gap-1 hover:underline cursor-pointer bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/30 transition-all hover:bg-amber-500/20"
+                      title="View Franchise Trophy Cabinet"
+                    >
                       <Trophy size={12} /> {activeTeam.titles}
-                    </span>
+                    </Link>
                     <span>•</span>
                     <span>Starting Cap: ₹125.0 Cr</span>
                   </div>
