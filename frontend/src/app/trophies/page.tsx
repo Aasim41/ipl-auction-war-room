@@ -330,198 +330,128 @@ export default function TrophyCabinetPage() {
 
       {/* ─── TAB 2: CAPS (ORANGE & PURPLE) ─── */}
       {activeTab === 'caps' && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           
-          {/* 🧡 ORANGE CAP (TOP RUN-SCORER) */}
-          <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-slate-900 to-orange-700/20 border border-amber-500/40 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl font-black shadow-md">
-                  🧢
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono font-black text-amber-400 uppercase tracking-widest block">
-                    BCCI OFFICIAL AWARD
-                  </span>
-                  <h3 className="text-base sm:text-lg font-black font-display text-white">
-                    🧡 Orange Cap (Leading Run-Scorer)
-                  </h3>
-                </div>
+          {/* 🧡 ORANGE CAP (SEASON 2027 TOP RUN-SCORER) */}
+          <div className="p-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-900 to-orange-500/10 border border-amber-500/30 shadow-md">
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">🧢</span>
+                <span className="text-xs font-black uppercase text-amber-400">
+                  Orange Cap · Season 2027 Runs Leader
+                </span>
               </div>
-              <span className="text-[10px] font-mono text-gray-400 bg-slate-950 px-2 py-1 rounded-lg border border-white/10">
-                10 Teams Tracked
-              </span>
+              <span className="text-[10px] font-mono text-gray-400">IPL 2027</span>
             </div>
 
-            {/* Orange Cap Leader Hero */}
+            {/* Leader Micro-Card */}
             {awards.orangeCapLeader && (
-              <div className="my-3 p-3.5 rounded-2xl bg-slate-950/90 border border-amber-500/50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div 
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-md border shrink-0 text-white"
-                    style={{ backgroundColor: `${awards.orangeCapLeader.teamColor}40`, borderColor: awards.orangeCapLeader.teamColor }}
-                  >
-                    1
-                  </div>
+              <div className="my-2 p-2 rounded-xl bg-slate-950/90 border border-amber-500/40 flex items-center justify-between gap-2 shadow-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <TeamLogo teamId={awards.orangeCapLeader.teamShort} size={22} />
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm sm:text-base font-black text-amber-300 truncate">
-                        {awards.orangeCapLeader.playerName}
-                      </span>
-                      <span 
-                        className="px-1.5 py-0.2 rounded text-[10px] font-black text-slate-950 shrink-0"
-                        style={{ backgroundColor: awards.orangeCapLeader.teamColor }}
-                      >
+                    <div className="flex items-center gap-1 text-xs font-bold text-white truncate">
+                      <span className="truncate">{awards.orangeCapLeader.playerName}</span>
+                      <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-mono">
                         {awards.orangeCapLeader.teamShort}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 font-mono block">
-                      {awards.orangeCapLeader.teamShort} • {awards.orangeCapLeader.innings} Innings
-                    </span>
+                    <div className="text-[10px] text-gray-400 font-mono">
+                      {awards.orangeCapLeader.innings} inn • HS: {awards.orangeCapLeader.highestScore}* • SR: {awards.orangeCapLeader.strikeRate}
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 w-full sm:w-auto text-center shrink-0">
-                  <div className="p-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30">
-                    <span className="text-[9px] font-mono text-gray-400 block">RUNS</span>
-                    <strong className="text-sm font-black text-amber-400">{awards.orangeCapLeader.runs}</strong>
+                <div className="text-right shrink-0">
+                  <div className="text-base font-black font-mono text-amber-400">
+                    {awards.orangeCapLeader.runs} <span className="text-[10px] text-gray-400 font-sans">runs</span>
                   </div>
-                  <div className="p-1.5 rounded-xl bg-slate-900 border border-white/5">
-                    <span className="text-[9px] font-mono text-gray-400 block">SR</span>
-                    <strong className="text-xs font-black text-white">{awards.orangeCapLeader.strikeRate}</strong>
-                  </div>
-                  <div className="p-1.5 rounded-xl bg-slate-900 border border-white/5">
-                    <span className="text-[9px] font-mono text-gray-400 block">HS</span>
-                    <strong className="text-xs font-black text-emerald-400">{awards.orangeCapLeader.highestScore}*</strong>
-                  </div>
-                  <div className="p-1.5 rounded-xl bg-slate-900 border border-white/5">
-                    <span className="text-[9px] font-mono text-gray-400 block">50/100</span>
-                    <strong className="text-xs font-black text-white">{awards.orangeCapLeader.fifties}/{awards.orangeCapLeader.hundreds}</strong>
+                  <div className="text-[9px] text-gray-400 font-mono">
+                    {awards.orangeCapLeader.fifties}×50 • {awards.orangeCapLeader.hundreds}×100
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Top 5 Leaderboard Table */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top 5 Run-Getters</span>
-              {awards.orangeCapTop5.map((bat: PlayerBattingAwardStats, idx: number) => (
+            {/* Chasers Strip */}
+            <div className="space-y-1">
+              {awards.orangeCapTop5.slice(1, 5).map((bat: PlayerBattingAwardStats, idx: number) => (
                 <div 
                   key={idx}
-                  className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"
+                  className="px-2 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between text-[11px] font-mono"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-gray-500 font-bold w-4">{idx + 1}</span>
-                    <span className="font-bold text-white truncate">{bat.playerName}</span>
-                    <span 
-                      className="px-1.5 py-0.2 rounded text-[9px] font-black text-slate-950 shrink-0"
-                      style={{ backgroundColor: bat.teamColor }}
-                    >
-                      {bat.teamShort}
-                    </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-gray-500 text-[10px] font-bold w-4">#{idx + 2}</span>
+                    <TeamLogo teamId={bat.teamShort} size={14} />
+                    <span className="text-white font-bold truncate">{bat.playerName}</span>
+                    <span className="text-gray-400 text-[9px]">({bat.teamShort})</span>
                   </div>
-                  <div className="flex items-center gap-3 text-right shrink-0">
-                    <span className="text-gray-400 text-[11px]">{bat.innings} inn</span>
-                    <span className="text-gray-400 text-[11px]">{bat.strikeRate} SR</span>
-                    <strong className="text-amber-400 font-bold text-sm w-12">{bat.runs}</strong>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-amber-300 font-bold">{bat.runs} R</span>
+                    <span className="text-gray-400 text-[10px]">SR {bat.strikeRate}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* 💜 PURPLE CAP (TOP WICKET-TAKER) */}
-          <div className="p-4 rounded-3xl bg-gradient-to-br from-purple-500/20 via-slate-900 to-indigo-800/20 border border-purple-500/40 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center text-xl font-black shadow-md">
-                  🧢
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono font-black text-purple-400 uppercase tracking-widest block">
-                    BCCI OFFICIAL AWARD
-                  </span>
-                  <h3 className="text-base sm:text-lg font-black font-display text-white">
-                    💜 Purple Cap (Leading Wicket-Taker)
-                  </h3>
-                </div>
+          {/* 💜 PURPLE CAP (SEASON 2027 TOP WICKET-TAKER) */}
+          <div className="p-2.5 rounded-2xl bg-gradient-to-r from-purple-500/10 via-slate-900 to-indigo-500/10 border border-purple-500/30 shadow-md">
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">🎯</span>
+                <span className="text-xs font-black uppercase text-purple-300">
+                  Purple Cap · Season 2027 Wickets Leader
+                </span>
               </div>
-              <span className="text-[10px] font-mono text-gray-400 bg-slate-950 px-2 py-1 rounded-lg border border-white/10">
-                10 Teams Tracked
-              </span>
+              <span className="text-[10px] font-mono text-gray-400">IPL 2027</span>
             </div>
 
-            {/* Purple Cap Leader Hero */}
+            {/* Leader Micro-Card */}
             {awards.purpleCapLeader && (
-              <div className="my-3 p-3.5 rounded-2xl bg-slate-950/90 border border-purple-500/50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div 
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-md border shrink-0 text-white"
-                    style={{ backgroundColor: `${awards.purpleCapLeader.teamColor}40`, borderColor: awards.purpleCapLeader.teamColor }}
-                  >
-                    1
-                  </div>
+              <div className="my-2 p-2 rounded-xl bg-slate-950/90 border border-purple-500/40 flex items-center justify-between gap-2 shadow-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <TeamLogo teamId={awards.purpleCapLeader.teamShort} size={22} />
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm sm:text-base font-black text-purple-300 truncate">
-                        {awards.purpleCapLeader.playerName}
-                      </span>
-                      <span 
-                        className="px-1.5 py-0.2 rounded text-[10px] font-black text-slate-950 shrink-0"
-                        style={{ backgroundColor: awards.purpleCapLeader.teamColor }}
-                      >
+                    <div className="flex items-center gap-1 text-xs font-bold text-white truncate">
+                      <span className="truncate">{awards.purpleCapLeader.playerName}</span>
+                      <span className="px-1 py-0.2 rounded bg-purple-500/20 text-purple-300 text-[9px] font-mono">
                         {awards.purpleCapLeader.teamShort}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 font-mono block">
-                      {awards.purpleCapLeader.teamShort} • {awards.purpleCapLeader.matches} Matches
-                    </span>
+                    <div className="text-[10px] text-gray-400 font-mono">
+                      {awards.purpleCapLeader.overs} ov • BBI: {awards.purpleCapLeader.bestFigures} • Econ: {awards.purpleCapLeader.economy}
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 w-full sm:w-auto text-center shrink-0">
-                  <div className="p-1.5 rounded-xl bg-purple-500/15 border border-purple-500/30">
-                    <span className="text-[9px] font-mono text-gray-400 block">WKTS</span>
-                    <strong className="text-sm font-black text-purple-400">{awards.purpleCapLeader.wickets}</strong>
+                <div className="text-right shrink-0">
+                  <div className="text-base font-black font-mono text-purple-300">
+                    {awards.purpleCapLeader.wickets} <span className="text-[10px] text-gray-400 font-sans">wkts</span>
                   </div>
-                  <div className="p-1.5 rounded-xl bg-slate-900 border border-white/5">
-                    <span className="text-[9px] font-mono text-gray-400 block">ECON</span>
-                    <strong className="text-xs font-black text-white">{awards.purpleCapLeader.economy}</strong>
-                  </div>
-                  <div className="p-1.5 rounded-xl bg-slate-900 border border-white/5">
-                    <span className="text-[9px] font-mono text-gray-400 block">BBI</span>
-                    <strong className="text-xs font-black text-emerald-400">{awards.purpleCapLeader.bestFigures}</strong>
-                  </div>
-                  <div className="p-1.5 rounded-xl bg-slate-900 border border-white/5">
-                    <span className="text-[9px] font-mono text-gray-400 block">OVERS</span>
-                    <strong className="text-xs font-black text-white">{awards.purpleCapLeader.overs}</strong>
+                  <div className="text-[9px] text-gray-400 font-mono">
+                    Econ {awards.purpleCapLeader.economy}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Top 5 Leaderboard Table */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top 5 Wicket-Takers</span>
-              {awards.purpleCapTop5.map((bowl: PlayerBowlingAwardStats, idx: number) => (
+            {/* Chasers Strip */}
+            <div className="space-y-1">
+              {awards.purpleCapTop5.slice(1, 5).map((bowl: PlayerBowlingAwardStats, idx: number) => (
                 <div 
                   key={idx}
-                  className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"
+                  className="px-2 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between text-[11px] font-mono"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-gray-500 font-bold w-4">{idx + 1}</span>
-                    <span className="font-bold text-white truncate">{bowl.playerName}</span>
-                    <span 
-                      className="px-1.5 py-0.2 rounded text-[9px] font-black text-slate-950 shrink-0"
-                      style={{ backgroundColor: bowl.teamColor }}
-                    >
-                      {bowl.teamShort}
-                    </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-gray-500 text-[10px] font-bold w-4">#{idx + 2}</span>
+                    <TeamLogo teamId={bowl.teamShort} size={14} />
+                    <span className="text-white font-bold truncate">{bowl.playerName}</span>
+                    <span className="text-gray-400 text-[9px]">({bowl.teamShort})</span>
                   </div>
-                  <div className="flex items-center gap-3 text-right shrink-0">
-                    <span className="text-gray-400 text-[11px]">{bowl.economy} econ</span>
-                    <span className="text-gray-400 text-[11px]">BBI {bowl.bestFigures}</span>
-                    <strong className="text-purple-400 font-bold text-sm w-8">{bowl.wickets}</strong>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-purple-300 font-bold">{bowl.wickets} W</span>
+                    <span className="text-gray-400 text-[10px]">Econ {bowl.economy}</span>
                   </div>
                 </div>
               ))}
