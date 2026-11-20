@@ -913,75 +913,123 @@ export default function BallByBallMatchSimulator({
     let commentary = '';
     const shotZone = SHOT_ZONES[Math.floor(Math.random() * SHOT_ZONES.length)];
 
-    // BATTING TACTIC LOGIC
-    if (activeBatTactic === 'DEFEND') {
-      if (rand < 0.02) {
+    // BATTING TACTIC LOGIC (0, 1, 2, 3, 4, 6 or Over intents)
+    if (activeBatTactic === '0' || activeBatTactic === 'DEFEND' || activeBatTactic === 'DEFEND_OVER') {
+      if (rand < 0.015) {
         isWicket = true;
-      } else if (rand < 0.75) {
+      } else if (rand < 0.93) {
         runs = 0;
-        commentary = `Solid defensive push into the covers. No run taken.`;
-      } else if (rand < 0.95) {
+        commentary = `Solid defensive block right into the turf. Dot ball.`;
+      } else {
         runs = 1;
         commentary = `Soft hands tap into mid-wicket, scampered through for a sensible single.`;
-      } else {
-        runs = 2;
-        commentary = `Pushed into the gap at sweeper cover, comfortable double.`;
       }
-    } else if (activeBatTactic === 'ROTATE') {
-      if (rand < 0.05) {
+    } else if (activeBatTactic === '1' || activeBatTactic === 'ROTATE' || activeBatTactic === 'NORMAL_OVER') {
+      if (rand < 0.035) {
         isWicket = true;
-      } else if (rand < 0.25) {
+      } else if (rand < 0.18) {
         runs = 0;
         commentary = `Defended towards point, fielder closes in sharply.`;
-      } else if (rand < 0.75) {
+      } else if (rand < 0.88) {
         runs = 1;
-        commentary = `Worked smoothly off the hips into square leg for one.`;
-      } else if (rand < 0.92) {
+        commentary = `Worked smoothly off the hips into square leg for an easy single.`;
+      } else if (rand < 0.96) {
         runs = 2;
         commentary = `Steered fine of third man, hurried back for a sharp couple!`;
       } else {
         runs = 4;
         isFour = true;
-        commentary = `FOUR! Beautifully timed drive beats mid-off to the rope!`;
+        commentary = `FOUR! Beautifully timed push pierces the gap and reaches the rope!`;
       }
-    } else if (activeBatTactic === 'ATTACK') {
-      if (rand < 0.12) {
+    } else if (activeBatTactic === '2') {
+      if (rand < 0.06) {
         isWicket = true;
-      } else if (rand < 0.25) {
+      } else if (rand < 0.16) {
         runs = 0;
-        commentary = `Big swing and a miss outside off! Lucky not to edge behind.`;
-      } else if (rand < 0.50) {
+        commentary = `Pushed firmly to cover, turned down for the second.`;
+      } else if (rand < 0.38) {
         runs = 1;
-        commentary = `Lofted towards long-on on the bounce for a single.`;
-      } else if (rand < 0.80) {
+        commentary = `Sweeper cuts off the boundary, held to a single.`;
+      } else {
+        runs = 2;
+        commentary = `⚡ Pierced into the deep sweeper gap, electric sprint back for two!`;
+      }
+    } else if (activeBatTactic === '3') {
+      if (rand < 0.09) {
+        isWicket = true;
+      } else if (rand < 0.20) {
+        runs = 1;
+        commentary = `Tapped into the outfield, single taken.`;
+      } else if (rand < 0.55) {
+        runs = 2;
+        commentary = `Deep fielder slides to save the three, held to a double.`;
+      } else if (rand < 0.94) {
+        runs = 3;
+        commentary = `🏃 Superb placement into the deep boundary pocket, hard running yields three!`;
+      } else {
         runs = 4;
         isFour = true;
-        commentary = `⚡ CRACKING 4! Pierces extra cover with blistering power!`;
+        commentary = `FOUR! Boundary beats the slide right on the cushion!`;
+      }
+    } else if (activeBatTactic === '4' || activeBatTactic === 'ATTACK') {
+      // 4 intent: Piercing drive, high reward with edge/dismissal risk
+      if (rand < 0.14) {
+        isWicket = true;
+      } else if (rand < 0.26) {
+        runs = 0;
+        commentary = `Driven hard on the up, but straight to extra cover. Dot ball.`;
+      } else if (rand < 0.44) {
+        runs = 1;
+        commentary = `Lofted towards long-off on the bounce, single.`;
+      } else if (rand < 0.50) {
+        runs = 2;
+        commentary = `Slashed past point, deep sweeper saves the boundary, two taken.`;
+      } else if (rand < 0.92) {
+        runs = 4;
+        isFour = true;
+        commentary = `⚡ CRACKING 4! Pierces extra cover with blistering timing to the fence!`;
       } else {
         runs = 6;
         isSix = true;
-        commentary = `🚀 HUGE SIX! Clean strike sailed 95m over deep midwicket!`;
+        commentary = `🚀 SIX! Clears the infield and carries all the way over long-off!`;
       }
     } else {
-      // MAXIMUM (All out aggression)
+      // 6 intent: MAXIMUM carnage, high risk of getting caught in deep / bowled
       if (rand < 0.22) {
         isWicket = true;
-      } else if (rand < 0.40) {
+      } else if (rand < 0.32) {
         runs = 0;
-        commentary = `Swing across the line, beaten all ends up!`;
-      } else if (rand < 0.65) {
+        commentary = `Huge swing across the line, beaten completely by change of pace!`;
+      } else if (rand < 0.46) {
+        runs = 1;
+        commentary = `Mistimed skier falls harmlessly in vacant outfield, single taken.`;
+      } else if (rand < 0.54) {
+        runs = 2;
+        commentary = `Lofted high towards deep mid-wicket, fielder intercepts on the bounce.`;
+      } else if (rand < 0.70) {
         runs = 4;
         isFour = true;
-        commentary = `⚡ FOUR! Muscled over the infield bouncing into the fence!`;
+        commentary = `⚡ FOUR! One bounce into the LED boundary advertising boards!`;
       } else {
         runs = 6;
         isSix = true;
-        commentary = `🚀 MONSTER SIX! Dispatched 106m into the top tier! Unreal power!`;
+        commentary = `🚀 MONSTER MAXIMUM! Dispatched 104m into the second tier! Unreal power!`;
       }
     }
 
     // Adjust for BOWLING TACTIC
-    if (activeBowlTactic === 'YORKER') {
+    if (activeBowlTactic === 'DEFEND') {
+      if (isWicket) {
+        dismissal = `b ${bowler.name}`;
+        commentary = `🔥 CLEAN BOWLED! Defensive off-cutter deceives the swing and crashes into off stump!`;
+      }
+    } else if (activeBowlTactic === 'ATTACK' || activeBowlTactic === 'BOUNCER') {
+      if (isWicket) {
+        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)].name;
+        dismissal = `c ${fielder} b ${bowler.name}`;
+        commentary = `🎯 TOP EDGE! Hurried by a fiery 145km/h bouncer, skied high and held by ${fielder}!`;
+      }
+    } else if (activeBowlTactic === 'YORKER') {
       if (isWicket) {
         dismissal = `b ${bowler.name}`;
         commentary = `🔥 CLEAN BOWLED! Pinpoint yorker crushes the base of leg stump!`;
@@ -992,16 +1040,12 @@ export default function BallByBallMatchSimulator({
         dismissal = `c ${fielder} b ${bowler.name}`;
         commentary = `🎯 CAUGHT! Deceptive knuckle ball induces an early loft, pouched by ${fielder}!`;
       }
-    } else if (activeBowlTactic === 'BOUNCER') {
-      if (isWicket) {
-        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)].name;
-        dismissal = `c ${fielder} b ${bowler.name}`;
-        commentary = `🎯 TOP EDGE! Hurried by the bouncer, skied high and held safely by ${fielder}!`;
-      }
     } else {
+      // NORMAL / GOOD_LENGTH
       if (isWicket) {
-        dismissal = `c & b ${bowler.name}`;
-        commentary = `🎯 SENSATIONAL C&B! ${bowler.name} grabs a reflex return catch!`;
+        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Keeper';
+        dismissal = `c ${fielder} b ${bowler.name}`;
+        commentary = `🎯 EDGED & TAKEN! Probing corridor delivery takes the outside nick to ${fielder}!`;
       }
     }
 
