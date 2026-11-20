@@ -818,29 +818,6 @@ export default function PlayingXIPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Simulate Current Round Button */}
-                    {(() => {
-                      const nextUnplayed = schedule.find(f => f.status !== 'COMPLETED');
-                      const roundToSim = nextUnplayed?.round || 1;
-                      return nextUnplayed ? (
-                        <button
-                          onClick={() => {
-                            gameAudio.playUiTap('select');
-                            triggerGameHaptic('medium');
-                            setIsSimulatingRound(true);
-                            simulateRound(roundToSim);
-                            setTimeout(() => setIsSimulatingRound(false), 600);
-                          }}
-                          disabled={isSimulatingRound}
-                          className="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
-                          title="Simulate all 5 matches in the current round"
-                        >
-                          <Zap size={12} className={isSimulatingRound ? 'animate-spin' : ''} />
-                          <span>{isSimulatingRound ? 'Simulating...' : `⚡ Sim Round ${roundToSim}`}</span>
-                        </button>
-                      ) : null;
-                    })()}
-
                     <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10">
                       <button
                         onClick={() => setScheduleFilter('all')}
@@ -950,21 +927,8 @@ export default function PlayingXIPage() {
                                   <span>Scorecard</span>
                                 </button>
                               </div>
-                            ) : !fixture.isMyMatch ? (
-                              <button
-                                onClick={() => {
-                                  gameAudio.playUiTap('select');
-                                  triggerGameHaptic('light');
-                                  simulateScheduleMatch(fixture.matchNo);
-                                }}
-                                className="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold text-[11px] cursor-pointer hover:scale-105 active:scale-95 transition-all flex items-center gap-1"
-                                title="Simulate this fixture between AI teams and update points table"
-                              >
-                                <Zap size={11} className="text-amber-400" />
-                                <span>Simulate</span>
-                              </button>
                             ) : (
-                              <span className="text-[10px] text-gray-500 font-mono uppercase">
+                              <span className="text-[10px] text-gray-500 font-mono uppercase px-2 py-1 rounded-lg bg-white/5 border border-white/5">
                                 Upcoming
                               </span>
                             )}

@@ -1559,6 +1559,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
           // 5. Seed Playoffs if League Completed (all 70 matches completed)
           const leagueDone = updatedSchedule.filter(f => f.stage === 'League' && f.status === 'COMPLETED').length >= 70;
+          let updatedUserTrophies = [...(prev.userTrophies || [])];
+
           if (leagueDone) {
             const top4 = updatedPoints.slice(0, 4);
             const q1 = updatedSchedule.find(f => f.matchNo === 71);
@@ -1592,6 +1594,61 @@ export const useCampaignStore = create<CampaignStoreState>()(
               elim.teamBEmoji = top4[3].emoji;
               elim.isMyMatch = elim.teamAId === prev.teamId || elim.teamBId === prev.teamId;
             }
+
+            // Award Playoff Qualification Trophy if User is in Top 4
+            const myPos = top4.findIndex(t => t.teamId === prev.teamId);
+            if (myPos >= 0) {
+              const playoffTrophyId = `playoffs_${prev.teamId}_2027`;
+              if (!updatedUserTrophies.some(t => t.id === playoffTrophyId)) {
+                updatedUserTrophies.unshift({
+                  id: playoffTrophyId,
+                  seasonLabel: 'IPL 2027',
+                  seasonYear: 2027,
+                  type: 'playoffs',
+                  title: 'IPL 2027 Playoff Qualifier',
+                  subtitle: `Qualified #${myPos + 1} with ${top4[myPos].points} Pts (${top4[myPos].nrr >= 0 ? '+' : ''}${top4[myPos].nrr} NRR)`,
+                  captainOrHighlight: `Official Championship Playoff Berth`,
+                  isUserEarned: true
+                });
+              }
+            }
+          }
+
+          // 6. Award Championship or Runner-Up Trophy on IPL Final (Match 74)
+          if (matchNo === 74 && resultData) {
+            const finalMatch = updatedSchedule.find(f => f.matchNo === 74);
+            const isUserFinalist = finalMatch ? (finalMatch.teamAId === prev.teamId || finalMatch.teamBId === prev.teamId) : false;
+            const isUserChampion = resultData.winnerTeamId === prev.teamId;
+
+            if (isUserChampion) {
+              const champId = `champ_${prev.teamId}_2027`;
+              if (!updatedUserTrophies.some(t => t.id === champId)) {
+                updatedUserTrophies.unshift({
+                  id: champId,
+                  seasonLabel: 'IPL 2027',
+                  seasonYear: 2027,
+                  type: 'champion',
+                  title: 'IPL 2027 Champions',
+                  subtitle: `Champions of India! Won Final by ${resultData.margin}!`,
+                  captainOrHighlight: `Golden IPL Trophy Lifted at ${finalMatch?.stadiumName || 'Narendra Modi Stadium'}`,
+                  isUserEarned: true
+                });
+              }
+            } else if (isUserFinalist) {
+              const runnerId = `runnerup_${prev.teamId}_2027`;
+              if (!updatedUserTrophies.some(t => t.id === runnerId)) {
+                updatedUserTrophies.unshift({
+                  id: runnerId,
+                  seasonLabel: 'IPL 2027',
+                  seasonYear: 2027,
+                  type: 'runner_up',
+                  title: 'IPL 2027 Runner-Up',
+                  subtitle: `IPL Finalist • Valiant runners-up vs ${resultData.winnerName}`,
+                  captainOrHighlight: `Silver Runner-Up Shield`,
+                  isUserEarned: true
+                });
+              }
+            }
           }
 
           const waveSummary = newlySimulatedAiMatches.length > 0 ? {
@@ -1608,6 +1665,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
             pointsTable: updatedPoints,
             activeMatchSimulation: null,
             lastSimulatedWave: waveSummary,
+            userTrophies: updatedUserTrophies,
             lastSaved: new Date().toISOString()
           };
         })
