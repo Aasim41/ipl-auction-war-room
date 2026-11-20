@@ -413,9 +413,7 @@ export default function PlayingXIPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pb-2 border-b border-white/10 gap-2">
           <div className="flex items-center justify-between sm:justify-start gap-2.5">
             <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shadow-sm shrink-0" style={{ backgroundColor: franchise.color }}>
-                {franchise.emoji}
-              </span>
+              <TeamLogo teamId={franchise.id} size={24} />
               <div className="flex items-baseline gap-1.5">
                 <h1 className="text-base sm:text-lg font-black font-mono text-amber-400">
                   {franchise.short}

@@ -480,7 +480,7 @@ export default function BallByBallMatchSimulator({
     setBowl1Squad(firstBowlSquad);
 
     const initInn1: InningsState = {
-      teamName: firstBatTeam.name,
+      teamName: firstBatTeam.short,
       teamShort: firstBatTeam.short,
       teamColor: firstBatTeam.color,
       totalRuns: 0,
@@ -512,7 +512,7 @@ export default function BallByBallMatchSimulator({
     };
 
     const initInn2: InningsState = {
-      teamName: firstBowlTeam.name,
+      teamName: firstBowlTeam.short,
       teamShort: firstBowlTeam.short,
       teamColor: firstBowlTeam.color,
       totalRuns: 0,
@@ -709,8 +709,8 @@ export default function BallByBallMatchSimulator({
     const userBatsFirst = Math.random() > 0.5;
     setupMatchTeams(userBatsFirst);
     const summary = userBatsFirst
-      ? `${myFranchise.name} won the toss and elected to bat first`
-      : `${rivalFranchise.name} won the toss and elected to bat first`;
+      ? `${myFranchise.short} won toss, elected to bat`
+      : `${rivalFranchise.short} won toss, elected to bat`;
     setTossSummaryText(summary);
     setTossPhase('arena');
     persistMatchState({
@@ -2270,7 +2270,7 @@ export default function BallByBallMatchSimulator({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                     <button
-                      onClick={() => handleApplyTossDecision(true, `${myFranchise.name} won the toss and elected to bat first`)}
+                      onClick={() => handleApplyTossDecision(true, `${myFranchise.short} won toss, elected to bat`)}
                       className="p-3.5 rounded-2xl bg-slate-900 border border-amber-500/40 hover:border-amber-400 hover:bg-amber-500/10 text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-95 flex flex-col justify-between"
                     >
                       <div>
@@ -2288,7 +2288,7 @@ export default function BallByBallMatchSimulator({
                     </button>
 
                     <button
-                      onClick={() => handleApplyTossDecision(false, `${myFranchise.name} won the toss and elected to bowl first`)}
+                      onClick={() => handleApplyTossDecision(false, `${myFranchise.short} won toss, elected to bowl`)}
                       className="p-3.5 rounded-2xl bg-slate-900 border border-sky-500/40 hover:border-sky-400 hover:bg-sky-500/10 text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-95 flex flex-col justify-between"
                     >
                       <div>
@@ -2312,14 +2312,14 @@ export default function BallByBallMatchSimulator({
               {coinResult && tossWinner === 'rival' && (
                 <div className="flex flex-col items-center gap-3 text-center max-w-md w-full animate-fadeIn">
                   <div className="px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md">
-                    <span>Coin Landed {coinResult.toUpperCase()} • {rivalFranchise.name} WON THE TOSS</span>
+                    <span>Coin Landed {coinResult.toUpperCase()} • {rivalFranchise.short} WON TOSS</span>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 text-left w-full">
                     <div className="text-xs font-bold text-white">
                       Opposition Captain Decision:
                     </div>
                     <div className="text-xs text-amber-300 font-bold mt-1">
-                      {rivalFranchise.name} elected to {tossDecision === 'bat' ? 'BAT FIRST' : 'BOWL FIRST'}!
+                      {rivalFranchise.short} elected to {tossDecision === 'bat' ? 'BAT FIRST' : 'BOWL FIRST'}!
                     </div>
                     <div className="text-[11px] text-gray-400 mt-1">
                       {tossDecision === 'bowl' 
@@ -2331,7 +2331,7 @@ export default function BallByBallMatchSimulator({
                   <button
                     onClick={() => {
                       const userBats = tossDecision === 'bowl';
-                      handleApplyTossDecision(userBats, `${rivalFranchise.name} won the toss and elected to ${tossDecision === 'bat' ? 'bat' : 'bowl'} first`);
+                      handleApplyTossDecision(userBats, `${rivalFranchise.short} won toss, elected to ${tossDecision === 'bat' ? 'bat' : 'bowl'}`);
                     }}
                     className="w-full py-3 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
                   >

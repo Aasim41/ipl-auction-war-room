@@ -1169,7 +1169,7 @@ export default function MiniAuctionPage() {
                       {highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer' && (
                         <TeamLogo teamId={highestBidder === campaign.teamId ? campaign.teamId : highestBidder} size={18} />
                       )}
-                      <span>{isUserHighest ? '👑 YOU HOLD BID' : (getFranchise(highestBidder)?.name || highestBidder.toUpperCase())}</span>
+                      <span>{isUserHighest ? '👑 YOU HOLD BID' : (getFranchise(highestBidder)?.short || highestBidder.toUpperCase())}</span>
                     </div>
 
                     <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mt-0.5 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
@@ -1520,13 +1520,13 @@ export default function MiniAuctionPage() {
                     onChange={(e) => setSelectedFranchiseView(e.target.value)}
                     className="bg-slate-950 border border-white/20 rounded-lg px-2 py-1 text-[11px] font-bold text-white focus:outline-none focus:border-amber-400 cursor-pointer flex-1"
                   >
-                    <option value={campaign.teamId}>👑 My Team: {campaign.teamName}</option>
+                    <option value={campaign.teamId}>👑 My Team: {getFranchise(campaign.teamId)?.short || campaign.teamName}</option>
                     {BOT_TEAMS.map((tk) => {
                       if (tk === campaign.teamId) return null
                       const f = getFranchise(tk)
                       return (
                         <option key={tk} value={tk}>
-                          {f.emoji} {f.name} ({f.short})
+                          {f.emoji} {f.short}
                         </option>
                       )
                     })}
