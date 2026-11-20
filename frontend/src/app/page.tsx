@@ -428,51 +428,6 @@ export default function UnifiedTeamSelectHomePage() {
               </div>
             )}
 
-            {/* Franchise Matchday Showcase Banner */}
-            <div 
-              className="my-3 p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl transition-all"
-              style={{
-                backgroundColor: `${activeTeam.color}15`,
-                borderColor: `${activeTeam.color}40`,
-                boxShadow: `0 0 30px ${activeTeam.color}15`
-              }}
-            >
-              <div className="flex items-center gap-4 text-center sm:text-left">
-                <div 
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-xl border shrink-0 mx-auto sm:mx-0"
-                  style={{
-                    backgroundColor: activeTeam.color,
-                    borderColor: 'rgba(255,255,255,0.2)'
-                  }}
-                >
-                  {activeTeam.emoji}
-                </div>
-                <div>
-                  <div className="flex items-center justify-center sm:justify-start gap-2">
-                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-300">
-                      IPL 2027 Official Franchise
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white font-mono">
-                      {activeTeam.short}
-                    </span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
-                    {activeTeam.name}
-                  </h2>
-                  <p className="text-xs text-gray-300 font-mono mt-1">
-                    Home Fortress: <strong className="text-emerald-400">{activeStadium.name}</strong> ({activeStadium.city})
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex sm:flex-col items-center sm:items-end gap-2 text-right">
-                <span className="text-xs text-gray-400 font-mono">Season Target</span>
-                <span className="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-mono font-black flex items-center gap-1.5 shadow-sm">
-                  <span>🏆 IPL Trophy Glory</span>
-                </span>
-              </div>
-            </div>
-
             {/* 4 Clean Key Stat Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-3">
               <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
@@ -531,18 +486,16 @@ export default function UnifiedTeamSelectHomePage() {
             {existingCampaign?.activeMatchSimulation && !existingCampaign.activeMatchSimulation.matchDone ? (
               <>
                 <Play size={18} className="fill-slate-950" />
-                <span>RESUME ACTIVE MATCHDAY ➔</span>
+                <span>Resume Match ➔</span>
               </>
             ) : selectedGameMode === 'scratch_inception' ? (
               <>
                 <Sparkles size={16} />
-                <span>{existingCampaign ? `RESUME ${activeTeam.name.toUpperCase()} DRAFT & MEGA AUCTION` : `SELECT ${activeTeam.name.toUpperCase()} & LAUNCH ₹120 CR DRAFT`}</span>
-                <ArrowRight size={16} />
+                <span>{existingCampaign ? `Resume ${activeTeam.short} Mega Auction ➔` : `Start with ${activeTeam.short} ➔`}</span>
               </>
             ) : (
               <>
-                <span>{existingCampaign ? `RESUME ${activeTeam.name.toUpperCase()} CAMPAIGN` : `SELECT ${activeTeam.name.toUpperCase()} & ENTER WAR ROOM`}</span>
-                <ArrowRight size={16} />
+                <span>{existingCampaign ? `Resume ${activeTeam.short} Campaign ➔` : `Start with ${activeTeam.short} ➔`}</span>
               </>
             )}
           </button>

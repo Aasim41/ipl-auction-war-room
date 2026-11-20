@@ -409,7 +409,7 @@ export default function SquadRetainReleasePage() {
             onClick={handleProceedToAuction}
             className="w-full sm:w-auto px-5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.4)] cursor-pointer hover:scale-[1.02] transition-all"
           >
-            <span>Lock Retentions & Enter Mini-Auction</span>
+            <span>Lock & Start Auction</span>
             <ArrowRight size={13} />
           </button>
         </div>

@@ -399,7 +399,7 @@ export default function TradeWindowPage() {
               onClick={() => router.push('/squad')}
               className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
             >
-              <span>Proceed to Retain & Release ➔</span>
+              <span>Next: Squad & Retain ➔</span>
             </button>
           )}
         </div>

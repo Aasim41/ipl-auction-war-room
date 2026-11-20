@@ -467,6 +467,109 @@ export default function MiniAuctionPage() {
     }
   }
 
+  // User Skip Feature: Instantly simulate rivalry AI bidding for current player and advance
+  const [skipNotification, setSkipNotification] = useState<{
+    playerName: string;
+    winner: string;
+    price: number;
+    unsold: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!skipNotification) return;
+    const t = setTimeout(() => setSkipNotification(null), 5000);
+    return () => clearTimeout(t);
+  }, [skipNotification]);
+
+  const handleSkipCurrentPlayer = () => {
+    if (!currentPlayer || !campaign || isAutoSimulating) return;
+
+    // Prevent duplicate sold processing
+    if (soldPlayerIdsRef.current.has(currentPlayer.id)) {
+      handleNextPlayer();
+      return;
+    }
+    soldPlayerIdsRef.current.add(currentPlayer.id);
+
+    const botTeams = BOT_TEAMS.filter((t) => t !== campaign.teamId);
+    let winningBot: string | null = null;
+    let finalPrice = currentBid;
+
+    // If an AI bot has already placed a bid
+    if (highestBidder && highestBidder !== 'BCCI Auctioneer' && highestBidder !== campaign.teamId && highestBidder !== 'none') {
+      winningBot = highestBidder;
+      finalPrice = currentBid;
+    } else {
+      // Find candidate rival bots interested in this player lot
+      const eligibleBots = botTeams.filter((botId) => {
+        const purse = getTeamPurse(botId);
+        const squad = getTeamSquad(botId);
+        if (currentPlayer.basePrice > purse) return false;
+        if (squad.length >= 25) return false;
+        if (currentPlayer.is_overseas && squad.filter((sp) => sp.is_overseas).length >= 8) return false;
+        const slotsNeeded = Math.max(0, 18 - squad.length);
+        const reserveNeeded = Math.max(0, slotsNeeded - 1) * 0.30;
+        if (purse - currentPlayer.basePrice < reserveNeeded) return false;
+
+        // Interest valuation check based on powerIndex and random factor
+        const valuation = Math.max(currentPlayer.basePrice, (currentPlayer.powerIndex / 10) * 1.5);
+        return currentPlayer.basePrice <= valuation && Math.random() > 0.25;
+      });
+
+      if (eligibleBots.length > 0) {
+        winningBot = eligibleBots[Math.floor(Math.random() * eligibleBots.length)];
+        const valuation = Math.max(currentPlayer.basePrice, (currentPlayer.powerIndex / 10) * 1.5);
+        const maxAffordable = getTeamPurse(winningBot);
+        const targetPrice = Math.min(maxAffordable, valuation);
+        const randomFactor = 0.85 + Math.random() * 0.35;
+        finalPrice = Math.min(maxAffordable, Math.max(currentPlayer.basePrice, Math.round(targetPrice * randomFactor * 100) / 100));
+      }
+    }
+
+    if (winningBot) {
+      const winnerName = getFranchise(winningBot)?.name || winningBot.toUpperCase();
+      const campaignPlayer: CampaignPlayer = {
+        player_id: currentPlayer.id,
+        name: currentPlayer.name,
+        role: currentPlayer.role,
+        nationality: currentPlayer.nationality,
+        is_overseas: currentPlayer.is_overseas,
+        price: finalPrice,
+        currentPrice: finalPrice,
+        Power_Index: currentPlayer.powerIndex,
+        is_retained: true,
+        is_released: false,
+        statsSummary: `Acquired in 2027 Mini-Auction for ₹${finalPrice.toFixed(2)} Cr`
+      };
+
+      recordAuctionSale(campaignPlayer, winningBot, finalPrice);
+      setSoldLog((prev) => [{ player: currentPlayer, winner: winnerName, price: finalPrice }, ...prev]);
+      gameAudio.playAuctionGavel(true);
+      triggerGameHaptic('light');
+
+      setSkipNotification({
+        playerName: currentPlayer.name,
+        winner: winnerName,
+        price: finalPrice,
+        unsold: false
+      });
+    } else {
+      setSoldLog((prev) => [{ player: currentPlayer, winner: 'UNSOLD', price: 0 }, ...prev]);
+      gameAudio.playTradeReject();
+      triggerGameHaptic('light');
+
+      setSkipNotification({
+        playerName: currentPlayer.name,
+        winner: 'UNSOLD',
+        price: 0,
+        unsold: true
+      });
+    }
+
+    // Immediately advance to next player!
+    handleNextPlayer();
+  };
+
   const handleFinishAuction = () => {
     gameAudio.playPhaseLock()
     triggerGameHaptic('lock')
@@ -941,6 +1044,30 @@ export default function MiniAuctionPage() {
               </div>
             )}
 
+            {/* Real-time feedback when user skips a player */}
+            {skipNotification && (
+              <div className="mb-2 p-2.5 rounded-2xl bg-slate-950 border border-amber-500/40 flex items-center justify-between gap-2 shadow-lg animate-fadeIn text-xs shrink-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono text-[10px] shrink-0">
+                    SKIPPED LOT
+                  </span>
+                  <span className="text-white truncate">
+                    <strong>{skipNotification.playerName}</strong> {skipNotification.unsold ? (
+                      <span className="text-gray-400 font-medium">passed without bids (Unsold).</span>
+                    ) : (
+                      <span>sold to <strong className="text-amber-300">{skipNotification.winner}</strong> for <strong className="text-emerald-400 font-mono">₹{skipNotification.price.toFixed(2)} Cr</strong>.</span>
+                    )}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSkipNotification(null)}
+                  className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white text-xs cursor-pointer shrink-0"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             {/* Top Gavel Bar */}
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <div className="flex items-center gap-2">
@@ -1132,6 +1259,15 @@ export default function MiniAuctionPage() {
 
                     {/* Paddle Buttons (Active or tap-to-explain when restricted) */}
                     <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                      <button
+                        onClick={handleSkipCurrentPlayer}
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white border border-white/15 cursor-pointer transition-all shadow-sm flex items-center justify-center gap-1"
+                        title="Skip this player and see who buys them"
+                      >
+                        <SkipForward size={13} className="text-amber-400" />
+                        <span>Skip</span>
+                      </button>
+
                       <button
                         onClick={() => handleUserBid(0.2)}
                         className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md ${
