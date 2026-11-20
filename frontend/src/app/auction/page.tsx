@@ -912,16 +912,6 @@ export default function MiniAuctionPage() {
 
           {/* Top Actions */}
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setShowAutoAuctionModal(true)}
-              disabled={isAutoSimulating || currentIndex >= auctionPool.length - 1}
-              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shrink-0"
-              title="Auto-simulate remaining auction"
-            >
-              <Bot size={14} />
-              <span>AI Auto-Auction</span>
-            </button>
-
             {(activeSquadCount >= 18 || currentIndex >= auctionPool.length - 1 || soldLog.length > 0) && (
               <button
                 onClick={handleFinishAuction}
@@ -931,8 +921,6 @@ export default function MiniAuctionPage() {
                 <span>Proceed to XI ➔</span>
               </button>
             )}
-
-
           </div>
         </div>
 
@@ -965,7 +953,7 @@ export default function MiniAuctionPage() {
           </div>
 
           {tacticalMatchInfo && (
-            <div className="flex items-center gap-1.5 text-[11px] font-mono">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono">
               <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                 tacticalMatchInfo.type === 'urgent'
                   ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
@@ -973,7 +961,7 @@ export default function MiniAuctionPage() {
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
               }`}>
-                {tacticalMatchInfo.badge}
+                💡 Scout Suggestion (Optional): {tacticalMatchInfo.badge}
               </span>
             </div>
           )}
@@ -1866,76 +1854,6 @@ export default function MiniAuctionPage() {
             </div>
 
           </div>
-        </div>
-      )}
-
-      {/* MODAL 3: AI Auto-Auction Confirmation Modal */}
-      {showAutoAuctionModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-y-auto touch-pan-y">
-          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-900 border border-amber-500/40 max-w-md w-full shadow-2xl relative animate-scale-up max-h-[94dvh] overflow-y-auto">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center mb-2.5 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
-              <Bot size={22} className="text-slate-950" />
-            </div>
-
-            <h3 className="text-base sm:text-lg font-black font-display text-white">
-              AI Franchise Auto-Draft Director
-            </h3>
-
-            <p className="text-[11px] sm:text-xs text-gray-300 mt-1 leading-relaxed">
-              Not interested in bidding through all remaining auction lots manually? Let the AI Director complete the auction based on your franchise requirements:
-            </p>
-
-            <div className="my-2.5 p-2.5 sm:p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-1.5 text-[10px] sm:text-[11px] font-mono">
-              <div className="flex items-center gap-1.5 text-emerald-300">
-                <CheckCircle2 size={13} className="shrink-0" />
-                <span>Builds squad to meet BCCI 18-player minimum</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-indigo-300">
-                <CheckCircle2 size={13} className="shrink-0" />
-                <span>Prioritizes missing roles (Wicketkeepers, Bowlers, Batsmen)</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-sky-300">
-                <CheckCircle2 size={13} className="shrink-0" />
-                <span>Strictly enforces 8 Overseas player maximum</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-amber-300">
-                <CheckCircle2 size={13} className="shrink-0" />
-                <span>Manages ₹{campaign.remainingPurse.toFixed(2)} Cr budget with price safety</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowAutoAuctionModal(false)}
-                className="flex-1 py-2 sm:py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleAIAutoCompleteAuction}
-                className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1 shadow-lg cursor-pointer hover:bg-amber-400"
-              >
-                <Zap size={14} />
-                <span>Simulate</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* OVERLAY: Auto-Auction Simulation in Progress */}
-      {isAutoSimulating && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-4">
-          <div className="w-16 h-16 rounded-3xl bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center mb-4 animate-bounce">
-            <Gavel size={32} className="text-amber-400 animate-pulse" />
-          </div>
-          <h3 className="text-xl font-black font-display text-white text-center">
-            Simulating Mini-Auction with 9 AI Rivals...
-          </h3>
-          <p className="text-xs text-amber-300 font-mono mt-1 text-center">
-            Balancing your ₹{campaign.remainingPurse.toFixed(2)} Cr salary cap, overseas quota, and role deficits...
-          </p>
         </div>
       )}
 
