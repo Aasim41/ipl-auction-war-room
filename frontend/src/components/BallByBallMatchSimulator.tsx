@@ -1067,6 +1067,7 @@ export default function BallByBallMatchSimulator({
     if (isSix) {
       gameAudio.playWillowCrack('six');
       gameAudio.playCrowdRoar('six');
+      gameAudio.playBoundaryHorn();
       triggerGameHaptic('six');
       setEventBanner({
         text: '🚀 MAXIMUM! 6 RUNS!',
@@ -1077,6 +1078,7 @@ export default function BallByBallMatchSimulator({
     } else if (isFour) {
       gameAudio.playWillowCrack('four');
       gameAudio.playCrowdRoar('boundary');
+      gameAudio.playBoundaryHorn();
       triggerGameHaptic('four');
       setEventBanner({
         text: '⚡ CRACKING 4! BOUNDARY!',
@@ -1085,6 +1087,7 @@ export default function BallByBallMatchSimulator({
       });
       setTimeout(() => setEventBanner(null), 1200);
     } else if (isWicket) {
+      gameAudio.playAppealHowzat();
       gameAudio.playStumpShatter();
       gameAudio.playCrowdRoar('wicket');
       triggerGameHaptic('wicket');
@@ -1096,6 +1099,7 @@ export default function BallByBallMatchSimulator({
       setTimeout(() => setEventBanner(null), 1600);
     } else if (runs === 2) {
       gameAudio.playWillowCrack('single');
+      gameAudio.playCrowdRoar('cheer');
       triggerGameHaptic('light');
       setEventBanner({
         text: '⚡ 2 RUNS! Sharp Double!',
@@ -1115,6 +1119,7 @@ export default function BallByBallMatchSimulator({
     } else {
       gameAudio.playWillowCrack('dot');
       gameAudio.playBallWhoosh();
+      gameAudio.playCrowdGasp();
       setEventBanner({
         text: '🛑 DOT BALL • Defended',
         subtext: `Good ball from ${bowler.name}, no run`,
@@ -1456,87 +1461,139 @@ export default function BallByBallMatchSimulator({
     let commentary = '';
     const shotZone = SHOT_ZONES[Math.floor(Math.random() * SHOT_ZONES.length)];
 
-    if (batTactic === 'DEFEND') {
-      if (rand < 0.02) {
+    // BATTING TACTIC LOGIC (0, 1, 2, 3, 4, 6 or Over intents)
+    if (batTactic === '0' || batTactic === 'DEFEND' || batTactic === 'DEFEND_OVER') {
+      if (rand < 0.015) {
         isWicket = true;
-      } else if (rand < 0.75) {
+      } else if (rand < 0.93) {
         runs = 0;
-        commentary = `Solid defensive push into the covers. No run taken.`;
-      } else if (rand < 0.95) {
-        runs = 1;
-        commentary = `Soft hands tap into mid-wicket, scampered through for a single.`;
+        commentary = `Solid defensive block right into the turf. Dot ball.`;
       } else {
-        runs = 2;
-        commentary = `Pushed into the gap at sweeper cover, comfortable double.`;
+        runs = 1;
+        commentary = `Soft hands tap into mid-wicket, scampered through for a sensible single.`;
       }
-    } else if (batTactic === 'ROTATE') {
-      if (rand < 0.05) {
+    } else if (batTactic === '1' || batTactic === 'ROTATE' || batTactic === 'NORMAL_OVER') {
+      if (rand < 0.035) {
         isWicket = true;
-      } else if (rand < 0.25) {
+      } else if (rand < 0.18) {
         runs = 0;
         commentary = `Defended towards point, fielder closes in sharply.`;
-      } else if (rand < 0.75) {
+      } else if (rand < 0.88) {
         runs = 1;
-        commentary = `Worked smoothly off the hips into square leg for one.`;
-      } else if (rand < 0.92) {
+        commentary = `Worked smoothly off the hips into square leg for an easy single.`;
+      } else if (rand < 0.96) {
         runs = 2;
         commentary = `Steered fine of third man, hurried back for a sharp couple!`;
       } else {
         runs = 4;
         isFour = true;
-        commentary = `FOUR! Beautifully timed drive beats mid-off to the rope!`;
+        commentary = `FOUR! Beautifully timed push pierces the gap and reaches the rope!`;
       }
-    } else if (batTactic === 'ATTACK') {
-      if (rand < 0.12) {
+    } else if (batTactic === '2') {
+      if (rand < 0.06) {
         isWicket = true;
-      } else if (rand < 0.25) {
+      } else if (rand < 0.16) {
         runs = 0;
-        commentary = `Big swing and a miss outside off! Lucky not to edge behind.`;
-      } else if (rand < 0.50) {
+        commentary = `Pushed firmly to cover, turned down for the second.`;
+      } else if (rand < 0.38) {
         runs = 1;
-        commentary = `Lofted towards long-on on the bounce for a single.`;
-      } else if (rand < 0.80) {
+        commentary = `Sweeper cuts off the boundary, held to a single.`;
+      } else {
+        runs = 2;
+        commentary = `⚡ Pierced into the deep sweeper gap, electric sprint back for two!`;
+      }
+    } else if (batTactic === '3') {
+      if (rand < 0.09) {
+        isWicket = true;
+      } else if (rand < 0.20) {
+        runs = 1;
+        commentary = `Tapped into the outfield, single taken.`;
+      } else if (rand < 0.55) {
+        runs = 2;
+        commentary = `Deep fielder slides to save the three, held to a double.`;
+      } else if (rand < 0.94) {
+        runs = 3;
+        commentary = `🏃 Superb placement into the deep boundary pocket, hard running yields three!`;
+      } else {
         runs = 4;
         isFour = true;
-        commentary = `⚡ CRACKING 4! Pierces extra cover with blistering power!`;
+        commentary = `FOUR! Boundary beats the slide right on the cushion!`;
+      }
+    } else if (batTactic === '4' || batTactic === 'ATTACK') {
+      // 4 intent: Piercing drive, high reward with edge/dismissal risk
+      if (rand < 0.14) {
+        isWicket = true;
+      } else if (rand < 0.26) {
+        runs = 0;
+        commentary = `Driven hard on the up, but straight to extra cover. Dot ball.`;
+      } else if (rand < 0.44) {
+        runs = 1;
+        commentary = `Lofted towards long-off on the bounce, single.`;
+      } else if (rand < 0.50) {
+        runs = 2;
+        commentary = `Slashed past point, deep sweeper saves the boundary, two taken.`;
+      } else if (rand < 0.92) {
+        runs = 4;
+        isFour = true;
+        commentary = `⚡ CRACKING 4! Pierces extra cover with blistering timing to the fence!`;
       } else {
         runs = 6;
         isSix = true;
-        commentary = `🚀 HUGE SIX! Clean strike sailed 95m over deep midwicket!`;
+        commentary = `🚀 SIX! Clears the infield and carries all the way over long-off!`;
       }
     } else {
-      // MAXIMUM
+      // 6 or ATTACK_OVER or MAXIMUM
       if (rand < 0.22) {
         isWicket = true;
-      } else if (rand < 0.40) {
+      } else if (rand < 0.32) {
         runs = 0;
-        commentary = `Swing across the line, beaten all ends up!`;
-      } else if (rand < 0.65) {
+        commentary = `Huge swing across the line, beaten completely by change of pace!`;
+      } else if (rand < 0.46) {
+        runs = 1;
+        commentary = `Mistimed skier falls harmlessly in vacant outfield, single taken.`;
+      } else if (rand < 0.54) {
+        runs = 2;
+        commentary = `Lofted high towards deep mid-wicket, fielder intercepts on the bounce.`;
+      } else if (rand < 0.70) {
         runs = 4;
         isFour = true;
-        commentary = `⚡ FOUR! Muscled over the infield bouncing into the fence!`;
+        commentary = `⚡ FOUR! One bounce into the LED boundary advertising boards!`;
       } else {
         runs = 6;
         isSix = true;
-        commentary = `🚀 MONSTER SIX! Dispatched 106m into the top tier! Unreal power!`;
+        commentary = `🚀 MONSTER MAXIMUM! Dispatched 104m into the second tier! Unreal power!`;
       }
     }
 
-    if (isWicket) {
-      if (bowlTactic === 'YORKER') {
+    // Adjust for BOWLING TACTIC
+    if (bowlTactic === 'DEFEND') {
+      if (isWicket) {
+        dismissal = `b ${bowlerName}`;
+        commentary = `🔥 CLEAN BOWLED! Defensive off-cutter deceives the swing and crashes into off stump!`;
+      }
+    } else if (bowlTactic === 'ATTACK' || bowlTactic === 'BOUNCER') {
+      if (isWicket) {
+        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Fielder';
+        dismissal = `c ${fielder} b ${bowlerName}`;
+        commentary = `🎯 TOP EDGE! Hurried by a fiery 145km/h delivery, skied high and held by ${fielder}!`;
+      }
+    } else if (bowlTactic === 'YORKER') {
+      if (isWicket) {
         dismissal = `b ${bowlerName}`;
         commentary = `🔥 CLEAN BOWLED! Pinpoint yorker crushes base of off stump!`;
-      } else if (bowlTactic === 'SLOWER') {
-        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Fielder';
+      }
+    } else if (bowlTactic === 'SLOWER') {
+      const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Fielder';
+      if (isWicket) {
         dismissal = `c ${fielder} b ${bowlerName}`;
         commentary = `🎯 CAUGHT! Deceptive cutter induces an early loft, caught by ${fielder}!`;
-      } else if (bowlTactic === 'BOUNCER') {
-        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Fielder';
+      }
+    } else {
+      // NORMAL / GOOD_LENGTH
+      if (isWicket) {
+        const fielder = currentBowlSquad[Math.floor(Math.random() * currentBowlSquad.length)]?.name || 'Keeper';
         dismissal = `c ${fielder} b ${bowlerName}`;
-        commentary = `🎯 TOP EDGE! Hurried by the bouncer, skied high and pouched by ${fielder}!`;
-      } else {
-        dismissal = `c & b ${bowlerName}`;
-        commentary = `🎯 SENSATIONAL C&B! ${bowlerName} snatches a sharp return catch!`;
+        commentary = `🎯 EDGED & TAKEN! Probing corridor delivery takes the outside nick to ${fielder}!`;
       }
     }
 
@@ -1544,9 +1601,11 @@ export default function BallByBallMatchSimulator({
   };
 
   // Simulate Over: Atomically bowls all remaining balls in current over
-  const handleSimulateOver = () => {
+  const handleSimulateOver = (customBatTactic?: BattingTactic, customBowlTactic?: BowlingTactic) => {
     if (matchDone || !inn1 || !inn2) return;
     gameAudio.unlockAudio();
+    if (customBatTactic) setBattingTactic(customBatTactic);
+    if (customBowlTactic) setBowlingTactic(customBowlTactic);
 
     const activeInn = currentInnings === 1 ? inn1 : inn2;
     const currentBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
@@ -1584,9 +1643,11 @@ export default function BallByBallMatchSimulator({
       const strikerPlayer = currentBatSquad[curStrikerIdx]?.name || 'Batter';
       const nonStrikerPlayer = currentBatSquad[curNonStrikerIdx]?.name || 'Non-Striker';
 
+      const effectiveBatTactic = customBatTactic || battingTactic;
+      const effectiveBowlTactic = customBowlTactic || bowlingTactic;
       const outcome = computeBallOutcome(
-        battingTactic,
-        bowlingTactic,
+        effectiveBatTactic,
+        effectiveBowlTactic,
         bowler.name,
         currentBowlSquad,
         strikerPlayer
