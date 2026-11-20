@@ -463,166 +463,126 @@ export default function TrophyCabinetPage() {
 
       {/* ─── TAB 3: MVP & EMERGING PLAYER ─── */}
       {activeTab === 'mvp' && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           
-          {/* TOURNAMENT MVP HERO */}
-          <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-slate-900 to-yellow-600/10 border border-amber-500/40 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl font-black shadow-md">
-                  🌟
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono font-black text-amber-400 uppercase tracking-widest block">
-                    MOST VALUABLE PLAYER
-                  </span>
-                  <h3 className="text-base sm:text-lg font-black font-display text-white">
-                    Tournament MVP Leaderboard
-                  </h3>
-                </div>
+          {/* 👑 TOURNAMENT MVP */}
+          <div className="p-2.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-slate-900 to-teal-500/10 border border-emerald-500/30 shadow-md">
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">👑</span>
+                <span className="text-xs font-black uppercase text-emerald-300">
+                  Season 2027 MVP (Most Valuable Player)
+                </span>
               </div>
-              <span className="text-[10px] font-mono text-gray-400 bg-slate-950 px-2 py-1 rounded-lg border border-white/10">
-                Formula: Runs + Wkts + 6s
-              </span>
+              <span className="text-[10px] font-mono text-gray-400">IPL 2027</span>
             </div>
 
             {awards.tournamentMVP && (
-              <div className="my-3 p-3.5 rounded-2xl bg-slate-950/90 border border-amber-500/50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div 
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-md border shrink-0 text-white"
-                    style={{ backgroundColor: `${awards.tournamentMVP.teamColor}40`, borderColor: awards.tournamentMVP.teamColor }}
-                  >
-                    👑
-                  </div>
+              <div className="my-2 p-2 rounded-xl bg-slate-950/90 border border-emerald-500/40 flex items-center justify-between gap-2 shadow-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <TeamLogo teamId={awards.tournamentMVP.teamShort} size={22} />
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm sm:text-base font-black text-amber-300 truncate">
-                        {awards.tournamentMVP.playerName}
-                      </span>
-                      <span 
-                        className="px-1.5 py-0.2 rounded text-[10px] font-black text-slate-950 shrink-0"
-                        style={{ backgroundColor: awards.tournamentMVP.teamColor }}
-                      >
+                    <div className="flex items-center gap-1 text-xs font-bold text-white truncate">
+                      <span className="truncate">{awards.tournamentMVP.playerName}</span>
+                      <span className="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono">
                         {awards.tournamentMVP.teamShort}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 font-mono block">
+                    <div className="text-[10px] text-gray-400 font-mono">
                       {awards.tournamentMVP.role} • {awards.tournamentMVP.highlight}
-                    </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="px-3.5 py-2 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-center shrink-0">
-                  <span className="text-[9px] font-mono text-amber-300 uppercase block font-bold">MVP POINTS</span>
-                  <strong className="text-lg font-black text-amber-400">{awards.tournamentMVP.mvpPoints} pts</strong>
+                <div className="text-right shrink-0">
+                  <div className="text-base font-black font-mono text-emerald-300">
+                    {awards.tournamentMVP.mvpPoints} <span className="text-[10px] text-gray-400 font-sans">pts</span>
+                  </div>
+                  <div className="text-[9px] text-gray-400 font-mono">
+                    #1 Impact Rank
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Top 5 MVP List */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top 5 Contenders</span>
-              {awards.mvpTop5.map((mvp: MVPAwardStats, idx: number) => (
+            {/* MVP Top 5 */}
+            <div className="space-y-1">
+              {awards.mvpTop5.slice(1, 5).map((mvp: MVPAwardStats, idx: number) => (
                 <div 
                   key={idx}
-                  className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"
+                  className="px-2 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between text-[11px] font-mono"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-gray-500 font-bold w-4">{idx + 1}</span>
-                    <span className="font-bold text-white truncate">{mvp.playerName}</span>
-                    <span 
-                      className="px-1.5 py-0.2 rounded text-[9px] font-black text-slate-950 shrink-0"
-                      style={{ backgroundColor: mvp.teamColor }}
-                    >
-                      {mvp.teamShort}
-                    </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-gray-500 text-[10px] font-bold w-4">#{idx + 2}</span>
+                    <TeamLogo teamId={mvp.teamShort} size={14} />
+                    <span className="text-white font-bold truncate">{mvp.playerName}</span>
+                    <span className="text-gray-400 text-[9px]">({mvp.teamShort})</span>
                   </div>
-                  <div className="flex items-center gap-3 text-right shrink-0">
-                    <span className="text-gray-400 text-[11px]">{mvp.runs}r / {mvp.wickets}w</span>
-                    <strong className="text-amber-400 font-bold text-sm">{mvp.mvpPoints} pts</strong>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-emerald-300 font-bold">{mvp.mvpPoints} pts</span>
+                    <span className="text-gray-400 text-[10px]">{mvp.runs}R / {mvp.wickets}W</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* EMERGING PLAYER OF THE YEAR */}
-          <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-slate-900 to-teal-800/10 border border-emerald-500/40 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center text-xl font-black shadow-md">
-                  ⭐
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono font-black text-emerald-400 uppercase tracking-widest block">
-                    FUTURE STAR AWARD
-                  </span>
-                  <h3 className="text-base sm:text-lg font-black font-display text-white">
-                    Emerging Player of the Year (U-23)
-                  </h3>
-                </div>
+          {/* 🌟 EMERGING PLAYER OF THE SEASON */}
+          <div className="p-2.5 rounded-2xl bg-gradient-to-r from-sky-500/10 via-slate-900 to-indigo-500/10 border border-sky-500/30 shadow-md">
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">🌟</span>
+                <span className="text-xs font-black uppercase text-sky-300">
+                  Season 2027 Emerging Star (U-23 Talent)
+                </span>
               </div>
-              <span className="text-[10px] font-mono text-gray-400 bg-slate-950 px-2 py-1 rounded-lg border border-white/10">
-                Prodigy Criteria
-              </span>
+              <span className="text-[10px] font-mono text-gray-400">IPL 2027</span>
             </div>
 
             {awards.emergingPlayer && (
-              <div className="my-3 p-3.5 rounded-2xl bg-slate-950/90 border border-emerald-500/50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div 
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-md border shrink-0 text-white"
-                    style={{ backgroundColor: `${awards.emergingPlayer.teamColor}40`, borderColor: awards.emergingPlayer.teamColor }}
-                  >
-                    ⭐
-                  </div>
+              <div className="my-2 p-2 rounded-xl bg-slate-950/90 border border-sky-500/40 flex items-center justify-between gap-2 shadow-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <TeamLogo teamId={awards.emergingPlayer.teamShort} size={22} />
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm sm:text-base font-black text-emerald-300 truncate">
-                        {awards.emergingPlayer.playerName}
-                      </span>
-                      <span 
-                        className="px-1.5 py-0.2 rounded text-[10px] font-black text-slate-950 shrink-0"
-                        style={{ backgroundColor: awards.emergingPlayer.teamColor }}
-                      >
-                        {awards.emergingPlayer.teamShort}
+                    <div className="flex items-center gap-1 text-xs font-bold text-white truncate">
+                      <span className="truncate">{awards.emergingPlayer.playerName}</span>
+                      <span className="px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 text-[9px] font-mono">
+                        {awards.emergingPlayer.teamShort} · Age {awards.emergingPlayer.age}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 font-mono block">
-                      Age {awards.emergingPlayer.age} • {awards.emergingPlayer.highlight}
-                    </span>
+                    <div className="text-[10px] text-gray-400 font-mono">
+                      {awards.emergingPlayer.highlight}
+                    </div>
                   </div>
                 </div>
 
-                <div className="px-3.5 py-2 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-center shrink-0">
-                  <span className="text-[9px] font-mono text-emerald-300 uppercase block font-bold">IMPACT SCORE</span>
-                  <strong className="text-lg font-black text-emerald-400">{awards.emergingPlayer.impactScore}</strong>
+                <div className="text-right shrink-0">
+                  <div className="text-base font-black font-mono text-sky-300">
+                    {awards.emergingPlayer.impactScore} <span className="text-[10px] text-gray-400 font-sans">idx</span>
+                  </div>
+                  <div className="text-[9px] text-emerald-400 font-mono">
+                    ✓ Future Star
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Emerging Top 3 Candidates */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top Nominees</span>
-              {awards.emergingTop3.map((em: EmergingPlayerAwardStats, idx: number) => (
+            {/* Emerging Nominees */}
+            <div className="space-y-1">
+              {awards.emergingTop3.slice(1).map((em: EmergingPlayerAwardStats, idx: number) => (
                 <div 
                   key={idx}
-                  className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"
+                  className="px-2 py-1 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between text-[11px] font-mono"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-gray-500 font-bold w-4">{idx + 1}</span>
-                    <span className="font-bold text-white truncate">{em.playerName}</span>
-                    <span 
-                      className="px-1.5 py-0.2 rounded text-[9px] font-black text-slate-950 shrink-0"
-                      style={{ backgroundColor: em.teamColor }}
-                    >
-                      {em.teamShort}
-                    </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-gray-500 text-[10px] font-bold w-4">#{idx + 2}</span>
+                    <TeamLogo teamId={em.teamShort} size={14} />
+                    <span className="text-white font-bold truncate">{em.playerName}</span>
+                    <span className="text-gray-400 text-[9px]">({em.teamShort} · Age {em.age})</span>
                   </div>
-                  <div className="flex items-center gap-3 text-right shrink-0">
-                    <span className="text-gray-400 text-[11px]">{em.runs} runs</span>
-                    <strong className="text-emerald-400 font-bold text-sm">{em.impactScore} pts</strong>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sky-300 font-bold">{em.impactScore} pts</span>
+                    <span className="text-gray-400 text-[10px]">{em.runs} runs</span>
                   </div>
                 </div>
               ))}
@@ -632,153 +592,122 @@ export default function TrophyCabinetPage() {
         </div>
       )}
 
-      {/* ─── TAB 4: FRANCHISE HALL OF FAME ─── */}
+      {/* ─── TAB 4: CURRENT SEASON 2027 TOURNAMENT RECORDS ─── */}
       {activeTab === 'hall_of_fame' && (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between text-xs font-mono text-gray-400 px-1">
-            <span>All-Time Official IPL & Franchise Records</span>
-            <span className="text-amber-400 font-bold">Gold Standard</span>
+            <span>Official Season 2027 Match Records</span>
+            <span className="text-amber-400 font-bold">IPL 2027 Campaign</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {/* Record 1: Highest Team Total */}
-            <div className="p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between gap-3 shadow-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono text-amber-400 uppercase font-bold tracking-wider block">
-                    ⚡ HIGHEST TEAM TOTAL
-                  </span>
-                  <h4 className="text-xl font-black font-display text-white mt-0.5">
-                    {awards.hallOfFame.highestTeamTotal.score}
-                  </h4>
-                  <span className="text-xs text-gray-400 font-mono">
-                    {awards.hallOfFame.highestTeamTotal.team} {awards.hallOfFame.highestTeamTotal.opp}
-                  </span>
+            <div className="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 shadow-sm">
+              <div className="min-w-0">
+                <span className="text-[9px] font-mono text-amber-400 uppercase font-bold block">
+                  ⚡ HIGHEST TEAM TOTAL
+                </span>
+                <div className="text-base font-black font-mono text-white">
+                  {awards.hallOfFame.highestTeamTotal.score}
                 </div>
-                <div className="px-2 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">
-                  {awards.hallOfFame.highestTeamTotal.season}
+                <div className="text-[10px] text-gray-400 font-mono truncate">
+                  {awards.hallOfFame.highestTeamTotal.team} {awards.hallOfFame.highestTeamTotal.opp}
                 </div>
               </div>
-              <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
-                Unreal boundary onslaught in 20.0 overs
-              </div>
+              <span className="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold shrink-0">
+                2027
+              </span>
             </div>
 
             {/* Record 2: Fastest 50 */}
-            <div className="p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between gap-3 shadow-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono text-sky-400 uppercase font-bold tracking-wider block">
-                    🚀 FASTEST FIFTY
-                  </span>
-                  <h4 className="text-xl font-black font-display text-white mt-0.5">
-                    {awards.hallOfFame.fastestFifty.balls} Balls
-                  </h4>
-                  <span className="text-xs text-gray-400 font-mono">
-                    {awards.hallOfFame.fastestFifty.player} ({awards.hallOfFame.fastestFifty.team})
-                  </span>
+            <div className="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 shadow-sm">
+              <div className="min-w-0">
+                <span className="text-[9px] font-mono text-sky-400 uppercase font-bold block">
+                  🚀 FASTEST FIFTY
+                </span>
+                <div className="text-base font-black font-mono text-white">
+                  {awards.hallOfFame.fastestFifty.balls} Balls
                 </div>
-                <div className="px-2 py-1 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-500/40 text-[10px] font-mono font-bold">
-                  {awards.hallOfFame.fastestFifty.season}
+                <div className="text-[10px] text-gray-400 font-mono truncate">
+                  {awards.hallOfFame.fastestFifty.player} ({awards.hallOfFame.fastestFifty.team})
                 </div>
               </div>
-              <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
-                {awards.hallOfFame.fastestFifty.opp} • Historic Blitz
-              </div>
+              <span className="px-2 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 text-[10px] font-mono font-bold shrink-0">
+                2027
+              </span>
             </div>
 
             {/* Record 3: Best Bowling Figures */}
-            <div className="p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between gap-3 shadow-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono text-purple-400 uppercase font-bold tracking-wider block">
-                    🎯 BEST BOWLING SPELL
-                  </span>
-                  <h4 className="text-xl font-black font-display text-white mt-0.5">
-                    {awards.hallOfFame.bestBowlingFigures.figures}
-                  </h4>
-                  <span className="text-xs text-gray-400 font-mono">
-                    {awards.hallOfFame.bestBowlingFigures.player} ({awards.hallOfFame.bestBowlingFigures.team})
-                  </span>
+            <div className="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 shadow-sm">
+              <div className="min-w-0">
+                <span className="text-[9px] font-mono text-purple-400 uppercase font-bold block">
+                  🎯 BEST BOWLING SPELL
+                </span>
+                <div className="text-base font-black font-mono text-white">
+                  {awards.hallOfFame.bestBowlingFigures.figures}
                 </div>
-                <div className="px-2 py-1 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-mono font-bold">
-                  {awards.hallOfFame.bestBowlingFigures.season}
+                <div className="text-[10px] text-gray-400 font-mono truncate">
+                  {awards.hallOfFame.bestBowlingFigures.player} ({awards.hallOfFame.bestBowlingFigures.team})
                 </div>
               </div>
-              <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
-                {awards.hallOfFame.bestBowlingFigures.opp} • Absolute Masterclass
-              </div>
+              <span className="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold shrink-0">
+                2027
+              </span>
             </div>
 
             {/* Record 4: Highest Individual Score */}
-            <div className="p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between gap-3 shadow-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono text-emerald-400 uppercase font-bold tracking-wider block">
-                    👑 HIGHEST INDIVIDUAL SCORE
-                  </span>
-                  <h4 className="text-xl font-black font-display text-white mt-0.5">
-                    {awards.hallOfFame.highestIndividualScore.score}
-                  </h4>
-                  <span className="text-xs text-gray-400 font-mono">
-                    {awards.hallOfFame.highestIndividualScore.player} ({awards.hallOfFame.highestIndividualScore.balls}b)
-                  </span>
+            <div className="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 shadow-sm">
+              <div className="min-w-0">
+                <span className="text-[9px] font-mono text-emerald-400 uppercase font-bold block">
+                  👑 HIGHEST INDIVIDUAL SCORE
+                </span>
+                <div className="text-base font-black font-mono text-white">
+                  {awards.hallOfFame.highestIndividualScore.score}
                 </div>
-                <div className="px-2 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-mono font-bold">
-                  {awards.hallOfFame.highestIndividualScore.season}
+                <div className="text-[10px] text-gray-400 font-mono truncate">
+                  {awards.hallOfFame.highestIndividualScore.player} ({awards.hallOfFame.highestIndividualScore.balls}b)
                 </div>
               </div>
-              <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
-                {awards.hallOfFame.highestIndividualScore.opp} • World Record T20 Innings
-              </div>
+              <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold shrink-0">
+                2027
+              </span>
             </div>
 
             {/* Record 5: Most Sixes in an Innings */}
-            <div className="p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between gap-3 shadow-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono text-rose-400 uppercase font-bold tracking-wider block">
-                    💥 MOST SIXES IN AN INNINGS
-                  </span>
-                  <h4 className="text-xl font-black font-display text-white mt-0.5">
-                    {awards.hallOfFame.mostSixesInInnings.sixes} Sixes
-                  </h4>
-                  <span className="text-xs text-gray-400 font-mono">
-                    {awards.hallOfFame.mostSixesInInnings.player} ({awards.hallOfFame.mostSixesInInnings.team})
-                  </span>
+            <div className="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 shadow-sm">
+              <div className="min-w-0">
+                <span className="text-[9px] font-mono text-rose-400 uppercase font-bold block">
+                  💥 MOST SIXES IN INNINGS
+                </span>
+                <div className="text-base font-black font-mono text-white">
+                  {awards.hallOfFame.mostSixesInInnings.sixes} Sixes
                 </div>
-                <div className="px-2 py-1 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-mono font-bold">
-                  {awards.hallOfFame.mostSixesInInnings.season}
+                <div className="text-[10px] text-gray-400 font-mono truncate">
+                  {awards.hallOfFame.mostSixesInInnings.player} ({awards.hallOfFame.mostSixesInInnings.team})
                 </div>
               </div>
-              <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
-                {awards.hallOfFame.mostSixesInInnings.opp} • Maximum Carnage
-              </div>
+              <span className="px-2 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 text-[10px] font-mono font-bold shrink-0">
+                2027
+              </span>
             </div>
 
             {/* Record 6: Highest Successful Run Chase */}
-            <div className="p-4 rounded-3xl bg-slate-900/90 border border-white/10 flex flex-col justify-between gap-3 shadow-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono text-teal-400 uppercase font-bold tracking-wider block">
-                    🏃 HIGHEST RUN CHASE
-                  </span>
-                  <h4 className="text-xl font-black font-display text-white mt-0.5">
-                    {awards.hallOfFame.highestRunChase.target} Runs
-                  </h4>
-                  <span className="text-xs text-gray-400 font-mono">
-                    {awards.hallOfFame.highestRunChase.team} {awards.hallOfFame.highestRunChase.opp}
-                  </span>
+            <div className="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 shadow-sm">
+              <div className="min-w-0">
+                <span className="text-[9px] font-mono text-teal-400 uppercase font-bold block">
+                  🏃 HIGHEST RUN CHASE
+                </span>
+                <div className="text-base font-black font-mono text-white">
+                  {awards.hallOfFame.highestRunChase.target} Runs
                 </div>
-                <div className="px-2 py-1 rounded-xl bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] font-mono font-bold">
-                  {awards.hallOfFame.highestRunChase.season}
+                <div className="text-[10px] text-gray-400 font-mono truncate">
+                  {awards.hallOfFame.highestRunChase.team} {awards.hallOfFame.highestRunChase.opp}
                 </div>
               </div>
-              <div className="text-[10px] font-mono text-gray-500 border-t border-white/5 pt-2">
-                Highest successful chase in T20 cricket history
-              </div>
+              <span className="px-2 py-0.5 rounded-lg bg-teal-500/20 text-teal-300 text-[10px] font-mono font-bold shrink-0">
+                2027
+              </span>
             </div>
-
           </div>
         </div>
       )}
