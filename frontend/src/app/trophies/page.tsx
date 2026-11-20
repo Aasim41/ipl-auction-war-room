@@ -258,110 +258,73 @@ export default function TrophyCabinetPage() {
           </button>
         ))}
       </div>
-              gameAudio.playUiTap('select');
-              triggerGameHaptic('light');
-            }}
-            className={`flex-1 min-w-[120px] py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === tab.id
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <tab.icon size={13} />
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
 
-      {/* ─── TAB 1: TROPHY SHOWCASE ─── */}
+      {/* ─── TAB 1: CURRENT SEASON TROPHIES (Ultra-Compact) ─── */}
       {activeTab === 'showcase' && (
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between text-xs font-mono text-gray-400 px-1">
-            <span>Total Honors: {combinedTrophies.length} Silvers & Golds</span>
-            <span className="text-amber-400 font-bold">Multi-Season Archive</span>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between text-[11px] font-mono text-gray-400 px-0.5">
+            <span>Season 2027 Honors</span>
+            <span className="text-amber-400 font-bold">Active Tournament</span>
           </div>
 
-          {combinedTrophies.length === 0 ? (
-            <div className="p-8 rounded-3xl bg-slate-900/60 border border-white/10 text-center space-y-2">
-              <Trophy size={36} className="mx-auto text-gray-600 mb-2" />
-              <h3 className="text-base font-bold text-gray-300">No Trophies in Cabinet Yet</h3>
-              <p className="text-xs text-gray-500 font-mono max-w-sm mx-auto">
-                Win the IPL Final with {currentFranchise.name} in Season 2027 to place the prestigious Golden Trophy in this cabinet!
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {combinedTrophies.map((trophy, idx) => {
-                const isChamp = trophy.type === 'champion';
-                const isRunner = trophy.type === 'runner_up';
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {combinedTrophies.map((trophy, idx) => {
+              const isChamp = trophy.type === 'champion';
+              const isRunner = trophy.type === 'runner_up';
 
-                return (
-                  <div
-                    key={trophy.id || idx}
-                    className={`p-4 rounded-3xl border transition-all relative overflow-hidden flex flex-col justify-between gap-3 shadow-xl ${
-                      isChamp
-                        ? 'bg-gradient-to-br from-amber-500/20 via-slate-900 to-yellow-600/15 border-amber-400/50 hover:border-amber-300'
-                        : isRunner
-                        ? 'bg-gradient-to-br from-slate-400/15 via-slate-900 to-slate-700/10 border-slate-400/40 hover:border-slate-300'
-                        : 'bg-gradient-to-br from-emerald-500/15 via-slate-900 to-teal-800/10 border-emerald-500/40 hover:border-emerald-400'
-                    }`}
-                  >
-                    {/* Glow Accents */}
-                    <div 
-                      className={`absolute -top-10 -right-10 w-28 h-28 rounded-full blur-2xl opacity-25 pointer-events-none ${
-                        isChamp ? 'bg-amber-400' : isRunner ? 'bg-slate-300' : 'bg-emerald-400'
-                      }`}
-                    />
-
-                    <div className="flex items-start justify-between gap-2 relative z-10">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg border shrink-0 ${
-                          isChamp 
-                            ? 'bg-amber-500/30 border-amber-400 text-amber-300 shadow-amber-500/20'
-                            : isRunner
-                            ? 'bg-slate-400/20 border-slate-300 text-slate-200 shadow-slate-500/20'
-                            : 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
-                        }`}>
-                          {isChamp ? '🏆' : isRunner ? '🥈' : '🎖️'}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase ${
-                              isChamp 
-                                ? 'bg-amber-400 text-slate-950'
-                                : isRunner
-                                ? 'bg-slate-300 text-slate-950'
-                                : 'bg-emerald-400 text-slate-950'
-                            }`}>
-                              {trophy.seasonLabel}
+              return (
+                <div
+                  key={trophy.id || idx}
+                  className={`p-2.5 rounded-xl border transition-all relative overflow-hidden flex flex-col justify-between gap-2 shadow-sm ${
+                    isChamp
+                      ? 'bg-gradient-to-br from-amber-500/15 via-slate-900 to-yellow-600/10 border-amber-400/40'
+                      : isRunner
+                      ? 'bg-gradient-to-br from-slate-400/15 via-slate-900 to-slate-700/10 border-slate-400/30'
+                      : 'bg-gradient-to-br from-emerald-500/15 via-slate-900 to-teal-800/10 border-emerald-500/30'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 relative z-10">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base shadow-sm border shrink-0 ${
+                        isChamp 
+                          ? 'bg-amber-500/30 border-amber-400 text-amber-300'
+                          : isRunner
+                          ? 'bg-slate-400/20 border-slate-300 text-slate-200'
+                          : 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
+                      }`}>
+                        {isChamp ? '🏆' : isRunner ? '🥈' : '🎖️'}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black uppercase bg-amber-400 text-slate-950">
+                            {trophy.seasonLabel}
+                          </span>
+                          {trophy.isUserEarned && (
+                            <span className="px-1 py-0.2 rounded bg-purple-500/30 border border-purple-400/50 text-purple-300 text-[8px] font-mono font-bold">
+                              ★ User
                             </span>
-                            {trophy.isUserEarned && (
-                              <span className="px-1.5 py-0.2 rounded bg-purple-500/30 border border-purple-400/50 text-purple-300 text-[9px] font-mono font-bold">
-                                ★ User Won
-                              </span>
-                            )}
-                          </div>
-                          <h4 className="text-base font-black font-display text-white mt-0.5">
-                            {trophy.title}
-                          </h4>
+                          )}
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="relative z-10 bg-slate-950/70 p-2.5 rounded-2xl border border-white/5 space-y-1">
-                      <div className="text-xs font-bold text-gray-200">
-                        {trophy.subtitle}
-                      </div>
-                      <div className="text-[11px] font-mono text-amber-300/90 flex items-center gap-1">
-                        <Star size={11} className="text-amber-400 shrink-0" />
-                        <span className="truncate">{trophy.captainOrHighlight}</span>
+                        <h4 className="text-xs sm:text-sm font-black font-mono text-white mt-0.5">
+                          {trophy.title}
+                        </h4>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+
+                  <div className="relative z-10 bg-slate-950/70 p-2 rounded-lg border border-white/5 space-y-0.5">
+                    <div className="text-[11px] font-bold text-gray-300">
+                      {trophy.subtitle}
+                    </div>
+                    <div className="text-[10px] font-mono text-amber-300/90 flex items-center gap-1">
+                      <Star size={10} className="text-amber-400 shrink-0" />
+                      <span className="truncate">{trophy.captainOrHighlight}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
