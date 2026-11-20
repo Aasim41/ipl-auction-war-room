@@ -21,7 +21,8 @@ import {
   Flame, 
   Shield,
   Layers,
-  Award
+  Award,
+  Play
 } from 'lucide-react';
 import { useCampaignStore, CampaignPlayer, sortCricketBattingOrder, computeOptimalPlayingXI } from '../../store/useCampaignStore';
 import { getFranchise } from '../../data/franchises';
@@ -327,6 +328,14 @@ export default function PlayingXIPage() {
   const overseasInXI = fullPlayingXI.filter(p => p.is_overseas).length;
   const wkInXI = fullPlayingXI.filter(p => p.role === 'WK').length;
   const bowlersInXI = fullPlayingXI.filter(p => p.role === 'BOWL' || p.role === 'AR').length;
+
+  // Active in-progress match simulation state
+  const activeSim = campaign?.activeMatchSimulation;
+  const isMatchActive = Boolean(activeSim && !activeSim.matchDone);
+  const activeInn = isMatchActive ? (activeSim.innIndex === 2 ? activeSim.inn2 : activeSim.inn1) : null;
+  const activeLegalBalls = activeInn?.legalBalls || 0;
+  const activeOversStr = `${Math.floor(activeLegalBalls / 6)}.${activeLegalBalls % 6}`;
+  const activeScoreStr = activeInn ? `${activeInn.totalRuns}/${activeInn.totalWickets}` : '';
   const isCompliant = fullPlayingXI.length === 11 && overseasInXI <= 4 && wkInXI >= 1 && bowlersInXI >= 5;
 
   const currentInsight = VENUE_INSIGHTS[venue] || VENUE_INSIGHTS['Bengaluru'];
@@ -463,10 +472,14 @@ export default function PlayingXIPage() {
 
             <button
               onClick={() => handleLaunchMatch()}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+              className={`px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0 ${
+                isMatchActive
+                  ? 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.5)] animate-pulse'
+                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+              }`}
             >
-              <Swords size={14} />
-              <span>Simulate Next</span>
+              {isMatchActive ? <Play size={14} className="fill-slate-950" /> : <Swords size={14} />}
+              <span>{isMatchActive ? `Resume Match (${activeOversStr} ov)` : `Play Match #${currentMatch?.matchNo || 1}`}</span>
             </button>
           </div>
         </div>
@@ -697,33 +710,13 @@ export default function PlayingXIPage() {
                             ₹{player.price}Cr
                           </div>
 
-                          {/* Move Up/Down Controls */}
-                          <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={() => handleMoveSlot(index, 'up')}
-                              disabled={index === 0}
-                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
-                              title="Move up batting order"
-                            >
-                              <ArrowUp size={13} />
-                            </button>
-                            <button
-                              onClick={() => handleMoveSlot(index, 'down')}
-                              disabled={index === fullPlayingXI.length - 1}
-                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-20 text-gray-300 hover:text-white cursor-pointer transition-colors"
-                              title="Move down batting order"
-                            >
-                              <ArrowDown size={13} />
-                            </button>
-                          </div>
-
                           {/* Swap with Bench Button */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setBenchDrawerSlotIndex(index);
                             }}
-                            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
+                            className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
                           >
                             Swap
                           </button>
@@ -929,10 +922,14 @@ export default function PlayingXIPage() {
                             {isCurrent ? (
                               <button
                                 onClick={() => handleLaunchMatch(fixture)}
-                                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 text-white font-black text-xs uppercase flex items-center gap-1 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                                className={`px-3.5 py-1.5 rounded-xl font-black text-xs uppercase flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all ${
+                                  isMatchActive
+                                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 shadow-emerald-500/40 animate-pulse'
+                                    : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 shadow-amber-500/30'
+                                }`}
                               >
-                                <Swords size={13} />
-                                <span>Play Match</span>
+                                {isMatchActive ? <Play size={13} className="fill-slate-950" /> : <Swords size={13} />}
+                                <span>{isMatchActive ? `Resume Match (${activeOversStr} ov)` : 'Play Match'}</span>
                               </button>
                             ) : isDone ? (
                               <div className="flex items-center gap-2">

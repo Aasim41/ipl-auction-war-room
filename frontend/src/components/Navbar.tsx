@@ -16,7 +16,8 @@ import {
   RotateCcw,
   Coins,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  Play
 } from 'lucide-react'
 import { useCampaignStore } from '../store/useCampaignStore'
 import { getFranchise } from '../data/franchises'
@@ -278,8 +279,25 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Right: Purse + GM Profile (No mode badge, no sound button) */}
+          {/* Right: Resume Match (if active) + Purse + GM Profile */}
           <div className="flex items-center gap-2 shrink-0">
+            {activeCamp?.activeMatchSimulation && !activeCamp.activeMatchSimulation.matchDone && (
+              <Link
+                href="/playing-xi"
+                onClick={() => {
+                  gameAudio.playUiTap('select');
+                  triggerGameHaptic('light');
+                }}
+                className="px-2.5 sm:px-3 py-1 rounded-xl bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 hover:from-emerald-500/30 hover:to-emerald-600/30 border border-emerald-400/50 text-emerald-300 font-mono font-bold text-xs flex items-center gap-1.5 animate-pulse transition-all shrink-0 cursor-pointer shadow-sm"
+                title="Resume Match in Progress"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <Play size={11} className="fill-emerald-400 text-emerald-400" />
+                <span className="hidden sm:inline">Resume Match</span>
+                <span className="sm:hidden">Resume</span>
+              </Link>
+            )}
+
             {activeCamp && (
               <div 
                 className="px-2.5 sm:px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 sm:gap-1.5 text-xs font-mono font-black text-amber-300"
