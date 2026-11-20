@@ -9,6 +9,7 @@ import {
   TournamentFixture, 
   TournamentPointsEntry 
 } from '../data/scheduleGenerator'
+import { FranchiseHistoricTrophy } from '../lib/tournamentAwards'
 
 export interface CampaignPlayer extends IPLPlayer {
   is_released?: boolean
@@ -521,6 +522,7 @@ export interface UserCampaign {
     nextMatchNo: number;
     nextRivalShort: string;
   } | null
+  userTrophies?: FranchiseHistoricTrophy[]
 }
 
 export interface UserProfile {
