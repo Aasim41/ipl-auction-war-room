@@ -9,8 +9,8 @@ export function CapacitorDeviceManager() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // 1. Maintain Landscape orientation across franchise war rooms and simulation arena
-    lockOrientation('landscape')
+    // 1. Maintain Portrait orientation across franchise war rooms and simulation arena
+    lockOrientation('portrait')
 
     // 2. Android Hardware Back Button listener
     let backListenerHandle: any = null

@@ -28,7 +28,8 @@ import {
   X,
   Zap,
   AlertTriangle,
-  Info
+  Info,
+  SkipForward
 } from 'lucide-react'
 import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
 import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper'

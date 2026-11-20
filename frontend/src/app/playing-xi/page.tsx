@@ -169,7 +169,6 @@ export default function PlayingXIPage() {
     getActiveCampaign, 
     swapPlayingXISlots, 
     replacePlayingXIPlayer, 
-    autoOptimizePlayingXI,
     setPlayingXI,
     recordMatchResult,
     simulateScheduleMatch,
@@ -187,7 +186,6 @@ export default function PlayingXIPage() {
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
   const [viewingScorecardFixture, setViewingScorecardFixture] = useState<TournamentFixture | null>(null);
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
-  const [isOptimizing, setIsOptimizing] = useState(false);
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
 
@@ -391,18 +389,6 @@ export default function PlayingXIPage() {
     }
   };
 
-  const handleAutoOptimize = () => {
-    setIsOptimizing(true);
-    gameAudio.playConfettiFanfare();
-    triggerGameHaptic('medium');
-    const result = autoOptimizePlayingXI(venue, rivalTeamId, lineupMode);
-    if (result?.strategySummary) {
-      setStrategyToast(result.strategySummary);
-      setTimeout(() => setStrategyToast(null), 6000);
-    }
-    setTimeout(() => setIsOptimizing(false), 1200);
-  };
-
   return (
     <div 
       onTouchStart={handleTouchStart}
@@ -602,20 +588,6 @@ export default function PlayingXIPage() {
                   </div>
                 </div>
 
-                {/* Auto-Pick Best XI Button */}
-                <button
-                  onClick={handleAutoOptimize}
-                  disabled={isOptimizing}
-                  className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
-                >
-                  <Zap size={14} className={isOptimizing ? 'animate-spin' : ''} />
-                  <span>
-                    {isOptimizing 
-                      ? `Optimizing ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} Strategy...` 
-                      : `⚡ Auto-Pick Best ${lineupMode === 'bat_first' ? 'Bat-First' : 'Bowl-First'} XI`}
-                  </span>
-                </button>
-
                 {/* Impact Player Slot */}
                 <div className="p-2 sm:p-2.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">
                   <div className="min-w-0">
@@ -655,9 +627,7 @@ export default function PlayingXIPage() {
               </div>
 
               {/* 11 Player Cards List */}
-              <div className={`space-y-1.5 transition-all ${
-                isOptimizing ? 'ring-2 ring-amber-400 p-1 rounded-2xl animate-pulse shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''
-              }`}>
+              <div className="space-y-1.5 transition-all">
                 {fullPlayingXI.map((player, index) => {
                   const isExpanded = expandedPlayerId === player.player_id;
                   return (
@@ -705,9 +675,31 @@ export default function PlayingXIPage() {
                         </div>
 
                         {/* Right: Salary & Re-order Controls */}
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 font-mono font-bold text-xs">
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <div className="px-1.5 py-0.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 font-mono font-bold text-[11px]">
                             ₹{player.price}Cr
+                          </div>
+
+                          {/* Up / Down Order Buttons */}
+                          <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => handleMoveSlot(index, 'up')}
+                              disabled={index === 0}
+                              className="p-1 rounded-md bg-white/5 hover:bg-white/20 active:bg-amber-400/25 disabled:opacity-20 text-gray-300 hover:text-amber-300 transition-colors cursor-pointer"
+                              title="Move Up in Batting Order"
+                              aria-label="Move Up"
+                            >
+                              <ArrowUp size={12} />
+                            </button>
+                            <button
+                              onClick={() => handleMoveSlot(index, 'down')}
+                              disabled={index === fullPlayingXI.length - 1}
+                              className="p-1 rounded-md bg-white/5 hover:bg-white/20 active:bg-amber-400/25 disabled:opacity-20 text-gray-300 hover:text-amber-300 transition-colors cursor-pointer"
+                              title="Move Down in Batting Order"
+                              aria-label="Move Down"
+                            >
+                              <ArrowDown size={12} />
+                            </button>
                           </div>
 
                           {/* Swap with Bench Button */}
@@ -716,7 +708,7 @@ export default function PlayingXIPage() {
                               e.stopPropagation();
                               setBenchDrawerSlotIndex(index);
                             }}
-                            className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
+                            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-bold text-gray-200 hover:text-white border border-white/10 cursor-pointer transition-all"
                           >
                             Swap
                           </button>

@@ -377,13 +377,11 @@ export default function BallByBallMatchSimulator({
     return () => window.removeEventListener('auctionxi_sound_change', handleSoundChange);
   }, []);
 
-  // Lock Screen Orientation to Portrait during Match Simulation for ergonomic mobile play
+  // Maintain Portrait Screen Orientation for ergonomic mobile gameplay
   useEffect(() => {
-    if (isOpen) {
-      lockOrientation('portrait');
-    }
+    lockOrientation('portrait');
     return () => {
-      lockOrientation('landscape');
+      lockOrientation('portrait');
     };
   }, [isOpen]);
 
