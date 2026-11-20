@@ -2605,8 +2605,8 @@ export default function BallByBallMatchSimulator({
                   )}
                 </div>
 
-                {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR (ENLARGED) ─── */}
-                <div className="relative my-0.5 h-[290px] sm:h-[350px] shrink-0 rounded-2xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-2xl select-none">
+                {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR (COMPACT FIT) ─── */}
+                <div className="relative my-0.5 h-[160px] sm:h-[185px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-xl select-none">
                   
                   {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
                   <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/85 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-sm">
