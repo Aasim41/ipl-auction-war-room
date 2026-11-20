@@ -3371,21 +3371,24 @@ export default function BallByBallMatchSimulator({
                 const ovsCount = getBowlerOversCount(activeInnings.bowlingFigures, b.name);
                 const fig = activeInnings.bowlingFigures.find(f => f.name === b.name);
                 const isQuotaFull = ovsCount >= 4;
-                const isDisabled = isQuotaFull;
+                const isLastBowler = lastBowlerIdx !== null && bIdx === lastBowlerIdx;
+                const isDisabled = isQuotaFull || isLastBowler;
 
                 return (
                   <div
                     key={b.player_id || b.name}
-                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2.5 ${
                       isCurrent
                         ? 'bg-rose-500/20 border-rose-500 shadow-md ring-1 ring-rose-400'
+                        : isLastBowler
+                        ? 'bg-slate-950/60 border-amber-500/30 opacity-70'
                         : isDisabled
-                        ? 'bg-white/5 border-white/5 opacity-50'
+                        ? 'bg-white/5 border-white/5 opacity-40'
                         : 'bg-slate-950/80 border-white/10 hover:border-white/30'
                     }`}
                   >
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <strong className="text-white text-xs sm:text-sm font-bold truncate">
                           {formatPlayerInitial(b.name)}
                         </strong>
@@ -3397,8 +3400,13 @@ export default function BallByBallMatchSimulator({
                             BOWLING NOW
                           </span>
                         )}
+                        {isLastBowler && !isCurrent && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold font-mono">
+                            BOWLED PREV OVER
+                          </span>
+                        )}
                       </div>
-                      <div className="text-[11px] text-gray-400 font-mono mt-0.5">
+                      <div className="text-[10px] sm:text-[11px] text-gray-400 font-mono mt-0.5">
                         Overs: <strong className="text-white">{fig?.overs || '0.0'} / 4.0</strong> • Runs: {fig?.runs || 0} • Wickets: <strong className="text-emerald-400">{fig?.wickets || 0}</strong> • Econ: {fig?.economy || '0.00'}
                       </div>
                     </div>
@@ -3406,15 +3414,17 @@ export default function BallByBallMatchSimulator({
                     <button
                       onClick={() => handleSelectBowler(bIdx)}
                       disabled={isDisabled || isCurrent}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider shrink-0 cursor-pointer transition-all ${
+                      className={`px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider shrink-0 cursor-pointer transition-all ${
                         isCurrent
                           ? 'bg-rose-600 text-white cursor-default'
                           : isQuotaFull
                           ? 'bg-white/10 text-gray-500 cursor-not-allowed'
+                          : isLastBowler
+                          ? 'bg-white/10 text-amber-400/70 border border-amber-500/30 cursor-not-allowed'
                           : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md active:scale-95'
                       }`}
                     >
-                      {isCurrent ? 'Current Spell' : isQuotaFull ? 'Quota Full 🔒' : 'Allot Spell ➔'}
+                      {isCurrent ? 'Active Spell' : isQuotaFull ? 'Quota Full 🔒' : isLastBowler ? 'Prev Over 🚫' : 'Allot Spell ➔'}
                     </button>
                   </div>
                 );
@@ -3427,6 +3437,188 @@ export default function BallByBallMatchSimulator({
                 className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: OPENING BOWLERS SELECTOR (OVERS 1 & 2) ─── */}
+      {showOpeningBowlersModal && (
+        <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="w-full max-w-lg bg-slate-900 border border-white/20 rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                  <Target size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-white font-display">Allot Opening Bowlers</h3>
+                  <p className="text-[10px] text-gray-400 font-mono">Select 2 opening bowlers for Over 1 & Over 2 (No back-to-back)</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1">
+              <div>
+                <label className="text-xs font-bold text-sky-300 mb-1.5 block">⚡ Opening Bowler 1 (Takes the new ball for Over 1):</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {activeBowlers.map((b, bIdx) => (
+                    <button
+                      key={b.player_id || bIdx}
+                      onClick={() => {
+                        setOpeningBowler1Idx(bIdx);
+                        if (bIdx === openingBowler2Idx) {
+                          setOpeningBowler2Idx((bIdx + 1) % activeBowlers.length);
+                        }
+                        gameAudio.playUiTap('select');
+                      }}
+                      className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
+                        openingBowler1Idx === bIdx
+                          ? 'bg-sky-500 text-slate-950 border-sky-400 font-black shadow-md'
+                          : 'bg-slate-950/80 text-gray-300 border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <div className="text-xs font-bold truncate">{formatPlayerInitial(b.name)}</div>
+                      <div className="text-[9px] font-mono opacity-80">{b.role}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-emerald-300 mb-1.5 block">🎯 Opening Bowler 2 (Bowls Over 2 from opposite end):</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {activeBowlers.map((b, bIdx) => (
+                    <button
+                      key={b.player_id || bIdx}
+                      disabled={bIdx === openingBowler1Idx}
+                      onClick={() => {
+                        setOpeningBowler2Idx(bIdx);
+                        gameAudio.playUiTap('select');
+                      }}
+                      className={`p-2 rounded-xl text-left border transition-all ${
+                        bIdx === openingBowler1Idx
+                          ? 'opacity-30 cursor-not-allowed bg-slate-950 border-white/5'
+                          : openingBowler2Idx === bIdx
+                          ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-md cursor-pointer'
+                          : 'bg-slate-950/80 text-gray-300 border-white/10 hover:border-white/30 cursor-pointer'
+                      }`}
+                    >
+                      <div className="text-xs font-bold truncate">{formatPlayerInitial(b.name)}</div>
+                      <div className="text-[9px] font-mono opacity-80">{b.role}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-white/10 shrink-0 flex justify-end">
+              <button
+                onClick={() => {
+                  setCurrentBowlerIdx(openingBowler1Idx);
+                  setOpeningBowlersConfirmed(true);
+                  setShowOpeningBowlersModal(false);
+                  gameAudio.playUiTap('select');
+                  triggerGameHaptic('medium');
+                }}
+                className="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer shadow-lg"
+              >
+                Confirm Opening Attack ➔
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: NEXT BATTER SELECTION (AUTOMATIC ON WICKET) ─── */}
+      {showNextBatterModal && (
+        <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="w-full max-w-lg bg-slate-900 border border-white/20 rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                  <AlertCircle size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-white font-display">Wicket Fallen! Choose Next Batter</h3>
+                  <p className="text-[10px] text-gray-400 font-mono">
+                    {dismissedBatterName ? `${formatPlayerInitial(dismissedBatterName)} is OUT` : 'Batter dismissed'} • Select who walks out to the crease
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
+              {currentBatSquad.map((p, pIdx) => {
+                const bScore = activeInnings.battingScorecard.find(b => b.name === p.name);
+                const isOut = bScore && bScore.dismissal !== 'not out';
+                const isCurrentlyBatting = pIdx === nonStrikerIdx;
+                const isSelected = pIdx === strikerIdx;
+                const isAvailable = !isOut && !isCurrentlyBatting;
+
+                return (
+                  <button
+                    key={p.player_id || pIdx}
+                    disabled={!isAvailable}
+                    onClick={() => {
+                      if (dismissedBatterSlot === 'striker') {
+                        setStrikerIdx(pIdx);
+                      } else {
+                        setNonStrikerIdx(pIdx);
+                      }
+                      setShowNextBatterModal(false);
+                      gameAudio.playWillowCrack('single');
+                      triggerGameHaptic('medium');
+                    }}
+                    className={`w-full p-2.5 rounded-xl border text-left transition-all flex items-center justify-between gap-3 ${
+                      isSelected
+                        ? 'bg-amber-500/20 border-amber-500 ring-1 ring-amber-400 text-white'
+                        : isAvailable
+                        ? 'bg-slate-950/80 border-white/10 hover:border-emerald-500/60 hover:bg-emerald-950/20 text-white cursor-pointer active:scale-98'
+                        : 'bg-white/5 border-white/5 opacity-40 cursor-not-allowed text-gray-500'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold truncate text-white">
+                          #{pIdx + 1} {formatPlayerInitial(p.name)}
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-gray-300 font-mono">
+                          {p.role}
+                        </span>
+                        {isCurrentlyBatting && (
+                          <span className="text-[8px] px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 font-mono">
+                            AT CREASE (NON-STRIKER)
+                          </span>
+                        )}
+                        {isOut && (
+                          <span className="text-[8px] px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-300 font-mono">
+                            DISMISSED
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-mono mt-0.5">
+                        {isAvailable ? 'Ready in dugout • Tap to send in' : isOut ? bScore?.dismissal : 'Currently at runner end'}
+                      </div>
+                    </div>
+
+                    {isAvailable && (
+                      <span className="px-3 py-1 rounded-lg bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider shrink-0">
+                        Send In ➔
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-3 border-t border-white/10 shrink-0 flex justify-end">
+              <button
+                onClick={() => setShowNextBatterModal(false)}
+                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase cursor-pointer"
+              >
+                Confirm Batter
               </button>
             </div>
           </div>
