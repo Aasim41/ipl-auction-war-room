@@ -15,7 +15,8 @@ import {
   TrendingUp,
   Activity,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  Play
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { useCampaignStore } from '../store/useCampaignStore'
@@ -200,6 +201,10 @@ export default function UnifiedTeamSelectHomePage() {
       const existing = campaigns[officialCampaignId] || Object.values(campaigns).find(c => c.teamId === teamId && c.mode !== 'scratch_inception')
       if (existing) {
         switchCampaign(existing.id)
+        if (existing.activeMatchSimulation && !existing.activeMatchSimulation.matchDone) {
+          router.push('/playing-xi')
+          return
+        }
         const targetUrl = existing.currentPhase === 'playing_xi' || existing.currentPhase === 'match'
           ? '/playing-xi'
           : existing.currentPhase === 'mini_auction'
@@ -398,6 +403,31 @@ export default function UnifiedTeamSelectHomePage() {
               )}
             </div>
 
+            {/* Active Match Resumption Quick-Launch Banner */}
+            {existingCampaign?.activeMatchSimulation && !existingCampaign.activeMatchSimulation.matchDone && (
+              <div 
+                onClick={() => router.push('/playing-xi')}
+                className="my-3 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/25 via-emerald-600/15 to-slate-900 border border-emerald-400/50 flex items-center justify-between cursor-pointer shadow-lg hover:border-emerald-400 transition-all active:scale-[0.99] group animate-pulse"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
+                    <Play size={18} className="fill-slate-950" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono font-black uppercase text-emerald-400 block tracking-wider">
+                      ⚡ MATCH IN PROGRESS
+                    </span>
+                    <span className="text-xs sm:text-sm font-bold text-white">
+                      Resume Active Match vs Rival
+                    </span>
+                  </div>
+                </div>
+                <div className="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs uppercase flex items-center gap-1 group-hover:bg-emerald-400 transition-colors shadow">
+                  <span>Resume ➔</span>
+                </div>
+              </div>
+            )}
+
             {/* Franchise Matchday Showcase Banner */}
             <div 
               className="my-3 p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl transition-all"
@@ -443,23 +473,10 @@ export default function UnifiedTeamSelectHomePage() {
               </div>
             </div>
 
-            {/* 4 Sleek Key Stat Cards with Expandable Home Fortress */}
+            {/* 4 Clean Key Stat Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-3">
-              <div 
-                onClick={() => {
-                  setExpandedFortress(!expandedFortress);
-                  gameAudio.playUiTap('light');
-                }}
-                className={`p-3 rounded-2xl border transition-all cursor-pointer ${
-                  expandedFortress
-                    ? 'bg-emerald-950/40 border-emerald-500/50 shadow-md ring-1 ring-emerald-400/40'
-                    : 'bg-slate-950/70 border-white/5 hover:border-white/20'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-mono text-gray-400 uppercase">Home Fortress</span>
-                  <span className="text-[9px] text-emerald-400 font-mono font-bold">{expandedFortress ? '▲ Collapse' : '▼ Expand'}</span>
-                </div>
+              <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
+                <span className="text-[10px] font-mono text-gray-400 uppercase block mb-1">Home Fortress</span>
                 <span className="text-xs font-bold text-white block truncate">{activeStadium.name}</span>
                 <span className="text-[10px] font-mono text-emerald-400">Par {activeStadium.avgFirstInnings} Runs</span>
               </div>
@@ -482,28 +499,6 @@ export default function UnifiedTeamSelectHomePage() {
                 <span className="text-[10px] font-mono text-purple-400">₹125.0 Cr Cap</span>
               </div>
             </div>
-
-            {/* Expandable Fortress Telemetry Tray */}
-            {expandedFortress && (
-              <div className="p-3 mb-3 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono animate-fadeIn">
-                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
-                  <span className="text-[9px] text-gray-400 block">Pace vs Spin</span>
-                  <span className="text-white font-bold">{activeStadium.pitchType.includes('Spin') ? '65% Spin / 35% Pace' : '60% Pace / 40% Spin'}</span>
-                </div>
-                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
-                  <span className="text-[9px] text-gray-400 block">Dew Impact</span>
-                  <span className="text-amber-300 font-bold">{activeStadium.city === 'Mumbai' || activeStadium.city === 'Chennai' ? 'High (Chase Favor)' : 'Moderate'}</span>
-                </div>
-                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
-                  <span className="text-[9px] text-gray-400 block">Boundary Size</span>
-                  <span className="text-sky-300 font-bold">{activeStadium.boundarySize} (High 6s)</span>
-                </div>
-                <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
-                  <span className="text-[9px] text-gray-400 block">Historical 1st Inn Par</span>
-                  <span className="text-emerald-400 font-bold">{activeStadium.avgFirstInnings} / 6 in 20 ov</span>
-                </div>
-              </div>
-            )}
 
             {/* Marquee Core Stars */}
             <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
@@ -533,7 +528,12 @@ export default function UnifiedTeamSelectHomePage() {
               boxShadow: `0 0 25px ${activeTeam.color}60`
             }}
           >
-            {selectedGameMode === 'scratch_inception' ? (
+            {existingCampaign?.activeMatchSimulation && !existingCampaign.activeMatchSimulation.matchDone ? (
+              <>
+                <Play size={18} className="fill-slate-950" />
+                <span>RESUME ACTIVE MATCHDAY ➔</span>
+              </>
+            ) : selectedGameMode === 'scratch_inception' ? (
               <>
                 <Sparkles size={16} />
                 <span>{existingCampaign ? `RESUME ${activeTeam.name.toUpperCase()} DRAFT & MEGA AUCTION` : `SELECT ${activeTeam.name.toUpperCase()} & LAUNCH ₹120 CR DRAFT`}</span>
