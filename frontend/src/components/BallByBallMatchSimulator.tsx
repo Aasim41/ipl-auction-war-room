@@ -326,6 +326,14 @@ export default function BallByBallMatchSimulator({
   const [lastBowlerIdx, setLastBowlerIdx] = useState<number | null>(null);
 
   // Tactical management modal states
+  const [openingBowler1Idx, setOpeningBowler1Idx] = useState(0);
+  const [openingBowler2Idx, setOpeningBowler2Idx] = useState(1);
+  const [openingBowlersConfirmed, setOpeningBowlersConfirmed] = useState(false);
+  const [showOpeningBowlersModal, setShowOpeningBowlersModal] = useState(false);
+  const [showNextBatterModal, setShowNextBatterModal] = useState(false);
+  const [dismissedBatterSlot, setDismissedBatterSlot] = useState<'striker' | 'nonStriker'>('striker');
+  const [dismissedBatterName, setDismissedBatterName] = useState<string>('');
+
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [showBattingOrderModal, setShowBattingOrderModal] = useState(false);
   const [showOpeningPairModal, setShowOpeningPairModal] = useState(false);
@@ -731,6 +739,17 @@ export default function BallByBallMatchSimulator({
     return Math.floor(num);
   };
 
+  // Trigger opening bowler selection at start of bowling innings
+  useEffect(() => {
+    if (tossPhase === 'arena' && isUserBowling && !openingBowlersConfirmed && !matchDone) {
+      const activeInn = currentInnings === 1 ? inn1 : inn2;
+      const balls = activeInn?.balls?.length || 0;
+      if (balls === 0) {
+        setShowOpeningBowlersModal(true);
+      }
+    }
+  }, [tossPhase, isUserBowling, openingBowlersConfirmed, currentInnings, inn1, inn2, matchDone]);
+
   const canBowlerBowl = (bIdx: number): { allowed: boolean; reason?: string } => {
     const bSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
     const activeBowlersList = bSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
@@ -739,6 +758,14 @@ export default function BallByBallMatchSimulator({
 
     const curInn = currentInnings === 1 ? inn1 : inn2;
     if (!curInn) return { allowed: false, reason: 'Match not initialized' };
+
+    // Strict Cricket Rule: Bowler cannot bowl 2 consecutive overs back-to-back
+    if (lastBowlerIdx !== null && bIdx === lastBowlerIdx) {
+      return { 
+        allowed: false, 
+        reason: `${candidate.name} bowled the over that just finished. In cricket, consecutive overs are not permitted!` 
+      };
+    }
 
     const oversCount = getBowlerOversCount(curInn.bowlingFigures, candidate.name);
     if (oversCount >= 4) {
