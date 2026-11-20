@@ -1276,6 +1276,13 @@ export default function BallByBallMatchSimulator({
       if (foundNextIdx !== null && newTotalWickets < 10) {
         curStrikerIdx = foundNextIdx;
         curNextBatterIdx = Math.max(curNextBatterIdx + 1, foundNextIdx + 1);
+
+        if (isUserBatting) {
+          // Automatic Popup for Next Batter Selection!
+          setDismissedBatterName(currentBatSquad[strikerIdx]?.name || 'Batter');
+          setDismissedBatterSlot('striker');
+          setShowNextBatterModal(true);
+        }
       }
     } else if (runs % 2 === 1) {
       const temp = curStrikerIdx;
@@ -1289,27 +1296,46 @@ export default function BallByBallMatchSimulator({
       const temp = curStrikerIdx;
       curStrikerIdx = curNonStrikerIdx;
       curNonStrikerIdx = temp;
-      setLastBowlerIdx(currentBowlerIdx);
+      
+      const finishedBowlerIdx = currentBowlerIdx;
+      setLastBowlerIdx(finishedBowlerIdx);
 
-      // Bowler spell allotment: bowler continues their spell up to 4 overs unless quota is exhausted
-      const curBowlerName = activeBowlers[currentBowlerIdx]?.name;
-      const curBowlerOvers = getBowlerOversCount(updatedBowlers, curBowlerName);
-      if (curBowlerOvers >= 4) {
-        // Full spell complete (4 overs): automatically assign next available bowler who has overs remaining
-        let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
-        let attempts = 0;
-        while (attempts < activeBowlers.length) {
-          const candidateName = activeBowlers[nextIdx]?.name;
-          const ovs = getBowlerOversCount(updatedBowlers, candidateName);
-          if (ovs < 4) {
-            break;
+      const isLastOverOfInnings = currentOver === 19;
+      const isMatchEnding = newTotalWickets >= 10 || (currentInnings === 2 && chaseTarget !== null && newTotalRuns >= chaseTarget);
+
+      if (!isLastOverOfInnings && !isMatchEnding) {
+        if (currentOver === 0) {
+          // Over 1 finished -> Over 2 bowled by openingBowler2Idx
+          const nextIdx = openingBowler2Idx % (activeBowlers.length || 1);
+          setCurrentBowlerIdx(nextIdx);
+          setEventBanner({
+            text: `OVER 2: ${activeBowlers[nextIdx]?.name || 'Opening Bowler 2'}`,
+            subtext: `Second opening spell starts from opposite end`,
+            color: 'from-sky-500 to-indigo-600'
+          });
+          setTimeout(() => setEventBanner(null), 2000);
+        } else {
+          // Over 2 or subsequent over finished:
+          if (isUserBowling) {
+            // AUTOMATIC POPUP FOR NEXT BOWLER SELECTION!
+            setShowBowlerModal(true);
+          } else {
+            // AI Bowling: Select next eligible bowler who is NOT finishedBowlerIdx and < 4 overs
+            let nextIdx = (finishedBowlerIdx + 1) % activeBowlers.length;
+            let attempts = 0;
+            while (attempts < activeBowlers.length) {
+              const candidateName = activeBowlers[nextIdx]?.name;
+              const ovs = getBowlerOversCount(updatedBowlers, candidateName);
+              if (ovs < 4 && nextIdx !== finishedBowlerIdx) {
+                break;
+              }
+              nextIdx = (nextIdx + 1) % activeBowlers.length;
+              attempts++;
+            }
+            setCurrentBowlerIdx(nextIdx);
           }
-          nextIdx = (nextIdx + 1) % activeBowlers.length;
-          attempts++;
         }
-        setCurrentBowlerIdx(nextIdx);
       }
-      // If curBowlerOvers < 4, current bowler continues their spell!
     }
 
     // Safety Assertions: ensure dismissed player is NEVER at crease if wickets < 10
@@ -1816,26 +1842,33 @@ export default function BallByBallMatchSimulator({
       const tmp = curStrikerIdx;
       curStrikerIdx = curNonStrikerIdx;
       curNonStrikerIdx = tmp;
-      setLastBowlerIdx(currentBowlerIdx);
+      
+      const finishedBowlerIdx = currentBowlerIdx;
+      setLastBowlerIdx(finishedBowlerIdx);
 
-      // Bowler spell allotment: bowler continues their spell up to 4 overs unless quota is exhausted
-      const curBowlerName = activeBowlers[currentBowlerIdx]?.name;
-      const curBowlerOvers = getBowlerOversCount(curBowlers, curBowlerName);
-      if (curBowlerOvers >= 4) {
-        let nextIdx = (currentBowlerIdx + 1) % activeBowlers.length;
+      const completedOversCount = Math.floor(curBalls.length / 6);
+      if (completedOversCount === 1) {
+        // Over 1 finished -> Over 2 bowled by openingBowler2Idx
+        nextBowlerIdx = openingBowler2Idx % (activeBowlers.length || 1);
+      } else {
+        // Over 2 or later finished:
+        if (isUserBowling) {
+          // AUTOMATIC NEXT BOWLER POPUP!
+          setShowBowlerModal(true);
+        }
+        // AI or fallback next bowler must NOT bowl consecutive overs!
+        let nextIdx = (finishedBowlerIdx + 1) % activeBowlers.length;
         let attempts = 0;
         while (attempts < activeBowlers.length) {
           const candidateName = activeBowlers[nextIdx]?.name;
           const ovs = getBowlerOversCount(curBowlers, candidateName);
-          if (ovs < 4) {
+          if (ovs < 4 && nextIdx !== finishedBowlerIdx) {
             break;
           }
           nextIdx = (nextIdx + 1) % activeBowlers.length;
           attempts++;
         }
         nextBowlerIdx = nextIdx;
-      } else {
-        nextBowlerIdx = currentBowlerIdx;
       }
     }
 
@@ -2057,8 +2090,8 @@ export default function BallByBallMatchSimulator({
         className="relative w-full h-[100dvh] max-w-lg bg-slate-950 flex flex-col shadow-2xl overflow-hidden sm:border sm:border-white/20 sm:rounded-3xl sm:h-[96dvh]"
       >
         
-        {/* Top Header & Navigation Bar (Safe Area Status Bar Spacing for Mobile) */}
-        <div className="px-3 pb-2.5 pt-[max(env(safe-area-inset-top,0px),54px)] sm:pt-3 bg-slate-900/95 border-b border-white/10 flex items-center justify-between shrink-0 z-30">
+        {/* Top Header & Navigation Bar */}
+        <div className="px-3 py-2 bg-slate-900/95 border-b border-white/10 flex items-center justify-between shrink-0 z-30">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 font-display font-black text-xs">
               <TeamLogo teamId={myFranchise.short} size={20} />
@@ -2389,12 +2422,12 @@ export default function BallByBallMatchSimulator({
               </div>
             )}
 
-            {/* Tab 1: Interactive Match Arena (Portrait Mobile First) */}
+            {/* Tab 1: Interactive Match Arena (Portrait Mobile First - Fits Perfectly) */}
             {activeTab === 'arena' ? (
-              <div className="flex-1 flex flex-col gap-2 p-2 sm:p-3 overflow-y-auto overflow-x-hidden scrollbar-none">
+              <div className="flex-1 flex flex-col justify-between gap-1.5 p-2 sm:p-2.5 overflow-hidden select-none">
                 
-                {/* ─── EXPANDED IPL BROADCAST SCORECARD HUD (ROOMY & NON-STICKING) ─── */}
-                <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/20 flex flex-col gap-2 shadow-2xl shrink-0 my-0.5">
+                {/* ─── COMPACT IPL BROADCAST SCORECARD HUD ─── */}
+                <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/20 flex flex-col gap-1.5 shadow-xl shrink-0 my-0.5">
                   {/* Top Row: Team Logo, Big Score, Overs, CRR/RRR & Over Balls */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
