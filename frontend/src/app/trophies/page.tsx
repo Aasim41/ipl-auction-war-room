@@ -70,7 +70,7 @@ export default function TrophyCabinetPage() {
   const currentSeasonTrophies: FranchiseHistoricTrophy[] = [...userSeasonTrophies];
 
   if (finalMatch && finalMatch.status === 'COMPLETED') {
-    if (finalMatch.winnerId === selectedFranchiseId) {
+    if (finalMatch.result?.winnerTeamId === selectedFranchiseId) {
       if (!currentSeasonTrophies.some(t => t.type === 'champion')) {
         currentSeasonTrophies.push({
           id: `season_2027_champ_${selectedFranchiseId}`,
@@ -78,7 +78,7 @@ export default function TrophyCabinetPage() {
           seasonLabel: 'Season 2027',
           type: 'champion',
           title: 'IPL 2027 Champions Trophy',
-          subtitle: `Crowned Champions • Defeated ${finalMatch.winnerId === finalMatch.teamAId ? finalMatch.teamBShort : finalMatch.teamAShort} in Grand Final`,
+          subtitle: `Crowned Champions • Defeated ${finalMatch.result?.winnerTeamId === finalMatch.teamAId ? finalMatch.teamBShort : finalMatch.teamAShort} in Grand Final`,
           captainOrHighlight: `Official BCCI 2027 Championship Trophy`,
           isUserEarned: activeCamp?.teamId === selectedFranchiseId
         });
