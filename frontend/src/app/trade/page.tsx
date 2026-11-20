@@ -528,7 +528,7 @@ export default function TradeWindowPage() {
                 <div className="flex items-center gap-2 min-w-0">
                   <TeamLogo teamId={myFranchise.id} size={22} className="shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="text-xs font-black uppercase text-white truncate">{myFranchise.name}</h3>
+                    <h3 className="text-xs font-black uppercase text-white truncate">{myFranchise.short}</h3>
                     <span className="text-[10px] text-gray-400">Squad ({filteredMySquad.length})</span>
                   </div>
                 </div>
@@ -757,7 +757,7 @@ export default function TradeWindowPage() {
                 <div className="flex items-center gap-2 min-w-0">
                   <TeamLogo teamId={selectedRivalId} size={22} className="shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="text-xs font-black uppercase text-white truncate">{rivalFranchise.name}</h3>
+                    <h3 className="text-xs font-black uppercase text-white truncate">{rivalFranchise.short}</h3>
                     <span className="text-[10px] text-gray-400">Rival Squad ({filteredRivalSquad.length})</span>
                   </div>
                 </div>

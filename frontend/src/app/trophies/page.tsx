@@ -101,18 +101,12 @@ export default function TrophyCabinetPage() {
         </button>
 
         <div className="flex items-center gap-2">
-          <TeamLogo teamId={currentFranchise.id} size={28} />
+          <TeamLogo teamId={currentFranchise.id} size={24} />
           <div>
-            <h1 className="text-sm sm:text-base font-black font-display text-white truncate flex items-center gap-1.5">
-              <span>{currentFranchise.name}</span>
-              <span 
-                className="px-1.5 py-0.2 rounded text-[10px] font-black text-slate-950"
-                style={{ backgroundColor: currentFranchise.color }}
-              >
-                {currentFranchise.short}
-              </span>
+            <h1 className="text-base font-black font-mono text-amber-400">
+              {currentFranchise.short}
             </h1>
-            <span className="text-[10px] font-mono text-amber-400 font-bold block">
+            <span className="text-[9.5px] font-mono text-gray-400 font-bold block">
               🏆 Trophy Cabinet & Honors
             </span>
           </div>
@@ -161,50 +155,50 @@ export default function TrophyCabinetPage() {
       </div>
 
       {/* ─── HERO TROPHY OVERVIEW VITAL CARD ─── */}
-      <div className="my-3 p-4 rounded-3xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/10 border border-amber-500/30 shadow-2xl relative overflow-hidden">
+      <div className="my-2.5 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/10 border border-amber-500/30 shadow-xl relative overflow-hidden">
         <div 
           className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none"
           style={{ backgroundColor: currentFranchise.color }}
         />
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 relative z-10">
           <div>
-            <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1">
-              <Crown size={12} /> Franchise Trophy Room & Honors
+            <span className="text-[9.5px] font-mono font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1">
+              <Crown size={11} /> Franchise Honors
             </span>
-            <h2 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
-              {currentFranchise.name} Legacy
+            <h2 className="text-lg sm:text-xl font-black font-mono text-white mt-0.5">
+              {currentFranchise.short} Silverware
             </h2>
-            <p className="text-xs text-gray-400 font-mono mt-0.5">
-              Official BCCI silverware & season milestones across IPL history.
+            <p className="text-[11px] text-gray-400 font-mono">
+              BCCI official titles & season records across IPL history.
             </p>
           </div>
 
           {/* Quick Count Badges */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="px-3 py-2 rounded-2xl bg-slate-950/90 border border-amber-500/40 text-center shadow-md">
-              <div className="text-[10px] text-amber-400 font-bold flex items-center justify-center gap-1">
+            <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/40 text-center shadow-md">
+              <div className="text-[9.5px] text-amber-400 font-bold flex items-center justify-center gap-1">
                 <span>🏆</span> <span>Titles</span>
               </div>
-              <strong className="text-base sm:text-lg font-black font-display text-amber-300">
+              <strong className="text-base font-black font-display text-amber-300">
                 {championCount}
               </strong>
             </div>
 
-            <div className="px-3 py-2 rounded-2xl bg-slate-950/90 border border-slate-400/30 text-center shadow-md">
-              <div className="text-[10px] text-slate-300 font-bold flex items-center justify-center gap-1">
+            <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-slate-400/30 text-center shadow-md">
+              <div className="text-[9.5px] text-slate-300 font-bold flex items-center justify-center gap-1">
                 <span>🥈</span> <span>Finals</span>
               </div>
-              <strong className="text-base sm:text-lg font-black font-display text-slate-200">
+              <strong className="text-base font-black font-display text-slate-200">
                 {runnerUpCount}
               </strong>
             </div>
 
-            <div className="px-3 py-2 rounded-2xl bg-slate-950/90 border border-emerald-500/30 text-center shadow-md">
-              <div className="text-[10px] text-emerald-400 font-bold flex items-center justify-center gap-1">
+            <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-emerald-500/30 text-center shadow-md">
+              <div className="text-[9.5px] text-emerald-400 font-bold flex items-center justify-center gap-1">
                 <span>🎖️</span> <span>Playoffs</span>
               </div>
-              <strong className="text-base sm:text-lg font-black font-display text-emerald-300">
+              <strong className="text-base font-black font-display text-emerald-300">
                 {playoffCount}
               </strong>
             </div>
@@ -379,7 +373,7 @@ export default function TrophyCabinetPage() {
                       </span>
                     </div>
                     <span className="text-xs text-gray-400 font-mono block">
-                      {awards.orangeCapLeader.teamName} • {awards.orangeCapLeader.innings} Innings
+                      {awards.orangeCapLeader.teamShort} • {awards.orangeCapLeader.innings} Innings
                     </span>
                   </div>
                 </div>
@@ -477,7 +471,7 @@ export default function TrophyCabinetPage() {
                       </span>
                     </div>
                     <span className="text-xs text-gray-400 font-mono block">
-                      {awards.purpleCapLeader.teamName} • {awards.purpleCapLeader.matches} Matches
+                      {awards.purpleCapLeader.teamShort} • {awards.purpleCapLeader.matches} Matches
                     </span>
                   </div>
                 </div>

@@ -350,7 +350,7 @@ export default function UnifiedTeamSelectHomePage() {
         {/* Mobile Franchise Swipe Hint */}
         <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/80 rounded-xl border border-white/10 text-[10px] font-mono text-gray-400">
           <span>👈 Swipe</span>
-          <span className="text-amber-400 font-bold uppercase">{activeTeam.name} ({activeTeam.short})</span>
+          <span className="text-amber-400 font-bold uppercase font-mono">{activeTeam.short}</span>
           <span>Swipe 👉</span>
         </div>
 
@@ -358,7 +358,7 @@ export default function UnifiedTeamSelectHomePage() {
         <div 
           onTouchStart={handleHeroTouchStart}
           onTouchEnd={handleHeroTouchEnd}
-          className="p-4 sm:p-6 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col justify-between gap-4 relative overflow-hidden flex-1"
+          className="p-3 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col justify-between gap-3 relative overflow-hidden flex-1"
         >
           <div 
             className="absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none"
@@ -367,10 +367,10 @@ export default function UnifiedTeamSelectHomePage() {
 
           <div>
             {/* Header: Crest & Team Name */}
-            <div className="flex items-start justify-between pb-3 border-b border-white/10 gap-3">
-              <div className="flex items-center gap-3.5">
+            <div className="flex items-start justify-between pb-2.5 border-b border-white/10 gap-3">
+              <div className="flex items-center gap-3">
                 <div 
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl border shrink-0"
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shadow-xl border shrink-0"
                   style={{
                     backgroundColor: `${activeTeam.color}25`,
                     borderColor: `${activeTeam.color}50`
@@ -380,13 +380,7 @@ export default function UnifiedTeamSelectHomePage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-lg sm:text-2xl font-black font-display text-white">{activeTeam.name}</h2>
-                    <span 
-                      className="px-2 py-0.5 rounded text-[11px] font-black text-slate-950"
-                      style={{ backgroundColor: activeTeam.color }}
-                    >
-                      {activeTeam.short}
-                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black font-mono text-white">{activeTeam.short}</h2>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-400 font-mono mt-0.5">
                     <Link
@@ -396,20 +390,20 @@ export default function UnifiedTeamSelectHomePage() {
                         gameAudio.playUiTap('select');
                         triggerGameHaptic('light');
                       }}
-                      className="text-amber-400 font-bold flex items-center gap-1 hover:underline cursor-pointer bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/30 transition-all hover:bg-amber-500/20"
+                      className="text-amber-400 font-bold flex items-center gap-1 hover:underline cursor-pointer bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/30 transition-all hover:bg-amber-500/20 text-[11px]"
                       title="View Franchise Trophy Cabinet"
                     >
-                      <Trophy size={12} /> {activeTeam.titles}
+                      <Trophy size={11} /> {activeTeam.titles}
                     </Link>
                     <span>•</span>
-                    <span>Starting Cap: ₹125.0 Cr</span>
+                    <span className="text-[11px]">Cap: ₹125.0 Cr</span>
                   </div>
                 </div>
               </div>
 
               {existingCampaign && (
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-black uppercase shrink-0">
-                  Save Active ({existingCampaign.currentPhase.replace('_', ' ')})
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9.5px] font-mono font-bold uppercase shrink-0">
+                  Save: {existingCampaign.currentPhase.replace('_', ' ')}
                 </span>
               )}
             </div>
@@ -418,67 +412,67 @@ export default function UnifiedTeamSelectHomePage() {
             {existingCampaign?.activeMatchSimulation && !existingCampaign.activeMatchSimulation.matchDone && (
               <div 
                 onClick={() => router.push('/playing-xi')}
-                className="my-3 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/25 via-emerald-600/15 to-slate-900 border border-emerald-400/50 flex items-center justify-between cursor-pointer shadow-lg hover:border-emerald-400 transition-all active:scale-[0.99] group animate-pulse"
+                className="my-2.5 p-2.5 rounded-2xl bg-gradient-to-r from-emerald-500/25 via-emerald-600/15 to-slate-900 border border-emerald-400/50 flex items-center justify-between cursor-pointer shadow-lg hover:border-emerald-400 transition-all active:scale-[0.99] group animate-pulse"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
-                    <Play size={18} className="fill-slate-950" />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
+                    <Play size={15} className="fill-slate-950" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono font-black uppercase text-emerald-400 block tracking-wider">
+                    <span className="text-[9px] font-mono font-black uppercase text-emerald-400 block tracking-wider">
                       ⚡ MATCH IN PROGRESS
                     </span>
-                    <span className="text-xs sm:text-sm font-bold text-white">
-                      Resume Active Match vs Rival
+                    <span className="text-xs font-bold text-white">
+                      Resume Active Match
                     </span>
                   </div>
                 </div>
-                <div className="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs uppercase flex items-center gap-1 group-hover:bg-emerald-400 transition-colors shadow">
+                <div className="px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 font-black text-xs uppercase flex items-center gap-1 group-hover:bg-emerald-400 transition-colors shadow">
                   <span>Resume ➔</span>
                 </div>
               </div>
             )}
 
             {/* 4 Clean Key Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-3">
-              <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
-                <span className="text-[10px] font-mono text-gray-400 uppercase block mb-1">Home Fortress</span>
-                <span className="text-xs font-bold text-white block truncate">{activeStadium.name}</span>
-                <span className="text-[10px] font-mono text-emerald-400">Par {activeStadium.avgFirstInnings} Runs</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2.5">
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                <span className="text-[9px] font-mono text-gray-400 uppercase block">Fortress</span>
+                <span className="text-[11px] font-bold text-white block truncate">{activeStadium.name.split(' ')[0]}</span>
+                <span className="text-[9px] font-mono text-emerald-400">Par {activeStadium.avgFirstInnings}</span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
-                <span className="text-[10px] font-mono text-gray-400 uppercase block mb-1">Pitch Profile</span>
-                <span className="text-xs font-bold text-amber-300 block">{activeStadium.pitchType}</span>
-                <span className="text-[10px] font-mono text-gray-400">{activeStadium.boundarySize} Bound.</span>
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                <span className="text-[9px] font-mono text-gray-400 uppercase block">Pitch</span>
+                <span className="text-[11px] font-bold text-amber-300 block truncate">{activeStadium.pitchType}</span>
+                <span className="text-[9px] font-mono text-gray-400">{activeStadium.boundarySize}</span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
-                <span className="text-[10px] font-mono text-gray-400 uppercase block mb-1">War Room Identity</span>
-                <span className="text-xs font-bold text-sky-300 block truncate">{activeFranchiseAI.tagline || activeFranchiseAI.personality}</span>
-                <span className="text-[10px] font-mono text-gray-400">Tactical Focus</span>
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                <span className="text-[9px] font-mono text-gray-400 uppercase block">Focus</span>
+                <span className="text-[11px] font-bold text-sky-300 block truncate">{activeFranchiseAI.personality || 'Tactical'}</span>
+                <span className="text-[9px] font-mono text-gray-400">Strategy</span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
-                <span className="text-[10px] font-mono text-gray-400 uppercase block mb-1">Starting Roster</span>
-                <span className="text-xs font-bold text-white block">25 Players</span>
-                <span className="text-[10px] font-mono text-purple-400">₹125.0 Cr Cap</span>
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+                <span className="text-[9px] font-mono text-gray-400 uppercase block">Squad</span>
+                <span className="text-[11px] font-bold text-white block">25 Players</span>
+                <span className="text-[9px] font-mono text-purple-400">₹125.0 Cr</span>
               </div>
             </div>
 
             {/* Marquee Core Stars */}
-            <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/5">
-              <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
-                <Shield size={12} className="text-amber-400" />
-                <span>Marquee Core Icons</span>
+            <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/5">
+              <span className="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+                <Shield size={11} className="text-amber-400" />
+                <span>Core Stars</span>
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {activeFranchiseAI.untouchables.map((star, idx) => (
                   <span 
                     key={idx}
-                    className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-white flex items-center gap-1.5"
+                    className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[11px] font-bold text-white flex items-center gap-1"
                   >
-                    <span className="text-amber-400">★</span> {star}
+                    <span className="text-amber-400 text-[10px]">★</span> {star}
                   </span>
                 ))}
               </div>
@@ -491,50 +485,47 @@ export default function UnifiedTeamSelectHomePage() {
                 gameAudio.playUiTap('select');
                 triggerGameHaptic('light');
               }}
-              className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-950 to-amber-500/10 border border-amber-500/30 flex items-center justify-between cursor-pointer hover:border-amber-400/60 transition-all active:scale-[0.99] group shadow-md"
+              className="mt-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-slate-950 to-amber-500/10 border border-amber-500/30 flex items-center justify-between cursor-pointer hover:border-amber-400/60 transition-all active:scale-[0.99] group shadow-sm"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-base border border-amber-500/40 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center text-sm border border-amber-500/40 shrink-0">
                   🏆
                 </div>
                 <div>
                   <div className="text-[11px] font-black text-white flex items-center gap-1.5">
                     <span>Trophy Cabinet & Season Honors</span>
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 font-black">
-                      Caps & Records
-                    </span>
                   </div>
-                  <div className="text-[9.5px] text-gray-400 font-mono">
-                    View silverware, Orange & Purple Cap standings & Hall of Fame
+                  <div className="text-[9px] text-gray-400 font-mono">
+                    Silverware, Orange & Purple Cap standings & Hall of Fame
                   </div>
                 </div>
               </div>
-              <ChevronRight size={14} className="text-gray-400 group-hover:text-amber-400 transition-colors shrink-0" />
+              <ChevronRight size={13} className="text-gray-400 group-hover:text-amber-400 transition-colors shrink-0" />
             </Link>
           </div>
 
           {/* Single High-Impact Primary CTA */}
           <button
             onClick={() => handleLaunchFranchise(activeTeam.id)}
-            className="w-full py-3.5 sm:py-4 rounded-2xl font-display text-sm sm:text-base font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl cursor-pointer hover:scale-[1.01] active:scale-95 transition-all text-slate-950"
+            className="w-full py-3 rounded-xl font-display text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl cursor-pointer hover:scale-[1.01] active:scale-95 transition-all text-slate-950"
             style={{
               backgroundColor: activeTeam.color,
-              boxShadow: `0 0 25px ${activeTeam.color}60`
+              boxShadow: `0 0 20px ${activeTeam.color}50`
             }}
           >
             {existingCampaign?.activeMatchSimulation && !existingCampaign.activeMatchSimulation.matchDone ? (
               <>
-                <Play size={18} className="fill-slate-950" />
+                <Play size={16} className="fill-slate-950" />
                 <span>Resume Match ➔</span>
               </>
             ) : selectedGameMode === 'scratch_inception' ? (
               <>
-                <Sparkles size={16} />
-                <span>{existingCampaign ? `Resume ${activeTeam.short} Mega Auction ➔` : `Start with ${activeTeam.short} ➔`}</span>
+                <Sparkles size={15} />
+                <span>{existingCampaign ? `Resume ${activeTeam.short} ➔` : `Start with ${activeTeam.short} ➔`}</span>
               </>
             ) : (
               <>
-                <span>{existingCampaign ? `Resume ${activeTeam.short} Campaign ➔` : `Start with ${activeTeam.short} ➔`}</span>
+                <span>{existingCampaign ? `Resume ${activeTeam.short} ➔` : `Start with ${activeTeam.short} ➔`}</span>
               </>
             )}
           </button>
