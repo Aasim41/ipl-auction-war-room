@@ -53,26 +53,73 @@ export default function TrophyCabinetPage() {
   const activeCamp = mounted ? getActiveCampaign() : null;
   const currentFranchise = getFranchise(selectedFranchiseId);
 
-  // Combine franchise historic trophies with user-earned trophies in the campaign
-  const historicTrophies = FRANCHISE_HISTORIC_TROPHIES[selectedFranchiseId] || [];
-  const userEarnedTrophies = (activeCamp?.teamId === selectedFranchiseId && activeCamp?.userTrophies) 
-    ? activeCamp.userTrophies 
-    : [];
-
-  // Deduplicate and combine trophies
-  const combinedTrophies: FranchiseHistoricTrophy[] = [
-    ...userEarnedTrophies,
-    ...historicTrophies.filter(h => !userEarnedTrophies.some(u => u.id === h.id))
-  ].sort((a, b) => b.seasonYear - a.seasonYear);
-
-  // Compute live tournament awards across all 10 franchises
+  // Current Season Trophies ONLY (No historical past records)
   const schedule = activeCamp?.schedule || [];
+  const pointsTable = activeCamp?.pointsTable || [];
   const awards: TournamentAwardsSummary = computeTournamentAwards(schedule, selectedFranchiseId);
 
-  // Trophy count vitals
-  const championCount = combinedTrophies.filter(t => t.type === 'champion').length;
+  const finalMatch = schedule.find(m => m.stage === 'Final' || m.matchNo === 74);
+  const userSeasonTrophies = (activeCamp?.teamId === selectedFranchiseId && activeCamp?.userTrophies) 
+    ? activeCamp.userTrophies.filter(t => t.seasonYear === 2027) 
+    : [];
+
+  const ptEntry = pointsTable.find(p => p.teamId === selectedFranchiseId);
+  const rank = pointsTable.findIndex(p => p.teamId === selectedFranchiseId) + 1;
+
+  // Build Current Season Trophy Cards
+  const currentSeasonTrophies: FranchiseHistoricTrophy[] = [...userSeasonTrophies];
+
+  if (finalMatch && finalMatch.status === 'COMPLETED') {
+    if (finalMatch.winnerId === selectedFranchiseId) {
+      if (!currentSeasonTrophies.some(t => t.type === 'champion')) {
+        currentSeasonTrophies.push({
+          id: `season_2027_champ_${selectedFranchiseId}`,
+          seasonYear: 2027,
+          seasonLabel: 'Season 2027',
+          type: 'champion',
+          title: 'IPL 2027 Champions Trophy',
+          subtitle: `Crowned Champions • Defeated ${finalMatch.winnerId === finalMatch.teamAId ? finalMatch.teamBShort : finalMatch.teamAShort} in Grand Final`,
+          captainOrHighlight: `Official BCCI 2027 Championship Trophy`,
+          isUserEarned: activeCamp?.teamId === selectedFranchiseId
+        });
+      }
+    } else if (finalMatch.teamAId === selectedFranchiseId || finalMatch.teamBId === selectedFranchiseId) {
+      if (!currentSeasonTrophies.some(t => t.type === 'runner_up')) {
+        currentSeasonTrophies.push({
+          id: `season_2027_runner_${selectedFranchiseId}`,
+          seasonYear: 2027,
+          seasonLabel: 'Season 2027',
+          type: 'runner_up',
+          title: 'IPL 2027 Runners-Up Shield',
+          subtitle: `Grand Finalists • Silverware Awarded`,
+          captainOrHighlight: `Official BCCI 2027 Runner-Up Shield`,
+          isUserEarned: activeCamp?.teamId === selectedFranchiseId
+        });
+      }
+    }
+  } else {
+    // Current season is active in progress!
+    const played = ptEntry?.played || 0;
+    const won = ptEntry?.won || 0;
+    const pts = ptEntry?.points || 0;
+    currentSeasonTrophies.push({
+      id: `season_2027_hunt_${selectedFranchiseId}`,
+      seasonYear: 2027,
+      seasonLabel: 'Season 2027',
+      type: 'champion',
+      title: 'IPL 2027 Championship Trophy',
+      subtitle: rank > 0 ? `Current Standings: Ranked #${rank} • ${won}W / ${played}P (${pts} Pts)` : `Season 2027 Contender`,
+      captainOrHighlight: `Target: Lift the 2027 Trophy at Ahmedabad Grand Final`,
+      isUserEarned: activeCamp?.teamId === selectedFranchiseId
+    });
+  }
+
+  const combinedTrophies = currentSeasonTrophies;
+
+  // Trophy count vitals for current season
+  const championCount = combinedTrophies.filter(t => t.type === 'champion' && (finalMatch?.status === 'COMPLETED' || t.isUserEarned)).length;
   const runnerUpCount = combinedTrophies.filter(t => t.type === 'runner_up').length;
-  const playoffCount = combinedTrophies.filter(t => t.type === 'playoffs').length;
+  const inContentionCount = combinedTrophies.filter(t => !finalMatch || finalMatch.status !== 'COMPLETED').length;
 
   if (!mounted) {
     return (
@@ -84,30 +131,18 @@ export default function TrophyCabinetPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col select-none pt-16 pb-20 px-3 sm:px-6 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col select-none pt-14 pb-20 px-3 sm:px-5 max-w-4xl mx-auto">
       
-      {/* ─── TOP HEADER BAR ─── */}
-      <div className="flex items-center justify-between py-3 border-b border-white/10 gap-3">
-        <button
-          onClick={() => {
-            gameAudio.playUiTap('light');
-            triggerGameHaptic('light');
-            router.back();
-          }}
-          className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
-        >
-          <ArrowLeft size={14} className="text-amber-400" />
-          <span>Back</span>
-        </button>
-
+      {/* ─── TOP HEADER BAR (Only 1 Back button via Navbar; clean page header here) ─── */}
+      <div className="flex items-center justify-between py-2 border-b border-white/10 gap-2">
         <div className="flex items-center gap-2">
-          <TeamLogo teamId={currentFranchise.id} size={24} />
+          <TeamLogo teamId={currentFranchise.id} size={22} />
           <div>
-            <h1 className="text-base font-black font-mono text-amber-400">
+            <h1 className="text-sm sm:text-base font-black font-mono text-amber-400">
               {currentFranchise.short}
             </h1>
-            <span className="text-[9.5px] font-mono text-gray-400 font-bold block">
-              🏆 Trophy Cabinet & Honors
+            <span className="text-[9px] font-mono text-gray-400 font-bold block">
+              🏆 Season 2027 Honors
             </span>
           </div>
         </div>
@@ -118,15 +153,15 @@ export default function TrophyCabinetPage() {
             gameAudio.playUiTap('select');
             triggerGameHaptic('light');
           }}
-          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs flex items-center gap-1 shadow-md shadow-amber-500/20 cursor-pointer transition-all shrink-0"
+          className="px-2.5 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-xs flex items-center gap-1 shadow-sm cursor-pointer transition-all shrink-0"
         >
-          <Calendar size={13} />
-          <span className="hidden sm:inline">Season Hub</span>
+          <Calendar size={12} />
+          <span>Season Hub</span>
         </Link>
       </div>
 
-      {/* ─── FRANCHISE SELECTOR CAROUSEL ─── */}
-      <div className="py-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0 border-b border-white/5">
+      {/* ─── FRANCHISE SELECTOR CAROUSEL (Ultra-Compact Pills) ─── */}
+      <div className="py-2 flex items-center gap-1 overflow-x-auto scrollbar-none shrink-0 border-b border-white/5">
         {Object.values(IPL_FRANCHISES).map(f => {
           const isSelected = f.id === selectedFranchiseId;
           const isUserTeam = activeCamp?.teamId === f.id;
@@ -138,13 +173,13 @@ export default function TrophyCabinetPage() {
                 gameAudio.playUiTap('select');
                 triggerGameHaptic('light');
               }}
-              className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer border ${
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer border ${
                 isSelected
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/80 shadow-sm ring-1 ring-amber-400/50'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/80 shadow-sm'
                   : 'bg-slate-900/60 text-gray-400 border-white/5 hover:bg-white/5'
               }`}
             >
-              <TeamLogo teamId={f.id} size={16} />
+              <TeamLogo teamId={f.id} size={14} />
               <span className="font-mono">{f.short}</span>
               {isUserTeam && (
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Your Active Team" />
@@ -154,70 +189,75 @@ export default function TrophyCabinetPage() {
         })}
       </div>
 
-      {/* ─── HERO TROPHY OVERVIEW VITAL CARD ─── */}
-      <div className="my-2.5 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/10 border border-amber-500/30 shadow-xl relative overflow-hidden">
+      {/* ─── HERO TROPHY OVERVIEW VITAL CARD (Ultra-Compact) ─── */}
+      <div className="my-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/10 border border-amber-500/30 shadow-lg relative overflow-hidden">
         <div 
           className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none"
           style={{ backgroundColor: currentFranchise.color }}
         />
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 relative z-10">
+        <div className="flex items-center justify-between gap-2 relative z-10">
           <div>
-            <span className="text-[9.5px] font-mono font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1">
-              <Crown size={11} /> Franchise Honors
+            <span className="text-[9px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+              <Crown size={10} /> Season 2027 Campaign Honors
             </span>
-            <h2 className="text-lg sm:text-xl font-black font-mono text-white mt-0.5">
-              {currentFranchise.short} Silverware
+            <h2 className="text-base font-black font-mono text-white">
+              {currentFranchise.short} Silverware & Awards
             </h2>
-            <p className="text-[11px] text-gray-400 font-mono">
-              BCCI official titles & season records across IPL history.
-            </p>
           </div>
 
           {/* Quick Count Badges */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/40 text-center shadow-md">
-              <div className="text-[9.5px] text-amber-400 font-bold flex items-center justify-center gap-1">
-                <span>🏆</span> <span>Titles</span>
-              </div>
-              <strong className="text-base font-black font-display text-amber-300">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="px-2 py-0.5 rounded-lg bg-slate-950/90 border border-amber-500/40 text-center shadow">
+              <span className="text-[8px] text-amber-400 font-bold block">TITLES</span>
+              <strong className="text-xs font-black font-mono text-amber-300">
                 {championCount}
               </strong>
             </div>
 
-            <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-slate-400/30 text-center shadow-md">
-              <div className="text-[9.5px] text-slate-300 font-bold flex items-center justify-center gap-1">
-                <span>🥈</span> <span>Finals</span>
-              </div>
-              <strong className="text-base font-black font-display text-slate-200">
+            <div className="px-2 py-0.5 rounded-lg bg-slate-950/90 border border-slate-400/30 text-center shadow">
+              <span className="text-[8px] text-slate-300 font-bold block">FINALS</span>
+              <strong className="text-xs font-black font-mono text-slate-200">
                 {runnerUpCount}
               </strong>
             </div>
 
-            <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-emerald-500/30 text-center shadow-md">
-              <div className="text-[9.5px] text-emerald-400 font-bold flex items-center justify-center gap-1">
-                <span>🎖️</span> <span>Playoffs</span>
-              </div>
-              <strong className="text-base font-black font-display text-emerald-300">
-                {playoffCount}
+            <div className="px-2 py-0.5 rounded-lg bg-slate-950/90 border border-emerald-500/30 text-center shadow">
+              <span className="text-[8px] text-emerald-400 font-bold block">HUNT</span>
+              <strong className="text-xs font-black font-mono text-emerald-300">
+                {inContentionCount > 0 ? 'Active' : 'Ended'}
               </strong>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ─── NAVIGATION TABS ─── */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900 border border-white/10 shrink-0 mb-3 overflow-x-auto scrollbar-none">
+      {/* ─── NAVIGATION TABS (Ultra-Compact Strip) ─── */}
+      <div className="flex items-center gap-1 p-0.5 rounded-xl bg-slate-900 border border-white/10 shrink-0 mb-2 overflow-x-auto scrollbar-none">
         {[
-          { id: 'showcase', label: '🏆 Trophy Showcase', icon: Trophy },
-          { id: 'caps', label: '🧢 Orange & Purple Caps', icon: Award },
-          { id: 'mvp', label: '🌟 MVP & Emerging Player', icon: Star },
-          { id: 'hall_of_fame', label: '🏛️ Hall of Fame', icon: Crown }
+          { id: 'showcase', label: '🏆 Trophies', icon: Trophy },
+          { id: 'caps', label: '🧢 Caps', icon: Award },
+          { id: 'mvp', label: '🌟 MVP', icon: Star },
+          { id: 'hall_of_fame', label: '⚡ Records', icon: Crown }
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => {
               setActiveTab(tab.id as any);
+              gameAudio.playUiTap('select');
+              triggerGameHaptic('light');
+            }}
+            className={`flex-1 min-w-[70px] py-1 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === tab.id
+                ? 'bg-amber-500 text-slate-950 shadow-sm'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <tab.icon size={11} />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
               gameAudio.playUiTap('select');
               triggerGameHaptic('light');
             }}

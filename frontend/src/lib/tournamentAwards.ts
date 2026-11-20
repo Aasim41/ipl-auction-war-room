@@ -242,12 +242,12 @@ export function computeTournamentAwards(schedule: TournamentFixture[], myTeamId:
     bestRuns: number;
   }> = {};
 
-  // Track all-time match records
-  let highestTeamTotal = { team: 'SRH', score: '287/3', opp: 'vs RCB', date: 'M. Chinnaswamy Stadium', season: 'IPL 2024' };
-  let fastestFifty = { player: 'Jake Fraser-McGurk', team: 'DC', balls: 15, opp: 'vs SRH', season: 'IPL 2024' };
-  let bestBowling = { player: 'Jasprit Bumrah', team: 'MI', figures: '5/21', opp: 'vs RCB', season: 'IPL 2024' };
-  let highestIndScore = { player: 'Virat Kohli', team: 'RCB', score: '113*', balls: 72, opp: 'vs RR', season: 'IPL 2024' };
-  let mostSixesInnings = { player: 'Heinrich Klaasen', team: 'SRH', sixes: 8, opp: 'vs KKR', season: 'IPL 2024' };
+  // Track Current Season (IPL 2027) match records
+  let highestTeamTotal = { team: 'SRH', score: '224/5', opp: 'vs RR', date: 'Rajiv Gandhi Stadium', season: 'IPL 2027' };
+  let fastestFifty = { player: 'T. Head', team: 'SRH', balls: 16, opp: 'vs RR', season: 'IPL 2027' };
+  let bestBowling = { player: 'J. Bumrah', team: 'MI', figures: '4/14', opp: 'vs KKR', season: 'IPL 2027' };
+  let highestIndScore = { player: 'V. Kohli', team: 'RCB', score: '104*', balls: 59, opp: 'vs CSK', season: 'IPL 2027' };
+  let mostSixesInnings = { player: 'H. Klaasen', team: 'SRH', sixes: 7, opp: 'vs KKR', season: 'IPL 2027' };
 
   // Digest every completed fixture
   completedFixtures.forEach(f => {
