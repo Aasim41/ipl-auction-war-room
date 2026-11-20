@@ -335,7 +335,7 @@ export default function MiniAuctionPage() {
     }
 
     const isUserWin = highestBidder === campaign.teamId
-    const winnerName = isUserWin ? campaign.teamName : (getFranchise(highestBidder)?.name || highestBidder.toUpperCase())
+    const winnerName = isUserWin ? (getFranchise(campaign.teamId)?.short || campaign.teamName) : (getFranchise(highestBidder)?.short || highestBidder.toUpperCase())
     
     const campaignPlayer: CampaignPlayer = {
       player_id: currentPlayer.id,
@@ -527,7 +527,7 @@ export default function MiniAuctionPage() {
     }
 
     if (winningBot) {
-      const winnerName = getFranchise(winningBot)?.name || winningBot.toUpperCase();
+      const winnerName = getFranchise(winningBot)?.short || winningBot.toUpperCase();
       const campaignPlayer: CampaignPlayer = {
         player_id: currentPlayer.id,
         name: currentPlayer.name,
@@ -720,7 +720,7 @@ export default function MiniAuctionPage() {
               statsSummary: `Acquired in 2027 Mini-Auction for ₹${estimatedPrice.toFixed(2)} Cr`
             }
             rData.squad.push(campaignPlayer)
-            const winnerName = getFranchise(winningBot)?.name || winningBot.toUpperCase()
+            const winnerName = getFranchise(winningBot)?.short || winningBot.toUpperCase()
             newSoldLog.unshift({ player: p, winner: winnerName, price: estimatedPrice })
           } else {
             // No bot can afford or fit: player is UNSOLD
@@ -1038,7 +1038,7 @@ export default function MiniAuctionPage() {
                   <p className="text-xs text-amber-300 font-mono font-bold mt-0.5">
                     {highestBidder === 'none' || highestBidder === 'BCCI Auctioneer' || bidHistory.length === 0
                       ? 'No qualifying bids received • Returned to pool'
-                      : `Acquired by ${highestBidder === campaign.teamId ? campaign.teamName : (getFranchise(highestBidder)?.name || highestBidder.toUpperCase())} for ₹${currentBid.toFixed(2)} Cr`}
+                      : `Acquired by ${highestBidder === campaign.teamId ? (getFranchise(campaign.teamId)?.short || campaign.teamName) : (getFranchise(highestBidder)?.short || highestBidder.toUpperCase())} for ₹${currentBid.toFixed(2)} Cr`}
                   </p>
                 </div>
               </div>
