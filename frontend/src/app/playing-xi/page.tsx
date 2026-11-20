@@ -411,34 +411,19 @@ export default function PlayingXIPage() {
         
         {/* ─── Sleek Minimal Header & Tab Controls ─── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pb-2 border-b border-white/10 gap-2">
-          <div className="flex items-center justify-between sm:justify-start gap-2.5">
-            <div className="flex items-center gap-2">
-              <TeamLogo teamId={franchise.id} size={24} />
-              <div className="flex items-baseline gap-1.5">
-                <h1 className="text-base sm:text-lg font-black font-mono text-amber-400">
-                  {franchise.short}
-                </h1>
-                <span className="text-[11px] text-gray-400 font-mono">
-                  Match #{currentMatch?.matchNo || 1}
-                </span>
-              </div>
+          <div className="flex items-center gap-2">
+            <TeamLogo teamId={franchise.id} size={24} />
+            <div className="flex items-baseline gap-1.5">
+              <h1 className="text-base sm:text-lg font-black font-mono text-amber-400">
+                {franchise.short}
+              </h1>
+              <span className="text-[11px] text-gray-400 font-mono">
+                Match #{currentMatch?.matchNo || 1}
+              </span>
             </div>
-
-            {/* Quick Play Match CTA on right of header for mobile portrait */}
-            <button
-              onClick={() => handleLaunchMatch()}
-              className={`sm:hidden px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shrink-0 ${
-                isMatchActive
-                  ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 text-slate-950 shadow-md animate-pulse'
-                  : 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md'
-              }`}
-            >
-              {isMatchActive ? <Play size={12} className="fill-slate-950" /> : <Swords size={12} />}
-              <span>{isMatchActive ? 'Resume' : `Play #${currentMatch?.matchNo || 1}`}</span>
-            </button>
           </div>
 
-          {/* View Mode Switcher (Tabs) & Desktop Launch Button */}
+          {/* View Mode Switcher (Tabs) & Single Play Match Button */}
           <div className="flex items-center justify-between sm:justify-end gap-2">
             <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-xl border border-white/10 w-full sm:w-auto">
               <button
@@ -479,16 +464,17 @@ export default function PlayingXIPage() {
               </Link>
             </div>
 
+            {/* Strictly Single Play/Resume Match CTA */}
             <button
               onClick={() => handleLaunchMatch()}
-              className={`hidden sm:flex px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0 ${
                 isMatchActive
                   ? 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 text-slate-950 shadow-md animate-pulse'
                   : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 shadow-md'
               }`}
             >
-              {isMatchActive ? <Play size={13} className="fill-slate-950" /> : <Swords size={13} />}
-              <span>{isMatchActive ? `Resume (${activeOversStr} ov)` : `Play Match #${currentMatch?.matchNo || 1}`}</span>
+              {isMatchActive ? <Play size={12} className="fill-slate-950" /> : <Swords size={12} />}
+              <span>{isMatchActive ? `Resume (${activeOversStr} ov)` : `Play #${currentMatch?.matchNo || 1}`}</span>
             </button>
           </div>
         </div>
@@ -518,72 +504,81 @@ export default function PlayingXIPage() {
             )}
 
             {/* ─── COMPACT ALL-IN-ONE MATCH CONTROL STRIP ─── */}
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-wrap items-center justify-between gap-1.5 shadow-md">
-              {/* Tactic Toggle: Bat-First vs Bowl-First */}
-              <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-white/10 shrink-0">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col gap-1.5 shadow-md">
+              <div className="flex flex-wrap items-center justify-between gap-1.5">
+                {/* Tactic Toggle: Bat-First vs Bowl-First */}
+                <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-white/10 shrink-0">
+                  <button
+                    onClick={() => {
+                      setLineupMode('bat_first');
+                      gameAudio.playUiTap('select');
+                      triggerGameHaptic('light');
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      lineupMode === 'bat_first'
+                        ? 'bg-amber-500 text-slate-950 shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    🏏 Bat First
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLineupMode('bowl_first');
+                      gameAudio.playUiTap('select');
+                      triggerGameHaptic('light');
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      lineupMode === 'bowl_first'
+                        ? 'bg-sky-500 text-white shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    🎯 Bowl First
+                  </button>
+                </div>
+
+                {/* Match Venue Selector */}
+                <div className="flex items-center gap-1 min-w-0">
+                  <MapPin size={11} className="text-amber-400 shrink-0" />
+                  <select 
+                    value={venue} 
+                    onChange={(e) => setVenue(e.target.value)}
+                    className="bg-slate-950 border border-white/15 rounded-lg py-1 px-2 text-[11px] text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer truncate max-w-[150px] sm:max-w-[200px]"
+                  >
+                    {Object.keys(VENUE_INSIGHTS).map(v => (
+                      <option key={v} value={v}>{v} ({VENUE_INSIGHTS[v]?.title.split('(')[0].trim()})</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Impact Sub (Click directly to swap reserve - no separate button needed!) */}
                 <button
-                  onClick={() => {
-                    setLineupMode('bat_first');
-                    gameAudio.playUiTap('select');
-                    triggerGameHaptic('light');
-                  }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    lineupMode === 'bat_first'
-                      ? 'bg-amber-500 text-slate-950 shadow-sm'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
+                  onClick={() => setBenchDrawerSlotIndex(11)}
+                  className="px-2 py-1 rounded-xl bg-indigo-950/70 hover:bg-indigo-900/70 border border-indigo-500/40 text-[11px] font-bold text-indigo-300 flex items-center gap-1 cursor-pointer shrink-0 transition-all active:scale-95"
+                  title="Tap to change Impact Player (12th Man)"
                 >
-                  🏏 Bat First
+                  <Sparkles size={10} className="text-indigo-400" />
+                  <span>Sub: {impactPlayer ? formatPlayerInitial(impactPlayer.name) : 'Pick'} ({impactPlayer?.role})</span>
                 </button>
-                <button
-                  onClick={() => {
-                    setLineupMode('bowl_first');
-                    gameAudio.playUiTap('select');
-                    triggerGameHaptic('light');
-                  }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    lineupMode === 'bowl_first'
-                      ? 'bg-sky-500 text-white shadow-sm'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  🎯 Bowl First
-                </button>
+
+                {/* BCCI Compliance Status */}
+                <div className="flex items-center gap-1 text-[10px] font-mono shrink-0">
+                  <span className={`px-2 py-0.5 rounded-lg border font-bold ${
+                    isCompliant
+                      ? 'bg-emerald-950/50 border-emerald-500/40 text-emerald-300'
+                      : 'bg-rose-950/50 border-rose-500/40 text-rose-300'
+                  }`}>
+                    {isCompliant ? '✓ 4 OS • 1 WK • 5 Bowl' : '⚠️ Rule Warning'}
+                  </span>
+                </div>
               </div>
 
-              {/* Match Venue Selector */}
-              <div className="flex items-center gap-1 min-w-0">
-                <MapPin size={11} className="text-amber-400 shrink-0" />
-                <select 
-                  value={venue} 
-                  onChange={(e) => setVenue(e.target.value)}
-                  className="bg-slate-950 border border-white/15 rounded-lg py-1 px-2 text-[11px] text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer truncate max-w-[150px] sm:max-w-[200px]"
-                >
-                  {Object.keys(VENUE_INSIGHTS).map(v => (
-                    <option key={v} value={v}>{v} ({VENUE_INSIGHTS[v]?.title.split('(')[0].trim()})</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Impact Sub (Click directly to swap reserve - no separate button needed!) */}
-              <button
-                onClick={() => setBenchDrawerSlotIndex(11)}
-                className="px-2 py-1 rounded-xl bg-indigo-950/70 hover:bg-indigo-900/70 border border-indigo-500/40 text-[11px] font-bold text-indigo-300 flex items-center gap-1 cursor-pointer shrink-0 transition-all active:scale-95"
-                title="Tap to change Impact Player (12th Man)"
-              >
-                <Sparkles size={10} className="text-indigo-400" />
-                <span>Sub: {impactPlayer ? formatPlayerInitial(impactPlayer.name) : 'Pick'} ({impactPlayer?.role})</span>
-              </button>
-
-              {/* BCCI Compliance Status */}
-              <div className="flex items-center gap-1 text-[10px] font-mono shrink-0">
-                <span className={`px-2 py-0.5 rounded-lg border font-bold ${
-                  isCompliant
-                    ? 'bg-emerald-950/50 border-emerald-500/40 text-emerald-300'
-                    : 'bg-rose-950/50 border-rose-500/40 text-rose-300'
-                }`}>
-                  {isCompliant ? '✓ 4 OS • 1 WK • 5 Bowl' : '⚠️ Rule Warning'}
-                </span>
+              {/* Smallest & Easiest Stadium Detail Micro-Strip */}
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-950/70 border border-white/5 text-[10px] font-mono">
+                <span className="text-amber-400 font-bold shrink-0">🏟️ {currentInsight.title.split('(')[0].trim()}:</span>
+                <span className="text-emerald-300 font-bold shrink-0">{currentInsight.boost}</span>
+                <span className="text-gray-400 truncate hidden xs:inline">• {currentInsight.behavior}</span>
               </div>
             </div>
 
