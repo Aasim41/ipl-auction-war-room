@@ -2545,8 +2545,8 @@ export default function BallByBallMatchSimulator({
                   )}
                 </div>
 
-                {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR ─── */}
-                <div className="relative my-0.5 h-[200px] sm:h-[235px] shrink-0 rounded-2xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-2xl select-none">
+                {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR (ENLARGED) ─── */}
+                <div className="relative my-0.5 h-[290px] sm:h-[350px] shrink-0 rounded-2xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-2xl select-none">
                   
                   {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
                   <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/85 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-sm">
@@ -2778,98 +2778,168 @@ export default function BallByBallMatchSimulator({
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-black uppercase text-amber-400 flex items-center gap-1">
                   <Zap size={13} />
-                  {isUserBatting ? 'Select Batting Shot Intent:' : 'Select Bowling Delivery:'}
+                  {isUserBatting ? 'Batting Shots (Tap number for Ball-by-Ball):' : 'Bowling Delivery (Tap for Ball-by-Ball):'}
                 </span>
                 <span className="text-[9px] font-mono text-gray-400">
-                  Tactical Mode
+                  {isUserBatting ? 'Risk vs Reward' : 'Delivery Tactic'}
                 </span>
               </div>
 
-              {/* 2x2 Tactical Grid for Ergonomic Thumb Control in Portrait */}
               {isUserBatting ? (
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { id: 'DEFEND', label: '🛡️ Defend', desc: 'Safe block, 0-1 run' },
-                    { id: 'ROTATE', label: '⚖️ Rotate Strike', desc: 'Gap push, 1-2 runs' },
-                    { id: 'ATTACK', label: '⚡ Lofted Hit', desc: 'Infield clear, 4s & 6s' },
-                    { id: 'MAXIMUM', label: '💥 Maximum', desc: 'Super Six, high risk' }
-                  ].map(t => (
+                <>
+                  {/* 6 Shot Intent Buttons for Ball-by-Ball (0, 1, 2, 3, 4, 6) */}
+                  <div className="grid grid-cols-6 gap-1">
+                    {[
+                      { val: '0', label: '0', sub: 'Dot', risk: 'Safe', color: 'border-slate-500/70 bg-slate-800/80 text-gray-200' },
+                      { val: '1', label: '1', sub: 'Single', risk: 'Low', color: 'border-emerald-500/60 bg-emerald-950/60 text-emerald-300' },
+                      { val: '2', label: '2', sub: 'Double', risk: 'Med', color: 'border-teal-500/60 bg-teal-950/60 text-teal-300' },
+                      { val: '3', label: '3', sub: 'Triple', risk: 'Med', color: 'border-cyan-500/60 bg-cyan-950/60 text-cyan-300' },
+                      { val: '4', label: '4', sub: 'Boundary', risk: 'Edge', color: 'border-sky-500/80 bg-sky-950/80 text-sky-300' },
+                      { val: '6', label: '6', sub: 'Maximum', risk: 'High', color: 'border-amber-500 bg-amber-950/80 text-amber-300' }
+                    ].map(b => (
+                      <button
+                        key={b.val}
+                        onClick={() => {
+                          gameAudio.playUiTap('select');
+                          triggerGameHaptic('light');
+                          executeBall(b.val as BattingTactic);
+                        }}
+                        disabled={matchDone}
+                        className={`py-2 px-1 rounded-xl text-center border flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 shadow-md ${b.color} hover:brightness-125`}
+                      >
+                        <span className="text-sm font-black font-mono leading-none">{b.label}</span>
+                        <span className="text-[8px] font-bold mt-0.5 leading-tight opacity-90 truncate">{b.sub}</span>
+                        <span className="text-[7px] font-mono opacity-70 leading-tight">{b.risk}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Full Over Batting Options */}
+                  <div className="flex items-center justify-between pt-1 border-t border-white/10">
+                    <span className="text-[9.5px] font-mono text-gray-400 font-bold uppercase flex items-center gap-1">
+                      <FastForward size={11} className="text-amber-400" /> Full Over Batting:
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
                     <button
-                      key={t.id}
-                      onClick={() => {
-                        setBattingTactic(t.id as BattingTactic)
-                        gameAudio.playUiTap('select')
-                        triggerGameHaptic('light')
-                      }}
-                      className={`p-1.5 rounded-xl text-left border transition-all cursor-pointer ${
-                        battingTactic === t.id
-                          ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-sm ring-1 ring-amber-400/50 scale-[1.01]'
-                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                      }`}
+                      onClick={() => handleSimulateOver('DEFEND_OVER', undefined)}
+                      disabled={matchDone}
+                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <strong className="text-[11px] block font-bold truncate">{t.label}</strong>
-                      <span className="text-[9px] text-gray-400 leading-tight block truncate">{t.desc}</span>
+                      <div className="text-[10px] sm:text-[11px] font-bold text-gray-200 truncate">🛡️ Defend Over</div>
+                      <div className="text-[8px] text-gray-400 truncate">Low Risk • Protect Wickets</div>
                     </button>
-                  ))}
-                </div>
+                    <button
+                      onClick={() => handleSimulateOver('NORMAL_OVER', undefined)}
+                      disabled={matchDone}
+                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                    >
+                      <div className="text-[10px] sm:text-[11px] font-bold text-emerald-300 truncate">⚖️ Normal Over</div>
+                      <div className="text-[8px] text-gray-400 truncate">Balanced • Strike Rotation</div>
+                    </button>
+                    <button
+                      onClick={() => handleSimulateOver('ATTACK_OVER', undefined)}
+                      disabled={matchDone}
+                      className="py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-left text-amber-300 transition-all active:scale-95 cursor-pointer shadow-sm"
+                    >
+                      <div className="text-[10px] sm:text-[11px] font-bold text-amber-300 truncate">⚡ Attack Over</div>
+                      <div className="text-[8px] text-amber-200/80 truncate">High Risk • Aggression</div>
+                    </button>
+                  </div>
+                </>
               ) : (
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { id: 'YORKER', label: '🎯 Yorker', desc: 'Toe-crusher at stumps' },
-                    { id: 'SLOWER', label: '🌀 Slower Ball', desc: 'Off cutter, aerial catch' },
-                    { id: 'BOUNCER', label: '⚡ Bouncer', desc: 'Short ball, top edges' },
-                    { id: 'GOOD_LENGTH', label: '📐 Good Length', desc: 'Channel of uncertainty' }
-                  ].map(t => (
+                <>
+                  {/* 3 Bowling Delivery Buttons for Ball-by-Ball (Defend, Normal, Attack) */}
+                  <div className="grid grid-cols-3 gap-1.5">
                     <button
-                      key={t.id}
                       onClick={() => {
-                        setBowlingTactic(t.id as BowlingTactic)
-                        gameAudio.playUiTap('select')
-                        triggerGameHaptic('light')
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                        executeBall('DEFEND');
                       }}
-                      className={`p-1.5 rounded-xl text-left border transition-all cursor-pointer ${
-                        bowlingTactic === t.id
-                          ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-sm ring-1 ring-sky-400/50 scale-[1.01]'
-                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                      }`}
+                      disabled={matchDone}
+                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-sky-500/50 text-left text-white transition-all active:scale-95 cursor-pointer shadow-md"
                     >
-                      <strong className="text-[11px] block font-bold truncate">{t.label}</strong>
-                      <span className="text-[9px] text-gray-400 leading-tight block truncate">{t.desc}</span>
+                      <div className="text-[11px] font-bold text-sky-300 flex items-center gap-1">
+                        <span>🛡️</span> <span>Defend Ball</span>
+                      </div>
+                      <div className="text-[8px] text-gray-400 leading-tight mt-0.5">Off-cutter • Dot Pressure</div>
                     </button>
-                  ))}
-                </div>
+                    <button
+                      onClick={() => {
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                        executeBall('NORMAL');
+                      }}
+                      disabled={matchDone}
+                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-emerald-500/50 text-left text-white transition-all active:scale-95 cursor-pointer shadow-md"
+                    >
+                      <div className="text-[11px] font-bold text-emerald-300 flex items-center gap-1">
+                        <span>⚖️</span> <span>Normal Ball</span>
+                      </div>
+                      <div className="text-[8px] text-gray-400 leading-tight mt-0.5">Corridor • Good Length</div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        gameAudio.playUiTap('select');
+                        triggerGameHaptic('light');
+                        executeBall('ATTACK');
+                      }}
+                      disabled={matchDone}
+                      className="py-2 px-2 rounded-xl bg-rose-950/80 hover:bg-rose-900/80 border border-rose-500/70 text-left text-white transition-all active:scale-95 cursor-pointer shadow-md"
+                    >
+                      <div className="text-[11px] font-bold text-rose-300 flex items-center gap-1">
+                        <span>⚡</span> <span>Attack Ball</span>
+                      </div>
+                      <div className="text-[8px] text-rose-200/80 leading-tight mt-0.5">Yorker / Bouncer • Wicket</div>
+                    </button>
+                  </div>
+
+                  {/* Full Over Bowling Options */}
+                  <div className="flex items-center justify-between pt-1 border-t border-white/10">
+                    <span className="text-[9.5px] font-mono text-gray-400 font-bold uppercase flex items-center gap-1">
+                      <FastForward size={11} className="text-sky-400" /> Full Over Bowling:
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      onClick={() => handleSimulateOver(undefined, 'DEFEND')}
+                      disabled={matchDone}
+                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                    >
+                      <div className="text-[10px] sm:text-[11px] font-bold text-sky-300 truncate">🛡️ Defend Over</div>
+                      <div className="text-[8px] text-gray-400 truncate">Containment • Dot focus</div>
+                    </button>
+                    <button
+                      onClick={() => handleSimulateOver(undefined, 'NORMAL')}
+                      disabled={matchDone}
+                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                    >
+                      <div className="text-[10px] sm:text-[11px] font-bold text-emerald-300 truncate">⚖️ Normal Over</div>
+                      <div className="text-[8px] text-gray-400 truncate">Standard balanced spell</div>
+                    </button>
+                    <button
+                      onClick={() => handleSimulateOver(undefined, 'ATTACK')}
+                      disabled={matchDone}
+                      className="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-left text-rose-300 transition-all active:scale-95 cursor-pointer shadow-sm"
+                    >
+                      <div className="text-[10px] sm:text-[11px] font-bold text-rose-300 truncate">⚡ Attack Over</div>
+                      <div className="text-[8px] text-rose-200/70 truncate">Aggressive • Wicket search</div>
+                    </button>
+                  </div>
+                </>
               )}
 
-              {/* Execution Action Bar */}
-              <div className="flex flex-col gap-1.5 pt-1.5 border-t border-white/10">
+              {/* Instant Result Action */}
+              <div className="pt-1 border-t border-white/10 flex items-center justify-end">
                 <button
-                  onClick={() => executeBall()}
+                  onClick={handleInstantResult}
                   disabled={matchDone}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer active:scale-95 transition-all"
+                  className="w-full py-1.5 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm"
                 >
-                  <Play size={15} className="fill-slate-950" />
-                  <span>{isUserBatting ? 'Bat' : 'Bowl'}</span>
+                  <span>Instant Result (Skip to Match End)</span>
+                  <ChevronRight size={13} />
                 </button>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={handleSimulateOver}
-                    disabled={matchDone}
-                    className="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-bold text-white flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
-                  >
-                    <FastForward size={13} />
-                    <span>Simulate Over</span>
-                  </button>
-
-                  <button
-                    onClick={handleInstantResult}
-                    disabled={matchDone}
-                    className="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
-                  >
-                    <span>Instant Result</span>
-                    <ChevronRight size={13} />
-                  </button>
-                </div>
               </div>
 
             </div>
