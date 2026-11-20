@@ -27,7 +27,8 @@ import {
   ArrowDown,
   ListOrdered,
   Users,
-  Info
+  Info,
+  AlertCircle
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';
 import { TournamentFixture, MatchScorecard } from '../data/scheduleGenerator';
