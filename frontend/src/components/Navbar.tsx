@@ -120,7 +120,7 @@ export function Navbar() {
   const OFFICIAL_PHASES = [
     { 
       id: 'trade', 
-      label: currentPhaseOrder > 1 ? '1. Trade (Closed)' : '1. Trade Window', 
+      label: '1. Trade', 
       shortLabel: '1. Trade',
       href: '/trade', 
       icon: ArrowLeftRight,
@@ -129,7 +129,7 @@ export function Navbar() {
     },
     { 
       id: 'retain_release', 
-      label: currentPhaseOrder > 2 ? '2. Retain (Finalized)' : '2. Retain & Release', 
+      label: '2. Retain', 
       shortLabel: '2. Retain',
       href: '/squad', 
       icon: Users,
@@ -138,7 +138,7 @@ export function Navbar() {
     },
     { 
       id: 'mini_auction', 
-      label: currentPhaseOrder > 3 ? '3. Auction (Finalized)' : '3. Mini-Auction', 
+      label: '3. Auction', 
       shortLabel: '3. Auction',
       href: '/auction', 
       icon: Gavel,
@@ -147,7 +147,7 @@ export function Navbar() {
     },
     { 
       id: 'playing_xi', 
-      label: '4. Playing XI & Schedule', 
+      label: '4. Play', 
       shortLabel: '4. Play',
       href: '/playing-xi', 
       icon: Calendar,
@@ -159,7 +159,7 @@ export function Navbar() {
   const SCRATCH_PHASES = [
     {
       id: 'draft',
-      label: currentPhaseOrder > 1 ? '1. Draft (Concluded)' : '1. Foundation Draft',
+      label: '1. Draft',
       shortLabel: '1. Draft',
       href: '/draft',
       icon: Users,
@@ -168,7 +168,7 @@ export function Navbar() {
     },
     {
       id: 'mini_auction',
-      label: currentPhaseOrder > 2 ? '2. Auction (Concluded)' : '2. Mega Auction',
+      label: '2. Auction',
       shortLabel: '2. Auction',
       href: '/auction',
       icon: Gavel,
@@ -177,7 +177,7 @@ export function Navbar() {
     },
     {
       id: 'playing_xi',
-      label: '3. Playing XI & Schedule',
+      label: '3. Play',
       shortLabel: '3. Play',
       href: '/playing-xi',
       icon: Calendar,
@@ -223,11 +223,8 @@ export function Navbar() {
               className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white transition-all cursor-pointer border border-white/10 group shrink-0"
               title="Click to view all Franchise Saves & Careers"
             >
-              <TeamLogo teamId={franchise.id} size={24} className="transition-transform group-hover:scale-105 shrink-0" />
-              <span className="font-black text-xs text-white hidden md:inline truncate max-w-[140px]">
-                {franchise.name}
-              </span>
-              <span className="font-mono font-black text-xs text-amber-400 sm:hidden">
+              <TeamLogo teamId={franchise.id} size={22} className="transition-transform group-hover:scale-105 shrink-0" />
+              <span className="font-mono font-black text-xs text-amber-400">
                 {franchise.short}
               </span>
               <ChevronDown size={12} className="text-gray-400 group-hover:text-white transition-colors shrink-0" />
@@ -235,8 +232,8 @@ export function Navbar() {
           </div>
 
           {/* Center: Minimal Sequential Phase Stepper */}
-          <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto scrollbar-none px-1">
-            {PHASES.map((phase, idx) => {
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none px-1">
+            {PHASES.map((phase) => {
               const isActive = pathname === phase.href
               const isLocked = phase.isLocked
 
@@ -246,11 +243,10 @@ export function Navbar() {
                     key={phase.id}
                     onClick={() => triggerLockedAlert(phase.label, phase.isConcluded)}
                     title={phase.isConcluded ? "Concluded and locked by BCCI regulations" : "Complete current phase to unlock"}
-                    className="px-2 sm:px-2.5 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1 shrink-0 bg-slate-900/40 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
+                    className="px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-1 shrink-0 bg-slate-900/40 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
                   >
-                    <Lock size={10} className={phase.isConcluded ? "text-amber-500/60" : "text-gray-500"} />
-                    <span className="hidden sm:inline">{phase.shortLabel}</span>
-                    <span className="sm:hidden font-mono">{idx + 1}</span>
+                    <Lock size={9} className={phase.isConcluded ? "text-amber-500/60" : "text-gray-500"} />
+                    <span>{phase.shortLabel}</span>
                   </div>
                 )
               }
@@ -266,15 +262,14 @@ export function Navbar() {
                       advancePhase('playing_xi')
                     }
                   }}
-                  className={`px-2.5 sm:px-3 py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
                     isActive
                       ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30'
                       : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/10'
                   }`}
                 >
-                  <phase.icon size={12} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
-                  <span className="hidden sm:inline">{phase.shortLabel}</span>
-                  <span className="sm:hidden font-mono">{idx + 1}</span>
+                  <phase.icon size={11} className={isActive ? 'text-slate-950' : 'text-gray-400'} />
+                  <span>{phase.shortLabel}</span>
                 </Link>
               )
             })}
