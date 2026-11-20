@@ -330,9 +330,9 @@ export default function PlayingXIPage() {
   const bowlersInXI = fullPlayingXI.filter(p => p.role === 'BOWL' || p.role === 'AR').length;
 
   // Active in-progress match simulation state
-  const activeSim = campaign?.activeMatchSimulation;
+  const activeSim = campaign?.activeMatchSimulation as any;
   const isMatchActive = Boolean(activeSim && !activeSim.matchDone);
-  const activeInn = isMatchActive ? (activeSim.innIndex === 2 ? activeSim.inn2 : activeSim.inn1) : null;
+  const activeInn = isMatchActive ? (activeSim?.innIndex === 2 ? activeSim?.inn2 : activeSim?.inn1) : null;
   const activeLegalBalls = activeInn?.legalBalls || 0;
   const activeOversStr = `${Math.floor(activeLegalBalls / 6)}.${activeLegalBalls % 6}`;
   const activeScoreStr = activeInn ? `${activeInn.totalRuns}/${activeInn.totalWickets}` : '';
