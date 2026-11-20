@@ -481,6 +481,34 @@ export default function UnifiedTeamSelectHomePage() {
                 ))}
               </div>
             </div>
+
+            {/* Franchise Trophy Room & Honors Banner */}
+            <Link
+              href="/trophies"
+              onClick={() => {
+                gameAudio.playUiTap('select');
+                triggerGameHaptic('light');
+              }}
+              className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-950 to-amber-500/10 border border-amber-500/30 flex items-center justify-between cursor-pointer hover:border-amber-400/60 transition-all active:scale-[0.99] group shadow-md"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-base border border-amber-500/40 shrink-0">
+                  🏆
+                </div>
+                <div>
+                  <div className="text-[11px] font-black text-white flex items-center gap-1.5">
+                    <span>Trophy Cabinet & Season Honors</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 font-black">
+                      Caps & Records
+                    </span>
+                  </div>
+                  <div className="text-[9.5px] text-gray-400 font-mono">
+                    View silverware, Orange & Purple Cap standings & Hall of Fame
+                  </div>
+                </div>
+              </div>
+              <ChevronRight size={14} className="text-gray-400 group-hover:text-amber-400 transition-colors shrink-0" />
+            </Link>
           </div>
 
           {/* Single High-Impact Primary CTA */}

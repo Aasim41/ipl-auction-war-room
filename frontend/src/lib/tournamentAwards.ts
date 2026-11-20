@@ -75,6 +75,19 @@ export interface HallOfFameRecords {
   highestRunChase: { team: string; target: number; opp: string; season: string };
 }
 
+export interface TournamentAwardsSummary {
+  orangeCapLeader: PlayerBattingAwardStats | null;
+  orangeCapTop5: PlayerBattingAwardStats[];
+  purpleCapLeader: PlayerBowlingAwardStats | null;
+  purpleCapTop5: PlayerBowlingAwardStats[];
+  tournamentMVP: MVPAwardStats | null;
+  mvpTop5: MVPAwardStats[];
+  emergingPlayer: EmergingPlayerAwardStats | null;
+  emergingTop3: EmergingPlayerAwardStats[];
+  hallOfFame: HallOfFameRecords;
+  totalMatchesCompleted: number;
+}
+
 export interface FranchiseHistoricTrophy {
   id: string;
   seasonLabel: string;

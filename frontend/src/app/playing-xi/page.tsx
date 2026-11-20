@@ -454,6 +454,18 @@ export default function PlayingXIPage() {
                 <Calendar size={14} />
                 <span>Schedule & Standings (74)</span>
               </button>
+              <Link
+                href="/trophies"
+                onClick={() => {
+                  gameAudio.playUiTap('select');
+                  triggerGameHaptic('light');
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer text-gray-400 hover:text-amber-300 hover:bg-white/5"
+                title="Franchise Silverware & Season Honors"
+              >
+                <Trophy size={14} className="text-amber-400" />
+                <span>Trophies & Honors</span>
+              </Link>
             </div>
 
             <button
