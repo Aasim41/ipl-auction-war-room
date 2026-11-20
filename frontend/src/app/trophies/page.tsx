@@ -26,7 +26,11 @@ import {
   computeTournamentAwards, 
   FRANCHISE_HISTORIC_TROPHIES, 
   FranchiseHistoricTrophy,
-  TournamentAwardsSummary 
+  TournamentAwardsSummary,
+  PlayerBattingAwardStats,
+  PlayerBowlingAwardStats,
+  MVPAwardStats,
+  EmergingPlayerAwardStats
 } from '../../lib/tournamentAwards';
 import TeamLogo from '../../components/TeamLogo';
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
@@ -62,7 +66,7 @@ export default function TrophyCabinetPage() {
   ].sort((a, b) => b.seasonYear - a.seasonYear);
 
   // Compute live tournament awards across all 10 franchises
-  const schedule = activeCamp?.tournamentSchedule || [];
+  const schedule = activeCamp?.schedule || [];
   const awards: TournamentAwardsSummary = computeTournamentAwards(schedule, selectedFranchiseId);
 
   // Trophy count vitals
@@ -129,7 +133,7 @@ export default function TrophyCabinetPage() {
 
       {/* ─── FRANCHISE SELECTOR CAROUSEL ─── */}
       <div className="py-2.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0 border-b border-white/5">
-        {IPL_FRANCHISES.map(f => {
+        {Object.values(IPL_FRANCHISES).map(f => {
           const isSelected = f.id === selectedFranchiseId;
           const isUserTeam = activeCamp?.teamId === f.id;
           return (
@@ -404,7 +408,7 @@ export default function TrophyCabinetPage() {
             {/* Top 5 Leaderboard Table */}
             <div className="space-y-1.5">
               <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top 5 Run-Getters</span>
-              {awards.orangeCapTop5.map((bat, idx) => (
+              {awards.orangeCapTop5.map((bat: PlayerBattingAwardStats, idx: number) => (
                 <div 
                   key={idx}
                   className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"
@@ -502,7 +506,7 @@ export default function TrophyCabinetPage() {
             {/* Top 5 Leaderboard Table */}
             <div className="space-y-1.5">
               <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top 5 Wicket-Takers</span>
-              {awards.purpleCapTop5.map((bowl, idx) => (
+              {awards.purpleCapTop5.map((bowl: PlayerBowlingAwardStats, idx: number) => (
                 <div 
                   key={idx}
                   className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"
@@ -592,7 +596,7 @@ export default function TrophyCabinetPage() {
             {/* Top 5 MVP List */}
             <div className="space-y-1.5">
               <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top 5 Contenders</span>
-              {awards.mvpTop5.map((mvp, idx) => (
+              {awards.mvpTop5.map((mvp: MVPAwardStats, idx: number) => (
                 <div 
                   key={idx}
                   className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"
@@ -674,7 +678,7 @@ export default function TrophyCabinetPage() {
             {/* Emerging Top 3 Candidates */}
             <div className="space-y-1.5">
               <span className="text-[10px] font-mono text-gray-400 uppercase font-bold px-1">Top Nominees</span>
-              {awards.emergingTop3.map((em, idx) => (
+              {awards.emergingTop3.map((em: EmergingPlayerAwardStats, idx: number) => (
                 <div 
                   key={idx}
                   className="p-2 rounded-xl bg-slate-950/70 border border-white/5 flex items-center justify-between text-xs font-mono"

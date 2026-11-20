@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { 
   Trophy, 
   MapPin, 
@@ -16,7 +17,8 @@ import {
   Activity,
   Flame,
   CheckCircle2,
-  Play
+  Play,
+  ChevronRight
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { useCampaignStore } from '../store/useCampaignStore'
@@ -389,7 +391,7 @@ export default function UnifiedTeamSelectHomePage() {
                   <div className="flex items-center gap-2 text-xs text-gray-400 font-mono mt-0.5">
                     <Link
                       href="/trophies"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         gameAudio.playUiTap('select');
                         triggerGameHaptic('light');
