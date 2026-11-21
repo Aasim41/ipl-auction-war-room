@@ -22,6 +22,7 @@ import { getFranchiseAI, isUntouchablePlayer } from '../../data/franchiseAI'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import TeamLogo from '../../components/TeamLogo'
 import { getDetailedPlayerRole } from '../../lib/bowlerClassification'
+import { getTeamTheme } from '../../data/teamThemes'
 
 export default function TradeWindowPage() {
   const router = useRouter()
