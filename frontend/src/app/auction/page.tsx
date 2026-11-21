@@ -43,12 +43,21 @@ import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import { getFranchiseAI } from '../../data/franchiseAI'
 import TeamLogo from '../../components/TeamLogo'
 import { getDetailedPlayerRole, getCompactRoleBadge } from '../../lib/bowlerClassification'
+import { getTeamTheme } from '../../data/teamThemes'
 const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
 export default function MiniAuctionPage() {
   const router = useRouter()
   const { getActiveCampaign, addAuctionPlayerToSquad, recordAuctionSale, updateRivalTeamsData, advancePhase } = useCampaignStore()
   const campaign = getActiveCampaign()
+
+  const myTheme = useMemo(() => getTeamTheme(campaign?.teamId), [campaign?.teamId])
+  const currentBidderTheme = useMemo(() => {
+    if (highestBidder && highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer') {
+      return getTeamTheme(highestBidder)
+    }
+    return myTheme
+  }, [highestBidder, myTheme])
 
   // Full multi-franchise auction pool (includes releases from all teams!)
   const [auctionPool, setAuctionPool] = useState<DynamicAuctionPlayer[]>([])
@@ -830,7 +839,14 @@ export default function MiniAuctionPage() {
           <div className="flex items-center gap-2.5">
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-black uppercase">
+                <span 
+                  style={{
+                    backgroundColor: myTheme.pillBg,
+                    color: myTheme.pillText,
+                    borderColor: `${myTheme.primary}80`,
+                  }}
+                  className="px-2.5 py-0.5 rounded-full border text-[10px] font-mono font-black uppercase shadow-sm"
+                >
                   MINI-AUCTION ARENA
                 </span>
                 <span className="text-[11px] text-gray-400 font-mono hidden sm:inline">
@@ -848,7 +864,12 @@ export default function MiniAuctionPage() {
             {(activeSquadCount >= 18 || currentIndex >= auctionPool.length - 1 || soldLog.length > 0) && (
               <button
                 onClick={handleFinishAuction}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+                style={{
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 16px ${myTheme.primary}70`,
+                }}
+                className="px-4 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
                 title="Proceed to Playing XI"
               >
                 <span>Proceed to XI ➔</span>
@@ -858,36 +879,49 @@ export default function MiniAuctionPage() {
         </div>
 
         {/* Minimal Tactical HUD Strip */}
-        <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-900 border border-white/10 flex flex-wrap items-center justify-between gap-2 shadow-md">
+        <div 
+          style={{
+            background: myTheme.cardBg,
+            borderColor: myTheme.cardBorder,
+            boxShadow: myTheme.cardGlow,
+          }}
+          className="p-2.5 sm:p-3 rounded-2xl border flex flex-wrap items-center justify-between gap-2 shadow-md"
+        >
           <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
-            <div className="flex items-center gap-1 text-emerald-300 font-black">
-              <IndianRupee size={13} className="text-emerald-400" />
+            <div className="flex items-center gap-1 text-white font-black">
+              <IndianRupee size={13} className="text-white" />
               <span>₹{campaign.remainingPurse.toFixed(1)} Cr Purse</span>
             </div>
-            <span className="text-gray-500">•</span>
+            <span className="text-gray-400">•</span>
             <div className="text-white font-bold">
               <span>{activeSquadCount}/25 Squad</span>
               {activeSquadCount < 18 && (
-                <span className="text-amber-400 text-[10px] ml-1">(need {slotsNeededForMin18} for 18)</span>
+                <span className="text-amber-300 text-[10px] ml-1">(need {slotsNeededForMin18} for 18)</span>
               )}
             </div>
-            <span className="text-gray-500">•</span>
+            <span className="text-gray-400">•</span>
             <div className={overseasCount >= 8 ? 'text-rose-400 font-bold' : 'text-sky-300'}>
               {overseasCount}/8 OS
             </div>
-            <span className="text-gray-500">•</span>
-            <div className={wkCount < 1 ? 'text-rose-400 font-bold' : 'text-emerald-400'}>
+            <span className="text-gray-400">•</span>
+            <div className={wkCount < 1 ? 'text-rose-400 font-bold' : 'text-emerald-300'}>
               {wkCount} WK
             </div>
-            <span className="text-gray-500">•</span>
-            <div className={bowlCount < 5 ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+            <span className="text-gray-400">•</span>
+            <div className={bowlCount < 5 ? 'text-amber-300 font-bold' : 'text-emerald-300'}>
               {bowlCount}/5 Bowl
             </div>
           </div>
         </div>
 
         {/* Mobile View Switcher Tabs (4 Tabs: Stage | Pool | Squads | Sold) */}
-        <div className="flex lg:hidden items-center justify-between gap-1 p-1 rounded-2xl bg-slate-900 border border-white/10 overflow-x-auto scrollbar-none shrink-0">
+        <div 
+          style={{
+            background: `${myTheme.bgDeep}f0`,
+            borderColor: `${myTheme.primary}40`,
+          }}
+          className="flex lg:hidden items-center justify-between gap-1 p-1 rounded-2xl border overflow-x-auto scrollbar-none shrink-0"
+        >
           {[
             { id: 'stage', label: '🔨 Gavel Stage' },
             { id: 'pool', label: `📋 Pool (${auctionPool.length})` },
@@ -902,9 +936,14 @@ export default function MiniAuctionPage() {
                 gameAudio.playUiTap('select');
                 triggerGameHaptic('light');
               }}
+              style={auctionView === tab.id ? {
+                backgroundColor: myTheme.pillBg,
+                color: myTheme.pillText,
+                boxShadow: `0 0 10px ${myTheme.primary}70`,
+              } : {}}
               className={`px-2.5 py-1.5 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer flex-1 text-center ${
                 auctionView === tab.id
-                  ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                  ? 'font-black'
                   : 'text-gray-400 hover:text-white bg-white/5'
               }`}
             >
@@ -917,7 +956,14 @@ export default function MiniAuctionPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1">
           
           {/* Column 1 (Left 7 cols): Live Hammer Stage & Paddle Controls */}
-          <div className={`lg:col-span-7 p-3 sm:p-4 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-2xl relative overflow-hidden ${auctionView === 'stage' ? 'flex' : 'hidden lg:flex'}`}>
+          <div 
+            style={{
+              background: myTheme.cardBg,
+              borderColor: myTheme.cardBorder,
+              boxShadow: myTheme.cardGlow,
+            }}
+            className={`lg:col-span-7 p-3 sm:p-4 rounded-2xl border flex flex-col justify-between shadow-2xl relative overflow-hidden ${auctionView === 'stage' ? 'flex' : 'hidden lg:flex'}`}
+          >
             
             {/* Dramatic Gavel Slam Strike Animation Overlay */}
             {gavelPhase === 'sold' && (
