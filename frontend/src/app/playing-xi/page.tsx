@@ -194,7 +194,6 @@ export default function PlayingXIPage() {
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
-  const [swapSourceIndex, setSwapSourceIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -322,27 +321,6 @@ export default function PlayingXIPage() {
       newXI[index] = newXI[target];
       newXI[target] = temp;
       setPlayingXI(newXI.map(p => p.player_id), activeImpactId, lineupMode);
-      setSwapSourceIndex(null);
-    }
-  };
-
-  const handleSelectForSwap = (index: number) => {
-    if (swapSourceIndex === null) {
-      setSwapSourceIndex(index);
-      gameAudio.playUiTap('select');
-      triggerGameHaptic('light');
-    } else if (swapSourceIndex === index) {
-      setSwapSourceIndex(null);
-      gameAudio.playUiTap('light');
-    } else {
-      gameAudio.playCardSwap();
-      triggerGameHaptic('medium');
-      const newXI = [...fullPlayingXI];
-      const temp = newXI[swapSourceIndex];
-      newXI[swapSourceIndex] = newXI[index];
-      newXI[index] = temp;
-      setPlayingXI(newXI.map(p => p.player_id), activeImpactId, lineupMode);
-      setSwapSourceIndex(null);
     }
   };
 
@@ -631,52 +609,25 @@ export default function PlayingXIPage() {
                 </span>
               </div>
 
-              {/* Swap Position Active Feedback Banner */}
-              {swapSourceIndex !== null && (
-                <div className="p-2.5 rounded-2xl bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-between shadow-xl animate-pulse">
-                  <div className="flex items-center gap-1.5">
-                    <ArrowLeftRight size={14} className="shrink-0" />
-                    <span>Tap another player in the 11 to swap positions with <strong>{fullPlayingXI[swapSourceIndex]?.name}</strong></span>
-                  </div>
-                  <button 
-                    onClick={() => setSwapSourceIndex(null)}
-                    className="px-2.5 py-1 rounded-xl bg-black text-white text-[10px] font-black cursor-pointer hover:bg-neutral-800 transition-all shrink-0 ml-2"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-
               {/* 11 Player Cards List */}
               <div className="space-y-1.5 transition-all">
                 {fullPlayingXI.map((player, index) => {
                   const isExpanded = expandedPlayerId === player.player_id;
-                  const isSelectedForSwap = swapSourceIndex === index;
                   return (
                     <div
                       key={player.player_id}
-                      style={isSelectedForSwap ? {
-                        background: '#ffffff',
-                        borderColor: '#000000',
-                        boxShadow: '0 0 25px rgba(255,255,255,0.9), 0 0 0 3px #ffffff',
-                      } : {
+                      style={{
                         background: myTheme.cardBg,
                         borderColor: myTheme.cardBorder,
                         boxShadow: myTheme.cardGlow,
                       }}
-                      className={`rounded-xl border-2 transition-all overflow-hidden ${
-                        isSelectedForSwap ? 'scale-[1.02] ring-2 ring-white' : 'hover:scale-[1.01]'
-                      }`}
+                      className="rounded-xl border-2 transition-all overflow-hidden hover:scale-[1.01]"
                     >
                       {/* Card Header Strip */}
                       <div 
                         onClick={() => {
-                          if (swapSourceIndex !== null) {
-                            handleSelectForSwap(index);
-                          } else {
-                            setExpandedPlayerId(isExpanded ? null : player.player_id);
-                            gameAudio.playUiTap('light');
-                          }
+                          setExpandedPlayerId(isExpanded ? null : player.player_id);
+                          gameAudio.playUiTap('light');
                         }}
                         className="py-2 px-2.5 flex items-center justify-between gap-2 cursor-pointer hover:brightness-105"
                       >
@@ -694,7 +645,7 @@ export default function PlayingXIPage() {
                           </div>
                           <div className="min-w-0">
                             <div 
-                              style={{ color: isSelectedForSwap ? '#000000' : myTheme.contrastText }}
+                              style={{ color: myTheme.contrastText }}
                               className="font-black text-xs sm:text-sm flex items-center gap-1.5 truncate drop-shadow-sm"
                             >
                               <span className="truncate">{formatPlayerInitial(player.name)}</span>
@@ -724,7 +675,7 @@ export default function PlayingXIPage() {
                               )}
                             </div>
                             <div 
-                              style={{ color: isSelectedForSwap ? '#1e293b' : myTheme.contrastText }}
+                              style={{ color: myTheme.contrastText }}
                               className="text-[10px] font-mono truncate font-bold opacity-90 mt-0.5"
                             >
                               <span>#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • <span>{getDetailedPlayerRole(player)}</span>
@@ -732,27 +683,8 @@ export default function PlayingXIPage() {
                           </div>
                         </div>
 
-                        {/* Right: Re-order Controls & Swap Icon */}
+                        {/* Right: Re-order Controls & Swap with Bench */}
                         <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                          {/* Dedicated Tap-to-Swap Button */}
-                          <button
-                            onClick={() => handleSelectForSwap(index)}
-                            style={isSelectedForSwap ? {
-                              backgroundColor: '#000000',
-                              color: '#ffffff',
-                              border: '1px solid #ffffff',
-                            } : {
-                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                              color: '#ffffff',
-                              border: '1px solid rgba(255, 255, 255, 0.3)',
-                            }}
-                            className="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm hover:brightness-125"
-                            title="Tap to swap position with another player"
-                          >
-                            <ArrowLeftRight size={10} />
-                            <span>{isSelectedForSwap ? 'Swapping...' : 'Swap'}</span>
-                          </button>
-
                           {/* Up / Down Order Buttons with enlarged touch targets */}
                           <div className="flex items-center gap-0.5">
                             <button
@@ -784,6 +716,25 @@ export default function PlayingXIPage() {
                               <ArrowDown size={13} />
                             </button>
                           </div>
+
+                          {/* Swap with Bench Button */}
+                          <button
+                            onClick={() => {
+                              setBenchDrawerSlotIndex(index);
+                              gameAudio.playUiTap('select');
+                            }}
+                            style={{
+                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                              color: '#ffffff',
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                            }}
+                            className="p-1.5 rounded-lg active:scale-90 cursor-pointer transition-all flex items-center justify-center shadow-sm hover:brightness-125"
+                            title="Swap with bench reserve"
+                          >
+                            <Users size={12} />
+                          </button>
+                        </div>
+                      </div>
 
                           {/* Swap with Bench Button */}
                           <button
