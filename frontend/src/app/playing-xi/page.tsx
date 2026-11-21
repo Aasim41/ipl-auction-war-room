@@ -204,48 +204,22 @@ export default function PlayingXIPage() {
   const venue = selectedVenue || (campaign && TEAM_HOME_CITY[campaign.teamId]) || 'Bengaluru';
   const setVenue = setSelectedVenue;
 
-  // Prevent SSR/Client Hydration Mismatch
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <div className="flex items-center gap-2.5 text-xs font-mono text-gray-400">
-          <Activity className="animate-spin text-amber-400" size={18} />
-          <span>Loading IPL War Room & Tournament Arena...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!campaign) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-white text-center">
-        <div className="p-8 rounded-3xl bg-slate-900 border border-white/10 max-w-md shadow-2xl">
-          <AlertCircle size={36} className="mx-auto text-amber-400 mb-3" />
-          <h3 className="text-lg font-black font-display mb-2">No Active Campaign Found</h3>
-          <p className="text-xs text-gray-400 mb-4">Please select your franchise to enter the war room.</p>
-          <button
-            onClick={() => router.push('/select-team')}
-            className="px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase cursor-pointer hover:bg-amber-400 transition-all"
-          >
-            Select Team
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const franchise = getFranchise(campaign.teamId);
+  const franchise = campaign ? getFranchise(campaign.teamId) : getFranchise('rcb');
   const myTheme = getTeamTheme(franchise.id);
-  const activeSquad = campaign.squad.filter(p => !p.is_released);
+  const activeSquad = campaign ? campaign.squad.filter(p => !p.is_released) : [];
   
   // Resolve active Playing XI player IDs based on lineupMode (Bat-First vs Bowl-First)
-  const activeLineupIds = lineupMode === 'bat_first'
-    ? (campaign.batFirstXI && campaign.batFirstXI.length >= 11 ? campaign.batFirstXI : campaign.playingXI)
-    : (campaign.bowlFirstXI && campaign.bowlFirstXI.length >= 11 ? campaign.bowlFirstXI : campaign.playingXI);
+  const activeLineupIds = campaign
+    ? (lineupMode === 'bat_first'
+      ? (campaign.batFirstXI && campaign.batFirstXI.length >= 11 ? campaign.batFirstXI : campaign.playingXI)
+      : (campaign.bowlFirstXI && campaign.bowlFirstXI.length >= 11 ? campaign.bowlFirstXI : campaign.playingXI))
+    : [];
 
-  const activeImpactId = lineupMode === 'bat_first'
-    ? (campaign.batFirstImpactId || campaign.impactPlayerId)
-    : (campaign.bowlFirstImpactId || campaign.impactPlayerId);
+  const activeImpactId = campaign
+    ? (lineupMode === 'bat_first'
+      ? (campaign.batFirstImpactId || campaign.impactPlayerId)
+      : (campaign.bowlFirstImpactId || campaign.impactPlayerId))
+    : undefined;
 
   // Resolve Playing XI objects from player_ids
   const playingXIObjects: CampaignPlayer[] = (activeLineupIds || [])
@@ -288,20 +262,20 @@ export default function PlayingXIPage() {
   const currentInsight = VENUE_INSIGHTS[venue] || VENUE_INSIGHTS['Bengaluru'];
 
   // Tournament Fixtures & Schedule (70 League Matches + 4 Playoff Matches)
-  const schedule = campaign.schedule || [];
+  const schedule = campaign?.schedule || [];
   const myFixtures = schedule.filter(f => f.isMyMatch || f.stage !== 'League');
   const currentMatch = schedule.find(f => f.isMyMatch && f.status === 'CURRENT') || myFixtures.find(f => f.status === 'CURRENT') || myFixtures[0];
   
   const rivalTeamId = currentMatch
-    ? (currentMatch.teamAId === campaign.teamId ? currentMatch.teamBId : currentMatch.teamAId)
+    ? (currentMatch.teamAId === campaign?.teamId ? currentMatch.teamBId : currentMatch.teamAId)
     : 'csk';
   const rivalFranchise = getFranchise(rivalTeamId);
-  const pointsTable = campaign.pointsTable || [];
+  const pointsTable = campaign?.pointsTable || [];
 
   // Strictly align teams, squads, and logos with the active fixture being played
   const activeMatchFixture = selectedFixtureForMatch || currentMatch;
   const isUserPlayingInFixture = activeMatchFixture
-    ? (activeMatchFixture.teamAId === campaign.teamId || activeMatchFixture.teamBId === campaign.teamId)
+    ? (activeMatchFixture.teamAId === campaign?.teamId || activeMatchFixture.teamBId === campaign?.teamId)
     : true;
 
   let simMyFranchise = franchise;
@@ -311,7 +285,7 @@ export default function PlayingXIPage() {
   if (activeMatchFixture) {
     if (isUserPlayingInFixture) {
       simMyFranchise = franchise;
-      const rivalId = activeMatchFixture.teamAId === campaign.teamId ? activeMatchFixture.teamBId : activeMatchFixture.teamAId;
+      const rivalId = activeMatchFixture.teamAId === campaign?.teamId ? activeMatchFixture.teamBId : activeMatchFixture.teamAId;
       simRivalFranchise = getFranchise(rivalId);
       simMySquad = activeSquad;
     } else {
@@ -371,6 +345,36 @@ export default function PlayingXIPage() {
       setSwapSourceIndex(null);
     }
   };
+
+  // Prevent SSR/Client Hydration Mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="flex items-center gap-2.5 text-xs font-mono text-gray-400">
+          <Activity className="animate-spin text-amber-400" size={18} />
+          <span>Loading IPL War Room & Tournament Arena...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-white text-center">
+        <div className="p-8 rounded-3xl bg-slate-900 border border-white/10 max-w-md shadow-2xl">
+          <AlertCircle size={36} className="mx-auto text-amber-400 mb-3" />
+          <h3 className="text-lg font-black font-display mb-2">No Active Campaign Found</h3>
+          <p className="text-xs text-gray-400 mb-4">Please select your franchise to enter the war room.</p>
+          <button
+            onClick={() => router.push('/select-team')}
+            className="px-6 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase cursor-pointer hover:bg-amber-400 transition-all"
+          >
+            Select Team
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
