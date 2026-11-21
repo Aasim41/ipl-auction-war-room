@@ -54,7 +54,7 @@
   --accent-primary: #fbbf24;
   --accent-secondary: #f59e0b;
   --accent-glow: rgba(251, 191, 36, 0.20);
-  --theme-bg: #030c06;
+  --theme-bg: #05080c;
 }
 
 .theme-csk  { --accent-primary: #fbbf24; --accent-secondary: #f59e0b; --accent-glow: rgba(251,191,36,0.22); }
@@ -70,8 +70,8 @@
 
 /* ─── Base Styles ──────────────────────────────────────── */
 html, body {
-  background-color: #030c06 !important;
-  color: #f0fdf4;
+  background-color: #05080c;
+  color: #f8fafc;
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100dvh;
   height: 100%;

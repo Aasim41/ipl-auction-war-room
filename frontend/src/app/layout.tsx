@@ -39,7 +39,7 @@ export default function RootLayout({
           <CapacitorDeviceManager />
           <AmbientBackground />
           <Navbar />
-          <main className="w-full min-h-[100dvh] flex flex-col">
+          <main className="relative z-10 w-full min-h-[100dvh] flex flex-col">
             {children}
           </main>
         </ThemeProvider>

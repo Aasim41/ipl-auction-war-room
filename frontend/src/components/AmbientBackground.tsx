@@ -28,7 +28,7 @@ export function AmbientBackground() {
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden select-none bg-[#05080c]"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-[#05080c]"
       aria-hidden="true"
     >
       {/* ─── LAYER 1: Deep Stadium Night Canopy (No flat green gradient!) ─── */}
