@@ -744,8 +744,7 @@ export default function BallByBallMatchSimulator({
 
   const canBowlerBowl = (bIdx: number): { allowed: boolean; reason?: string } => {
     const bSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
-    const activeBowlersList = bSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
-    const candidate = activeBowlersList[bIdx];
+    const candidate = bSquad[bIdx];
     if (!candidate) return { allowed: false, reason: 'Invalid bowler' };
 
     const curInn = currentInnings === 1 ? inn1 : inn2;
