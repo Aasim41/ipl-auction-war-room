@@ -1396,14 +1396,25 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       swapPlayingXISlots: (indexA, indexB, mode = 'bat_first') => {
         get().updateActiveCampaign((prev) => {
-          let currentXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
-            ? [...prev.bowlFirstXI]
-            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? [...prev.batFirstXI] : (prev.playingXI && prev.playingXI.length >= 11 ? [...prev.playingXI] : []))
+          const activeSquad = prev.squad.filter(p => !p.is_released)
+          const activeSquadIds = new Set(activeSquad.map(p => p.player_id))
+          
+          let rawXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
+            ? prev.bowlFirstXI
+            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? prev.batFirstXI : (prev.playingXI && prev.playingXI.length >= 11 ? prev.playingXI : []))
+
+          let currentXI = (rawXI || []).filter(id => activeSquadIds.has(id))
           
           if (currentXI.length < 11) {
-            const activeSquad = prev.squad.filter(p => !p.is_released)
             const autoXI = computeOptimalPlayingXI(activeSquad, { mode })
-            currentXI = [...autoXI.xiIds]
+            for (const id of autoXI.xiIds) {
+              if (currentXI.length >= 11) break
+              if (activeSquadIds.has(id) && !currentXI.includes(id)) currentXI.push(id)
+            }
+            for (const p of activeSquad) {
+              if (currentXI.length >= 11) break
+              if (!currentXI.includes(p.player_id)) currentXI.push(p.player_id)
+            }
           }
 
           if (indexA < 0 || indexA >= currentXI.length || indexB < 0 || indexB >= currentXI.length) return prev
