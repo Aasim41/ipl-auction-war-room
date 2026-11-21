@@ -887,6 +887,19 @@ export const useCampaignStore = create<CampaignStoreState>()(
           let needsUpdate = false
           let updatedActive = { ...active }
 
+          // Self-heal: purge players added by AI auto-auction if user didn't purchase them
+          const autoBoughtPlayers = (updatedActive.squad || []).filter(p => p.statsSummary && p.statsSummary.includes('AI Auto-Auction'));
+          if (autoBoughtPlayers.length > 0) {
+            const refundedPurse = autoBoughtPlayers.reduce((sum, p) => sum + (p.price || 0), 0);
+            updatedActive.squad = updatedActive.squad.filter(p => !p.statsSummary || !p.statsSummary.includes('AI Auto-Auction'));
+            updatedActive.remainingPurse = Math.min(updatedActive.totalPurse, (updatedActive.remainingPurse || 0) + refundedPurse);
+            const validIds = new Set(updatedActive.squad.map(p => p.player_id));
+            if (updatedActive.playingXI) updatedActive.playingXI = updatedActive.playingXI.filter(id => validIds.has(id));
+            if (updatedActive.batFirstXI) updatedActive.batFirstXI = updatedActive.batFirstXI.filter(id => validIds.has(id));
+            if (updatedActive.bowlFirstXI) updatedActive.bowlFirstXI = updatedActive.bowlFirstXI.filter(id => validIds.has(id));
+            needsUpdate = true;
+          }
+
           if (!updatedActive.schedule || updatedActive.schedule.length < 74) {
             updatedActive.schedule = generateTournamentSchedule(updatedActive.teamId)
             updatedActive.currentMatchIndex = 0

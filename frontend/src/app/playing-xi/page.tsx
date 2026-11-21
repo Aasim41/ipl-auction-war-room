@@ -1004,6 +1004,7 @@ export default function PlayingXIPage() {
           }}
           myFranchise={simMyFranchise}
           mySquad={simMySquad}
+          userPlayingXIObjects={isUserPlayingInFixture ? fullPlayingXI : undefined}
           myPlayingXIIds={isUserPlayingInFixture ? campaign.playingXI : undefined}
           userBatFirstXI={isUserPlayingInFixture ? (campaign.batFirstXI || campaign.playingXI) : undefined}
           userBowlFirstXI={isUserPlayingInFixture ? (campaign.bowlFirstXI || campaign.playingXI) : undefined}

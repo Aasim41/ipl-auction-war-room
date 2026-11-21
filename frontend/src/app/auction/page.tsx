@@ -597,10 +597,9 @@ export default function MiniAuctionPage() {
           }
         }
 
-        const shouldUserBuy = canAfford && hasRosterSpace && overseasAllowed && (
-          userNeedScore >= 50 || 
-          (simSquad.length < 18 && canAfford && Math.random() > 0.25)
-        )
+        // User is the human player. AI simulation NEVER automatically buys players for the user's franchise.
+        // The user buys players only when manually bidding.
+        const shouldUserBuy = false
 
         if (shouldUserBuy) {
           currentPurse = Math.round((currentPurse - estimatedPrice) * 100) / 100

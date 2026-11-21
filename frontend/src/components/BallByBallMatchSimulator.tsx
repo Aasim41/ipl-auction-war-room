@@ -45,6 +45,7 @@ interface BallByBallMatchSimulatorProps {
   onClose: () => void;
   myFranchise: FranchiseData;
   mySquad: any[];
+  userPlayingXIObjects?: any[];
   myPlayingXIIds?: string[];
   userBatFirstXI?: string[];
   userBowlFirstXI?: string[];
