@@ -52,12 +52,6 @@ export default function MiniAuctionPage() {
   const campaign = getActiveCampaign()
 
   const myTheme = useMemo(() => getTeamTheme(campaign?.teamId), [campaign?.teamId])
-  const currentBidderTheme = useMemo(() => {
-    if (highestBidder && highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer') {
-      return getTeamTheme(highestBidder)
-    }
-    return myTheme
-  }, [highestBidder, myTheme])
 
   // Full multi-franchise auction pool (includes releases from all teams!)
   const [auctionPool, setAuctionPool] = useState<DynamicAuctionPlayer[]>([])
@@ -65,6 +59,13 @@ export default function MiniAuctionPage() {
   const [currentBid, setCurrentBid] = useState(0)
   const [highestBidder, setHighestBidder] = useState<string>('BCCI Auctioneer')
   const [bidHistory, setBidHistory] = useState<Array<{ bidder: string; amount: number; isUser?: boolean }>>([])
+
+  const currentBidderTheme = useMemo(() => {
+    if (highestBidder && highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer') {
+      return getTeamTheme(highestBidder)
+    }
+    return myTheme
+  }, [highestBidder, myTheme])
   const [timer, setTimer] = useState(10)
   const [gavelPhase, setGavelPhase] = useState<'bidding' | 'going_once' | 'going_twice' | 'sold'>('bidding')
   const [nextLotCountdown, setNextLotCountdown] = useState<number | null>(null)
