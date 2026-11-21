@@ -308,13 +308,7 @@ export default function TradeWindowPage() {
 
   return (
     <div 
-      onTouchStart={handleTradeTouchStart}
-      onTouchEnd={handleTradeTouchEnd}
-      onTouchCancel={() => {
-        tradeTouchStartX.current = null
-        tradeTouchStartY.current = null
-      }}
-      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
+      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden select-none"
     >
       <main className="max-w-7xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-3 flex-1 flex flex-col gap-3">
         
@@ -459,8 +453,6 @@ export default function TradeWindowPage() {
 
         {/* True 3-Column Side-by-Side Trade Interface (Your Team | Deal Room in Middle | Rival Team) */}
         <div 
-          onTouchStart={handleTradeTouchStart}
-          onTouchEnd={handleTradeTouchEnd}
           className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch w-full flex-1 select-none"
         >
           

@@ -35,58 +35,6 @@ export default function SquadRetainReleasePage() {
   const [showConfirmAuction, setShowConfirmAuction] = useState(false)
   const [expandedSquadPlayerId, setExpandedSquadPlayerId] = useState<string | null>(null)
 
-  const squadTouchStartX = React.useRef<number | null>(null)
-  const squadTouchStartY = React.useRef<number | null>(null)
-
-  const handleSquadTouchStart = (e: React.TouchEvent) => {
-    squadTouchStartX.current = e.touches[0].clientX
-    squadTouchStartY.current = e.touches[0].clientY
-  }
-
-  const handleSquadTouchEnd = (e: React.TouchEvent) => {
-    if (squadTouchStartX.current === null || squadTouchStartY.current === null) return
-    const deltaX = e.changedTouches[0].clientX - squadTouchStartX.current
-    const deltaY = e.changedTouches[0].clientY - squadTouchStartY.current
-    squadTouchStartX.current = null
-    squadTouchStartY.current = null
-
-    const roles: Array<'ALL' | 'BAT' | 'AR' | 'WK' | 'BOWL'> = ['ALL', 'BAT', 'AR', 'WK', 'BOWL']
-    const curIdx = roles.indexOf(roleFilter)
-
-    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
-      if (deltaX < 0 && curIdx < roles.length - 1) {
-        setRoleFilter(roles[curIdx + 1])
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      } else if (deltaX > 0 && curIdx > 0) {
-        setRoleFilter(roles[curIdx - 1])
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      }
-    }
-  }
-
-  // Synchronize with GlobalSwipeManager custom event
-  useEffect(() => {
-    const handleAppSwipe = (e: any) => {
-      const direction = e.detail?.direction
-      const roles: Array<'ALL' | 'BAT' | 'AR' | 'WK' | 'BOWL'> = ['ALL', 'BAT', 'AR', 'WK', 'BOWL']
-      const curIdx = roles.indexOf(roleFilter)
-      if (direction === 'left' && curIdx < roles.length - 1) {
-        e.preventDefault()
-        setRoleFilter(roles[curIdx + 1])
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      } else if (direction === 'right' && curIdx > 0) {
-        e.preventDefault()
-        setRoleFilter(roles[curIdx - 1])
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      }
-    }
-    window.addEventListener('app:swipe', handleAppSwipe)
-    return () => window.removeEventListener('app:swipe', handleAppSwipe)
-  }, [roleFilter])
   const isRetainLocked = campaign?.lockedPhases?.includes('retain_release')
 
   const squadList = campaign?.squad || []
@@ -160,13 +108,7 @@ export default function SquadRetainReleasePage() {
 
   return (
     <div 
-      onTouchStart={handleSquadTouchStart}
-      onTouchEnd={handleSquadTouchEnd}
-      onTouchCancel={() => {
-        squadTouchStartX.current = null
-        squadTouchStartY.current = null
-      }}
-      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
+      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden select-none"
     >
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3.5">
         
@@ -261,17 +203,8 @@ export default function SquadRetainReleasePage() {
           </div>
         </div>
 
-        {/* Mobile Role Swipe Indicator */}
-        <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/80 rounded-xl border border-white/10 text-[9px] font-mono text-gray-400">
-          <span>👈 Swipe</span>
-          <span className="text-amber-400 font-bold uppercase">Role: {roleFilter === 'ALL' ? 'All Roles' : roleFilter}</span>
-          <span>Swipe 👉</span>
-        </div>
-
-        {/* Squad Cards Grid (Clean Page-Level Scrolling with Touch Swipe) */}
+        {/* Squad Cards Grid */}
         <div 
-          onTouchStart={handleSquadTouchStart}
-          onTouchEnd={handleSquadTouchEnd}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 select-none"
         >
             {filteredSquad.map((player) => {
