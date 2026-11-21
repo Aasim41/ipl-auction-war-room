@@ -24,7 +24,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#030c06",
+  themeColor: "#05080c",
 };
 
 export default function RootLayout({
@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="w-full h-full">
-      <body className="antialiased w-full h-full min-h-[100dvh] bg-[#030c06] text-slate-100 overflow-x-hidden">
+      <body className="antialiased w-full h-full min-h-[100dvh] bg-[#05080c] text-slate-100 overflow-x-hidden">
         <ThemeProvider>
           <CapacitorDeviceManager />
           <AmbientBackground />

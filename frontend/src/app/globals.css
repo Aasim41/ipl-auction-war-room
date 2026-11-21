@@ -93,7 +93,7 @@ html, body {
   }
 }
 
-/* ─── Authentic Cricket Stadium Night Floodlight, Pitch & Turf Atmosphere ─── */
+/* ─── Authentic Cricket Stadium Night Floodlight & Arena Atmosphere ─── */
 body::before {
   content: '';
   position: fixed;
@@ -101,36 +101,25 @@ body::before {
   z-index: -2;
   background: 
     /* Dual Corner Halogen Floodlight Towers */
-    radial-gradient(circle 650px at 5% 0%, rgba(255, 255, 255, 0.22) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
-    radial-gradient(circle 650px at 95% 0%, rgba(255, 255, 255, 0.22) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
-    /* Center Clay 22-Yard Cricket Pitch Strip Glow */
-    radial-gradient(ellipse 220px 750px at 50% 55%, rgba(180, 130, 80, 0.14) 0%, rgba(135, 90, 50, 0.06) 45%, transparent 80%),
-    /* Inner 30-Yard Circle & Outfield Lush Turf Radiance */
-    radial-gradient(ellipse 950px 700px at 50% 65%, rgba(34, 197, 94, 0.20) 0%, rgba(16, 185, 129, 0.10) 50%, transparent 90%),
+    radial-gradient(circle 700px at 5% 0%, rgba(255, 255, 255, 0.25) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
+    radial-gradient(circle 700px at 95% 0%, rgba(255, 255, 255, 0.25) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
     /* Franchise Ambient Night Aurora */
-    radial-gradient(ellipse 800px 350px at 50% 0%, var(--accent-glow, rgba(251, 191, 36, 0.12)) 0%, transparent 70%),
-    /* Deep Stadium Night Sky to Emerald Turf Base */
-    linear-gradient(180deg, #010603 0%, #03140a 35%, #052614 70%, #020e06 100%);
+    radial-gradient(ellipse 900px 380px at 50% 0%, var(--accent-glow, rgba(251, 191, 36, 0.12)) 0%, transparent 70%),
+    /* Authentic Stadium Night Arena Base (Clean obsidian-navy, no muddy flat green wash) */
+    linear-gradient(180deg, #05080c 0%, #070c12 35%, #09121a 70%, #05080c 100%);
   pointer-events: none;
 }
 
-/* Freshly Manicured Turf Outfield Mow Stripes & Pitch Grain Depth */
+/* Subtle Stadium Atmosphere Grain Depth */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.18;
+  opacity: 0.04;
   background-image: 
-    repeating-linear-gradient(
-      90deg,
-      rgba(34, 197, 94, 0.18) 0px,
-      rgba(34, 197, 94, 0.18) 50px,
-      transparent 50px,
-      transparent 100px
-    ),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
-  background-size: 100px 100%, 20px 20px;
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+  background-size: 24px 24px;
   pointer-events: none;
 }
 
