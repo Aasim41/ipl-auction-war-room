@@ -3518,16 +3518,16 @@ export default function BallByBallMatchSimulator({
                   <AlertCircle size={16} />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-black text-white font-display">Wicket Fallen! Choose Next Batter</h3>
+                  <h3 className="text-sm sm:text-base font-black text-white font-display">Select Next Batter</h3>
                   <p className="text-[10px] text-gray-400 font-mono">
-                    {dismissedBatterName ? `${formatPlayerInitial(dismissedBatterName)} is OUT` : 'Batter dismissed'} • Select who walks out to the crease
+                    {dismissedBatterName ? `${formatPlayerInitial(dismissedBatterName)} OUT` : 'Wicket fallen'} • Choose incoming batter from your 11
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
-              {currentBatSquad.map((p, pIdx) => {
+              {currentBatSquad.slice(0, 11).map((p, pIdx) => {
                 const bScore = activeInnings.battingScorecard.find(b => b.name === p.name);
                 const isOut = bScore && bScore.dismissal !== 'not out';
                 const isCurrentlyBatting = pIdx === nonStrikerIdx;
