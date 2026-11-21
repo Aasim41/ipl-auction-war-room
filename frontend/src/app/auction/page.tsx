@@ -1083,25 +1083,50 @@ export default function MiniAuctionPage() {
                     setExpandedLot(!expandedLot);
                     gameAudio.playUiTap('light');
                   }}
-                  className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/90 border border-white/15 hover:border-amber-400/40 cursor-pointer transition-all shadow-xl"
+                  style={{
+                    background: currentBidderTheme.cardBg,
+                    borderColor: currentBidderTheme.cardBorder,
+                    boxShadow: currentBidderTheme.cardGlow,
+                  }}
+                  className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all shadow-xl"
                 >
                   {/* Player Identity */}
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 via-emerald-500/10 to-indigo-500/20 border border-white/20 flex items-center justify-center text-3xl shadow-xl shrink-0">
+                    <div 
+                      style={{
+                        backgroundColor: currentBidderTheme.pillBg,
+                        color: currentBidderTheme.pillText,
+                        borderColor: currentBidderTheme.cardBorder,
+                      }}
+                      className="w-14 h-14 rounded-2xl border flex items-center justify-center text-3xl shadow-xl shrink-0"
+                    >
                       🏏
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold font-mono">
+                        <span 
+                          style={{
+                            backgroundColor: `${currentBidderTheme.bgDeep}ee`,
+                            color: '#ffffff',
+                            border: `1px solid ${currentBidderTheme.primary}70`
+                          }}
+                          className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono"
+                        >
                           {getDetailedPlayerRole(currentPlayer)}
                         </span>
                         {currentPlayer.is_overseas && (
-                          <span className="px-2 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px] font-bold font-mono">
+                          <span 
+                            style={{
+                              backgroundColor: currentBidderTheme.pillBg,
+                              color: currentBidderTheme.pillText,
+                            }}
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-sm"
+                          >
                             OVERSEAS ✈
                           </span>
                         )}
                         {currentPlayer.formerTeam && (
-                          <span className="text-[10px] text-gray-400 font-mono">Ex: {currentPlayer.formerTeam}</span>
+                          <span className="text-[10px] text-gray-200 font-mono">Ex: {currentPlayer.formerTeam}</span>
                         )}
                       </div>
 
@@ -1110,28 +1135,39 @@ export default function MiniAuctionPage() {
                       </h2>
                       
                       <div className="flex items-center gap-2 mt-1 text-xs font-mono">
-                        <span>Base: <strong className="text-amber-300 font-bold">₹{currentPlayer.basePrice} Cr</strong></span>
-                        <span className="text-amber-400 text-[10px] ml-1 font-bold">{expandedLot ? '▲ Hide Details' : '▼ View Telemetry'}</span>
+                        <span className="text-gray-200">Base: <strong className="text-white font-black">₹{currentPlayer.basePrice} Cr</strong></span>
+                        <span className="text-white/80 text-[10px] ml-1 font-bold">{expandedLot ? '▲ Hide Details' : '▼ View Telemetry'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Current Bid Display */}
-                  <div className="text-center sm:text-right p-3 rounded-2xl bg-slate-950 border border-white/15 w-full sm:w-auto shadow-2xl shrink-0">
-                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 block mb-0.5">
+                  <div 
+                    style={{
+                      background: `${currentBidderTheme.bgDeep}f0`,
+                      borderColor: currentBidderTheme.cardBorder,
+                      boxShadow: `0 0 16px ${currentBidderTheme.primary}50`,
+                    }}
+                    className="text-center sm:text-right p-3 rounded-2xl border w-full sm:w-auto shadow-2xl shrink-0"
+                  >
+                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-300 block mb-0.5">
                       Top Live Bidder
                     </span>
-                    <div className={`text-xs font-black flex items-center justify-center sm:justify-end gap-1.5 ${
-                      isUserHighest ? 'text-emerald-400' : 'text-amber-300'
-                    }`}>
+                    <div 
+                      style={{ color: currentBidderTheme.primary }}
+                      className="text-xs font-black flex items-center justify-center sm:justify-end gap-1.5"
+                    >
                       {highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer' && (
                         <TeamLogo teamId={highestBidder === campaign.teamId ? campaign.teamId : highestBidder} size={18} />
                       )}
                       <span>{isUserHighest ? '👑 YOU HOLD BID' : (getFranchise(highestBidder)?.short || highestBidder.toUpperCase())}</span>
                     </div>
 
-                    <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mt-0.5 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-                      ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-400 font-sans">Cr</span>
+                    <div 
+                      style={{ color: currentBidderTheme.primary }}
+                      className="text-2xl sm:text-3xl font-black font-mono mt-0.5 drop-shadow-[0_0_12px_rgba(255,255,255,0.25)]"
+                    >
+                      ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-300 font-sans">Cr</span>
                     </div>
                   </div>
                 </div>
@@ -1186,7 +1222,12 @@ export default function MiniAuctionPage() {
                     )}
                     <button
                       onClick={handleNextPlayer}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg transition-transform active:scale-95"
+                      style={{
+                        backgroundColor: myTheme.pillBg,
+                        color: myTheme.pillText,
+                        boxShadow: `0 0 16px ${myTheme.primary}70`,
+                      }}
+                      className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg transition-transform active:scale-95"
                     >
                       <span>{nextLotCountdown !== null ? `Next (${nextLotCountdown}s)` : 'Next Lot'}</span>
                       <ArrowRight size={13} />
@@ -1219,19 +1260,29 @@ export default function MiniAuctionPage() {
                     <div className="flex items-center gap-1.5 w-full sm:w-auto">
                       <button
                         onClick={handleSkipCurrentPlayer}
-                        className="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 hover:text-white border border-white/15 cursor-pointer transition-all shadow-sm flex items-center justify-center gap-1"
+                        style={{
+                          background: `${myTheme.bgDeep}cc`,
+                          borderColor: `${myTheme.primary}50`,
+                        }}
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase hover:bg-white/10 active:scale-95 text-white border cursor-pointer transition-all shadow-sm flex items-center justify-center gap-1"
                         title="Skip this player and see who buys them"
                       >
-                        <SkipForward size={13} className="text-amber-400" />
+                        <SkipForward size={13} style={{ color: myTheme.primary }} />
                         <span>Skip</span>
                       </button>
 
                       <button
                         onClick={() => handleUserBid(0.2)}
-                        className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md ${
+                        style={getUserBiddingStatus().canBid ? {
+                          backgroundColor: myTheme.pillBg,
+                          color: myTheme.pillText,
+                          borderColor: myTheme.primary,
+                          boxShadow: `0 0 10px ${myTheme.primary}50`,
+                        } : {}}
+                        className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md border ${
                           !getUserBiddingStatus().canBid
-                            ? 'bg-slate-800 text-gray-400 border border-white/10 hover:border-amber-400/40 opacity-75'
-                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                            ? 'bg-slate-800 text-gray-400 border-white/10 opacity-75'
+                            : 'hover:scale-105 active:scale-95'
                         }`}
                         title={!getUserBiddingStatus().canBid ? (getUserBiddingStatus().reason || 'Bidding unavailable') : 'Bid +₹20L'}
                       >
@@ -1239,10 +1290,16 @@ export default function MiniAuctionPage() {
                       </button>
                       <button
                         onClick={() => handleUserBid(0.5)}
-                        className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md ${
+                        style={getUserBiddingStatus().canBid ? {
+                          backgroundColor: myTheme.pillBg,
+                          color: myTheme.pillText,
+                          borderColor: myTheme.primary,
+                          boxShadow: `0 0 12px ${myTheme.primary}60`,
+                        } : {}}
+                        className={`flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md border ${
                           !getUserBiddingStatus().canBid
-                            ? 'bg-slate-800 text-gray-400 border border-white/10 hover:border-amber-400/40 opacity-75'
-                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                            ? 'bg-slate-800 text-gray-400 border-white/10 opacity-75'
+                            : 'hover:scale-105 active:scale-95'
                         }`}
                         title={!getUserBiddingStatus().canBid ? (getUserBiddingStatus().reason || 'Bidding unavailable') : 'Bid +₹50L'}
                       >
@@ -1250,10 +1307,16 @@ export default function MiniAuctionPage() {
                       </button>
                       <button
                         onClick={() => handleUserBid(1.0)}
-                        className={`flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md ${
+                        style={getUserBiddingStatus().canBid ? {
+                          backgroundColor: myTheme.pillBg,
+                          color: myTheme.pillText,
+                          borderColor: myTheme.primary,
+                          boxShadow: `0 0 16px ${myTheme.primary}80`,
+                        } : {}}
+                        className={`flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black uppercase cursor-pointer transition-all shadow-md border ${
                           !getUserBiddingStatus().canBid
-                            ? 'bg-slate-800 text-gray-400 border border-white/10 hover:border-amber-400/40 opacity-75'
-                            : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                            ? 'bg-slate-800 text-gray-400 border-white/10 opacity-75'
+                            : 'hover:scale-105 active:scale-95'
                         }`}
                         title={!getUserBiddingStatus().canBid ? (getUserBiddingStatus().reason || 'Bidding unavailable') : 'Bid +₹1.0 Cr'}
                       >
@@ -1269,16 +1332,26 @@ export default function MiniAuctionPage() {
 
           {/* Column 2 (Right 5 cols): Multi-Tab Live War Room (Pool | Squads & Purses | Feed | Sold) */}
           <div 
-            className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl bg-slate-900 border border-white/10 p-3 shadow-xl max-h-[520px] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
+            style={{
+              background: myTheme.cardBg,
+              borderColor: myTheme.cardBorder,
+              boxShadow: myTheme.cardGlow,
+            }}
+            className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl border p-3 shadow-xl max-h-[520px] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
           >
             
             {/* Tab Navigation: 4 Tabs - HIDE ON MOBILE TO PREVENT REPEATED NAVBARS */}
             <div className="hidden lg:flex items-center gap-1 pb-2 border-b border-white/10">
               <button
                 onClick={() => setSideTab('pool')}
+                style={sideTab === 'pool' ? {
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 10px ${myTheme.primary}70`,
+                } : {}}
                 className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
                   sideTab === 'pool'
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    ? 'shadow-sm'
                     : 'text-gray-400 hover:text-white bg-white/5'
                 }`}
               >
@@ -1288,9 +1361,14 @@ export default function MiniAuctionPage() {
 
               <button
                 onClick={() => setSideTab('squads')}
+                style={sideTab === 'squads' ? {
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 10px ${myTheme.primary}70`,
+                } : {}}
                 className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
                   sideTab === 'squads'
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    ? 'shadow-sm'
                     : 'text-gray-400 hover:text-white bg-white/5'
                 }`}
               >
@@ -1300,9 +1378,14 @@ export default function MiniAuctionPage() {
 
               <button
                 onClick={() => setSideTab('ledger')}
+                style={sideTab === 'ledger' ? {
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 10px ${myTheme.primary}70`,
+                } : {}}
                 className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
                   sideTab === 'ledger'
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    ? 'shadow-sm'
                     : 'text-gray-400 hover:text-white bg-white/5'
                 }`}
               >
@@ -1353,9 +1436,14 @@ export default function MiniAuctionPage() {
                       <button
                         key={r}
                         onClick={() => setPoolRoleFilter(r)}
+                        style={poolRoleFilter === r ? {
+                          backgroundColor: myTheme.pillBg,
+                          color: myTheme.pillText,
+                          boxShadow: `0 0 10px ${myTheme.primary}70`,
+                        } : {}}
                         className={`px-2 py-0.5 rounded-md cursor-pointer transition-all ${
                           poolRoleFilter === r
-                            ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                            ? 'font-black shadow-sm'
                             : 'bg-white/5 text-gray-400 hover:text-white'
                         }`}
                       >
