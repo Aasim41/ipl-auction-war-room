@@ -872,16 +872,6 @@ export default function TradeWindowPage() {
               })}
             </div>
           </div>
-                        className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all shadow-sm"
-                      >
-                        {isSelected ? '✓ Selected' : 'Request'}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
 
         </div>
 
