@@ -10,8 +10,6 @@ import {
   Zap, 
   ArrowRight, 
   X,
-  ChevronLeft,
-  ChevronRight,
   HelpCircle
 } from 'lucide-react';
 import { useCampaignStore } from '../store/useCampaignStore';
@@ -45,35 +43,7 @@ export default function GameModeSelectionModal({
     currentMode === 'scratch_inception' ? 'scratch' : 'official'
   );
 
-  const touchStartXRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
-
   if (!isOpen) return null;
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
-    touchStartYRef.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
-    const deltaY = e.changedTouches[0].clientY - touchStartYRef.current;
-    touchStartXRef.current = null;
-    touchStartYRef.current = null;
-
-    if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
-      if (deltaX < 0) {
-        setActiveTab('scratch');
-        gameAudio.playUiTap('select');
-        triggerGameHaptic('light');
-      } else {
-        setActiveTab('official');
-        gameAudio.playUiTap('select');
-        triggerGameHaptic('light');
-      }
-    }
-  };
 
   const handleChooseOfficialMode = () => {
     gameAudio.playTradeDealSuccess();
@@ -135,9 +105,7 @@ export default function GameModeSelectionModal({
 
   return (
     <div 
-      className="fixed inset-0 z-[1000] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn touch-manipulation"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      className="fixed inset-0 z-[1000] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn"
     >
       <div 
         className="relative w-full max-w-3xl bg-slate-900/95 border border-white/15 rounded-3xl p-4 sm:p-7 shadow-2xl flex flex-col gap-4 overflow-hidden my-auto max-h-[96vh]"
@@ -213,14 +181,7 @@ export default function GameModeSelectionModal({
           </button>
         </div>
 
-        {/* Mobile Swipe Navigation Hint */}
-        <div className="flex md:hidden items-center justify-between text-[10px] font-mono text-gray-400 px-1 shrink-0">
-          <span className="flex items-center gap-0.5"><ChevronLeft size={11} /> Swipe to toggle</span>
-          <span className="text-amber-400 font-bold">{activeTab === 'official' ? '1 / 2: Official' : '2 / 2: Scratch Inception'}</span>
-          <span className="flex items-center gap-0.5">Swipe <ChevronRight size={11} /></span>
-        </div>
-
-        {/* The Two Modes Grid: Side-by-side on desktop, toggled/swipeable on mobile */}
+        {/* The Two Modes Grid: Side-by-side on desktop, toggled on mobile */}
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-3.5 flex-1 overflow-y-auto pr-0.5">
           
           {/* ─── OPTION 1: OFFICIAL SQUADS ─── */}
