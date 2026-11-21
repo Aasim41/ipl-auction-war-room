@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useCampaignStore, CampaignPlayer, sortCricketBattingOrder, computeOptimalPlayingXI } from '../../store/useCampaignStore';
 import { getFranchise } from '../../data/franchises';
+import { getTeamTheme } from '../../data/teamThemes';
 import BallByBallMatchSimulator from '../../components/BallByBallMatchSimulator';
 import MatchScorecardModal from '../../components/MatchScorecardModal';
 import TeamLogo from '../../components/TeamLogo';
@@ -233,6 +234,7 @@ export default function PlayingXIPage() {
   }
 
   const franchise = getFranchise(campaign.teamId);
+  const myTheme = getTeamTheme(franchise.id);
   const activeSquad = campaign.squad.filter(p => !p.is_released);
   
   // Resolve active Playing XI player IDs based on lineupMode (Bat-First vs Bowl-First)

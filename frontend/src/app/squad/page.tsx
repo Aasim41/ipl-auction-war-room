@@ -302,14 +302,17 @@ export default function SquadRetainReleasePage() {
                   >
                     <div className="flex items-start justify-between mb-0.5">
                       <div>
-                        <div className="font-bold text-xs sm:text-sm text-white flex items-center gap-1">
+                        <div 
+                          style={{ color: isReleased ? '#ffffff' : myTheme.contrastText }}
+                          className="font-black text-xs sm:text-sm flex items-center gap-1.5 drop-shadow-sm"
+                        >
                           <span>{player.name}</span>
                           {player.is_overseas && (
                             <span 
                               style={{
-                                backgroundColor: myTheme.pillBg,
-                                color: myTheme.pillText,
-                                borderColor: `${myTheme.primary}80`,
+                                backgroundColor: isReleased ? 'rgba(56, 189, 248, 0.2)' : myTheme.bgDeep,
+                                color: isReleased ? '#7dd3fc' : myTheme.contrastText,
+                                borderColor: isReleased ? 'rgba(56, 189, 248, 0.4)' : myTheme.cardBorder,
                               }}
                               className="text-[8px] px-1.5 py-0.2 rounded border font-extrabold"
                             >
@@ -317,28 +320,33 @@ export default function SquadRetainReleasePage() {
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-gray-200 font-mono flex items-center gap-1.5 mt-0.5">
+                        <div className="text-[10px] font-mono flex items-center gap-1.5 mt-0.5">
                           <span 
                             style={{
-                              backgroundColor: `${myTheme.bgDeep}cc`,
-                              color: '#fff',
-                              border: `1px solid ${myTheme.primary}60`
+                              backgroundColor: isReleased ? 'rgba(255, 255, 255, 0.08)' : myTheme.bgDeep,
+                              color: isReleased ? '#e2e8f0' : myTheme.contrastText,
+                              border: `1px solid ${isReleased ? 'rgba(255,255,255,0.15)' : myTheme.cardBorder}`
                             }}
                             className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                           >
                             {getDetailedPlayerRole(player)}
                           </span>
                           <span>•</span>
-                          <span className="font-bold text-white">₹{player.price} Cr</span>
+                          <span 
+                            style={{ color: isReleased ? '#e2e8f0' : myTheme.contrastText }}
+                            className="font-black"
+                          >
+                            ₹{player.price} Cr
+                          </span>
                         </div>
                       </div>
 
                       <div className="text-right">
                         <span 
                           style={{
-                            backgroundColor: myTheme.pillBg,
-                            color: myTheme.pillText,
-                            borderColor: `${myTheme.primary}90`,
+                            backgroundColor: isReleased ? 'rgba(255, 255, 255, 0.1)' : myTheme.bgDeep,
+                            color: isReleased ? '#ffffff' : myTheme.contrastText,
+                            borderColor: isReleased ? 'rgba(255, 255, 255, 0.2)' : myTheme.cardBorder,
                           }}
                           className="text-[9px] font-black px-2 py-0.5 rounded border block shadow-sm"
                         >
@@ -370,11 +378,11 @@ export default function SquadRetainReleasePage() {
                       ) : (
                         <span 
                           style={{
-                            backgroundColor: `${myTheme.primary}40`,
-                            color: '#ffffff',
-                            border: `1px solid ${myTheme.primary}80`
+                            backgroundColor: myTheme.bgDeep,
+                            color: myTheme.contrastText,
+                            border: `1px solid ${myTheme.cardBorder}`
                           }} 
-                          className="px-1.5 py-0.5 rounded text-[9px] font-bold"
+                          className="px-2 py-0.5 rounded text-[9px] font-black shadow-sm"
                         >
                           ✓ Retained
                         </span>
@@ -390,13 +398,13 @@ export default function SquadRetainReleasePage() {
                       style={isReleased ? {
                         backgroundColor: myTheme.pillBg,
                         color: myTheme.pillText,
-                        borderColor: myTheme.primary,
+                        borderColor: myTheme.cardBorder,
                       } : {
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        color: '#fca5a5',
-                        borderColor: 'rgba(239, 68, 68, 0.4)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                        color: '#ffffff',
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
                       }}
-                      className="px-2.5 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer transition-all border shadow-sm hover:scale-105"
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer transition-all border shadow-md hover:scale-105 active:scale-95"
                     >
                       {isReleased ? (
                         <>

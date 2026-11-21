@@ -749,26 +749,38 @@ export default function TradeWindowPage() {
           {/* Column 3 (Right): Rival Team Squad */}
           <div 
             style={{
-              background: rivalTheme.cardBg,
+              background: `${rivalTheme.bgDeep}fa`,
               borderColor: rivalTheme.cardBorder,
               boxShadow: rivalTheme.cardGlow,
             }}
-            className={`flex-1 min-w-0 p-3 rounded-3xl border flex flex-col justify-between shadow-xl transition-all ${
+            className={`flex-1 min-w-0 p-3 rounded-3xl border-2 flex flex-col justify-between shadow-2xl transition-all ${
             mobileTab !== 'rival' ? 'hidden sm:flex' : 'flex'
           } ${
-            playerIn ? 'ring-2 ring-emerald-500/60 shadow-emerald-500/20' : ''
+            playerIn ? 'ring-2 ring-emerald-400 shadow-emerald-500/30' : ''
           }`}>
             <div>
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 gap-1">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/20 gap-1">
                 <div className="flex items-center gap-2 min-w-0">
-                  <TeamLogo teamId={selectedRivalId} size={22} className="shrink-0" />
+                  <TeamLogo teamId={selectedRivalId} size={24} className="shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="text-xs font-black uppercase text-white truncate">{rivalFranchise.short}</h3>
-                    <span className="text-[10px] text-gray-300">Rival Squad ({filteredRivalSquad.length})</span>
+                    <h3 className="text-sm font-black uppercase text-white truncate">{rivalFranchise.name}</h3>
+                    <span 
+                      style={{ color: rivalTheme.primary }}
+                      className="text-[10px] font-bold font-mono"
+                    >
+                      {rivalFranchise.short} Squad ({filteredRivalSquad.length} Players)
+                    </span>
                   </div>
                 </div>
                 {playerIn && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 font-bold border border-emerald-500/40 truncate max-w-[120px]">
+                  <span 
+                    style={{
+                      backgroundColor: rivalTheme.pillBg,
+                      color: rivalTheme.pillText,
+                      borderColor: rivalTheme.cardBorder,
+                    }}
+                    className="text-[10px] px-2.5 py-0.5 rounded-full font-black border truncate max-w-[130px] shadow-sm"
+                  >
                     IN: {playerIn.name}
                   </span>
                 )}
@@ -781,13 +793,13 @@ export default function TradeWindowPage() {
                 onChange={(e) => setSearchRival(e.target.value)}
                 style={{
                   background: `${rivalTheme.bgDeep}ee`,
-                  borderColor: `${rivalTheme.primary}40`,
+                  borderColor: rivalTheme.cardBorder,
                 }}
-                className="w-full mb-2 border rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-white transition-all"
+                className="w-full mb-2 border rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-white transition-all shadow-inner"
               />
             </div>
 
-            <div className="flex-1 max-h-[420px] overflow-y-auto space-y-1.5 pr-0.5 overscroll-contain touch-pan-y">
+            <div className="flex-1 max-h-[420px] overflow-y-auto space-y-2 pr-0.5 overscroll-contain touch-pan-y">
               {filteredRivalSquad.map((p) => {
                 const isSelected = playerIn?.player_id === p.player_id
                 return (
@@ -800,39 +812,66 @@ export default function TradeWindowPage() {
                       setPlayerIn(isSelected ? null : p)
                     }}
                     style={isSelected ? {
-                      background: `${rivalTheme.primary}45`,
-                      borderColor: rivalTheme.primary,
-                      boxShadow: `0 0 16px ${rivalTheme.primary}80`,
+                      background: rivalTheme.cardBg,
+                      borderColor: '#ffffff',
+                      boxShadow: `0 0 20px ${rivalTheme.primary}, 0 0 0 2px #ffffff`,
                     } : {
-                      background: `${rivalTheme.primary}18`,
-                      borderColor: `${rivalTheme.primary}35`,
+                      background: rivalTheme.cardBg,
+                      borderColor: rivalTheme.cardBorder,
+                      boxShadow: rivalTheme.cardGlow,
                     }}
-                    className={`p-1.5 sm:p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                    className={`p-2.5 rounded-xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'text-white scale-[1.01]'
-                        : 'hover:brightness-125 text-gray-100'
+                        ? 'scale-[1.02]'
+                        : 'hover:brightness-110 active:scale-[0.99]'
                     } ${isTradeLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     <div className="truncate mr-1 min-w-0">
-                      <div className="font-bold text-[11px] sm:text-xs text-white flex items-center gap-1 truncate">
+                      <div 
+                        style={{ color: rivalTheme.contrastText }}
+                        className="font-black text-xs sm:text-sm flex items-center gap-1.5 truncate drop-shadow-sm"
+                      >
                         <span className="truncate">{p.name}</span>
-                        {p.is_overseas && <span className="text-[8px] sm:text-[9px] px-1 rounded bg-sky-500/30 text-sky-200 border border-sky-400/40 shrink-0 font-bold">OS</span>}
+                        {p.is_overseas && (
+                          <span 
+                            style={{
+                              backgroundColor: rivalTheme.bgDeep,
+                              color: rivalTheme.contrastText,
+                            }}
+                            className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm"
+                          >
+                            OS
+                          </span>
+                        )}
                       </div>
-                      <div className="text-[9px] sm:text-[10px] text-gray-300 font-mono">
+                      <div 
+                        style={{ color: rivalTheme.contrastText }}
+                        className="text-[10px] font-mono font-bold mt-0.5 opacity-90 truncate"
+                      >
                         {getDetailedPlayerRole(p)} • ₹{p.price}Cr
                       </div>
                     </div>
                     <div className="text-right shrink-0">
                       <span 
                         style={isSelected ? {
-                          backgroundColor: rivalTheme.pillBg,
-                          color: rivalTheme.pillText,
-                          boxShadow: `0 0 10px ${rivalTheme.primary}60`,
-                        } : {
-                          backgroundColor: `${rivalTheme.primary}30`,
+                          backgroundColor: '#000000',
                           color: '#ffffff',
-                          border: `1px solid ${rivalTheme.primary}50`,
+                          boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+                        } : {
+                          backgroundColor: `${rivalTheme.bgDeep}e6`,
+                          color: rivalTheme.contrastText,
+                          border: `1px solid ${rivalTheme.cardBorder}`,
                         }}
+                        className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all shadow-md"
+                      >
+                        {isSelected ? '✓ Selected' : 'Request'}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
                         className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all shadow-sm"
                       >
                         {isSelected ? '✓ Selected' : 'Request'}
