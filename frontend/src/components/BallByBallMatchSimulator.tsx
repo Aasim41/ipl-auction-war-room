@@ -292,6 +292,7 @@ export default function BallByBallMatchSimulator({
   onClose,
   myFranchise,
   mySquad,
+  userPlayingXIObjects,
   myPlayingXIIds,
   userBatFirstXI,
   userBowlFirstXI,
@@ -442,11 +443,13 @@ export default function BallByBallMatchSimulator({
       : (userBowlFirstXI && userBowlFirstXI.length >= 11 ? userBowlFirstXI : (myPlayingXIIds || []));
 
     let userXI: any[] = [];
-    if (chosenUserIds.length >= 11) {
+    if (userPlayingXIObjects && userPlayingXIObjects.length >= 11) {
+      userXI = [...userPlayingXIObjects.slice(0, 11)];
+    } else if (chosenUserIds.length >= 11) {
       userXI = chosenUserIds.map(id => mySquad.find(p => p.player_id === id)).filter(Boolean);
     }
     if (userXI.length < 11) {
-      userXI = calibrateT20BattingOrder(mySquad).slice(0, 11);
+      userXI = (mySquad.length >= 11 ? mySquad : calibrateT20BattingOrder(mySquad)).slice(0, 11);
     }
 
     // Opponent team always follows authentic broadcast T20 order
@@ -478,10 +481,7 @@ export default function BallByBallMatchSimulator({
         sixes: 0,
         strikeRate: '0.0'
       })),
-      bowlingFigures: (firstBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').length > 0
-        ? firstBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR')
-        : firstBowlSquad.slice(0, 5)
-      ).map(b => ({
+      bowlingFigures: firstBowlSquad.slice(0, 11).map(b => ({
         name: b.name,
         overs: '0.0',
         maidens: 0,
@@ -510,10 +510,7 @@ export default function BallByBallMatchSimulator({
         sixes: 0,
         strikeRate: '0.0'
       })),
-      bowlingFigures: (firstBatSquad.filter(p => p.role === 'BOWL' || p.role === 'AR').length > 0
-        ? firstBatSquad.filter(p => p.role === 'BOWL' || p.role === 'AR')
-        : firstBatSquad.slice(0, 5)
-      ).map(b => ({
+      bowlingFigures: firstBatSquad.slice(0, 11).map(b => ({
         name: b.name,
         overs: '0.0',
         maidens: 0,
