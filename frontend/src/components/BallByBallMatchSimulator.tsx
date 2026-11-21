@@ -2606,17 +2606,12 @@ export default function BallByBallMatchSimulator({
                   
                   {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
                   <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/85 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-sm">
-                    <span>🛡️ {fieldingStrategyLabel}</span>
-                    <span className="text-gray-400">({deepCount} deep)</span>
+                    <span>🛡️ {deepCount} Deep Fielders</span>
                   </div>
                   
-                  {/* Stadium Floodlights (Top & Corner Glows) */}
+                  {/* Stadium Glows */}
                   <div className="absolute top-0 left-0 w-40 h-40 bg-amber-200/15 rounded-full blur-3xl pointer-events-none" />
                   <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-200/15 rounded-full blur-3xl pointer-events-none" />
-                  <div className="absolute top-2 left-3 flex gap-1 items-center bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-gray-300 z-10 backdrop-blur-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    <span>FLOODLIGHTS ON</span>
-                  </div>
 
                   {/* SVG Stadium Field Turf & Marking Rings */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 1000 600">
