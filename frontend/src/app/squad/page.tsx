@@ -24,6 +24,7 @@ import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper'
 import { getFranchise } from '../../data/franchises'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import { getDetailedPlayerRole } from '../../lib/bowlerClassification'
+import { getTeamTheme } from '../../data/teamThemes'
 
 export default function SquadRetainReleasePage() {
   const router = useRouter()
@@ -107,6 +108,8 @@ export default function SquadRetainReleasePage() {
     }
   }
 
+  const myTheme = getTeamTheme(franchise.id)
+
   return (
     <div 
       className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden select-none"
@@ -119,14 +122,26 @@ export default function SquadRetainReleasePage() {
             <h1 className="text-sm sm:text-base font-black font-display text-white">
               {franchise.short} Retentions
             </h1>
-            <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-bold">
+            <span 
+              style={{
+                backgroundColor: `${myTheme.primary}30`,
+                borderColor: `${myTheme.primary}60`,
+                color: myTheme.contrastText === '#000000' ? '#fbbf24' : '#ffffff',
+              }}
+              className="px-2 py-0.5 rounded-full border text-[9px] font-mono font-bold shadow-sm"
+            >
               {retainedPlayers.length} Retained
             </span>
           </div>
 
           <button
             onClick={handleProceedToAuction}
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-sm cursor-pointer active:scale-95 transition-all shrink-0"
+            style={{
+              backgroundColor: myTheme.pillBg,
+              color: myTheme.pillText,
+              boxShadow: `0 0 15px ${myTheme.primary}60`,
+            }}
+            className="px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-sm cursor-pointer active:scale-95 transition-all shrink-0 hover:brightness-110"
           >
             <span>To Auction</span>
             <ArrowRight size={12} />
@@ -135,40 +150,73 @@ export default function SquadRetainReleasePage() {
 
         {/* Minimal 4 Vitals Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-          <div className="p-2 rounded-xl bg-slate-900 border border-white/10 flex flex-col justify-between">
-            <span className="text-[9px] font-mono text-gray-400 uppercase">Purse</span>
+          <div 
+            style={{
+              background: myTheme.cardBg,
+              borderColor: myTheme.cardBorder,
+              boxShadow: myTheme.cardGlow,
+            }}
+            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+          >
+            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Purse</span>
             <div className="text-base font-black text-emerald-400 font-mono">
-              ₹{campaign.remainingPurse.toFixed(1)} <span className="text-[10px] text-gray-400">Cr</span>
+              ₹{campaign.remainingPurse.toFixed(1)} <span className="text-[10px] text-gray-300">Cr</span>
             </div>
-            <span className="text-[9px] text-emerald-300 font-mono">+₹{releasedPurseGain.toFixed(1)} Cr back</span>
+            <span className="text-[9px] text-emerald-300 font-mono font-bold">+₹{releasedPurseGain.toFixed(1)} Cr back</span>
           </div>
 
-          <div className="p-2 rounded-xl bg-slate-900 border border-white/10 flex flex-col justify-between">
-            <span className="text-[9px] font-mono text-gray-400 uppercase">Squad</span>
+          <div 
+            style={{
+              background: myTheme.cardBg,
+              borderColor: myTheme.cardBorder,
+              boxShadow: myTheme.cardGlow,
+            }}
+            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+          >
+            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Squad</span>
             <div className="text-base font-black text-white font-mono">
-              {retainedPlayers.length} <span className="text-[10px] text-gray-500">/ 25</span>
+              {retainedPlayers.length} <span className="text-[10px] text-gray-400">/ 25</span>
             </div>
-            <span className="text-[9px] text-amber-400 font-mono">{25 - retainedPlayers.length} open</span>
+            <span 
+              style={{ color: myTheme.accent }}
+              className="text-[9px] font-mono font-bold"
+            >
+              {25 - retainedPlayers.length} open
+            </span>
           </div>
 
-          <div className="p-2 rounded-xl bg-slate-900 border border-white/10 flex flex-col justify-between">
-            <span className="text-[9px] font-mono text-gray-400 uppercase">Overseas</span>
-            <div className={`text-base font-black font-mono ${overseasCount >= 8 ? 'text-rose-400' : 'text-sky-400'}`}>
-              {overseasCount} <span className="text-[10px] text-gray-500">/ 8</span>
+          <div 
+            style={{
+              background: myTheme.cardBg,
+              borderColor: myTheme.cardBorder,
+              boxShadow: myTheme.cardGlow,
+            }}
+            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+          >
+            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Overseas</span>
+            <div className={`text-base font-black font-mono ${overseasCount >= 8 ? 'text-rose-400' : 'text-sky-300'}`}>
+              {overseasCount} <span className="text-[10px] text-gray-400">/ 8</span>
             </div>
-            <span className="text-[9px] text-gray-400 font-mono">{8 - overseasCount} open</span>
+            <span className="text-[9px] text-gray-300 font-mono">{8 - overseasCount} open</span>
           </div>
 
-          <div className="p-2 rounded-xl bg-slate-900 border border-white/10 flex flex-col justify-between">
-            <span className="text-[9px] font-mono text-gray-400 uppercase">Composition</span>
+          <div 
+            style={{
+              background: myTheme.cardBg,
+              borderColor: myTheme.cardBorder,
+              boxShadow: myTheme.cardGlow,
+            }}
+            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+          >
+            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Composition</span>
             <div className="text-[11px] font-bold text-white font-mono flex items-center gap-1 flex-wrap">
-              <span className={wkCount >= 2 ? 'text-emerald-400' : 'text-amber-400'}>{wkCount} WK</span>
+              <span className={wkCount >= 2 ? 'text-emerald-400' : 'text-amber-300'}>{wkCount} WK</span>
               <span>•</span>
               <span className="text-sky-300">{batCount} BAT</span>
               <span>•</span>
               <span className="text-rose-300">{bowlCount} BOWL</span>
             </div>
-            <span className={`text-[9px] font-mono ${wkCount >= 2 ? 'text-emerald-400' : 'text-amber-400'}`}>
+            <span className={`text-[9px] font-mono font-bold ${wkCount >= 2 ? 'text-emerald-400' : 'text-amber-300'}`}>
               {wkCount >= 2 ? '✓ Satisfied' : '⚠️ Need 2+ WK'}
             </span>
           </div>
@@ -176,15 +224,26 @@ export default function SquadRetainReleasePage() {
 
         {/* Filter & Search Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
-          <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-2xl border border-white/10 w-full sm:w-auto overflow-x-auto">
+          <div 
+            style={{
+              background: `${myTheme.bgDeep}ee`,
+              borderColor: `${myTheme.primary}45`,
+            }}
+            className="flex items-center gap-1.5 p-1 rounded-2xl border w-full sm:w-auto overflow-x-auto shadow-md"
+          >
             {(['ALL', 'BAT', 'BOWL', 'AR', 'WK'] as const).map((r) => (
               <button
                 key={r}
                 onClick={() => setRoleFilter(r)}
+                style={roleFilter === r ? {
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 12px ${myTheme.primary}70`,
+                } : {
+                  color: '#ffffff',
+                }}
                 className={`px-3 py-1 rounded-xl text-xs font-black cursor-pointer transition-all ${
-                  roleFilter === r
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  roleFilter === r ? 'font-black scale-[1.02]' : 'hover:bg-white/10'
                 }`}
               >
                 {r === 'ALL' ? 'All Roles' : r}
@@ -199,7 +258,11 @@ export default function SquadRetainReleasePage() {
               placeholder="Search squad player..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border border-white/10 rounded-2xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400"
+              style={{
+                background: `${myTheme.bgDeep}ee`,
+                borderColor: `${myTheme.primary}45`,
+              }}
+              className="w-full border rounded-2xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-white shadow-md transition-all"
             />
           </div>
         </div>
@@ -217,10 +280,16 @@ export default function SquadRetainReleasePage() {
               return (
                 <div
                   key={player.player_id}
+                  style={isReleased ? {
+                    background: 'rgba(15, 23, 42, 0.8)',
+                    borderColor: 'rgba(244, 63, 94, 0.4)',
+                  } : {
+                    background: myTheme.cardBg,
+                    borderColor: myTheme.cardBorder,
+                    boxShadow: myTheme.cardGlow,
+                  }}
                   className={`p-2.5 rounded-xl border transition-all flex flex-col justify-between overflow-hidden ${
-                    isReleased
-                      ? 'bg-rose-950/20 border-rose-500/40 opacity-75'
-                      : 'bg-slate-900/90 border-white/10 hover:border-amber-400/40'
+                    isReleased ? 'opacity-70' : 'hover:scale-[1.01]'
                   }`}
                 >
                   {/* Top: Name, Role, Rating */}
@@ -236,26 +305,43 @@ export default function SquadRetainReleasePage() {
                         <div className="font-bold text-xs sm:text-sm text-white flex items-center gap-1">
                           <span>{player.name}</span>
                           {player.is_overseas && (
-                            <span className="text-[8px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold">
+                            <span 
+                              style={{
+                                backgroundColor: myTheme.pillBg,
+                                color: myTheme.pillText,
+                                borderColor: `${myTheme.primary}80`,
+                              }}
+                              className="text-[8px] px-1.5 py-0.2 rounded border font-extrabold"
+                            >
                               OS
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 mt-0.5">
-                          <span className="font-bold text-indigo-300">{getDetailedPlayerRole(player)}</span>
+                        <div className="text-[10px] text-gray-200 font-mono flex items-center gap-1.5 mt-0.5">
+                          <span 
+                            style={{
+                              backgroundColor: `${myTheme.bgDeep}cc`,
+                              color: '#fff',
+                              border: `1px solid ${myTheme.primary}60`
+                            }}
+                            className="px-1.5 py-0.5 rounded text-[9px] font-bold"
+                          >
+                            {getDetailedPlayerRole(player)}
+                          </span>
                           <span>•</span>
-                          <span>₹{player.price} Cr</span>
+                          <span className="font-bold text-white">₹{player.price} Cr</span>
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border block ${
-                          ovr >= 90 
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
-                            : ovr >= 80 
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
-                            : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                        }`}>
+                        <span 
+                          style={{
+                            backgroundColor: myTheme.pillBg,
+                            color: myTheme.pillText,
+                            borderColor: `${myTheme.primary}90`,
+                          }}
+                          className="text-[9px] font-black px-2 py-0.5 rounded border block shadow-sm"
+                        >
                           {ovr} OVR
                         </span>
                       </div>
@@ -263,26 +349,35 @@ export default function SquadRetainReleasePage() {
 
                     {/* Expandable Player Profile Tray */}
                     {isExpanded && (
-                      <div className="mt-1.5 pt-1.5 border-t border-white/10 grid grid-cols-2 gap-1 text-[10px] font-mono animate-fadeIn">
-                        <div className="p-1 rounded bg-white/5">
-                          <span className="text-[8px] text-gray-400 block">Cap Share</span>
-                          <span className="text-amber-300 font-bold">~{((Number(player.price) / 125) * 100).toFixed(1)}%</span>
+                      <div className="mt-1.5 pt-1.5 border-t border-white/20 grid grid-cols-2 gap-1 text-[10px] font-mono animate-fadeIn">
+                        <div className="p-1 rounded bg-black/40 border border-white/10">
+                          <span className="text-[8px] text-gray-300 block">Cap Share</span>
+                          <span className="text-white font-black">~{((Number(player.price) / 125) * 100).toFixed(1)}%</span>
                         </div>
-                        <div className="p-1 rounded bg-white/5">
-                          <span className="text-[8px] text-gray-400 block">Fit</span>
-                          <span className="text-emerald-400 font-bold">✓ 93% Match</span>
+                        <div className="p-1 rounded bg-black/40 border border-white/10">
+                          <span className="text-[8px] text-gray-300 block">Fit</span>
+                          <span className="text-white font-black">✓ 93% Match</span>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Bottom: Retain / Release Action Button */}
-                  <div className="mt-1.5 pt-1.5 border-t border-white/10 flex items-center justify-between">
+                  <div className="mt-1.5 pt-1.5 border-t border-white/20 flex items-center justify-between">
                     <span className="text-[9px] font-mono">
                       {isReleased ? (
-                        <span className="text-rose-400 font-bold">Auction</span>
+                        <span className="text-rose-400 font-black">Auction Pool</span>
                       ) : (
-                        <span className="text-emerald-400 font-bold">Retained</span>
+                        <span 
+                          style={{
+                            backgroundColor: `${myTheme.primary}40`,
+                            color: '#ffffff',
+                            border: `1px solid ${myTheme.primary}80`
+                          }} 
+                          className="px-1.5 py-0.5 rounded text-[9px] font-bold"
+                        >
+                          ✓ Retained
+                        </span>
                       )}
                     </span>
 
@@ -292,20 +387,25 @@ export default function SquadRetainReleasePage() {
                         triggerGameHaptic('light')
                         togglePlayerRetention(player.player_id)
                       }}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer transition-all ${
-                        isReleased
-                          ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
-                          : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30'
-                      }`}
+                      style={isReleased ? {
+                        backgroundColor: myTheme.pillBg,
+                        color: myTheme.pillText,
+                        borderColor: myTheme.primary,
+                      } : {
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        color: '#fca5a5',
+                        borderColor: 'rgba(239, 68, 68, 0.4)',
+                      }}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer transition-all border shadow-sm hover:scale-105"
                     >
                       {isReleased ? (
                         <>
-                          <Check size={10} />
+                          <Check size={11} />
                           <span>Retain</span>
                         </>
                       ) : (
                         <>
-                          <X size={10} />
+                          <X size={11} />
                           <span>Release (+₹{player.price}Cr)</span>
                         </>
                       )}
