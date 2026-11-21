@@ -417,20 +417,32 @@ export default function SquadRetainReleasePage() {
         </div>
 
         {/* Bottom Banner */}
-        <div className="mt-2 p-2 rounded-xl bg-slate-900 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
-          <div className="text-[11px] text-gray-300 text-center sm:text-left">
-            <span>Retained <strong className="text-white">{retainedPlayers.length}</strong> players ({25 - retainedPlayers.length} open auction slots).</span>
-            <span className="block text-[10px] text-gray-400 font-mono">
-              Mini-Auction Purse: <strong className="text-emerald-400">₹{campaign.remainingPurse.toFixed(2)} Cr</strong>.
+        <div 
+          style={{
+            background: myTheme.cardBg,
+            borderColor: myTheme.cardBorder,
+            boxShadow: myTheme.cardGlow,
+          }}
+          className="mt-2 p-2.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0 shadow-lg"
+        >
+          <div className="text-[11px] text-gray-200 text-center sm:text-left">
+            <span>Retained <strong className="text-white font-black">{retainedPlayers.length}</strong> players ({25 - retainedPlayers.length} open auction slots).</span>
+            <span className="block text-[10px] text-gray-300 font-mono">
+              Mini-Auction Purse: <strong className="text-white font-black">₹{campaign.remainingPurse.toFixed(2)} Cr</strong>
             </span>
           </div>
 
           <button
             onClick={handleProceedToAuction}
-            className="w-full sm:w-auto px-5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.4)] cursor-pointer hover:scale-[1.02] transition-all"
+            style={{
+              backgroundColor: myTheme.pillBg,
+              color: myTheme.pillText,
+              boxShadow: `0 0 20px ${myTheme.primary}80`,
+            }}
+            className="w-full sm:w-auto px-6 py-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <span>Lock & Start Auction</span>
-            <ArrowRight size={13} />
+            <ArrowRight size={14} />
           </button>
         </div>
 
