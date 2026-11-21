@@ -39,6 +39,7 @@ import { lockOrientation } from '../lib/orientationManager';
 import { formatPlayerInitial } from '../lib/nameFormatter';
 import { useCampaignStore } from '../store/useCampaignStore';
 import { getDetailedPlayerRole, isPlayerSpinner } from '../lib/bowlerClassification';
+import { getTeamTheme } from '../data/teamThemes';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
@@ -2075,8 +2076,12 @@ export default function BallByBallMatchSimulator({
   const strikerPlayer = currentBatSquad[strikerIdx] || currentBatSquad[0];
   const nonStrikerPlayer = currentBatSquad[nonStrikerIdx] || currentBatSquad[1] || currentBatSquad[0];
   const keeperPlayer = bowlingSquad.find(p => p.role === 'WK') || bowlingSquad[1] || bowlingSquad[0];
-  const battingTeamColor = activeInnings.teamColor || '#f59e0b';
-  const bowlingTeamColor = currentInnings === 1 ? (bowl1Squad[0]?.teamColor || '#38bdf8') : (bat1Squad[0]?.teamColor || '#38bdf8');
+  const battingTeamId = (activeInnings.teamShort === myFranchise.short ? myFranchise.id : rivalFranchise.id).toLowerCase();
+  const bowlingTeamId = (activeInnings.teamShort === myFranchise.short ? rivalFranchise.id : myFranchise.id).toLowerCase();
+  const battingTheme = getTeamTheme(battingTeamId);
+  const bowlingTheme = getTeamTheme(bowlingTeamId);
+  const battingTeamColor = battingTheme.primary;
+  const bowlingTeamColor = bowlingTheme.primary;
 
   const isStrikerLeftHanded = Boolean(
     strikerPlayer?.battingStyle?.toLowerCase().includes('left') || 
@@ -2519,13 +2524,26 @@ export default function BallByBallMatchSimulator({
                   {/* Bottom Row: Live Batter & Bowler Figures Integrated Strip with Proper Names */}
                   <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
                     {/* Batter On Strike */}
-                    <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/80 border border-amber-500/40 flex items-center justify-between text-xs font-mono shadow-sm min-w-0">
+                    <div 
+                      style={{
+                        background: battingTheme.cardBg,
+                        borderColor: battingTheme.cardBorder,
+                        boxShadow: battingTheme.cardGlow,
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl border-2 flex items-center justify-between text-xs font-mono shadow-md min-w-0"
+                    >
                       <div className="truncate mr-1 min-w-0">
-                        <div className="text-amber-300 font-bold truncate flex items-center gap-1 text-[11px] sm:text-xs">
+                        <div 
+                          style={{ color: battingTheme.contrastText }}
+                          className="font-black truncate flex items-center gap-1 text-[11px] sm:text-xs drop-shadow-sm"
+                        >
                           <span>🏏</span>
                           <span className="truncate">{formatPlayerInitial(strikerPlayer?.name) || 'Striker'}*</span>
                         </div>
-                        <div className="text-[9px] text-gray-400 truncate">
+                        <div 
+                          style={{ color: battingTheme.contrastText }}
+                          className="text-[9px] opacity-90 truncate mt-0.5"
+                        >
                           Runner: {formatPlayerInitial(nonStrikerPlayer?.name) || 'Batter'}
                         </div>
                         {isUserBatting && (
@@ -2535,36 +2553,60 @@ export default function BallByBallMatchSimulator({
                               triggerGameHaptic('light');
                               setShowBattingOrderModal(true);
                             }}
-                            className="mt-1 px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-[9px] font-bold text-amber-300 flex items-center gap-1 cursor-pointer w-fit shadow-xs"
+                            style={{
+                              backgroundColor: battingTheme.bgDeep,
+                              color: battingTheme.contrastText,
+                              borderColor: battingTheme.cardBorder,
+                            }}
+                            className="mt-1 px-2 py-0.5 rounded-lg border text-[9px] font-black flex items-center gap-1 cursor-pointer w-fit shadow-xs"
                           >
                             <ListOrdered size={10} />
                             <span>Batting Order</span>
                           </button>
                         )}
                       </div>
-                      <div className="text-right text-white font-bold shrink-0">
-                        <span className="text-amber-300 font-black text-xs sm:text-sm">
+                      <div className="text-right shrink-0">
+                        <span 
+                          style={{ color: battingTheme.contrastText }}
+                          className="font-black text-xs sm:text-sm drop-shadow-sm"
+                        >
                           {activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.runs || 0}
                         </span>
-                        <span className="text-gray-400 text-[10px] ml-0.5">
+                        <span 
+                          style={{ color: battingTheme.contrastText }}
+                          className="text-[10px] ml-0.5 opacity-90"
+                        >
                           ({activeInnings.battingScorecard.find(b => b.name === strikerPlayer?.name)?.balls || 0})
                         </span>
                       </div>
                     </div>
 
                     {/* Current Bowler */}
-                    <div className="px-2.5 py-1.5 rounded-xl bg-slate-950/80 border border-rose-500/40 flex items-center justify-between text-xs font-mono shadow-sm min-w-0">
+                    <div 
+                      style={{
+                        background: bowlingTheme.cardBg,
+                        borderColor: bowlingTheme.cardBorder,
+                        boxShadow: bowlingTheme.cardGlow,
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl border-2 flex items-center justify-between text-xs font-mono shadow-md min-w-0"
+                    >
                       <div className="truncate mr-1 min-w-0">
-                        <div className="text-rose-300 font-bold truncate flex items-center gap-1 text-[11px] sm:text-xs">
+                        <div 
+                          style={{ color: bowlingTheme.contrastText }}
+                          className="font-black truncate flex items-center gap-1 text-[11px] sm:text-xs drop-shadow-sm"
+                        >
                           <span>🎯</span>
                           <span className="truncate">{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
                         </div>
-                        <div className="text-[9px] text-gray-400 truncate flex items-center gap-1">
-                          <span className={isPlayerSpinner(bowlerPlayer) ? 'text-purple-300 font-bold' : 'text-rose-300 font-bold'}>
+                        <div 
+                          style={{ color: bowlingTheme.contrastText }}
+                          className="text-[9px] opacity-90 truncate flex items-center gap-1 mt-0.5"
+                        >
+                          <span className="font-bold">
                             {getDetailedPlayerRole(bowlerPlayer)}
                           </span>
                           <span>•</span>
-                          <span>Spell: {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'}/4 ov</span>
+                          <span>{activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'}/4 ov</span>
                         </div>
                         {isUserBowling && (
                           <button
@@ -2573,19 +2615,30 @@ export default function BallByBallMatchSimulator({
                               triggerGameHaptic('light');
                               setShowBowlerModal(true);
                             }}
-                            className="mt-1 px-2 py-0.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-[9px] font-bold text-rose-300 flex items-center gap-1 cursor-pointer w-fit shadow-xs"
+                            style={{
+                              backgroundColor: bowlingTheme.bgDeep,
+                              color: bowlingTheme.contrastText,
+                              borderColor: bowlingTheme.cardBorder,
+                            }}
+                            className="mt-1 px-2 py-0.5 rounded-lg border text-[9px] font-black flex items-center gap-1 cursor-pointer w-fit shadow-xs"
                           >
                             <Target size={10} />
                             <span>Change Bowler</span>
                           </button>
                         )}
                       </div>
-                      <div className="text-right text-white font-bold shrink-0">
-                        <span className="text-rose-300 font-black text-xs sm:text-sm">
+                      <div className="text-right shrink-0">
+                        <span 
+                          style={{ color: bowlingTheme.contrastText }}
+                          className="font-black text-xs sm:text-sm drop-shadow-sm"
+                        >
                           {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.wickets || 0}/
                           {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.runs || 0}
                         </span>
-                        <span className="text-gray-400 text-[9px] block">
+                        <span 
+                          style={{ color: bowlingTheme.contrastText }}
+                          className="text-[9px] block opacity-90"
+                        >
                           ({activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'} ov)
                         </span>
                       </div>
