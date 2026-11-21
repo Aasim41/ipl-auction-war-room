@@ -1396,9 +1396,16 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       swapPlayingXISlots: (indexA, indexB, mode = 'bat_first') => {
         get().updateActiveCampaign((prev) => {
-          const currentXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
+          let currentXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
             ? [...prev.bowlFirstXI]
-            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? [...prev.batFirstXI] : [...prev.playingXI])
+            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? [...prev.batFirstXI] : (prev.playingXI && prev.playingXI.length >= 11 ? [...prev.playingXI] : []))
+          
+          if (currentXI.length < 11) {
+            const activeSquad = prev.squad.filter(p => !p.is_released)
+            const autoXI = computeOptimalPlayingXI(activeSquad, { mode })
+            currentXI = [...autoXI.xiIds]
+          }
+
           if (indexA < 0 || indexA >= currentXI.length || indexB < 0 || indexB >= currentXI.length) return prev
           const temp = currentXI[indexA]
           currentXI[indexA] = currentXI[indexB]
@@ -1413,9 +1420,16 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       replacePlayingXIPlayer: (slotIndex, newPlayerId, mode = 'bat_first') => {
         get().updateActiveCampaign((prev) => {
-          const currentXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
+          let currentXI = mode === 'bowl_first' && prev.bowlFirstXI && prev.bowlFirstXI.length >= 11
             ? [...prev.bowlFirstXI]
-            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? [...prev.batFirstXI] : [...prev.playingXI])
+            : (prev.batFirstXI && prev.batFirstXI.length >= 11 ? [...prev.batFirstXI] : (prev.playingXI && prev.playingXI.length >= 11 ? [...prev.playingXI] : []))
+          
+          if (currentXI.length < 11) {
+            const activeSquad = prev.squad.filter(p => !p.is_released)
+            const autoXI = computeOptimalPlayingXI(activeSquad, { mode })
+            currentXI = [...autoXI.xiIds]
+          }
+
           if (slotIndex < 0 || slotIndex >= 11) return prev
           const existingIdx = currentXI.indexOf(newPlayerId)
           if (existingIdx !== -1) {

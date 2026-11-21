@@ -194,6 +194,7 @@ export default function PlayingXIPage() {
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
+  const [swapSourceIndex, setSwapSourceIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
