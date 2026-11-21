@@ -348,10 +348,13 @@ export default function PlayingXIPage() {
           <div className="flex items-center gap-2">
             <TeamLogo teamId={franchise.id} size={24} />
             <div className="flex items-baseline gap-1.5">
-              <h1 className="text-base sm:text-lg font-black font-mono text-amber-400">
-                {franchise.short}
+              <h1 
+                style={{ color: myTheme.primary }}
+                className="text-base sm:text-lg font-black font-mono"
+              >
+                {franchise.name}
               </h1>
-              <span className="text-[11px] text-gray-400 font-mono">
+              <span className="text-[11px] text-gray-300 font-mono">
                 Match #{currentMatch?.matchNo || 1}
               </span>
             </div>
@@ -365,8 +368,13 @@ export default function PlayingXIPage() {
                   gameAudio.playUiTap('select');
                   setActiveTab('xi');
                 }}
+                style={activeTab === 'xi' ? {
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 12px ${myTheme.primary}`,
+                } : {}}
                 className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === 'xi' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-gray-400 hover:text-white'
+                  activeTab === 'xi' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <Users size={12} />
@@ -377,8 +385,13 @@ export default function PlayingXIPage() {
                   gameAudio.playUiTap('select');
                   setActiveTab('schedule');
                 }}
+                style={activeTab === 'schedule' ? {
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 12px ${myTheme.primary}`,
+                } : {}}
                 className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === 'schedule' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-gray-400 hover:text-white'
+                  activeTab === 'schedule' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <Calendar size={12} />
@@ -390,10 +403,10 @@ export default function PlayingXIPage() {
                   gameAudio.playUiTap('select');
                   triggerGameHaptic('light');
                 }}
-                className="flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer text-gray-400 hover:text-amber-300 hover:bg-white/5"
+                className="flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer text-gray-400 hover:text-white hover:bg-white/5"
                 title="Franchise Trophies & Honors"
               >
-                <Trophy size={12} className="text-amber-400" />
+                <Trophy size={12} style={{ color: myTheme.primary }} />
                 <span>Trophies</span>
               </Link>
             </div>
@@ -401,13 +414,14 @@ export default function PlayingXIPage() {
             {/* Strictly Single Play/Resume Match CTA */}
             <button
               onClick={() => handleLaunchMatch()}
-              className={`px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0 ${
-                isMatchActive
-                  ? 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 text-slate-950 shadow-md animate-pulse'
-                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 shadow-md'
-              }`}
+              style={{
+                backgroundColor: myTheme.pillBg,
+                color: myTheme.pillText,
+                boxShadow: `0 0 20px ${myTheme.primary}90`,
+              }}
+              className="px-4 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
             >
-              {isMatchActive ? <Play size={12} className="fill-slate-950" /> : <Swords size={12} />}
+              {isMatchActive ? <Play size={12} /> : <Swords size={12} />}
               <span>{isMatchActive ? `Resume (${activeOversStr} ov)` : `Play #${currentMatch?.matchNo || 1}`}</span>
             </button>
           </div>
