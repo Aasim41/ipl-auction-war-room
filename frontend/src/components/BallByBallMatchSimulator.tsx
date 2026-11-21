@@ -836,9 +836,8 @@ export default function BallByBallMatchSimulator({
     const striker = currentBatSquad[strikerIdx]?.name || 'Batter';
     const nonStriker = currentBatSquad[nonStrikerIdx]?.name || 'Non-Striker';
     
-    // Rotate bowlers across all eligible options
-    const activeBowlers = currentBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
-    const bowler = activeBowlers[currentBowlerIdx % (activeBowlers.length || 1)] || currentBowlSquad[0];
+    // Rotate bowlers across all eligible options in Playing XI
+    const bowler = currentBowlSquad[currentBowlerIdx % (currentBowlSquad.length || 1)] || currentBowlSquad[0];
 
     // Target for chase in 2nd innings
     const chaseTarget = currentInnings === 2 ? inn1.totalRuns + 1 : null;
@@ -1297,10 +1296,10 @@ export default function BallByBallMatchSimulator({
       if (!isLastOverOfInnings && !isMatchEnding) {
         if (currentOver === 0) {
           // Over 1 finished -> Over 2 bowled by openingBowler2Idx
-          const nextIdx = openingBowler2Idx % (activeBowlers.length || 1);
+          const nextIdx = openingBowler2Idx % (currentBowlSquad.length || 1);
           setCurrentBowlerIdx(nextIdx);
           setEventBanner({
-            text: `OVER 2: ${activeBowlers[nextIdx]?.name || 'Opening Bowler 2'}`,
+            text: `OVER 2: ${currentBowlSquad[nextIdx]?.name || 'Opening Bowler 2'}`,
             subtext: `Second opening spell starts from opposite end`,
             color: 'from-sky-500 to-indigo-600'
           });
@@ -1311,19 +1310,29 @@ export default function BallByBallMatchSimulator({
             // AUTOMATIC POPUP FOR NEXT BOWLER SELECTION!
             setShowBowlerModal(true);
           } else {
-            // AI Bowling: Select next eligible bowler who is NOT finishedBowlerIdx and < 4 overs
-            let nextIdx = (finishedBowlerIdx + 1) % activeBowlers.length;
-            let attempts = 0;
-            while (attempts < activeBowlers.length) {
-              const candidateName = activeBowlers[nextIdx]?.name;
-              const ovs = getBowlerOversCount(updatedBowlers, candidateName);
-              if (ovs < 4 && nextIdx !== finishedBowlerIdx) {
-                break;
+            // AI Bowling: Select next eligible bowler from Playing XI who is NOT finishedBowlerIdx and < 4 overs
+            const candidateIndices: number[] = [];
+            currentBowlSquad.slice(0, 11).forEach((p, idx) => {
+              if (p.role === 'BOWL' || p.role === 'AR') candidateIndices.push(idx);
+            });
+            currentBowlSquad.slice(0, 11).forEach((_, idx) => {
+              if (!candidateIndices.includes(idx)) candidateIndices.push(idx);
+            });
+
+            let chosenNextIdx = -1;
+            for (const cIdx of candidateIndices) {
+              if (cIdx !== finishedBowlerIdx) {
+                const candidateName = currentBowlSquad[cIdx]?.name;
+                const ovs = getBowlerOversCount(updatedBowlers, candidateName);
+                if (ovs < 4) {
+                  chosenNextIdx = cIdx;
+                  break;
+                }
               }
-              nextIdx = (nextIdx + 1) % activeBowlers.length;
-              attempts++;
             }
-            setCurrentBowlerIdx(nextIdx);
+            if (chosenNextIdx !== -1) {
+              setCurrentBowlerIdx(chosenNextIdx);
+            }
           }
         }
       }
@@ -1657,8 +1666,7 @@ export default function BallByBallMatchSimulator({
     const activeInn = currentInnings === 1 ? inn1 : inn2;
     const currentBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
     const currentBowlSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
-    const activeBowlers = currentBowlSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
-    const bowler = activeBowlers[currentBowlerIdx % activeBowlers.length] || currentBowlSquad[0];
+    const bowler = currentBowlSquad[currentBowlerIdx % (currentBowlSquad.length || 1)] || currentBowlSquad[0];
 
     const legalBallsBowled = activeInn.balls.length;
     const ballsRemainingInOver = 6 - (legalBallsBowled % 6);
@@ -1850,7 +1858,7 @@ export default function BallByBallMatchSimulator({
       const completedOversCount = Math.floor(curBalls.length / 6);
       if (completedOversCount === 1) {
         // Over 1 finished -> Over 2 bowled by openingBowler2Idx
-        nextBowlerIdx = openingBowler2Idx % (activeBowlers.length || 1);
+        nextBowlerIdx = openingBowler2Idx % (currentBowlSquad.length || 1);
       } else {
         // Over 2 or later finished:
         if (isUserBowling) {
@@ -1858,18 +1866,24 @@ export default function BallByBallMatchSimulator({
           setShowBowlerModal(true);
         }
         // AI or fallback next bowler must NOT bowl consecutive overs!
-        let nextIdx = (finishedBowlerIdx + 1) % activeBowlers.length;
-        let attempts = 0;
-        while (attempts < activeBowlers.length) {
-          const candidateName = activeBowlers[nextIdx]?.name;
-          const ovs = getBowlerOversCount(curBowlers, candidateName);
-          if (ovs < 4 && nextIdx !== finishedBowlerIdx) {
-            break;
+        const candidateIndices: number[] = [];
+        currentBowlSquad.slice(0, 11).forEach((p, idx) => {
+          if (p.role === 'BOWL' || p.role === 'AR') candidateIndices.push(idx);
+        });
+        currentBowlSquad.slice(0, 11).forEach((_, idx) => {
+          if (!candidateIndices.includes(idx)) candidateIndices.push(idx);
+        });
+
+        for (const cIdx of candidateIndices) {
+          if (cIdx !== finishedBowlerIdx) {
+            const candidateName = currentBowlSquad[cIdx]?.name;
+            const ovs = getBowlerOversCount(curBowlers, candidateName);
+            if (ovs < 4) {
+              nextBowlerIdx = cIdx;
+              break;
+            }
           }
-          nextIdx = (nextIdx + 1) % activeBowlers.length;
-          attempts++;
         }
-        nextBowlerIdx = nextIdx;
       }
     }
 
@@ -2057,8 +2071,7 @@ export default function BallByBallMatchSimulator({
 
   const currentBatSquad = currentInnings === 1 ? bat1Squad : bowl1Squad;
   const bowlingSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
-  const activeBowlers = bowlingSquad.filter(p => p.role === 'BOWL' || p.role === 'AR');
-  const bowlerPlayer = activeBowlers[currentBowlerIdx % (activeBowlers.length || 1)] || bowlingSquad[0];
+  const bowlerPlayer = bowlingSquad[currentBowlerIdx % (bowlingSquad.length || 1)] || bowlingSquad[0];
   const strikerPlayer = currentBatSquad[strikerIdx] || currentBatSquad[0];
   const nonStrikerPlayer = currentBatSquad[nonStrikerIdx] || currentBatSquad[1] || currentBatSquad[0];
   const keeperPlayer = bowlingSquad.find(p => p.role === 'WK') || bowlingSquad[1] || bowlingSquad[0];
