@@ -23,6 +23,7 @@ import { useCampaignStore, CampaignPlayer } from '../../store/useCampaignStore'
 import { CampaignPhaseStepper } from '../../components/CampaignPhaseStepper'
 import { getFranchise } from '../../data/franchises'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
+import { getDetailedPlayerRole } from '../../lib/bowlerClassification'
 
 export default function SquadRetainReleasePage() {
   const router = useRouter()
@@ -241,7 +242,7 @@ export default function SquadRetainReleasePage() {
                           )}
                         </div>
                         <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 mt-0.5">
-                          <span className="font-bold text-indigo-300">{player.role}</span>
+                          <span className="font-bold text-indigo-300">{getDetailedPlayerRole(player)}</span>
                           <span>•</span>
                           <span>₹{player.price} Cr</span>
                         </div>

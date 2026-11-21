@@ -42,6 +42,7 @@ import {
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import { getFranchiseAI } from '../../data/franchiseAI'
 import TeamLogo from '../../components/TeamLogo'
+import { getDetailedPlayerRole, getCompactRoleBadge } from '../../lib/bowlerClassification'
 const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
 export default function MiniAuctionPage() {
@@ -61,9 +62,9 @@ export default function MiniAuctionPage() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [soldLog, setSoldLog] = useState<Array<{ player: DynamicAuctionPlayer; winner: string; price: number }>>([])
   
-  // View Tabs: 'stage' (mobile default) | 'pool' | 'squads' | 'feed' | 'ledger'
-  const [auctionView, setAuctionView] = useState<'stage' | 'pool' | 'squads' | 'feed' | 'ledger'>('stage')
-  const [sideTab, setSideTab] = useState<'pool' | 'squads' | 'feed' | 'ledger'>('pool')
+  // View Tabs: 'stage' (mobile default) | 'pool' | 'squads' | 'ledger'
+  const [auctionView, setAuctionView] = useState<'stage' | 'pool' | 'squads' | 'ledger'>('stage')
+  const [sideTab, setSideTab] = useState<'pool' | 'squads' | 'ledger'>('pool')
   const [selectedFranchiseView, setSelectedFranchiseView] = useState<string>('')
   const [expandedLot, setExpandedLot] = useState(false)
 
@@ -416,7 +417,7 @@ export default function MiniAuctionPage() {
 
   useEffect(() => {
     if (!skipNotification) return;
-    const t = setTimeout(() => setSkipNotification(null), 5000);
+    const t = setTimeout(() => setSkipNotification(null), 8000);
     return () => clearTimeout(t);
   }, [skipNotification]);
 
@@ -884,29 +885,14 @@ export default function MiniAuctionPage() {
               {bowlCount}/5 Bowl
             </div>
           </div>
-
-          {tacticalMatchInfo && (
-            <div className="flex items-center gap-1.5 text-[10px] font-mono">
-              <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                tacticalMatchInfo.type === 'urgent'
-                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                  : tacticalMatchInfo.type === 'warning'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-              }`}>
-                💡 Scout Suggestion (Optional): {tacticalMatchInfo.badge}
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Mobile View Switcher Tabs (5 Tabs: Stage | Pool | Squads | Feed | Sold) */}
+        {/* Mobile View Switcher Tabs (4 Tabs: Stage | Pool | Squads | Sold) */}
         <div className="flex lg:hidden items-center justify-between gap-1 p-1 rounded-2xl bg-slate-900 border border-white/10 overflow-x-auto scrollbar-none shrink-0">
           {[
             { id: 'stage', label: '🔨 Gavel Stage' },
             { id: 'pool', label: `📋 Pool (${auctionPool.length})` },
             { id: 'squads', label: '👥 Squads' },
-            { id: 'feed', label: '⚡ Feed' },
             { id: 'ledger', label: `💰 Sold (${soldLog.length})` },
           ].map(tab => (
             <button
@@ -967,22 +953,28 @@ export default function MiniAuctionPage() {
 
             {/* Real-time feedback when user skips a player */}
             {skipNotification && (
-              <div className="mb-2 p-2.5 rounded-2xl bg-slate-950 border border-amber-500/40 flex items-center justify-between gap-2 shadow-lg animate-fadeIn text-xs shrink-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono text-[10px] shrink-0">
-                    SKIPPED LOT
+              <div className="mb-2 p-2 sm:p-2.5 rounded-2xl bg-slate-950 border border-amber-500/50 flex items-center justify-between gap-2 shadow-lg animate-fadeIn text-xs shrink-0">
+                <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                  <span className={`px-2 py-0.5 rounded-full font-bold font-mono text-[9px] uppercase tracking-wider shrink-0 ${
+                    skipNotification.unsold
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  }`}>
+                    {skipNotification.unsold ? 'UNSOLD' : 'ACQUIRED'}
                   </span>
-                  <span className="text-white truncate">
-                    <strong>{skipNotification.playerName}</strong> {skipNotification.unsold ? (
-                      <span className="text-gray-400 font-medium">passed without bids (Unsold).</span>
-                    ) : (
-                      <span>sold to <strong className="text-amber-300">{skipNotification.winner}</strong> for <strong className="text-emerald-400 font-mono">₹{skipNotification.price.toFixed(2)} Cr</strong>.</span>
-                    )}
-                  </span>
+                  <span className="font-bold text-white text-xs">{skipNotification.playerName}</span>
+                  {skipNotification.unsold ? (
+                    <span className="text-gray-400 text-xs">passed without rival bids (Unsold).</span>
+                  ) : (
+                    <span className="text-xs text-gray-200">
+                      ➔ Sold to <span className="font-black text-amber-300 bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/40">{skipNotification.winner}</span> for <span className="font-mono font-bold text-emerald-400">₹{skipNotification.price.toFixed(2)} Cr</span>
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => setSkipNotification(null)}
                   className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white text-xs cursor-pointer shrink-0"
+                  aria-label="Dismiss notification"
                 >
                   ✕
                 </button>
@@ -1056,7 +1048,7 @@ export default function MiniAuctionPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold font-mono">
-                          {currentPlayer.role}
+                          {getDetailedPlayerRole(currentPlayer)}
                         </span>
                         {currentPlayer.is_overseas && (
                           <span className="px-2 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px] font-bold font-mono">
@@ -1104,7 +1096,7 @@ export default function MiniAuctionPage() {
                   <div className="p-3 rounded-2xl bg-slate-950/90 border border-amber-500/30 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono animate-fadeIn">
                     <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                       <span className="text-[9px] text-gray-400 block">Role Spec</span>
-                      <span className="text-white font-bold">{currentPlayer.role}</span>
+                      <span className="text-white font-bold">{getDetailedPlayerRole(currentPlayer)}</span>
                     </div>
                     <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
                       <span className="text-[9px] text-gray-400 block">Cap Impact</span>
@@ -1262,18 +1254,6 @@ export default function MiniAuctionPage() {
               </button>
 
               <button
-                onClick={() => setSideTab('feed')}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
-                  sideTab === 'feed'
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'text-gray-400 hover:text-white bg-white/5'
-                }`}
-              >
-                <Flame size={12} />
-                <span>Feed</span>
-              </button>
-
-              <button
                 onClick={() => setSideTab('ledger')}
                 className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
                   sideTab === 'ledger'
@@ -1382,7 +1362,7 @@ export default function MiniAuctionPage() {
                                   p.role === 'BAT' ? 'bg-blue-500/25 text-blue-300' :
                                   'bg-emerald-500/25 text-emerald-300'
                                 }`}>
-                                  {p.role}
+                                  {getCompactRoleBadge(p)}
                                 </span>
                                 {p.is_overseas && (
                                   <span className="text-[8px] px-1 rounded bg-sky-500/20 text-sky-300 font-mono font-bold">
@@ -1492,32 +1472,7 @@ export default function MiniAuctionPage() {
               </div>
             )}
 
-            {/* TAB 3: LIVE ACTION FEED */}
-            {sideTab === 'feed' && (
-              <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-72">
-                {bidHistory.length === 0 ? (
-                  <div className="h-40 flex items-center justify-center text-xs text-gray-500 text-center">
-                    Awaiting opening paddle...
-                  </div>
-                ) : (
-                  bidHistory.map((b, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-2 rounded-xl border flex items-center justify-between text-xs animate-fade-in ${
-                        b.isUser
-                          ? 'bg-emerald-500/20 border-emerald-500/50 text-white font-bold'
-                          : 'bg-white/5 border-white/5 text-gray-300'
-                      }`}
-                    >
-                      <span>{b.bidder}</span>
-                      <span className="font-mono text-emerald-400 font-black">₹{b.amount.toFixed(2)} Cr</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* TAB 4: SALES LEDGER */}
+            {/* TAB 3: SALES LEDGER */}
             {sideTab === 'ledger' && (
               <div className="flex-1 flex flex-col min-h-0">
                 {(activeSquadCount >= 18 || soldLog.length > 0) && (
@@ -1857,9 +1812,6 @@ export default function MiniAuctionPage() {
                 <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0">
                   <span className="text-[10px] sm:text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
                     Acquired Recruits ({autoAuctionSummary.purchased.length} New Stars):
-                  </span>
-                  <span className="text-[9px] font-mono text-gray-400">
-                    Swipe to browse
                   </span>
                 </div>
 

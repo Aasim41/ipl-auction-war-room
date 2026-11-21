@@ -397,47 +397,49 @@ export function computeTournamentAwards(schedule: TournamentFixture[], myTeamId:
     });
   });
 
-  // Blend with baseline if tournament is early/in-progress
-  BASELINE_BATTERS.forEach(bb => {
-    if (!batterMap[bb.playerName]) {
-      batterMap[bb.playerName] = {
-        name: bb.playerName,
-        teamShort: bb.teamShort,
-        teamName: bb.teamName,
-        teamColor: bb.teamColor,
-        teamEmoji: bb.teamEmoji,
-        innings: bb.innings,
-        runs: bb.runs,
-        balls: bb.balls,
-        fours: bb.fours,
-        sixes: bb.sixes,
-        fifties: bb.fifties,
-        hundreds: bb.hundreds,
-        highestScore: bb.highestScore,
-        highestScoreNotOut: bb.highestScoreNotOut,
-        dismissals: Math.max(1, bb.innings - (bb.highestScoreNotOut ? 1 : 0))
-      };
-    }
-  });
+  // Blend with baseline ONLY if tournament has commenced (at least 1 match played)
+  if (completedFixtures.length > 0) {
+    BASELINE_BATTERS.forEach(bb => {
+      if (!batterMap[bb.playerName]) {
+        batterMap[bb.playerName] = {
+          name: bb.playerName,
+          teamShort: bb.teamShort,
+          teamName: bb.teamName,
+          teamColor: bb.teamColor,
+          teamEmoji: bb.teamEmoji,
+          innings: bb.innings,
+          runs: bb.runs,
+          balls: bb.balls,
+          fours: bb.fours,
+          sixes: bb.sixes,
+          fifties: bb.fifties,
+          hundreds: bb.hundreds,
+          highestScore: bb.highestScore,
+          highestScoreNotOut: bb.highestScoreNotOut,
+          dismissals: Math.max(1, bb.innings - (bb.highestScoreNotOut ? 1 : 0))
+        };
+      }
+    });
 
-  BASELINE_BOWLERS.forEach(bw => {
-    if (!bowlerMap[bw.playerName]) {
-      bowlerMap[bw.playerName] = {
-        name: bw.playerName,
-        teamShort: bw.teamShort,
-        teamName: bw.teamName,
-        teamColor: bw.teamColor,
-        teamEmoji: '🎯',
-        matches: new Set(Array.from({ length: bw.matches }, (_, i) => i + 1)),
-        totalBalls: bw.totalBalls,
-        maidens: bw.maidens,
-        runs: bw.runs,
-        wickets: bw.wickets,
-        bestWickets: bw.bestWickets,
-        bestRuns: bw.bestRuns
-      };
-    }
-  });
+    BASELINE_BOWLERS.forEach(bw => {
+      if (!bowlerMap[bw.playerName]) {
+        bowlerMap[bw.playerName] = {
+          name: bw.playerName,
+          teamShort: bw.teamShort,
+          teamName: bw.teamName,
+          teamColor: bw.teamColor,
+          teamEmoji: '🎯',
+          matches: new Set(Array.from({ length: bw.matches }, (_, i) => i + 1)),
+          totalBalls: bw.totalBalls,
+          maidens: bw.maidens,
+          runs: bw.runs,
+          wickets: bw.wickets,
+          bestWickets: bw.bestWickets,
+          bestRuns: bw.bestRuns
+        };
+      }
+    });
+  }
 
   // Calculate Orange Cap Batting Leaderboard
   const orangeCapList: PlayerBattingAwardStats[] = Object.values(batterMap).map(b => {

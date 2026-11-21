@@ -33,6 +33,7 @@ import MatchScorecardModal from '../../components/MatchScorecardModal';
 import TeamLogo from '../../components/TeamLogo';
 import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGenerator';
 import { formatPlayerInitial } from '../../lib/nameFormatter';
+import { getDetailedPlayerRole, getCompactRoleBadge, isPlayerSpinner } from '../../lib/bowlerClassification';
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
 
 const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: string, hint: string, favRole: string }> = {
@@ -125,19 +126,21 @@ const TEAM_HOME_CITY: Record<string, string> = {
 function getPlayerTacticalBadge(player: CampaignPlayer, slotIndex: number): string {
   if (!player) return `#${slotIndex + 1} Squad Member`;
 
-  // Specialist Bowler
+  // Specialist Bowler (Accurate Spin vs Fast distinction)
   if (player.role === 'BOWL') {
+    const isSpin = isPlayerSpinner(player);
     const s = (player.statsSummary || '').toLowerCase();
-    if (s.includes('spin') || s.includes('wrist') || s.includes('mystery')) {
-      return 'Specialist Spinner';
+    if (isSpin) {
+      if (s.includes('wrist') || s.includes('mystery')) return 'Mystery Spin Bowler';
+      return 'Specialist Spin Bowler';
     }
     if (s.includes('swing') || s.includes('seam') || s.includes('powerplay')) {
-      return 'Powerplay Swing Pacer';
+      return 'Powerplay Swing Fast Bowler';
     }
     if (s.includes('yorker') || s.includes('death') || s.includes('express')) {
-      return 'Express Death Pacer';
+      return 'Express Death Fast Bowler';
     }
-    return slotIndex >= 9 ? 'Strike Bowler & Tail' : 'Frontline Strike Bowler';
+    return slotIndex >= 9 ? 'Fast Bowler & Tail' : 'Frontline Fast Bowler';
   }
 
   // Wicketkeeper
@@ -488,7 +491,7 @@ export default function PlayingXIPage() {
                   title="Tap to change Impact Player (12th Man)"
                 >
                   <Sparkles size={10} className="text-indigo-400" />
-                  <span>Sub: {impactPlayer ? formatPlayerInitial(impactPlayer.name) : 'Pick'} ({impactPlayer?.role})</span>
+                  <span>Sub: {impactPlayer ? `${formatPlayerInitial(impactPlayer.name)} (${getCompactRoleBadge(impactPlayer)})` : 'Pick Sub'}</span>
                 </button>
 
                 {/* BCCI Compliance Status */}
@@ -503,11 +506,11 @@ export default function PlayingXIPage() {
                 </div>
               </div>
 
-              {/* Smallest & Easiest Stadium Detail Micro-Strip */}
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-950/70 border border-white/5 text-[10px] font-mono">
+              {/* Smallest & Easiest Stadium Detail Micro-Strip (Guaranteed Fits Screen) */}
+              <div className="w-full min-w-0 overflow-hidden flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-950/70 border border-white/5 text-[10px] font-mono">
                 <span className="text-amber-400 font-bold shrink-0">🏟️ {currentInsight.title.split('(')[0].trim()}:</span>
-                <span className="text-emerald-300 font-bold shrink-0">{currentInsight.boost}</span>
-                <span className="text-gray-400 truncate hidden xs:inline">• {currentInsight.behavior}</span>
+                <span className="text-emerald-300 font-bold truncate">{currentInsight.boost}</span>
+                <span className="text-gray-400 truncate hidden sm:inline">• {currentInsight.behavior}</span>
               </div>
             </div>
 
@@ -566,7 +569,7 @@ export default function PlayingXIPage() {
                               )}
                             </div>
                             <div className="text-[10px] text-gray-400 font-mono truncate">
-                              <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • {player.role}
+                              <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • <span className="text-gray-300 font-medium">{getDetailedPlayerRole(player)}</span>
                             </div>
                           </div>
                         </div>
@@ -960,7 +963,7 @@ export default function PlayingXIPage() {
                           {bp.role === 'WK' && <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300">WK</span>}
                         </div>
                         <div className="text-[11px] text-gray-400 font-mono">
-                          {bp.role} • Salary: ₹{bp.price} Cr
+                          {getDetailedPlayerRole(bp)} • Salary: ₹{bp.price} Cr
                         </div>
                       </div>
                       <div className="text-right">

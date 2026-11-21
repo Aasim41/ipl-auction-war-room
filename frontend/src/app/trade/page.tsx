@@ -21,6 +21,7 @@ import { getFranchise, IPL_FRANCHISES } from '../../data/franchises'
 import { getFranchiseAI, isUntouchablePlayer } from '../../data/franchiseAI'
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import TeamLogo from '../../components/TeamLogo'
+import { getDetailedPlayerRole } from '../../lib/bowlerClassification'
 
 export default function TradeWindowPage() {
   const router = useRouter()
@@ -413,13 +414,6 @@ export default function TradeWindowPage() {
           </div>
         </div>
 
-        {/* Mobile Swipe Hint */}
-        <div className="flex sm:hidden items-center justify-between px-2 py-0.5 mb-1 bg-slate-950/80 rounded-lg border border-white/10 text-[9px] font-mono text-gray-400">
-          <span>👈 Swipe</span>
-          <span className="text-amber-400 font-bold uppercase">{mobileTab === 'my' ? `${myFranchise.short} Squad` : mobileTab === 'deal' ? 'Deal Room' : `${rivalFranchise.short} Squad`}</span>
-          <span>Swipe 👉</span>
-        </div>
-
         {/* Mobile Tab Toggle Bar (Visible only on compact screens) */}
         <div className="flex sm:hidden items-center justify-center gap-1 mb-2 bg-slate-900/90 p-1 rounded-xl border border-white/10 shrink-0">
           <button
@@ -511,7 +505,7 @@ export default function TradeWindowPage() {
                         {p.is_overseas && <span className="text-[8px] sm:text-[9px] px-1 rounded bg-sky-500/20 text-sky-300 shrink-0">OS</span>}
                       </div>
                       <div className="text-[9px] sm:text-[10px] text-gray-400 font-mono">
-                        {p.role} • ₹{p.price}Cr
+                        {getDetailedPlayerRole(p)} • ₹{p.price}Cr
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -740,7 +734,7 @@ export default function TradeWindowPage() {
                         {p.is_overseas && <span className="text-[8px] sm:text-[9px] px-1 rounded bg-sky-500/20 text-sky-300 shrink-0">OS</span>}
                       </div>
                       <div className="text-[9px] sm:text-[10px] text-gray-400 font-mono">
-                        {p.role} • ₹{p.price}Cr
+                        {getDetailedPlayerRole(p)} • ₹{p.price}Cr
                       </div>
                     </div>
                     <div className="text-right shrink-0">

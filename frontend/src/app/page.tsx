@@ -88,6 +88,7 @@ export default function UnifiedTeamSelectHomePage() {
       } catch (e) {}
     }
 
+    const hasSessionLoaded = typeof window !== 'undefined' ? sessionStorage.getItem('auctionxi_session_loaded') : null
     const isSeasonDone = activeCamp?.schedule?.length ? activeCamp.schedule.every(f => f.status === 'COMPLETED') : false
     const hasBooted = typeof window !== 'undefined' ? localStorage.getItem('auctionxi_boot_complete') : null
     const savedMode = typeof window !== 'undefined' ? (localStorage.getItem('auctionxi_game_mode_selected') || localStorage.getItem('auctionxi_preferred_game_mode')) as any : null
@@ -96,35 +97,40 @@ export default function UnifiedTeamSelectHomePage() {
       setSelectedGameMode(savedMode)
     }
 
-    if (activeCamp && !isSeasonDone) {
-      // Existing active tournament in progress: immediately resume to the current phase!
-      setSelectedTeamId(activeCamp.teamId)
-      setTheme(activeCamp.teamId)
-      if (activeCamp.mode) {
-        setSelectedGameMode(activeCamp.mode)
-      }
+    if (hasSessionLoaded) {
       setShowLoading(false)
+      if (activeCamp && !isSeasonDone) {
+        setSelectedTeamId(activeCamp.teamId)
+        setTheme(activeCamp.teamId)
+        if (activeCamp.mode) {
+          setSelectedGameMode(activeCamp.mode)
+        }
+        setShowGameModeModal(false)
+        const targetUrl = (activeCamp.currentPhase === 'playing_xi' || activeCamp.currentPhase === 'match')
+          ? '/playing-xi'
+          : activeCamp.currentPhase === 'mini_auction'
+          ? '/auction'
+          : activeCamp.currentPhase === 'retain_release'
+          ? '/squad'
+          : activeCamp.currentPhase === 'draft'
+          ? '/draft'
+          : '/trade'
+        router.replace(targetUrl)
+        return
+      }
+
+      if (isSeasonDone || !hasBooted || !savedMode) {
+        setShowGameModeModal(true)
+      } else if (theme) {
+        setSelectedTeamId(theme)
+      }
+    } else {
+      // First boot of the session: let GameLoadingScreen play first!
+      setShowLoading(true)
       setShowGameModeModal(false)
-
-      const targetUrl = (activeCamp.currentPhase === 'playing_xi' || activeCamp.currentPhase === 'match')
-        ? '/playing-xi'
-        : activeCamp.currentPhase === 'mini_auction'
-        ? '/auction'
-        : activeCamp.currentPhase === 'retain_release'
-        ? '/squad'
-        : activeCamp.currentPhase === 'draft'
-        ? '/draft'
-        : '/trade'
-      router.replace(targetUrl)
-      return
-    }
-
-    // New Cycle or Completed Season:
-    setShowLoading(false)
-    if (isSeasonDone || !hasBooted || !savedMode) {
-      setShowGameModeModal(true)
-    } else if (theme) {
-      setSelectedTeamId(theme)
+      if (theme) {
+        setSelectedTeamId(theme)
+      }
     }
   }, [])
 
@@ -197,7 +203,10 @@ export default function UnifiedTeamSelectHomePage() {
         <GameLoadingScreen
           onComplete={() => {
             setShowLoading(false)
-            localStorage.setItem('auctionxi_boot_complete', 'true')
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('auctionxi_session_loaded', 'true')
+              localStorage.setItem('auctionxi_boot_complete', 'true')
+            }
             
             let activeCamp = getActiveCampaign()
             if (!activeCamp && typeof window !== 'undefined') {

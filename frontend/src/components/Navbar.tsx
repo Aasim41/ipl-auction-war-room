@@ -192,10 +192,10 @@ export function Navbar() {
     <>
       <nav className="app-safe-navbar fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-t-2 border-t-emerald-500/30 border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
         {/* Interactive Navbar Controls Row */}
-        <div className="w-full h-12 sm:h-13 flex items-center justify-between px-2 sm:px-4 gap-1.5 sm:gap-2">
+        <div className="w-full h-12 sm:h-13 flex items-center justify-between px-1.5 sm:px-4 gap-1 sm:gap-2">
           
           {/* Left: Navigation & Franchise Identity */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {pathname !== '/' ? (
               <button
                 onClick={() => {
@@ -203,7 +203,7 @@ export function Navbar() {
                   triggerGameHaptic('light')
                   handleBack()
                 }}
-                className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 text-[11px] font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
+                className="p-1 sm:px-2 sm:py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 text-[11px] font-bold border border-white/10 cursor-pointer shadow-sm transition-all shrink-0"
                 title="Return to Dashboard"
               >
                 <ArrowLeft size={13} className="text-amber-400" />
@@ -220,10 +220,10 @@ export function Navbar() {
                 setAuthModalTab('saves')
                 setShowAuthModal(true)
               }}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white transition-all cursor-pointer border border-white/10 group shrink-0"
+              className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white transition-all cursor-pointer border border-white/10 group shrink-0"
               title="Click to view all Franchise Saves & Careers"
             >
-              <TeamLogo teamId={franchise.id} size={20} className="transition-transform group-hover:scale-105 shrink-0" />
+              <TeamLogo teamId={franchise.id} size={18} className="transition-transform group-hover:scale-105 shrink-0" />
               <span className="font-mono font-black text-xs text-amber-400">
                 {franchise.short}
               </span>
@@ -232,7 +232,7 @@ export function Navbar() {
           </div>
 
           {/* Center: Minimal Sequential Phase Stepper (Always 100% Fully Visible) */}
-          <div className="flex items-center justify-center gap-1 sm:gap-1.5 shrink-0">
+          <div className="flex items-center justify-center gap-0.5 sm:gap-1.5 shrink-0">
             {PHASES.map((phase) => {
               const isActive = pathname === phase.href
               const isLocked = phase.isLocked
@@ -243,7 +243,7 @@ export function Navbar() {
                     key={phase.id}
                     onClick={() => triggerLockedAlert(phase.label, phase.isConcluded)}
                     title={phase.isConcluded ? "Concluded and locked by BCCI regulations" : "Complete current phase to unlock"}
-                    className="px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold flex items-center gap-0.5 sm:gap-1 shrink-0 bg-slate-900/40 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
+                    className="px-1 sm:px-2 py-0.5 rounded-md text-[8.5px] sm:text-[10px] font-bold flex items-center gap-0.5 sm:gap-1 shrink-0 bg-slate-900/40 text-gray-500 border border-white/5 cursor-not-allowed opacity-50"
                   >
                     <Lock size={8} className={phase.isConcluded ? "text-amber-500/60" : "text-gray-500"} />
                     <span>{phase.shortLabel}</span>
@@ -262,7 +262,7 @@ export function Navbar() {
                       advancePhase('playing_xi')
                     }
                   }}
-                  className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black flex items-center gap-0.5 sm:gap-1 transition-all shrink-0 cursor-pointer ${
+                  className={`px-1 sm:px-2 py-0.5 rounded-md text-[8.5px] sm:text-[10px] font-black flex items-center gap-0.5 sm:gap-1 transition-all shrink-0 cursor-pointer ${
                     isActive
                       ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30'
                       : 'text-gray-300 hover:text-white bg-slate-900/80 hover:bg-white/10 border border-white/10'
@@ -275,16 +275,16 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Right: Resume Match (if active) + Purse + GM Profile */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {activeCamp?.activeMatchSimulation && !activeCamp.activeMatchSimulation.matchDone && (
+          {/* Right: Resume Match (if active & not on playing-xi) + Purse (not on playing-xi) + GM Profile */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {pathname !== '/playing-xi' && activeCamp?.activeMatchSimulation && !activeCamp.activeMatchSimulation.matchDone && (
               <Link
                 href="/playing-xi"
                 onClick={() => {
                   gameAudio.playUiTap('select');
                   triggerGameHaptic('light');
                 }}
-                className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 hover:from-emerald-500/30 hover:to-emerald-600/30 border border-emerald-400/50 text-emerald-300 font-mono font-bold text-[10px] sm:text-xs flex items-center gap-1 animate-pulse transition-all shrink-0 cursor-pointer shadow-sm"
+                className="px-1.5 sm:px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 hover:from-emerald-500/30 hover:to-emerald-600/30 border border-emerald-400/50 text-emerald-300 font-mono font-bold text-[9.5px] sm:text-xs flex items-center gap-1 animate-pulse transition-all shrink-0 cursor-pointer shadow-sm"
                 title="Resume Match in Progress"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
@@ -293,12 +293,13 @@ export function Navbar() {
               </Link>
             )}
 
-            {activeCamp && (
+            {/* Purse visible on Trade, Squad, Auction - strictly hidden on Playing 11 */}
+            {activeCamp && pathname !== '/playing-xi' && (
               <div 
-                className="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 text-[10px] sm:text-xs font-mono font-black text-amber-300 shrink-0"
+                className="px-1.5 sm:px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center gap-0.5 sm:gap-1 text-[9.5px] sm:text-xs font-mono font-black text-amber-300 shrink-0"
                 title="Remaining Purse"
               >
-                <Coins size={11} className="text-amber-400 shrink-0" />
+                <Coins size={10} className="text-amber-400 shrink-0" />
                 <span>₹{remainingPurse.toFixed(1)}Cr</span>
               </div>
             )}
@@ -312,7 +313,7 @@ export function Navbar() {
                 setAuthModalTab('switch')
                 setShowAuthModal(true)
               }}
-              className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
               title="Manager Profile & Careers"
             >
               <span className="text-xs">{currentUser?.avatar || '👑'}</span>

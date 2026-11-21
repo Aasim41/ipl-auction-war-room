@@ -38,6 +38,7 @@ import TeamLogo from './TeamLogo';
 import { lockOrientation } from '../lib/orientationManager';
 import { formatPlayerInitial } from '../lib/nameFormatter';
 import { useCampaignStore } from '../store/useCampaignStore';
+import { getDetailedPlayerRole, isPlayerSpinner } from '../lib/bowlerClassification';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
@@ -2516,8 +2517,12 @@ export default function BallByBallMatchSimulator({
                           <span>🎯</span>
                           <span className="truncate">{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
                         </div>
-                        <div className="text-[9px] text-gray-400 truncate">
-                          Spell: {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'}/4 ov
+                        <div className="text-[9px] text-gray-400 truncate flex items-center gap-1">
+                          <span className={isPlayerSpinner(bowlerPlayer) ? 'text-purple-300 font-bold' : 'text-rose-300 font-bold'}>
+                            {getDetailedPlayerRole(bowlerPlayer)}
+                          </span>
+                          <span>•</span>
+                          <span>Spell: {activeInnings.bowlingFigures.find(bw => bw.name === bowlerPlayer?.name)?.overs || '0.0'}/4 ov</span>
                         </div>
                         {isUserBowling && (
                           <button
@@ -3354,8 +3359,12 @@ export default function BallByBallMatchSimulator({
                         <strong className="text-white text-xs sm:text-sm font-bold truncate">
                           {formatPlayerInitial(b.name)}
                         </strong>
-                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-gray-300 font-mono">
-                          {b.role}
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                          isPlayerSpinner(b)
+                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                            : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                        }`}>
+                          {getDetailedPlayerRole(b)}
                         </span>
                         {isCurrent && (
                           <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500 text-white font-black font-mono">
