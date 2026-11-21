@@ -1832,6 +1832,13 @@ export default function BallByBallMatchSimulator({
         }
         break;
       }
+
+      if (outcome.isWicket && isUserBatting && curTotalWickets < 10) {
+        setDismissedBatterName(strikerPlayer);
+        setDismissedBatterSlot('striker');
+        setShowNextBatterModal(true);
+        break; // Pause full-over simulation at wicket so user selects next batter
+      }
     }
 
     let nextBowlerIdx = currentBowlerIdx;
@@ -2412,7 +2419,7 @@ export default function BallByBallMatchSimulator({
 
             {/* Tab 1: Interactive Match Arena (Portrait Mobile First - Fits Perfectly) */}
             {activeTab === 'arena' ? (
-              <div className="flex-1 flex flex-col justify-between gap-1.5 p-2 sm:p-2.5 overflow-hidden select-none">
+              <div className="flex-1 flex flex-col justify-between gap-1.5 p-2 sm:p-2.5 overflow-y-auto select-none">
                 
                 {/* ─── COMPACT IPL BROADCAST SCORECARD HUD ─── */}
                 <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-white/20 flex flex-col gap-1.5 shadow-xl shrink-0 my-0.5">
@@ -2598,7 +2605,7 @@ export default function BallByBallMatchSimulator({
                 </div>
 
                 {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR (COMPACT FIT) ─── */}
-                <div className="relative my-0.5 h-[160px] sm:h-[185px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-xl select-none">
+                <div className="relative my-0.5 h-[270px] sm:h-[310px] md:h-[350px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-xl select-none">
                   
                   {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
                   <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/85 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-sm">
@@ -3453,6 +3460,16 @@ export default function BallByBallMatchSimulator({
                   <p className="text-[10px] text-gray-400 font-mono">Select 2 opening bowlers for Over 1 & Over 2 (No back-to-back)</p>
                 </div>
               </div>
+              <button
+                onClick={() => {
+                  setCurrentBowlerIdx(openingBowler1Idx);
+                  setOpeningBowlersConfirmed(true);
+                  setShowOpeningBowlersModal(false);
+                }}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center text-xs cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1">
