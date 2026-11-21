@@ -466,26 +466,38 @@ export default function TradeWindowPage() {
           {/* Column 1 (Left): Your Franchise Squad */}
           <div 
             style={{
-              background: myTheme.cardBg,
+              background: `${myTheme.bgDeep}fa`,
               borderColor: myTheme.cardBorder,
               boxShadow: myTheme.cardGlow,
             }}
-            className={`flex-1 min-w-0 p-3 rounded-3xl border flex flex-col shadow-xl transition-all ${
+            className={`flex-1 min-w-0 p-3 rounded-3xl border-2 flex flex-col shadow-2xl transition-all ${
             mobileTab !== 'my' ? 'hidden sm:flex' : 'flex'
           } ${
-            playerOut ? 'ring-2 ring-rose-500/60 shadow-rose-500/20' : ''
+            playerOut ? 'ring-2 ring-rose-400 shadow-rose-500/30' : ''
           }`}>
             <div className="shrink-0">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 gap-1">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/20 gap-1">
                 <div className="flex items-center gap-2 min-w-0">
-                  <TeamLogo teamId={myFranchise.id} size={22} className="shrink-0" />
+                  <TeamLogo teamId={myFranchise.id} size={24} className="shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="text-xs font-black uppercase text-white truncate">{myFranchise.short}</h3>
-                    <span className="text-[10px] text-gray-300">Squad ({filteredMySquad.length})</span>
+                    <h3 className="text-sm font-black uppercase text-white truncate">{myFranchise.name}</h3>
+                    <span 
+                      style={{ color: myTheme.primary }}
+                      className="text-[10px] font-bold font-mono"
+                    >
+                      Your Squad ({filteredMySquad.length} Players)
+                    </span>
                   </div>
                 </div>
                 {playerOut && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/30 text-rose-200 font-bold border border-rose-500/40 truncate max-w-[120px]">
+                  <span 
+                    style={{
+                      backgroundColor: myTheme.pillBg,
+                      color: myTheme.pillText,
+                      borderColor: myTheme.cardBorder,
+                    }}
+                    className="text-[10px] px-2.5 py-0.5 rounded-full font-black border truncate max-w-[130px] shadow-sm"
+                  >
                     OUT: {playerOut.name}
                   </span>
                 )}
@@ -498,13 +510,13 @@ export default function TradeWindowPage() {
                 onChange={(e) => setSearchMy(e.target.value)}
                 style={{
                   background: `${myTheme.bgDeep}ee`,
-                  borderColor: `${myTheme.primary}40`,
+                  borderColor: myTheme.cardBorder,
                 }}
-                className="w-full mb-2 border rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-white transition-all"
+                className="w-full mb-2 border rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-white transition-all shadow-inner"
               />
             </div>
 
-            <div className="flex-1 max-h-[420px] overflow-y-auto space-y-1.5 pr-0.5 overscroll-contain touch-pan-y">
+            <div className="flex-1 max-h-[420px] overflow-y-auto space-y-2 pr-0.5 overscroll-contain touch-pan-y">
               {filteredMySquad.map((p) => {
                 const isSelected = playerOut?.player_id === p.player_id
                 return (
@@ -517,40 +529,57 @@ export default function TradeWindowPage() {
                       setPlayerOut(isSelected ? null : p)
                     }}
                     style={isSelected ? {
-                      background: `${myTheme.primary}45`,
-                      borderColor: myTheme.primary,
-                      boxShadow: `0 0 16px ${myTheme.primary}80`,
+                      background: myTheme.cardBg,
+                      borderColor: '#ffffff',
+                      boxShadow: `0 0 20px ${myTheme.primary}, 0 0 0 2px #ffffff`,
                     } : {
-                      background: `${myTheme.primary}18`,
-                      borderColor: `${myTheme.primary}35`,
+                      background: myTheme.cardBg,
+                      borderColor: myTheme.cardBorder,
+                      boxShadow: myTheme.cardGlow,
                     }}
-                    className={`p-1.5 sm:p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                    className={`p-2.5 rounded-xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'text-white scale-[1.01]'
-                        : 'hover:brightness-125 text-gray-100'
+                        ? 'scale-[1.02]'
+                        : 'hover:brightness-110 active:scale-[0.99]'
                     } ${isTradeLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     <div className="truncate mr-1 min-w-0">
-                      <div className="font-bold text-[11px] sm:text-xs text-white flex items-center gap-1 truncate">
+                      <div 
+                        style={{ color: myTheme.contrastText }}
+                        className="font-black text-xs sm:text-sm flex items-center gap-1.5 truncate drop-shadow-sm"
+                      >
                         <span className="truncate">{p.name}</span>
-                        {p.is_overseas && <span className="text-[8px] sm:text-[9px] px-1 rounded bg-sky-500/30 text-sky-200 border border-sky-400/40 shrink-0 font-bold">OS</span>}
+                        {p.is_overseas && (
+                          <span 
+                            style={{
+                              backgroundColor: myTheme.bgDeep,
+                              color: myTheme.contrastText,
+                            }}
+                            className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm"
+                          >
+                            OS
+                          </span>
+                        )}
                       </div>
-                      <div className="text-[9px] sm:text-[10px] text-gray-300 font-mono">
+                      <div 
+                        style={{ color: myTheme.contrastText }}
+                        className="text-[10px] font-mono font-bold mt-0.5 opacity-90 truncate"
+                      >
                         {getDetailedPlayerRole(p)} • ₹{p.price}Cr
                       </div>
                     </div>
                     <div className="text-right shrink-0">
                       <span 
                         style={isSelected ? {
-                          backgroundColor: myTheme.pillBg,
-                          color: myTheme.pillText,
-                          boxShadow: `0 0 10px ${myTheme.primary}60`,
-                        } : {
-                          backgroundColor: `${myTheme.primary}30`,
+                          backgroundColor: '#000000',
                           color: '#ffffff',
-                          border: `1px solid ${myTheme.primary}50`,
+                          boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+                        } : {
+                          backgroundColor: `${myTheme.bgDeep}e6`,
+                          color: myTheme.contrastText,
+                          border: `1px solid ${myTheme.cardBorder}`,
                         }}
-                        className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all shadow-sm"
+                        className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all shadow-md"
                       >
                         {isSelected ? '✓ Offering' : 'Trade Out'}
                       </span>
