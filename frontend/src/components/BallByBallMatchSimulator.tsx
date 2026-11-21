@@ -3353,6 +3353,7 @@ export default function BallByBallMatchSimulator({
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <strong className="text-white text-xs sm:text-sm font-bold truncate">
+                          <span className="text-[10px] text-gray-400 mr-1.5 font-mono">#{bIdx + 1}</span>
                           {formatPlayerInitial(b.name)}
                         </strong>
                         <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${
@@ -3632,13 +3633,13 @@ export default function BallByBallMatchSimulator({
               <div>
                 <label className="text-xs font-bold text-amber-300 mb-1.5 block">🏏 Striker (Takes strike for Ball 1):</label>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {currentBatSquad.slice(0, 7).map((p, pIdx) => (
+                  {currentBatSquad.slice(0, 11).map((p, pIdx) => (
                     <button
                       key={p.player_id || pIdx}
                       onClick={() => {
                         setStrikerIdx(pIdx);
                         if (pIdx === nonStrikerIdx) {
-                          setNonStrikerIdx((pIdx + 1) % currentBatSquad.length);
+                          setNonStrikerIdx((pIdx + 1) % Math.min(11, currentBatSquad.length));
                         }
                         gameAudio.playUiTap('select');
                       }}
@@ -3648,7 +3649,10 @@ export default function BallByBallMatchSimulator({
                           : 'bg-slate-950/80 text-gray-300 border-white/10 hover:border-white/30'
                       }`}
                     >
-                      <div className="text-xs font-bold truncate">{formatPlayerInitial(p.name)}</div>
+                      <div className="text-xs font-bold truncate">
+                        <span className="text-[10px] opacity-75 mr-1 font-mono">#{pIdx + 1}</span>
+                        {formatPlayerInitial(p.name)}
+                      </div>
                       <div className="text-[9px] font-mono opacity-80">{p.role}</div>
                     </button>
                   ))}
@@ -3658,7 +3662,7 @@ export default function BallByBallMatchSimulator({
               <div>
                 <label className="text-xs font-bold text-sky-300 mb-1.5 block">🏃 Non-Striker (Runner at bowling end):</label>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {currentBatSquad.slice(0, 7).map((p, pIdx) => (
+                  {currentBatSquad.slice(0, 11).map((p, pIdx) => (
                     <button
                       key={p.player_id || pIdx}
                       disabled={pIdx === strikerIdx}
@@ -3674,7 +3678,10 @@ export default function BallByBallMatchSimulator({
                           : 'bg-slate-950/80 text-gray-300 border-white/10 hover:border-white/30 cursor-pointer'
                       }`}
                     >
-                      <div className="text-xs font-bold truncate">{formatPlayerInitial(p.name)}</div>
+                      <div className="text-xs font-bold truncate">
+                        <span className="text-[10px] opacity-75 mr-1 font-mono">#{pIdx + 1}</span>
+                        {formatPlayerInitial(p.name)}
+                      </div>
                       <div className="text-[9px] font-mono opacity-80">{p.role}</div>
                     </button>
                   ))}
