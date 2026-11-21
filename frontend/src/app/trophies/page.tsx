@@ -128,7 +128,7 @@ export default function TrophyCabinetPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col select-none pt-12 sm:pt-14 pb-12 px-2.5 sm:px-4 max-w-4xl mx-auto w-full overflow-x-hidden min-w-0">
+    <div className="min-h-screen bg-transparent text-white flex flex-col select-none pt-12 sm:pt-14 pb-12 px-2.5 sm:px-4 max-w-4xl mx-auto w-full overflow-x-hidden min-w-0">
       
       {/* ─── COMPACT TOP HEADER BAR ─── */}
       <div className="flex flex-wrap items-center justify-between py-1.5 border-b border-white/10 gap-1.5 shrink-0 min-w-0">

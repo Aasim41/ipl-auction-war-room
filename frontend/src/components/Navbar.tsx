@@ -190,7 +190,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="app-safe-navbar fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-t-2 border-t-emerald-500/30 border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
+      <nav className="app-safe-navbar fixed top-0 left-0 right-0 w-full z-50 bg-slate-950/95 backdrop-blur-xl border-t border-t-white/10 border-b border-white/10 shadow-2xl flex flex-col select-none overflow-x-hidden">
         {/* Interactive Navbar Controls Row */}
         <div className="w-full h-12 sm:h-13 flex items-center justify-between px-1.5 sm:px-4 gap-1 sm:gap-2">
           

@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="w-full h-full">
-      <body className="antialiased w-full h-full min-h-[100dvh] bg-[#05080c] text-slate-100 overflow-x-hidden">
+      <body className="antialiased w-full h-full min-h-[100dvh] text-slate-100 overflow-x-hidden transition-colors duration-700 ease-out">
         <ThemeProvider>
           <CapacitorDeviceManager />
           <AmbientBackground />

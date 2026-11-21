@@ -51,26 +51,26 @@
 
 /* ─── CSS Custom Properties for Dynamic Franchise Theming ────────── */
 :root {
-  --accent-primary: #fbbf24;
-  --accent-secondary: #f59e0b;
-  --accent-glow: rgba(251, 191, 36, 0.20);
-  --theme-bg: #05080c;
+  --accent-primary: #dc2626;
+  --accent-secondary: #ef4444;
+  --accent-glow: rgba(220, 38, 38, 0.40);
+  --theme-bg: #120204;
 }
 
-.theme-csk  { --accent-primary: #fbbf24; --accent-secondary: #f59e0b; --accent-glow: rgba(251,191,36,0.22); }
-.theme-mi   { --accent-primary: #2563eb; --accent-secondary: #3b82f6; --accent-glow: rgba(37,99,235,0.22); }
-.theme-rcb  { --accent-primary: #dc2626; --accent-secondary: #ef4444; --accent-glow: rgba(220,38,38,0.22); }
-.theme-kkr  { --accent-primary: #7c3aed; --accent-secondary: #8b5cf6; --accent-glow: rgba(124,58,237,0.22); }
-.theme-srh  { --accent-primary: #ea580c; --accent-secondary: #f97316; --accent-glow: rgba(234,88,12,0.22); }
-.theme-rr   { --accent-primary: #db2777; --accent-secondary: #ec4899; --accent-glow: rgba(219,39,119,0.22); }
-.theme-dc   { --accent-primary: #0284c7; --accent-secondary: #0ea5e9; --accent-glow: rgba(2,132,199,0.22); }
-.theme-pbks { --accent-primary: #b91c1c; --accent-secondary: #dc2626; --accent-glow: rgba(185,28,28,0.22); }
-.theme-lsg  { --accent-primary: #0891b2; --accent-secondary: #06b6d4; --accent-glow: rgba(8,145,178,0.22); }
-.theme-gt   { --accent-primary: #0d9488; --accent-secondary: #14b8a6; --accent-glow: rgba(13,148,136,0.22); }
+.theme-csk  { --accent-primary: #f59e0b; --accent-secondary: #fbbf24; --accent-glow: rgba(245, 158, 11, 0.42); --theme-bg: #120e02; }
+.theme-mi   { --accent-primary: #1d4ed8; --accent-secondary: #3b82f6; --accent-glow: rgba(29, 78, 216, 0.42); --theme-bg: #020c1c; }
+.theme-rcb  { --accent-primary: #dc2626; --accent-secondary: #ef4444; --accent-glow: rgba(220, 38, 38, 0.42); --theme-bg: #120204; }
+.theme-kkr  { --accent-primary: #7c3aed; --accent-secondary: #a855f7; --accent-glow: rgba(124, 58, 237, 0.42); --theme-bg: #0f031c; }
+.theme-srh  { --accent-primary: #ea580c; --accent-secondary: #f97316; --accent-glow: rgba(234, 88, 12, 0.42); --theme-bg: #140602; }
+.theme-rr   { --accent-primary: #db2777; --accent-secondary: #ec4899; --accent-glow: rgba(219, 39, 119, 0.42); --theme-bg: #160310; }
+.theme-dc   { --accent-primary: #0284c7; --accent-secondary: #0ea5e9; --accent-glow: rgba(2, 132, 199, 0.42); --theme-bg: #020f1a; }
+.theme-pbks { --accent-primary: #b91c1c; --accent-secondary: #ef4444; --accent-glow: rgba(185, 28, 28, 0.42); --theme-bg: #140303; }
+.theme-lsg  { --accent-primary: #0891b2; --accent-secondary: #06b6d4; --accent-glow: rgba(8, 145, 178, 0.42); --theme-bg: #021014; }
+.theme-gt   { --accent-primary: #0d9488; --accent-secondary: #14b8a6; --accent-glow: rgba(13, 148, 136, 0.42); --theme-bg: #02110f; }
 
 /* ─── Base Styles ──────────────────────────────────────── */
 html, body {
-  background-color: #05080c;
+  background-color: var(--theme-bg, #120204);
   color: #f8fafc;
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100dvh;
@@ -83,6 +83,7 @@ html, body {
   touch-action: manipulation;
   overscroll-behavior-x: none;
   -webkit-overflow-scrolling: touch;
+  transition: background-color 0.7s ease-out;
 }
 
 /* Edge-to-edge full phone screen adaptation */
@@ -93,21 +94,17 @@ html, body {
   }
 }
 
-/* ─── Authentic Cricket Stadium Night Floodlight & Arena Atmosphere ─── */
+/* ─── Dynamic Franchise Atmospheric Underlay ─── */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -2;
   background: 
-    /* Dual Corner Halogen Floodlight Towers */
-    radial-gradient(circle 700px at 5% 0%, rgba(255, 255, 255, 0.25) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
-    radial-gradient(circle 700px at 95% 0%, rgba(255, 255, 255, 0.25) 0%, rgba(254, 240, 138, 0.12) 25%, transparent 75%),
-    /* Franchise Ambient Night Aurora */
-    radial-gradient(ellipse 900px 380px at 50% 0%, var(--accent-glow, rgba(251, 191, 36, 0.12)) 0%, transparent 70%),
-    /* Authentic Stadium Night Arena Base (Clean obsidian-navy, no muddy flat green wash) */
-    linear-gradient(180deg, #05080c 0%, #070c12 35%, #09121a 70%, #05080c 100%);
+    radial-gradient(circle 800px at 50% 0%, var(--accent-glow, rgba(220, 38, 38, 0.35)) 0%, transparent 75%),
+    linear-gradient(180deg, var(--theme-bg, #120204) 0%, #05080c 100%);
   pointer-events: none;
+  transition: background 0.7s ease-out;
 }
 
 /* Subtle Stadium Atmosphere Grain Depth */

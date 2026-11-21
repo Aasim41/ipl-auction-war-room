@@ -436,7 +436,7 @@ export default function PlayingXIPage() {
             )}
 
             {/* ─── COMPACT ALL-IN-ONE MATCH CONTROL STRIP ─── */}
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col gap-1.5 shadow-md">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 flex flex-col gap-1.5 shadow-xl">
               <div className="flex flex-wrap items-center justify-between gap-1.5">
                 {/* Tactic Toggle: Bat-First vs Bowl-First */}
                 <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-white/10 shrink-0">
@@ -515,7 +515,7 @@ export default function PlayingXIPage() {
             </div>
 
             {/* ─── Matchday 11 (Batting Order 1 to 11) ─── */}
-            <div className="p-3.5 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col gap-2.5">
+            <div className="p-3.5 sm:p-4 rounded-3xl bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl flex flex-col gap-2.5">
               <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
                 <span className="text-xs font-black uppercase text-amber-400">
                   {lineupMode === 'bat_first' ? '🏏 Bat-First Lineup' : '🎯 Bowl-First Lineup'}
@@ -533,7 +533,7 @@ export default function PlayingXIPage() {
                   return (
                     <div
                       key={player.player_id}
-                      className="rounded-xl bg-slate-950/90 border border-white/10 hover:border-amber-400/40 transition-all overflow-hidden"
+                      className="rounded-xl bg-slate-950/80 backdrop-blur-sm border border-white/10 hover:border-amber-400/40 transition-all overflow-hidden"
                     >
                       {/* Card Header Strip */}
                       <div 

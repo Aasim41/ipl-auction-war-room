@@ -137,6 +137,10 @@ export default function UnifiedTeamSelectHomePage() {
   const handleSelectTeamTab = (teamId: string) => {
     setSelectedTeamId(teamId)
     setTheme(teamId)
+    const matchingCamp = Object.values(campaigns).find(c => c.teamId === teamId)
+    if (matchingCamp) {
+      switchCampaign(matchingCamp.id)
+    }
     gameAudio.playUiTap('select')
     triggerGameHaptic('light')
   }
