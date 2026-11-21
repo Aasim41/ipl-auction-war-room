@@ -3580,6 +3580,7 @@ export default function BallByBallMatchSimulator({
                       } else {
                         setNonStrikerIdx(pIdx);
                       }
+                      setNextBatterIdx(prev => Math.max(prev, pIdx + 1));
                       setShowNextBatterModal(false);
                       gameAudio.playWillowCrack('single');
                       triggerGameHaptic('medium');
@@ -3653,7 +3654,10 @@ export default function BallByBallMatchSimulator({
                 </div>
               </div>
               <button
-                onClick={() => setShowOpeningPairModal(false)}
+                onClick={() => {
+                  setOpeningBattersConfirmed(true);
+                  setShowOpeningPairModal(false);
+                }}
                 className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center text-xs cursor-pointer"
               >
                 ✕
@@ -3716,7 +3720,12 @@ export default function BallByBallMatchSimulator({
 
             <div className="pt-3 border-t border-white/10 shrink-0 flex justify-end">
               <button
-                onClick={() => setShowOpeningPairModal(false)}
+                onClick={() => {
+                  setOpeningBattersConfirmed(true);
+                  setShowOpeningPairModal(false);
+                  gameAudio.playWillowCrack('four');
+                  triggerGameHaptic('medium');
+                }}
                 className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer shadow-lg"
               >
                 Confirm Openers ➔
