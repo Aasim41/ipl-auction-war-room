@@ -452,7 +452,14 @@ export default function PlayingXIPage() {
             )}
 
             {/* ─── COMPACT ALL-IN-ONE MATCH CONTROL STRIP ─── */}
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 flex flex-col gap-1.5 shadow-xl">
+            <div 
+              style={{
+                background: `${myTheme.bgDeep}fa`,
+                borderColor: myTheme.cardBorder,
+                boxShadow: myTheme.cardGlow,
+              }}
+              className="p-2 sm:p-2.5 rounded-2xl border-2 flex flex-col gap-1.5 shadow-xl"
+            >
               <div className="flex flex-wrap items-center justify-between gap-1.5">
                 {/* Tactic Toggle: Bat-First vs Bowl-First */}
                 <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-white/10 shrink-0">
@@ -462,9 +469,13 @@ export default function PlayingXIPage() {
                       gameAudio.playUiTap('select');
                       triggerGameHaptic('light');
                     }}
+                    style={lineupMode === 'bat_first' ? {
+                      backgroundColor: myTheme.pillBg,
+                      color: myTheme.pillText,
+                    } : {}}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                       lineupMode === 'bat_first'
-                        ? 'bg-amber-500 text-slate-950 shadow-sm'
+                        ? 'font-black shadow-sm'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -476,9 +487,13 @@ export default function PlayingXIPage() {
                       gameAudio.playUiTap('select');
                       triggerGameHaptic('light');
                     }}
+                    style={lineupMode === 'bowl_first' ? {
+                      backgroundColor: myTheme.pillBg,
+                      color: myTheme.pillText,
+                    } : {}}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                       lineupMode === 'bowl_first'
-                        ? 'bg-sky-500 text-white shadow-sm'
+                        ? 'font-black shadow-sm'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -488,11 +503,15 @@ export default function PlayingXIPage() {
 
                 {/* Match Venue Selector */}
                 <div className="flex items-center gap-1 min-w-0">
-                  <MapPin size={11} className="text-amber-400 shrink-0" />
+                  <MapPin size={11} style={{ color: myTheme.primary }} className="shrink-0" />
                   <select 
                     value={venue} 
                     onChange={(e) => setVenue(e.target.value)}
-                    className="bg-slate-950 border border-white/15 rounded-lg py-1 px-2 text-[11px] text-white font-bold focus:outline-none focus:border-amber-400 cursor-pointer truncate max-w-[150px] sm:max-w-[200px]"
+                    style={{
+                      background: myTheme.bgDeep,
+                      borderColor: myTheme.cardBorder,
+                    }}
+                    className="border rounded-lg py-1 px-2 text-[11px] text-white font-bold focus:outline-none focus:border-white cursor-pointer truncate max-w-[150px] sm:max-w-[200px]"
                   >
                     {Object.keys(VENUE_INSIGHTS).map(v => (
                       <option key={v} value={v}>{v} ({VENUE_INSIGHTS[v]?.title.split('(')[0].trim()})</option>
@@ -503,53 +522,89 @@ export default function PlayingXIPage() {
                 {/* Impact Sub (Click directly to swap reserve - no separate button needed!) */}
                 <button
                   onClick={() => setBenchDrawerSlotIndex(11)}
-                  className="px-2 py-1 rounded-xl bg-indigo-950/70 hover:bg-indigo-900/70 border border-indigo-500/40 text-[11px] font-bold text-indigo-300 flex items-center gap-1 cursor-pointer shrink-0 transition-all active:scale-95"
+                  style={{
+                    backgroundColor: myTheme.bgDeep,
+                    borderColor: myTheme.cardBorder,
+                    color: myTheme.contrastText,
+                  }}
+                  className="px-2 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer shrink-0 transition-all active:scale-95 shadow-sm"
                   title="Tap to change Impact Player (12th Man)"
                 >
-                  <Sparkles size={10} className="text-indigo-400" />
+                  <Sparkles size={10} style={{ color: myTheme.primary }} />
                   <span>Sub: {impactPlayer ? `${formatPlayerInitial(impactPlayer.name)} (${getCompactRoleBadge(impactPlayer)})` : 'Pick Sub'}</span>
                 </button>
 
                 {/* BCCI Compliance Status */}
                 <div className="flex items-center gap-1 text-[10px] font-mono shrink-0">
-                  <span className={`px-2 py-0.5 rounded-lg border font-bold ${
-                    isCompliant
-                      ? 'bg-emerald-950/50 border-emerald-500/40 text-emerald-300'
-                      : 'bg-rose-950/50 border-rose-500/40 text-rose-300'
-                  }`}>
+                  <span 
+                    style={{
+                      backgroundColor: myTheme.bgDeep,
+                      borderColor: myTheme.cardBorder,
+                      color: myTheme.contrastText,
+                    }}
+                    className="px-2 py-0.5 rounded-lg border font-bold shadow-sm"
+                  >
                     {isCompliant ? '✓ 4 OS • 1 WK • 5 Bowl' : '⚠️ Rule Warning'}
                   </span>
                 </div>
               </div>
 
               {/* Smallest & Easiest Stadium Detail Micro-Strip (Guaranteed Fits Screen) */}
-              <div className="w-full min-w-0 overflow-hidden flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-950/70 border border-white/5 text-[10px] font-mono">
-                <span className="text-amber-400 font-bold shrink-0">🏟️ {currentInsight.title.split('(')[0].trim()}:</span>
-                <span className="text-emerald-300 font-bold truncate">{currentInsight.boost}</span>
-                <span className="text-gray-400 truncate hidden sm:inline">• {currentInsight.behavior}</span>
+              <div 
+                style={{
+                  background: `${myTheme.bgDeep}cc`,
+                  borderColor: myTheme.cardBorder,
+                }}
+                className="w-full min-w-0 overflow-hidden flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] font-mono"
+              >
+                <span style={{ color: myTheme.primary }} className="font-bold shrink-0">🏟️ {currentInsight.title.split('(')[0].trim()}:</span>
+                <span className="text-white font-bold truncate">{currentInsight.boost}</span>
+                <span className="text-gray-300 truncate hidden sm:inline">• {currentInsight.behavior}</span>
               </div>
             </div>
 
             {/* ─── Matchday 11 (Batting Order 1 to 11) ─── */}
-            <div className="p-3.5 sm:p-4 rounded-3xl bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl flex flex-col gap-2.5">
-              <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
-                <span className="text-xs font-black uppercase text-amber-400">
+            <div 
+              style={{
+                background: `${myTheme.bgDeep}fa`,
+                borderColor: myTheme.cardBorder,
+                boxShadow: myTheme.cardGlow,
+              }}
+              className="p-3.5 sm:p-4 rounded-3xl border-2 shadow-2xl flex flex-col gap-2.5"
+            >
+              <div className="flex items-center justify-between pb-1.5 border-b border-white/20">
+                <span 
+                  style={{ color: myTheme.primary }}
+                  className="text-xs font-black uppercase font-mono tracking-wider"
+                >
                   {lineupMode === 'bat_first' ? '🏏 Bat-First Lineup' : '🎯 Bowl-First Lineup'}
                 </span>
-                <span className="text-[11px] font-mono font-bold text-emerald-400 flex items-center gap-1">
+                <span 
+                  style={{
+                    backgroundColor: myTheme.pillBg,
+                    color: myTheme.pillText,
+                    borderColor: myTheme.cardBorder,
+                  }}
+                  className="text-[11px] font-mono font-black px-2 py-0.5 rounded-lg border flex items-center gap-1 shadow-sm"
+                >
                   <CheckCircle2 size={12} />
                   <span>11 Set</span>
                 </span>
               </div>
 
               {/* 11 Player Cards List */}
-              <div className="space-y-1 transition-all">
+              <div className="space-y-1.5 transition-all">
                 {fullPlayingXI.map((player, index) => {
                   const isExpanded = expandedPlayerId === player.player_id;
                   return (
                     <div
                       key={player.player_id}
-                      className="rounded-xl bg-slate-950/80 backdrop-blur-sm border border-white/10 hover:border-amber-400/40 transition-all overflow-hidden"
+                      style={{
+                        background: myTheme.cardBg,
+                        borderColor: myTheme.cardBorder,
+                        boxShadow: myTheme.cardGlow,
+                      }}
+                      className="rounded-xl border-2 transition-all overflow-hidden hover:scale-[1.01]"
                     >
                       {/* Card Header Strip */}
                       <div 
@@ -557,35 +612,54 @@ export default function PlayingXIPage() {
                           setExpandedPlayerId(isExpanded ? null : player.player_id);
                           gameAudio.playUiTap('light');
                         }}
-                        className="py-1.5 px-2.5 flex items-center justify-between gap-2 cursor-pointer hover:bg-white/5"
+                        className="py-2 px-2.5 flex items-center justify-between gap-2 cursor-pointer hover:brightness-105"
                       >
                         {/* Left: Batting Order & Identity */}
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className={`w-5 h-5 rounded-md font-mono font-black text-[11px] flex items-center justify-center shrink-0 ${
-                            index < 3
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                              : index < 7
-                              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-                              : 'bg-slate-800 text-gray-300 border border-white/10'
-                          }`}>
+                          <div 
+                            style={{
+                              backgroundColor: myTheme.bgDeep,
+                              color: myTheme.contrastText,
+                              borderColor: myTheme.cardBorder,
+                            }}
+                            className="w-5 h-5 rounded-md font-mono font-black text-[11px] flex items-center justify-center shrink-0 border shadow-sm"
+                          >
                             {index + 1}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-bold text-xs text-white flex items-center gap-1.5 truncate">
+                            <div 
+                              style={{ color: myTheme.contrastText }}
+                              className="font-black text-xs sm:text-sm flex items-center gap-1.5 truncate drop-shadow-sm"
+                            >
                               <span className="truncate">{formatPlayerInitial(player.name)}</span>
                               {player.is_overseas && (
-                                <span className="text-[8.5px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono shrink-0">
+                                <span 
+                                  style={{
+                                    backgroundColor: myTheme.bgDeep,
+                                    color: myTheme.contrastText,
+                                  }}
+                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm"
+                                >
                                   OS
                                 </span>
                               )}
                               {player.role === 'WK' && (
-                                <span className="text-[8.5px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono shrink-0">
+                                <span 
+                                  style={{
+                                    backgroundColor: myTheme.bgDeep,
+                                    color: myTheme.contrastText,
+                                  }}
+                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm"
+                                >
                                   WK
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-gray-400 font-mono truncate">
-                              <span className="text-amber-300 font-bold">#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • <span className="text-gray-300 font-medium">{getDetailedPlayerRole(player)}</span>
+                            <div 
+                              style={{ color: myTheme.contrastText }}
+                              className="text-[10px] font-mono truncate font-bold opacity-90 mt-0.5"
+                            >
+                              <span>#{index + 1} {getPlayerTacticalBadge(player, index)}</span> • <span>{getDetailedPlayerRole(player)}</span>
                             </div>
                           </div>
                         </div>
@@ -597,7 +671,12 @@ export default function PlayingXIPage() {
                             <button
                               onClick={() => handleMoveSlot(index, 'up')}
                               disabled={index === 0}
-                              className="p-1 rounded-md bg-white/5 hover:bg-white/20 active:bg-amber-400/25 disabled:opacity-20 text-gray-300 hover:text-amber-300 transition-colors cursor-pointer"
+                              style={{
+                                backgroundColor: myTheme.bgDeep,
+                                color: myTheme.contrastText,
+                                borderColor: myTheme.cardBorder,
+                              }}
+                              className="p-1 rounded-md border disabled:opacity-20 transition-colors cursor-pointer shadow-sm hover:brightness-125"
                               title="Move Up"
                               aria-label="Move Up"
                             >
@@ -606,7 +685,12 @@ export default function PlayingXIPage() {
                             <button
                               onClick={() => handleMoveSlot(index, 'down')}
                               disabled={index === fullPlayingXI.length - 1}
-                              className="p-1 rounded-md bg-white/5 hover:bg-white/20 active:bg-amber-400/25 disabled:opacity-20 text-gray-300 hover:text-amber-300 transition-colors cursor-pointer"
+                              style={{
+                                backgroundColor: myTheme.bgDeep,
+                                color: myTheme.contrastText,
+                                borderColor: myTheme.cardBorder,
+                              }}
+                              className="p-1 rounded-md border disabled:opacity-20 transition-colors cursor-pointer shadow-sm hover:brightness-125"
                               title="Move Down"
                               aria-label="Move Down"
                             >
@@ -620,7 +704,12 @@ export default function PlayingXIPage() {
                               setBenchDrawerSlotIndex(index);
                               gameAudio.playUiTap('select');
                             }}
-                            className="p-1 rounded-md bg-white/10 hover:bg-white/20 active:scale-95 text-amber-300 hover:text-white border border-white/10 cursor-pointer transition-all flex items-center justify-center"
+                            style={{
+                              backgroundColor: myTheme.bgDeep,
+                              color: myTheme.contrastText,
+                              borderColor: myTheme.cardBorder,
+                            }}
+                            className="p-1 rounded-md border active:scale-95 cursor-pointer transition-all flex items-center justify-center shadow-sm hover:brightness-125"
                             title="Swap with bench"
                           >
                             <ArrowLeftRight size={11} />
