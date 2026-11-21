@@ -331,6 +331,7 @@ export default function BallByBallMatchSimulator({
   const [openingBowler1Idx, setOpeningBowler1Idx] = useState(0);
   const [openingBowler2Idx, setOpeningBowler2Idx] = useState(1);
   const [openingBowlersConfirmed, setOpeningBowlersConfirmed] = useState(false);
+  const [openingBattersConfirmed, setOpeningBattersConfirmed] = useState(false);
   const [showOpeningBowlersModal, setShowOpeningBowlersModal] = useState(false);
   const [showNextBatterModal, setShowNextBatterModal] = useState(false);
   const [dismissedBatterSlot, setDismissedBatterSlot] = useState<'striker' | 'nonStriker'>('striker');
@@ -604,7 +605,11 @@ export default function BallByBallMatchSimulator({
       const teamsMatch = currentTeams.every(t => savedTeams.includes(t));
       if (teamsMatch) {
         matchInitializedKeyRef.current = currentMatchKey;
-        setABatsFirst(savedSim.aBatsFirst ?? true);
+        if (savedSim.inn1?.teamShort) {
+          setABatsFirst(savedSim.inn1.teamShort.toLowerCase() === myFranchise.short.toLowerCase());
+        } else {
+          setABatsFirst(savedSim.aBatsFirst ?? true);
+        }
         if (savedSim.bat1Squad?.length) setBat1Squad(savedSim.bat1Squad);
         if (savedSim.bowl1Squad?.length) setBowl1Squad(savedSim.bowl1Squad);
         setInn1(savedSim.inn1);
@@ -701,8 +706,14 @@ export default function BallByBallMatchSimulator({
   };
 
   // Is User's Team currently batting or bowling?
-  const isUserBatting = (currentInnings === 1 && aBatsFirst) || (currentInnings === 2 && !aBatsFirst);
-  const isUserBowling = (currentInnings === 1 && !aBatsFirst) || (currentInnings === 2 && aBatsFirst);
+  // Strictly derived from whether the active batting team is myFranchise
+  const activeInningsForRole = currentInnings === 1 ? inn1 : inn2;
+  const isUserBatting = Boolean(
+    activeInningsForRole?.teamShort
+      ? activeInningsForRole.teamShort.toLowerCase() === myFranchise.short.toLowerCase()
+      : (currentInnings === 1 ? aBatsFirst : !aBatsFirst)
+  );
+  const isUserBowling = !isUserBatting;
 
   const getBowlerOversCount = (figures: Array<{ name: string; overs: string }>, bowlerName: string): number => {
     const fig = figures.find(f => f.name === bowlerName);
@@ -711,7 +722,7 @@ export default function BallByBallMatchSimulator({
     return Math.floor(num);
   };
 
-  // Trigger opening bowler selection at start of bowling innings
+  // Trigger opening bowler selection at start of bowling innings (Overs 1 & 2)
   useEffect(() => {
     if (tossPhase === 'arena' && isUserBowling && !openingBowlersConfirmed && !matchDone) {
       const activeInn = currentInnings === 1 ? inn1 : inn2;
@@ -721,6 +732,17 @@ export default function BallByBallMatchSimulator({
       }
     }
   }, [tossPhase, isUserBowling, openingBowlersConfirmed, currentInnings, inn1, inn2, matchDone]);
+
+  // Trigger opening batter selection at start of batting innings (Striker & Non-Striker)
+  useEffect(() => {
+    if (tossPhase === 'arena' && isUserBatting && !openingBattersConfirmed && !matchDone) {
+      const activeInn = currentInnings === 1 ? inn1 : inn2;
+      const balls = activeInn?.balls?.length || 0;
+      if (balls === 0) {
+        setShowOpeningPairModal(true);
+      }
+    }
+  }, [tossPhase, isUserBatting, openingBattersConfirmed, currentInnings, inn1, inn2, matchDone]);
 
   const canBowlerBowl = (bIdx: number): { allowed: boolean; reason?: string } => {
     const bSquad = currentInnings === 1 ? bowl1Squad : bat1Squad;
@@ -1353,6 +1375,9 @@ export default function BallByBallMatchSimulator({
       setNonStrikerIdx(1);
       setNextBatterIdx(2);
       setCurrentBowlerIdx(0);
+      setLastBowlerIdx(null);
+      setOpeningBowlersConfirmed(false);
+      setOpeningBattersConfirmed(false);
       setIsPlaying(false);
       setEventBanner({
         text: '🏁 INNINGS BREAK',
