@@ -191,65 +191,6 @@ export default function PlayingXIPage() {
   const [isSimulatingRound, setIsSimulatingRound] = useState(false);
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
 
-  // Mobile Touch Swipe State & App Swipe Dispatch Listener
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [touchStartY, setTouchStartY] = useState<number | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
-    setTouchStartY(e.touches[0].clientY);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX === null || touchStartY === null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartX;
-    const deltaY = e.changedTouches[0].clientY - touchStartY;
-    setTouchStartX(null);
-    setTouchStartY(null);
-
-    // Ergonomic 30px swipe threshold
-    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
-      const tabs: Array<'xi' | 'schedule'> = ['xi', 'schedule'];
-      const curIdx = tabs.indexOf(activeTab);
-      if (deltaX < 0 && curIdx < tabs.length - 1) {
-        setActiveTab(tabs[curIdx + 1]);
-        gameAudio.playUiTap('select');
-        triggerGameHaptic('light');
-      } else if (deltaX > 0 && curIdx > 0) {
-        setActiveTab(tabs[curIdx - 1]);
-        gameAudio.playUiTap('select');
-        triggerGameHaptic('light');
-      }
-    }
-  };
-
-  const handleTouchCancel = () => {
-    setTouchStartX(null);
-    setTouchStartY(null);
-  };
-
-  // Synchronize with GlobalSwipeManager custom event
-  useEffect(() => {
-    const handleAppSwipe = (e: any) => {
-      const direction = e.detail?.direction;
-      const tabs: Array<'xi' | 'schedule'> = ['xi', 'schedule'];
-      const curIdx = tabs.indexOf(activeTab);
-      if (direction === 'left' && curIdx < tabs.length - 1) {
-        e.preventDefault();
-        setActiveTab(tabs[curIdx + 1]);
-        gameAudio.playUiTap('select');
-        triggerGameHaptic('light');
-      } else if (direction === 'right' && curIdx > 0) {
-        e.preventDefault();
-        setActiveTab(tabs[curIdx - 1]);
-        gameAudio.playUiTap('select');
-        triggerGameHaptic('light');
-      }
-    };
-    window.addEventListener('app:swipe', handleAppSwipe);
-    return () => window.removeEventListener('app:swipe', handleAppSwipe);
-  }, [activeTab]);
-
   useEffect(() => {
     setMounted(true);
   }, []);

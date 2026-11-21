@@ -67,67 +67,6 @@ export default function MiniAuctionPage() {
   const [selectedFranchiseView, setSelectedFranchiseView] = useState<string>('')
   const [expandedLot, setExpandedLot] = useState(false)
 
-  const sideTouchStartX = useRef<number | null>(null)
-  const sideTouchStartY = useRef<number | null>(null)
-
-  const handleSideTouchStart = (e: React.TouchEvent) => {
-    sideTouchStartX.current = e.touches[0].clientX
-    sideTouchStartY.current = e.touches[0].clientY
-  }
-
-  const handleSideTouchEnd = (e: React.TouchEvent) => {
-    if (sideTouchStartX.current === null || sideTouchStartY.current === null) return
-    const deltaX = e.changedTouches[0].clientX - sideTouchStartX.current
-    const deltaY = e.changedTouches[0].clientY - sideTouchStartY.current
-    sideTouchStartX.current = null
-    sideTouchStartY.current = null
-
-    const views: Array<'stage' | 'pool' | 'squads' | 'feed' | 'ledger'> = ['stage', 'pool', 'squads', 'feed', 'ledger']
-    const curIdx = views.indexOf(auctionView)
-
-    if (Math.abs(deltaX) > 28 && Math.abs(deltaX) > Math.abs(deltaY) * 0.7) {
-      if (deltaX < 0 && curIdx < views.length - 1) {
-        const nextView = views[curIdx + 1]
-        setAuctionView(nextView)
-        if (nextView !== 'stage') setSideTab(nextView)
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      } else if (deltaX > 0 && curIdx > 0) {
-        const prevView = views[curIdx - 1]
-        setAuctionView(prevView)
-        if (prevView !== 'stage') setSideTab(prevView)
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      }
-    }
-  }
-
-  // Synchronize with GlobalSwipeManager custom event
-  useEffect(() => {
-    const handleAppSwipe = (e: any) => {
-      const direction = e.detail?.direction
-      const views: Array<'stage' | 'pool' | 'squads' | 'feed' | 'ledger'> = ['stage', 'pool', 'squads', 'feed', 'ledger']
-      const curIdx = views.indexOf(auctionView)
-      if (direction === 'left' && curIdx < views.length - 1) {
-        e.preventDefault()
-        const nextView = views[curIdx + 1]
-        setAuctionView(nextView)
-        if (nextView !== 'stage') setSideTab(nextView)
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      } else if (direction === 'right' && curIdx > 0) {
-        e.preventDefault()
-        const prevView = views[curIdx - 1]
-        setAuctionView(prevView)
-        if (prevView !== 'stage') setSideTab(prevView)
-        gameAudio.playUiTap('select')
-        triggerGameHaptic('light')
-      }
-    }
-    window.addEventListener('app:swipe', handleAppSwipe)
-    return () => window.removeEventListener('app:swipe', handleAppSwipe)
-  }, [auctionView])
-
   // Auction Pool Filtering & Inspection
   const [poolSearch, setPoolSearch] = useState('')
   const [poolRoleFilter, setPoolRoleFilter] = useState<'ALL' | 'BAT' | 'BOWL' | 'AR' | 'WK' | 'OS'>('ALL')
@@ -882,13 +821,7 @@ export default function MiniAuctionPage() {
 
   return (
     <div 
-      onTouchStart={handleSideTouchStart}
-      onTouchEnd={handleSideTouchEnd}
-      onTouchCancel={() => {
-        sideTouchStartX.current = null
-        sideTouchStartY.current = null
-      }}
-      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
+      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden select-none"
     >
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3">
         
@@ -1299,16 +1232,8 @@ export default function MiniAuctionPage() {
 
           {/* Column 2 (Right 5 cols): Multi-Tab Live War Room (Pool | Squads & Purses | Feed | Sold) */}
           <div 
-            onTouchStart={handleSideTouchStart}
-            onTouchEnd={handleSideTouchEnd}
             className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl bg-slate-900 border border-white/10 p-3 shadow-xl max-h-[520px] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
           >
-            {/* Mobile Swipe Hint */}
-            <div className="flex sm:hidden items-center justify-between px-2 py-0.5 bg-slate-950/80 rounded-lg border border-white/10 text-[9px] font-mono text-gray-400">
-              <span>👈 Swipe</span>
-              <span className="text-amber-400 font-bold uppercase">{sideTab} tab</span>
-              <span>Swipe 👉</span>
-            </div>
             
             {/* Tab Navigation: 4 Tabs - HIDE ON MOBILE TO PREVENT REPEATED NAVBARS */}
             <div className="hidden lg:flex items-center gap-1 pb-2 border-b border-white/10">
