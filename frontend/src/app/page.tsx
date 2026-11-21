@@ -66,48 +66,6 @@ export default function UnifiedTeamSelectHomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [expandedFortress, setExpandedFortress] = useState(false)
 
-  const touchStartXRef = useRef<number | null>(null)
-  const touchStartYRef = useRef<number | null>(null)
-
-  const handleHeroTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX
-    touchStartYRef.current = e.touches[0].clientY
-  }
-
-  const handleHeroTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current === null || touchStartYRef.current === null) return
-    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current
-    const deltaY = e.changedTouches[0].clientY - touchStartYRef.current
-    touchStartXRef.current = null
-    touchStartYRef.current = null
-
-    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 0.75) {
-      const curIdx = TEAMS.findIndex(t => t.id === selectedTeamId)
-      if (deltaX < 0 && curIdx < TEAMS.length - 1) {
-        handleSelectTeamTab(TEAMS[curIdx + 1].id)
-      } else if (deltaX > 0 && curIdx > 0) {
-        handleSelectTeamTab(TEAMS[curIdx - 1].id)
-      }
-    }
-  }
-
-  // Synchronize with GlobalSwipeManager custom event
-  useEffect(() => {
-    const handleAppSwipe = (e: any) => {
-      const direction = e.detail?.direction
-      const curIdx = TEAMS.findIndex(t => t.id === selectedTeamId)
-      if (direction === 'left' && curIdx < TEAMS.length - 1) {
-        e.preventDefault()
-        handleSelectTeamTab(TEAMS[curIdx + 1].id)
-      } else if (direction === 'right' && curIdx > 0) {
-        e.preventDefault()
-        handleSelectTeamTab(TEAMS[curIdx - 1].id)
-      }
-    }
-    window.addEventListener('app:swipe', handleAppSwipe)
-    return () => window.removeEventListener('app:swipe', handleAppSwipe)
-  }, [selectedTeamId])
-
   useEffect(() => {
     setMounted(true)
 
@@ -348,17 +306,8 @@ export default function UnifiedTeamSelectHomePage() {
           })}
         </div>
 
-        {/* Mobile Franchise Swipe Hint */}
-        <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/80 rounded-xl border border-white/10 text-[10px] font-mono text-gray-400">
-          <span>👈 Swipe</span>
-          <span className="text-amber-400 font-bold uppercase font-mono">{activeTeam.short}</span>
-          <span>Swipe 👉</span>
-        </div>
-
         {/* Minimal Hero Franchise Card */}
         <div 
-          onTouchStart={handleHeroTouchStart}
-          onTouchEnd={handleHeroTouchEnd}
           className="p-3 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col justify-between gap-3 relative overflow-hidden flex-1"
         >
           <div 
