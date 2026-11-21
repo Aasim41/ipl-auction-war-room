@@ -334,21 +334,9 @@ export default function PlayingXIPage() {
 
   return (
     <div 
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden touch-manipulation select-none"
+      className="min-h-[100dvh] bg-transparent text-white flex flex-col safe-page-top pb-16 w-full max-w-full overflow-x-hidden select-none"
     >
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-4">
-        
-        {/* Mobile Swipe Navigation Indicator */}
-        <div className="flex md:hidden items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-white/10 text-[10px] font-mono text-gray-400 shadow-sm">
-          <span>👈 Swipe</span>
-          <span className="text-amber-400 font-bold uppercase">
-            {activeTab === 'xi' ? 'Lineup & Tactics' : 'Tournament Schedule & Standings'}
-          </span>
-          <span>Swipe 👉</span>
-        </div>
         
         {/* ─── Sleek Minimal Header & Tab Controls ─── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pb-2 border-b border-white/10 gap-2">

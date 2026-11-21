@@ -347,36 +347,6 @@ export default function BallByBallMatchSimulator({
   const [lastShotTraj, setLastShotTraj] = useState<{ x: number; y: number; name: string } | null>(null);
   const [isMuted, setIsMuted] = useState(false);
 
-  // Mobile touch swipe gesture state
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [touchStartY, setTouchStartY] = useState<number | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
-    setTouchStartY(e.touches[0].clientY);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX === null || touchStartY === null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartX;
-    const deltaY = e.changedTouches[0].clientY - touchStartY;
-
-    // Detect horizontal swipe (> 40px, more horizontal than vertical)
-    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX < 0 && activeTab === 'arena') {
-        setActiveTab('scorecard');
-        gameAudio.playUiTap('light');
-        triggerGameHaptic('light');
-      } else if (deltaX > 0 && activeTab === 'scorecard') {
-        setActiveTab('arena');
-        gameAudio.playUiTap('light');
-        triggerGameHaptic('light');
-      }
-    }
-    setTouchStartX(null);
-    setTouchStartY(null);
-  };
-
   useEffect(() => {
     setIsMuted(gameAudio.isMuted());
     const handleSoundChange = (e: any) => {
@@ -2086,8 +2056,6 @@ export default function BallByBallMatchSimulator({
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 bg-slate-950 text-white overflow-hidden select-none">
       <div 
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
         className="relative w-full h-[100dvh] max-w-lg bg-slate-950 flex flex-col shadow-2xl overflow-hidden sm:border sm:border-white/20 sm:rounded-3xl sm:h-[96dvh]"
       >
         
@@ -2406,13 +2374,6 @@ export default function BallByBallMatchSimulator({
           </div>
         ) : (
           <>
-            {/* Mobile Swipe Navigation Bar */}
-            <div className="flex sm:hidden items-center justify-between px-3 py-1 bg-slate-900/95 border-b border-white/10 text-[10px] text-gray-400 font-mono shrink-0">
-              <span>👈 Swipe for {activeTab === 'arena' ? 'Scorecard' : 'Arena'}</span>
-              <span className="text-amber-400 font-bold">{activeTab === 'arena' ? 'Interactive Arena' : 'Scorecard'}</span>
-              <span>👉</span>
-            </div>
-
             {/* Dynamic Event Banner Overlay */}
             {eventBanner && (
               <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-bounce">
