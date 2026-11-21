@@ -736,25 +736,6 @@ export default function PlayingXIPage() {
                         </div>
                       </div>
 
-                          {/* Swap with Bench Button */}
-                          <button
-                            onClick={() => {
-                              setBenchDrawerSlotIndex(index);
-                              gameAudio.playUiTap('select');
-                            }}
-                            style={{
-                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                              color: '#ffffff',
-                              border: '1px solid rgba(255, 255, 255, 0.3)',
-                            }}
-                            className="p-1.5 rounded-lg active:scale-90 cursor-pointer transition-all flex items-center justify-center shadow-sm hover:brightness-125"
-                            title="Swap with bench reserve"
-                          >
-                            <Users size={12} />
-                          </button>
-                        </div>
-                      </div>
-
                       {/* Expandable Player Profile Tray */}
                       {isExpanded && (
                         <div className="px-3 py-2.5 bg-slate-900/90 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono animate-fadeIn">
