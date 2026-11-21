@@ -2811,15 +2811,6 @@ export default function BallByBallMatchSimulator({
                     </div>
                   ))}
 
-                  {/* Shot Target Indicator */}
-                  {lastShotTraj && (
-                    <div className="absolute inset-x-0 bottom-2 z-20 flex justify-center pointer-events-none px-3">
-                      <div className="text-[10px] font-mono font-bold text-amber-300 bg-slate-950/90 px-3 py-1 rounded-full border border-amber-500/40 shadow-xl backdrop-blur-md">
-                        Shot Target: <strong>{lastShotTraj.name}</strong>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Close 2D Tactical Field */}
                 </div>
 
@@ -2827,12 +2818,9 @@ export default function BallByBallMatchSimulator({
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-900 border border-white/15 shadow-xl shrink-0 flex flex-col gap-1.5">
               
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase text-amber-400 flex items-center gap-1">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                   <Zap size={13} />
-                  {isUserBatting ? 'Batting Shots (Tap number for Ball-by-Ball):' : 'Bowling Delivery (Tap for Ball-by-Ball):'}
-                </span>
-                <span className="text-[9px] font-mono text-gray-400">
-                  {isUserBatting ? 'Risk vs Reward' : 'Delivery Tactic'}
+                  {isUserBatting ? 'Batting Shots' : 'Bowling Deliveries'}
                 </span>
               </div>
 
@@ -2841,12 +2829,12 @@ export default function BallByBallMatchSimulator({
                   {/* 6 Shot Intent Buttons for Ball-by-Ball (0, 1, 2, 3, 4, 6) */}
                   <div className="grid grid-cols-6 gap-1">
                     {[
-                      { val: '0', label: '0', sub: 'Dot', risk: 'Safe', color: 'border-slate-500/70 bg-slate-800/80 text-gray-200' },
-                      { val: '1', label: '1', sub: 'Single', risk: 'Low', color: 'border-emerald-500/60 bg-emerald-950/60 text-emerald-300' },
-                      { val: '2', label: '2', sub: 'Double', risk: 'Med', color: 'border-teal-500/60 bg-teal-950/60 text-teal-300' },
-                      { val: '3', label: '3', sub: 'Triple', risk: 'Med', color: 'border-cyan-500/60 bg-cyan-950/60 text-cyan-300' },
-                      { val: '4', label: '4', sub: 'Boundary', risk: 'Edge', color: 'border-sky-500/80 bg-sky-950/80 text-sky-300' },
-                      { val: '6', label: '6', sub: 'Maximum', risk: 'High', color: 'border-amber-500 bg-amber-950/80 text-amber-300' }
+                      { val: '0', label: '0', sub: 'Dot', color: 'border-slate-500/70 bg-slate-800/80 text-gray-200' },
+                      { val: '1', label: '1', sub: 'Single', color: 'border-emerald-500/60 bg-emerald-950/60 text-emerald-300' },
+                      { val: '2', label: '2', sub: 'Double', color: 'border-teal-500/60 bg-teal-950/60 text-teal-300' },
+                      { val: '3', label: '3', sub: 'Triple', color: 'border-cyan-500/60 bg-cyan-950/60 text-cyan-300' },
+                      { val: '4', label: '4', sub: 'Four', color: 'border-sky-500/80 bg-sky-950/80 text-sky-300' },
+                      { val: '6', label: '6', sub: 'Six', color: 'border-amber-500 bg-amber-950/80 text-amber-300' }
                     ].map(b => (
                       <button
                         key={b.val}
@@ -2859,42 +2847,38 @@ export default function BallByBallMatchSimulator({
                         className={`py-2 px-1 rounded-xl text-center border flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 shadow-md ${b.color} hover:brightness-125`}
                       >
                         <span className="text-sm font-black font-mono leading-none">{b.label}</span>
-                        <span className="text-[8px] font-bold mt-0.5 leading-tight opacity-90 truncate">{b.sub}</span>
-                        <span className="text-[7px] font-mono opacity-70 leading-tight">{b.risk}</span>
+                        <span className="text-[8px] font-bold mt-0.5 leading-tight opacity-90">{b.sub}</span>
                       </button>
                     ))}
                   </div>
 
                   {/* Full Over Batting Options */}
                   <div className="flex items-center justify-between pt-1 border-t border-white/10">
-                    <span className="text-[9.5px] font-mono text-gray-400 font-bold uppercase flex items-center gap-1">
-                      <FastForward size={11} className="text-amber-400" /> Full Over Batting:
+                    <span className="text-[10px] font-mono text-gray-400 font-bold uppercase flex items-center gap-1">
+                      <FastForward size={11} className="text-amber-400" /> Full Over:
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => handleSimulateOver('DEFEND_OVER', undefined)}
                       disabled={matchDone}
-                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-[10px] sm:text-[11px] font-bold text-gray-200 truncate">🛡️ Defend Over</div>
-                      <div className="text-[8px] text-gray-400 truncate">Low Risk • Protect Wickets</div>
+                      <div className="text-xs font-bold text-gray-200">🛡️ Defend</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver('NORMAL_OVER', undefined)}
                       disabled={matchDone}
-                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-[10px] sm:text-[11px] font-bold text-emerald-300 truncate">⚖️ Normal Over</div>
-                      <div className="text-[8px] text-gray-400 truncate">Balanced • Strike Rotation</div>
+                      <div className="text-xs font-bold text-emerald-300">⚖️ Normal</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver('ATTACK_OVER', undefined)}
                       disabled={matchDone}
-                      className="py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-left text-amber-300 transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-center text-amber-300 transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-[10px] sm:text-[11px] font-bold text-amber-300 truncate">⚡ Attack Over</div>
-                      <div className="text-[8px] text-amber-200/80 truncate">High Risk • Aggression</div>
+                      <div className="text-xs font-bold text-amber-300">⚡ Attack</div>
                     </button>
                   </div>
                 </>
@@ -2909,12 +2893,9 @@ export default function BallByBallMatchSimulator({
                         executeBall('DEFEND');
                       }}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-sky-500/50 text-left text-white transition-all active:scale-95 cursor-pointer shadow-md"
+                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-sky-500/50 text-center text-white transition-all active:scale-95 cursor-pointer shadow-md"
                     >
-                      <div className="text-[11px] font-bold text-sky-300 flex items-center gap-1">
-                        <span>🛡️</span> <span>Defend Ball</span>
-                      </div>
-                      <div className="text-[8px] text-gray-400 leading-tight mt-0.5">Off-cutter • Dot Pressure</div>
+                      <div className="text-xs font-bold text-sky-300">🛡️ Defend</div>
                     </button>
                     <button
                       onClick={() => {
@@ -2923,12 +2904,9 @@ export default function BallByBallMatchSimulator({
                         executeBall('NORMAL');
                       }}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-emerald-500/50 text-left text-white transition-all active:scale-95 cursor-pointer shadow-md"
+                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-emerald-500/50 text-center text-white transition-all active:scale-95 cursor-pointer shadow-md"
                     >
-                      <div className="text-[11px] font-bold text-emerald-300 flex items-center gap-1">
-                        <span>⚖️</span> <span>Normal Ball</span>
-                      </div>
-                      <div className="text-[8px] text-gray-400 leading-tight mt-0.5">Corridor • Good Length</div>
+                      <div className="text-xs font-bold text-emerald-300">⚖️ Good Length</div>
                     </button>
                     <button
                       onClick={() => {
@@ -2937,45 +2915,39 @@ export default function BallByBallMatchSimulator({
                         executeBall('ATTACK');
                       }}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-rose-950/80 hover:bg-rose-900/80 border border-rose-500/70 text-left text-white transition-all active:scale-95 cursor-pointer shadow-md"
+                      className="py-2 px-2 rounded-xl bg-rose-950/80 hover:bg-rose-900/80 border border-rose-500/70 text-center text-white transition-all active:scale-95 cursor-pointer shadow-md"
                     >
-                      <div className="text-[11px] font-bold text-rose-300 flex items-center gap-1">
-                        <span>⚡</span> <span>Attack Ball</span>
-                      </div>
-                      <div className="text-[8px] text-rose-200/80 leading-tight mt-0.5">Yorker / Bouncer • Wicket</div>
+                      <div className="text-xs font-bold text-rose-300">⚡ Yorker</div>
                     </button>
                   </div>
 
                   {/* Full Over Bowling Options */}
                   <div className="flex items-center justify-between pt-1 border-t border-white/10">
-                    <span className="text-[9.5px] font-mono text-gray-400 font-bold uppercase flex items-center gap-1">
-                      <FastForward size={11} className="text-sky-400" /> Full Over Bowling:
+                    <span className="text-[10px] font-mono text-gray-400 font-bold uppercase flex items-center gap-1">
+                      <FastForward size={11} className="text-sky-400" /> Full Over:
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => handleSimulateOver(undefined, 'DEFEND')}
                       disabled={matchDone}
-                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-[10px] sm:text-[11px] font-bold text-sky-300 truncate">🛡️ Defend Over</div>
-                      <div className="text-[8px] text-gray-400 truncate">Containment • Dot focus</div>
+                      <div className="text-xs font-bold text-sky-300">🛡️ Defend</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver(undefined, 'NORMAL')}
                       disabled={matchDone}
-                      className="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-left text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-[10px] sm:text-[11px] font-bold text-emerald-300 truncate">⚖️ Normal Over</div>
-                      <div className="text-[8px] text-gray-400 truncate">Standard balanced spell</div>
+                      <div className="text-xs font-bold text-emerald-300">⚖️ Normal</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver(undefined, 'ATTACK')}
                       disabled={matchDone}
-                      className="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-left text-rose-300 transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-center text-rose-300 transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-[10px] sm:text-[11px] font-bold text-rose-300 truncate">⚡ Attack Over</div>
-                      <div className="text-[8px] text-rose-200/70 truncate">Aggressive • Wicket search</div>
+                      <div className="text-xs font-bold text-rose-300">⚡ Attack</div>
                     </button>
                   </div>
                 </>
@@ -3344,8 +3316,8 @@ export default function BallByBallMatchSimulator({
                   <Target size={16} />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-black text-white font-display">Bowler Spell & Tactics</h3>
-                  <p className="text-[10px] text-gray-400 font-mono">Bowler is allotted for their full spell (up to 4 overs) • Change anytime</p>
+                  <h3 className="text-sm sm:text-base font-black text-white font-display">Select Next Bowler</h3>
+                  <p className="text-[10px] text-gray-400 font-mono">Choose from your 11 players • Max 4 overs per bowler</p>
                 </div>
               </div>
               <button
@@ -3357,8 +3329,8 @@ export default function BallByBallMatchSimulator({
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
-              {activeBowlers.map((b, bIdx) => {
-                const isCurrent = (currentBowlerIdx % (activeBowlers.length || 1)) === bIdx;
+              {bowlingSquad.slice(0, 11).map((b, bIdx) => {
+                const isCurrent = currentBowlerIdx === bIdx;
                 const ovsCount = getBowlerOversCount(activeInnings.bowlingFigures, b.name);
                 const fig = activeInnings.bowlingFigures.find(f => f.name === b.name);
                 const isQuotaFull = ovsCount >= 4;
@@ -3466,15 +3438,15 @@ export default function BallByBallMatchSimulator({
 
             <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1">
               <div>
-                <label className="text-xs font-bold text-sky-300 mb-1.5 block">⚡ Opening Bowler 1 (Takes the new ball for Over 1):</label>
+                <label className="text-xs font-bold text-sky-300 mb-1.5 block">⚡ Opening Bowler 1 (Over 1):</label>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {activeBowlers.map((b, bIdx) => (
+                  {bowlingSquad.slice(0, 11).map((b, bIdx) => (
                     <button
                       key={b.player_id || bIdx}
                       onClick={() => {
                         setOpeningBowler1Idx(bIdx);
                         if (bIdx === openingBowler2Idx) {
-                          setOpeningBowler2Idx((bIdx + 1) % activeBowlers.length);
+                          setOpeningBowler2Idx((bIdx + 1) % Math.min(11, bowlingSquad.length));
                         }
                         gameAudio.playUiTap('select');
                       }}
@@ -3484,7 +3456,7 @@ export default function BallByBallMatchSimulator({
                           : 'bg-slate-950/80 text-gray-300 border-white/10 hover:border-white/30'
                       }`}
                     >
-                      <div className="text-xs font-bold truncate">{formatPlayerInitial(b.name)}</div>
+                      <div className="text-xs font-bold truncate">#{bIdx + 1} {formatPlayerInitial(b.name)}</div>
                       <div className="text-[9px] font-mono opacity-80">{b.role}</div>
                     </button>
                   ))}
@@ -3492,9 +3464,9 @@ export default function BallByBallMatchSimulator({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-emerald-300 mb-1.5 block">🎯 Opening Bowler 2 (Bowls Over 2 from opposite end):</label>
+                <label className="text-xs font-bold text-emerald-300 mb-1.5 block">🎯 Opening Bowler 2 (Over 2):</label>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {activeBowlers.map((b, bIdx) => (
+                  {bowlingSquad.slice(0, 11).map((b, bIdx) => (
                     <button
                       key={b.player_id || bIdx}
                       disabled={bIdx === openingBowler1Idx}
@@ -3510,7 +3482,7 @@ export default function BallByBallMatchSimulator({
                           : 'bg-slate-950/80 text-gray-300 border-white/10 hover:border-white/30 cursor-pointer'
                       }`}
                     >
-                      <div className="text-xs font-bold truncate">{formatPlayerInitial(b.name)}</div>
+                      <div className="text-xs font-bold truncate">#{bIdx + 1} {formatPlayerInitial(b.name)}</div>
                       <div className="text-[9px] font-mono opacity-80">{b.role}</div>
                     </button>
                   ))}
