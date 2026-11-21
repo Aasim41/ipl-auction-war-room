@@ -331,7 +331,7 @@ export default function PlayingXIPage() {
 
   useEffect(() => {
     if (campaign && fullPlayingXI.length >= 11) {
-      const currentIds = (lineupMode === 'bat_first' ? campaign.batFirstXI : campaign.bowlFirstXI) || campaign.playingXI;
+      const currentIds = lineupMode === 'bat_first' ? campaign.batFirstXI : campaign.bowlFirstXI;
       if (!currentIds || currentIds.length < 11) {
         setPlayingXI(fullPlayingXI.map(p => p.player_id), activeImpactId, lineupMode);
       }
@@ -343,7 +343,11 @@ export default function PlayingXIPage() {
     if (target >= 0 && target < fullPlayingXI.length) {
       gameAudio.playCardSwap();
       triggerGameHaptic('light');
-      swapPlayingXISlots(index, target, lineupMode);
+      const newXI = [...fullPlayingXI];
+      const temp = newXI[index];
+      newXI[index] = newXI[target];
+      newXI[target] = temp;
+      setPlayingXI(newXI.map(p => p.player_id), activeImpactId, lineupMode);
       setSwapSourceIndex(null);
     }
   };
@@ -359,7 +363,11 @@ export default function PlayingXIPage() {
     } else {
       gameAudio.playCardSwap();
       triggerGameHaptic('medium');
-      swapPlayingXISlots(swapSourceIndex, index, lineupMode);
+      const newXI = [...fullPlayingXI];
+      const temp = newXI[swapSourceIndex];
+      newXI[swapSourceIndex] = newXI[index];
+      newXI[index] = temp;
+      setPlayingXI(newXI.map(p => p.player_id), activeImpactId, lineupMode);
       setSwapSourceIndex(null);
     }
   };
@@ -1128,9 +1136,11 @@ export default function PlayingXIPage() {
                         gameAudio.playCardSwap();
                         triggerGameHaptic('medium');
                         if (benchDrawerSlotIndex === 11) {
-                          setPlayingXI(activeLineupIds, bp.player_id, lineupMode);
-                        } else {
-                          replacePlayingXIPlayer(benchDrawerSlotIndex, bp.player_id, lineupMode);
+                          setPlayingXI(fullPlayingXI.map(p => p.player_id), bp.player_id, lineupMode);
+                        } else if (benchDrawerSlotIndex !== null) {
+                          const newXI = [...fullPlayingXI];
+                          newXI[benchDrawerSlotIndex] = bp;
+                          setPlayingXI(newXI.map(p => p.player_id), activeImpactId, lineupMode);
                         }
                         setBenchDrawerSlotIndex(null);
                       }}
