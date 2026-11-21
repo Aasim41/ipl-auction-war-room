@@ -2615,64 +2615,182 @@ export default function BallByBallMatchSimulator({
                 </div>
 
                 {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR (COMPACT FIT) ─── */}
-                <div className="relative my-0.5 h-[270px] sm:h-[310px] md:h-[350px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/40 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/90 via-emerald-950 to-slate-950 shadow-xl select-none">
+                {/* ─── ARENA FIELD POV: HYPER-REALISTIC BROADCAST STADIUM GROUND & 22-YARD PITCH ─── */}
+                <div className="relative my-0.5 h-[270px] sm:h-[310px] md:h-[350px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/30 bg-[#05080c] shadow-2xl select-none">
                   
                   {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
-                  <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/85 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-sm">
+                  <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/90 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-md shadow-md">
                     <span>🛡️ {deepCount} Deep Fielders</span>
                   </div>
                   
-                  {/* Stadium Glows */}
-                  <div className="absolute top-0 left-0 w-40 h-40 bg-amber-200/15 rounded-full blur-3xl pointer-events-none" />
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-200/15 rounded-full blur-3xl pointer-events-none" />
+                  {/* Corner Stadium Floodlight Glows */}
+                  <div className="absolute top-0 left-0 w-48 h-48 bg-amber-100/20 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-sky-100/20 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-300/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute bottom-0 right-0 w-48 h-48 bg-emerald-300/10 rounded-full blur-3xl pointer-events-none" />
 
                   {/* SVG Stadium Field Turf & Marking Rings */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 1000 600">
                     <defs>
-                      <linearGradient id="pitchGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#92400e" stopOpacity="0.8" />
-                        <stop offset="50%" stopColor="#b45309" stopOpacity="0.85" />
-                        <stop offset="100%" stopColor="#d97706" stopOpacity="0.9" />
+                      {/* Hyper-Realistic 22-Yard Clay Pitch Texture */}
+                      <linearGradient id="simPitchClay" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#7a552b" />
+                        <stop offset="8%" stopColor="#a7804f" />
+                        <stop offset="25%" stopColor="#c7a473" />
+                        <stop offset="50%" stopColor="#dec093" />
+                        <stop offset="75%" stopColor="#c5a170" />
+                        <stop offset="92%" stopColor="#a37c4b" />
+                        <stop offset="100%" stopColor="#785329" />
                       </linearGradient>
-                      <radialGradient id="lawnPattern" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#047857" stopOpacity="0.3" />
-                        <stop offset="35%" stopColor="#065f46" stopOpacity="0.2" />
-                        <stop offset="70%" stopColor="#047857" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="#064e3b" stopOpacity="0.4" />
+
+                      {/* Concentric Lawn Mower Outfield Turf Rings */}
+                      <radialGradient id="simLawnPattern" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#165b32" />
+                        <stop offset="22%" stopColor="#124d2a" />
+                        <stop offset="42%" stopColor="#196337" />
+                        <stop offset="62%" stopColor="#0f4224" />
+                        <stop offset="82%" stopColor="#175d34" />
+                        <stop offset="100%" stopColor="#0b331b" />
                       </radialGradient>
+
+                      {/* Outfield Dew Sheen & Floodlight Glare */}
+                      <radialGradient id="simDewSheen" cx="50%" cy="50%" r="40%">
+                        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.20" />
+                        <stop offset="35%" stopColor="#86efac" stopOpacity="0.10" />
+                        <stop offset="70%" stopColor="#10b981" stopOpacity="0.03" />
+                        <stop offset="100%" stopColor="#052e16" stopOpacity="0" />
+                      </radialGradient>
+
+                      {/* Bowler Footmark Rough Patches */}
+                      <radialGradient id="simRoughPatch" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#543716" stopOpacity="0.9" />
+                        <stop offset="60%" stopColor="#734d22" stopOpacity="0.6" />
+                        <stop offset="100%" stopColor="#9c723f" stopOpacity="0" />
+                      </radialGradient>
+
+                      {/* Diamond / Cross-Hatch Lawn Mowing Cut Overlay */}
+                      <pattern id="simMowerStripes" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                        <rect width="20" height="40" fill="rgba(255,255,255,0.025)" />
+                        <rect x="20" width="20" height="40" fill="rgba(0,0,0,0.035)" />
+                      </pattern>
                     </defs>
 
-                    {/* Alternating lawn mowing circular bands */}
-                    <ellipse cx="500" cy="300" rx="480" ry="280" fill="url(#lawnPattern)" />
-                    <ellipse cx="500" cy="300" rx="420" ry="240" fill="none" stroke="#10b981" strokeWidth="1" strokeOpacity="0.15" />
-                    <ellipse cx="500" cy="300" rx="340" ry="190" fill="none" stroke="#10b981" strokeWidth="1" strokeOpacity="0.2" />
-                    
-                    {/* 30-Yard Fielding Circle (Dashed White Ring) */}
-                    <ellipse cx="500" cy="310" rx="270" ry="150" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="8 6" strokeOpacity="0.45" />
+                    {/* Outer Stadium Grandstand Bowl Silhouette */}
+                    <ellipse cx="500" cy="300" rx="498" ry="298" fill="#06090e" stroke="#1e293b" strokeWidth="2" />
+                    <ellipse cx="500" cy="300" rx="485" ry="285" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" strokeDasharray="3 8" />
 
-                    {/* Boundary Rope Oval */}
-                    <ellipse cx="500" cy="300" rx="470" ry="270" fill="none" stroke="#f8fafc" strokeWidth="2" strokeOpacity="0.3" />
+                    {/* ─── THE CRICKET OUTFIELD TURF ─── */}
+                    {/* Outfield Base with Concentric Mower Rings */}
+                    <ellipse cx="500" cy="300" rx="470" ry="270" fill="url(#simLawnPattern)" />
 
-                    {/* Perspective 22-Yard Turf Pitch Strip (Narrow at top bowling end, wider at batting end) */}
-                    <polygon points="465,110 535,110 545,490 455,490" fill="url(#pitchGrad)" stroke="#78350f" strokeWidth="1" />
+                    {/* Broadcast Mowing Rings */}
+                    <ellipse cx="500" cy="300" rx="420" ry="240" fill="none" stroke="#1c6b3c" strokeWidth="16" strokeOpacity="0.4" />
+                    <ellipse cx="500" cy="300" rx="355" ry="200" fill="none" stroke="#124a28" strokeWidth="16" strokeOpacity="0.45" />
+                    <ellipse cx="500" cy="300" rx="290" ry="165" fill="none" stroke="#1c6b3c" strokeWidth="14" strokeOpacity="0.35" />
+                    <ellipse cx="500" cy="300" rx="225" ry="130" fill="none" stroke="#124a28" strokeWidth="14" strokeOpacity="0.4" />
+                    <ellipse cx="500" cy="300" rx="160" ry="95" fill="none" stroke="#1c6b3c" strokeWidth="12" strokeOpacity="0.3" />
+
+                    {/* Diamond / Cross-Hatch Lawn Texture */}
+                    <ellipse cx="500" cy="300" rx="470" ry="270" fill="url(#simMowerStripes)" />
+
+                    {/* Outfield Floodlight Dew Sheen */}
+                    <ellipse cx="500" cy="300" rx="380" ry="220" fill="url(#simDewSheen)" />
+
+                    {/* ─── BOUNDARY ROPE & FOAM CUSHIONS ─── */}
+                    <ellipse cx="500" cy="300" rx="470" ry="270" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeOpacity="0.85" />
+                    <ellipse cx="500" cy="300" rx="470" ry="270" fill="none" stroke="#000000" strokeWidth="1" strokeOpacity="0.4" strokeDasharray="3 3" />
+
+                    {/* Boundary Foam Cushions (IPL Style Sponsor Wedges) */}
+                    {Array.from({ length: 24 }).map((_, i) => {
+                      const angle = (i * 2 * Math.PI) / 24;
+                      const cx = 500 + 470 * Math.cos(angle);
+                      const cy = 300 + 270 * Math.sin(angle);
+                      const deg = (angle * 180) / Math.PI + 90;
+                      return (
+                        <rect
+                          key={i}
+                          x={cx - 6}
+                          y={cy - 2.5}
+                          width="12"
+                          height="5"
+                          rx="1"
+                          transform={`rotate(${deg} ${cx} ${cy})`}
+                          fill={i % 2 === 0 ? 'var(--accent-primary, #f59e0b)' : '#ffffff'}
+                          opacity="0.85"
+                          stroke="#000000"
+                          strokeWidth="0.5"
+                        />
+                      );
+                    })}
+
+                    {/* ─── 30-YARD FIELDING CIRCLE ─── */}
+                    <ellipse cx="500" cy="300" rx="260" ry="150" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="6 6" strokeOpacity="0.45" />
+
+                    {/* 20 White Circle Marker Discs (Fielding Domes) */}
+                    {Array.from({ length: 20 }).map((_, i) => {
+                      const angle = (i * 2 * Math.PI) / 20;
+                      const dx = 500 + 260 * Math.cos(angle);
+                      const dy = 300 + 150 * Math.sin(angle);
+                      return (
+                        <g key={i}>
+                          <circle cx={dx} cy={dy + 0.6} r="2.5" fill="#000000" opacity="0.35" />
+                          <circle cx={dx} cy={dy} r="2.4" fill="#ffffff" opacity="0.9" stroke="#94a3b8" strokeWidth="0.4" />
+                        </g>
+                      );
+                    })}
+
+                    {/* ─── THE 22-YARD CRICKET PITCH (CENTERPIECE) ─── */}
+                    {/* Pitch Apron Grass Blend */}
+                    <polygon points="455,100 545,100 555,500 445,500" fill="#134e2a" opacity="0.8" />
+
+                    {/* Perspective 22-Yard Clay Pitch Strip (Narrow at bowling end, wider at batting end) */}
+                    <polygon points="465,110 535,110 545,490 455,490" fill="url(#simPitchClay)" stroke="#5c3f1e" strokeWidth="1.2" />
+
+                    {/* Bowler Landing Footmark Roughs */}
+                    <ellipse cx="482" cy="145" rx="7" ry="12" fill="url(#simRoughPatch)" />
+                    <ellipse cx="518" cy="148" rx="6" ry="10" fill="url(#simRoughPatch)" />
+                    <ellipse cx="478" cy="455" rx="8" ry="13" fill="url(#simRoughPatch)" />
+                    <ellipse cx="522" cy="452" rx="7" ry="11" fill="url(#simRoughPatch)" />
+
+                    {/* Center Stance Wear Marks */}
+                    <ellipse cx="500" cy="460" rx="6" ry="3" fill="#5a3b19" opacity="0.65" />
+                    <ellipse cx="500" cy="140" rx="5" ry="2.5" fill="#5a3b19" opacity="0.65" />
 
                     {/* Pitch Crease Markings */}
                     {/* Bowling Crease (Top) */}
-                    <line x1="450" y1="130" x2="550" y2="130" stroke="#ffffff" strokeWidth="2" strokeOpacity="0.8" />
+                    <line x1="445" y1="130" x2="555" y2="130" stroke="#ffffff" strokeWidth="2.2" strokeOpacity="0.9" />
+                    {/* Return Creases (Top) */}
+                    <line x1="465" y1="110" x2="465" y2="148" stroke="#ffffff" strokeWidth="1.8" strokeOpacity="0.85" />
+                    <line x1="535" y1="110" x2="535" y2="148" stroke="#ffffff" strokeWidth="1.8" strokeOpacity="0.85" />
+                    {/* Bowling Popping Crease (Top) */}
+                    <line x1="440" y1="148" x2="560" y2="148" stroke="#ffffff" strokeWidth="2.6" strokeOpacity="0.95" />
+
+                    {/* Batting Bowling Crease (Bottom) */}
+                    <line x1="435" y1="472" x2="565" y2="472" stroke="#ffffff" strokeWidth="2.2" strokeOpacity="0.9" />
+                    {/* Return Creases (Bottom) */}
+                    <line x1="455" y1="450" x2="455" y2="490" stroke="#ffffff" strokeWidth="1.8" strokeOpacity="0.85" />
+                    <line x1="545" y1="450" x2="545" y2="490" stroke="#ffffff" strokeWidth="1.8" strokeOpacity="0.85" />
                     {/* Batting Popping Crease (Bottom) */}
-                    <line x1="435" y1="460" x2="565" y2="460" stroke="#ffffff" strokeWidth="2.5" strokeOpacity="0.9" />
+                    <line x1="430" y1="450" x2="570" y2="450" stroke="#ffffff" strokeWidth="2.8" strokeOpacity="0.95" />
 
-                    {/* Stumps - Bowling End (Top) */}
-                    <rect x="495" y="122" width="3" height="12" fill="#fef08a" rx="1" />
-                    <rect x="500" y="122" width="3" height="12" fill="#fef08a" rx="1" />
-                    <rect x="505" y="122" width="3" height="12" fill="#fef08a" rx="1" />
-                    <rect x="493" y="121" width="17" height="2" fill="#fef08a" rx="1" />
+                    {/* 3D Wooden Stumps & Bails with Shadows */}
+                    {/* Bowling End Stumps (Top) */}
+                    <line x1="492" y1="130" x2="508" y2="130" stroke="#000000" strokeWidth="2" opacity="0.4" />
+                    <rect x="495" y="120" width="3" height="12" rx="0.6" fill="#fef08a" stroke="#ca8a04" strokeWidth="0.4" />
+                    <rect x="500" y="120" width="3" height="12" rx="0.6" fill="#fef08a" stroke="#ca8a04" strokeWidth="0.4" />
+                    <rect x="505" y="120" width="3" height="12" rx="0.6" fill="#fef08a" stroke="#ca8a04" strokeWidth="0.4" />
+                    <rect x="493" y="119" width="17" height="2" rx="0.5" fill="#fef08a" stroke="#b45309" strokeWidth="0.3" />
 
-                    {/* Stumps - Batting End (Bottom) */}
-                    <rect x="494" y="468" width="3.5" height="16" fill="#fef08a" rx="1" />
-                    <rect x="500" y="468" width="3.5" height="16" fill="#fef08a" rx="1" />
-                    <rect x="506" y="468" width="3.5" height="16" fill="#fef08a" rx="1" />
-                    <rect x="492" y="467" width="20" height="2.5" fill="#fef08a" rx="1" />
+                    {/* Batting End Stumps (Bottom) */}
+                    <line x1="492" y1="472" x2="508" y2="472" stroke="#000000" strokeWidth="2" opacity="0.4" />
+                    <rect x="494" y="470" width="3.5" height="16" rx="0.8" fill="#fef08a" stroke="#ca8a04" strokeWidth="0.4" />
+                    <rect x="500" y="470" width="3.5" height="16" rx="0.8" fill="#fef08a" stroke="#ca8a04" strokeWidth="0.4" />
+                    <rect x="506" y="470" width="3.5" height="16" rx="0.8" fill="#fef08a" stroke="#ca8a04" strokeWidth="0.4" />
+                    <rect x="492" y="484" width="20" height="2.5" rx="0.6" fill="#fef08a" stroke="#b45309" strokeWidth="0.3" />
+
+                    {/* Sight Screens */}
+                    <rect x="475" y="40" width="50" height="6" rx="1.5" fill="#f8fafc" stroke="#64748b" strokeWidth="0.8" opacity="0.7" />
+                    <rect x="475" y="555" width="50" height="6" rx="1.5" fill="#f8fafc" stroke="#64748b" strokeWidth="0.8" opacity="0.7" />
 
                     {/* Dynamic Laser Trajectory from Batting Crease to Outfield */}
                     {lastShotTraj && (
