@@ -134,9 +134,9 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Indian',
     is_overseas: false,
     powerIndex: 95.0,
-    iplHeritage: 'Chennai Super Kings 3D Icon',
+    iplHeritage: 'Rajasthan Royals Champion Icon',
     tacticalTag: 'Final Ball Hero • Bullet Arm Fielder & Stingy Finger Spinner',
-    preferredTeamId: 'csk',
+    preferredTeamId: 'rr',
     roundEligibility: 1
   },
   {
@@ -158,9 +158,9 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Indian',
     is_overseas: false,
     powerIndex: 97.0,
-    iplHeritage: 'Delhi Capitals / Record Dynamo',
-    tacticalTag: 'Fearless Left-Handed Phenomenon & Match-Winning Batter',
-    preferredTeamId: 'dc',
+    iplHeritage: 'Lucknow Super Giants Captain',
+    tacticalTag: 'Record Signee • Fearless Left-Handed Phenomenon & Match-Winner',
+    preferredTeamId: 'lsg',
     roundEligibility: 1
   },
   {
@@ -170,9 +170,9 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Indian',
     is_overseas: false,
     powerIndex: 95.5,
-    iplHeritage: 'Rajasthan Royals Captain',
+    iplHeritage: 'Chennai Super Kings Wicketkeeper Star',
     tacticalTag: 'Classy Intent Leader • Fast Starter Against Pace & Spin',
-    preferredTeamId: 'rr',
+    preferredTeamId: 'csk',
     roundEligibility: 1
   },
   {
@@ -255,10 +255,10 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     role: 'WK',
     nationality: 'Indian',
     is_overseas: false,
-    powerIndex: 93.0,
-    iplHeritage: 'Lucknow Super Giants Anchor',
-    tacticalTag: 'Classy Top-Order Anchor with 4000+ IPL Runs',
-    preferredTeamId: 'lsg',
+    powerIndex: 94.0,
+    iplHeritage: 'Delhi Capitals Marquee Batter',
+    tacticalTag: 'Classy Top-Order Anchor with 4500+ IPL Runs',
+    preferredTeamId: 'dc',
     roundEligibility: 2
   },
   {
@@ -267,10 +267,10 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     role: 'BAT',
     nationality: 'Indian',
     is_overseas: false,
-    powerIndex: 93.5,
-    iplHeritage: 'Kolkata Knight Riders Champion Captain',
-    tacticalTag: 'IPL 2024 Winning Leader & Spin-Dominating Middle Order Anchor',
-    preferredTeamId: 'kkr',
+    powerIndex: 95.0,
+    iplHeritage: 'Punjab Kings Captain',
+    tacticalTag: 'IPL Champion Winning Leader & Spin-Dominating Middle Order Anchor',
+    preferredTeamId: 'pbks',
     roundEligibility: 2
   },
   {
@@ -280,9 +280,9 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Overseas',
     is_overseas: true,
     powerIndex: 95.0,
-    iplHeritage: 'Rajasthan Royals Centurion',
+    iplHeritage: 'Gujarat Titans Keeper-Opener',
     tacticalTag: '5x Century Machine • World Cup Winning Power Striker',
-    preferredTeamId: 'rr',
+    preferredTeamId: 'gt',
     roundEligibility: 2
   },
   {
@@ -291,7 +291,7 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     role: 'AR',
     nationality: 'Overseas',
     is_overseas: true,
-    powerIndex: 94.0,
+    powerIndex: 95.0,
     iplHeritage: 'Sunrisers Hyderabad Captain',
     tacticalTag: 'World Champion Leader, Express Pacer & Hard-Hitting Tailender',
     preferredTeamId: 'srh',
@@ -304,7 +304,7 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Indian',
     is_overseas: false,
     powerIndex: 93.0,
-    iplHeritage: 'Delhi Capitals Vice Captain',
+    iplHeritage: 'Delhi Capitals Captain',
     tacticalTag: 'Economic Left-Arm Darts & Reliable Clutch Middle-Order Hitter',
     preferredTeamId: 'dc',
     roundEligibility: 2
