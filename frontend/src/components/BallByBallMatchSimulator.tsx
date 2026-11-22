@@ -1239,6 +1239,13 @@ export default function BallByBallMatchSimulator({
       setInn1(updatedInnings);
     } else {
       setInn2(updatedInnings);
+      // Death Overs Heartbeat Tension: Overs 15+ with tight chasing margin
+      if (inn1 && activeInn.balls.length >= 90) {
+        const targetDifference = (inn1.totalRuns + 1) - newTotalRuns;
+        if (targetDifference > 0 && targetDifference <= 32) {
+          gameAudio.playHeartbeatTension();
+        }
+      }
     }
 
     // Strike Rotation & Next Batter (Locally Scoped to prevent out player persisting)
@@ -2691,6 +2698,32 @@ export default function BallByBallMatchSimulator({
                 {/* ─── ARENA FIELD POV: HYPER-REALISTIC BROADCAST STADIUM GROUND & 22-YARD PITCH ─── */}
                 <div className="relative my-0.5 h-[270px] sm:h-[310px] md:h-[350px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/30 bg-[#05080c] shadow-2xl select-none">
                   
+                  {/* Mode Switcher: Field Positions vs Wagon Wheel (Top-Left) */}
+                  <div className="absolute top-2 left-3 z-30 flex items-center gap-1 bg-slate-950/90 p-0.5 rounded-lg border border-white/10 text-[9px] font-mono backdrop-blur-md shadow-md">
+                    <button
+                      onClick={() => {
+                        setRadarViewMode('field');
+                        gameAudio.playUiTap('light');
+                      }}
+                      className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                        radarViewMode === 'field' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      🏟️ Field
+                    </button>
+                    <button
+                      onClick={() => {
+                        setRadarViewMode('wagon');
+                        gameAudio.playUiTap('light');
+                      }}
+                      className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                        radarViewMode === 'wagon' ? 'bg-amber-400 text-slate-950 shadow-sm' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      🎯 Wagon Wheel
+                    </button>
+                  </div>
+
                   {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
                   <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/90 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-md shadow-md">
                     <span>🛡️ {deepCount} Deep Fielders</span>
@@ -2865,33 +2898,65 @@ export default function BallByBallMatchSimulator({
                     <rect x="475" y="40" width="50" height="6" rx="1.5" fill="#f8fafc" stroke="#64748b" strokeWidth="0.8" opacity="0.7" />
                     <rect x="475" y="555" width="50" height="6" rx="1.5" fill="#f8fafc" stroke="#64748b" strokeWidth="0.8" opacity="0.7" />
 
-                    {/* Dynamic Laser Trajectory from Batting Crease to Outfield */}
-                    {lastShotTraj && (
+                    {/* Dynamic Trajectories / Full Wagon Wheel */}
+                    {radarViewMode === 'wagon' ? (
                       <g>
-                        <line 
-                          x1="520" 
-                          y1="450" 
-                          x2={lastShotTraj.x * 10} 
-                          y2={lastShotTraj.y * 6} 
-                          stroke={lastBall?.isSix ? '#fbbf24' : lastBall?.isFour ? '#38bdf8' : '#34d399'} 
-                          strokeWidth={isBallAnimating ? 3.5 : 2} 
-                          strokeDasharray={isBallAnimating ? 'none' : '4 4'}
-                          strokeOpacity={0.8}
-                          className={isBallAnimating ? 'animate-pulse' : ''}
-                        />
-                        {/* Ripple Ring at Boundary Impact */}
-                        {(lastBall?.isFour || lastBall?.isSix) && (
-                          <circle 
-                            cx={lastShotTraj.x * 10} 
-                            cy={lastShotTraj.y * 6} 
-                            r="18" 
-                            fill="none" 
-                            stroke={lastBall?.isSix ? '#fbbf24' : '#38bdf8'} 
-                            strokeWidth="2" 
-                            className="animate-ping" 
-                          />
-                        )}
+                        {activeInnings.balls.map((b, bIdx) => {
+                          const dir = b.shotDirection || SHOT_ZONES[bIdx % SHOT_ZONES.length];
+                          const targetX = (dir.x / 100) * 1000;
+                          const targetY = (dir.y / 100) * 600;
+                          const isBoundary = b.isFour || b.isSix;
+                          const strokeColor = b.isSix ? '#c084fc' : b.isFour ? '#facc15' : b.isWicket ? '#f87171' : 'rgba(56, 189, 248, 0.4)';
+                          const strokeW = b.isSix ? 2.5 : b.isFour ? 2.0 : b.isWicket ? 1.8 : 1.0;
+                          return (
+                            <g key={bIdx}>
+                              <line
+                                x1="500"
+                                y1="450"
+                                x2={targetX}
+                                y2={targetY}
+                                stroke={strokeColor}
+                                strokeWidth={strokeW}
+                                strokeDasharray={b.isSix ? 'none' : b.isFour ? 'none' : '3 3'}
+                                strokeOpacity={isBoundary || b.isWicket ? 0.9 : 0.4}
+                              />
+                              {isBoundary && (
+                                <circle cx={targetX} cy={targetY} r={b.isSix ? 4.5 : 3.5} fill={strokeColor} />
+                              )}
+                              {b.isWicket && (
+                                <text x={targetX} y={targetY} fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">✕</text>
+                              )}
+                            </g>
+                          );
+                        })}
                       </g>
+                    ) : (
+                      lastShotTraj && (
+                        <g>
+                          <line 
+                            x1="500" 
+                            y1="450" 
+                            x2={lastShotTraj.x * 10} 
+                            y2={lastShotTraj.y * 6} 
+                            stroke={lastBall?.isSix ? '#c084fc' : lastBall?.isFour ? '#facc15' : lastBall?.isWicket ? '#ef4444' : '#34d399'} 
+                            strokeWidth={isBallAnimating ? 4 : 2.5} 
+                            strokeDasharray={isBallAnimating ? 'none' : '4 4'}
+                            strokeOpacity={0.9}
+                            className={isBallAnimating ? 'animate-pulse' : ''}
+                          />
+                          {(lastBall?.isFour || lastBall?.isSix) && (
+                            <circle 
+                              cx={lastShotTraj.x * 10} 
+                              cy={lastShotTraj.y * 6} 
+                              r="18" 
+                              fill="none" 
+                              stroke={lastBall?.isSix ? '#c084fc' : '#facc15'} 
+                              strokeWidth="2.5" 
+                              className="animate-ping" 
+                            />
+                          )}
+                        </g>
+                      )
                     )}
                   </svg>
 
