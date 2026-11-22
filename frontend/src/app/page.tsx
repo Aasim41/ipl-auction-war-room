@@ -406,25 +406,27 @@ export default function UnifiedTeamSelectHomePage() {
 
             {/* 4 Clean Key Stat Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2.5">
-              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
                 <span className="text-[9px] font-mono text-gray-400 uppercase block">Fortress</span>
-                <span className="text-[11px] font-bold text-white block truncate" title={activeStadium.name}>{activeStadium.name}</span>
+                <span className="text-[11px] font-bold text-white block truncate" title={activeStadium.name}>
+                  {activeStadium.shortName || activeStadium.name.replace(' Stadium', '')}
+                </span>
                 <span className="text-[9px] font-mono text-emerald-400">Par {activeStadium.avgFirstInnings}</span>
               </div>
 
-              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
                 <span className="text-[9px] font-mono text-gray-400 uppercase block">Pitch</span>
-                <span className="text-[11px] font-bold text-amber-300 block truncate">{activeStadium.pitchType}</span>
-                <span className="text-[9px] font-mono text-gray-400">{activeStadium.boundarySize}</span>
+                <span className="text-[11px] font-bold text-amber-300 block truncate" title={activeStadium.pitchType}>{activeStadium.pitchType}</span>
+                <span className="text-[9px] font-mono text-gray-400 truncate block">{activeStadium.boundarySize}</span>
               </div>
 
-              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
                 <span className="text-[9px] font-mono text-gray-400 uppercase block">Focus</span>
-                <span className="text-[11px] font-bold text-sky-300 block truncate">{activeFranchiseAI.personality || 'Tactical'}</span>
+                <span className="text-[11px] font-bold text-sky-300 block truncate" title={activeFranchiseAI.personality || 'Tactical'}>{activeFranchiseAI.personality || 'Tactical'}</span>
                 <span className="text-[9px] font-mono text-gray-400">Strategy</span>
               </div>
 
-              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
+              <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
                 <span className="text-[9px] font-mono text-gray-400 uppercase block">Squad</span>
                 <span className="text-[11px] font-bold text-white block">{activeFranchise.squad2026.length} Players</span>
                 <span className="text-[9px] font-mono text-amber-300 truncate block" title={`Captain: ${activeFranchise.captain}`}>C: {activeFranchise.captain}</span>
@@ -473,6 +475,34 @@ export default function UnifiedTeamSelectHomePage() {
               </div>
               <ChevronRight size={13} className="text-gray-400 group-hover:text-amber-400 transition-colors shrink-0" />
             </Link>
+
+            {/* Tactical Blueprint & Fortress Strengths (Eliminates dead space) */}
+            {activeFranchise.strengths && activeFranchise.strengths.length > 0 && (
+              <div className="mt-2 p-2.5 rounded-xl bg-slate-950/70 border border-white/5">
+                <span className="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-wider block mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <Compass size={11} className="text-sky-400" />
+                    <span>Tactical Blueprint & Strengths</span>
+                  </span>
+                  <span className="text-[9px] text-gray-500 font-mono">{activeStadium.boundarySize}</span>
+                </span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {activeFranchise.strengths.map((str, sIdx) => (
+                    <span 
+                      key={sIdx}
+                      className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-gray-300 font-medium"
+                    >
+                      {str}
+                    </span>
+                  ))}
+                </div>
+                {activeStadium.curatorNote && (
+                  <p className="text-[9.5px] text-gray-400 font-sans mt-1.5 italic line-clamp-2">
+                    💡 {activeStadium.curatorNote}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Single High-Impact Primary CTA */}
