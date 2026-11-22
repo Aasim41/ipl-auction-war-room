@@ -1338,7 +1338,7 @@ export default function MiniAuctionPage() {
               borderColor: myTheme.cardBorder,
               boxShadow: myTheme.cardGlow,
             }}
-            className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl border p-3 shadow-xl max-h-[520px] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
+            className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl border p-3 shadow-xl h-[520px] max-h-[85vh] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
           >
             
             {/* Tab Navigation: 4 Tabs - HIDE ON MOBILE TO PREVENT REPEATED NAVBARS */}
