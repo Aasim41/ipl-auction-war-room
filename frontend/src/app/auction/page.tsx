@@ -918,10 +918,10 @@ export default function MiniAuctionPage() {
         {/* Mobile View Switcher Tabs (4 Tabs: Stage | Pool | Squads | Sold) */}
         <div 
           style={{
-            background: `${myTheme.bgDeep}f0`,
-            borderColor: `${myTheme.primary}40`,
+            background: '#0f172a',
+            borderColor: `${myTheme.primary}50`,
           }}
-          className="flex lg:hidden items-center justify-between gap-1 p-1 rounded-2xl border overflow-x-auto scrollbar-none shrink-0"
+          className="flex lg:hidden items-center justify-between gap-1.5 p-1.5 rounded-2xl border overflow-x-auto scrollbar-none shrink-0 shadow-lg"
         >
           {[
             { id: 'stage', label: '🔨 Gavel Stage' },
@@ -940,12 +940,17 @@ export default function MiniAuctionPage() {
               style={auctionView === tab.id ? {
                 backgroundColor: myTheme.pillBg,
                 color: myTheme.pillText,
-                boxShadow: `0 0 10px ${myTheme.primary}70`,
-              } : {}}
-              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer flex-1 text-center ${
+                boxShadow: `0 0 12px ${myTheme.primary}80`,
+                borderColor: myTheme.primary,
+              } : {
+                backgroundColor: '#1e293b',
+                color: '#cbd5e1',
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+              }}
+              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-black whitespace-nowrap transition-all cursor-pointer flex-1 text-center border shadow-sm ${
                 auctionView === tab.id
-                  ? 'font-black'
-                  : 'text-gray-400 hover:text-white bg-white/5'
+                  ? 'font-black scale-[1.01]'
+                  : 'hover:bg-slate-700/80 hover:text-white'
               }`}
             >
               {tab.label}

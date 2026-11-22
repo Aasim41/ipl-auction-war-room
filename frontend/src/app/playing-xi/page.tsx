@@ -414,7 +414,7 @@ export default function PlayingXIPage() {
           </div>
 
           {/* Row 2: 3-Tab Switcher (Playing 11, Schedule (74), Caps & Trophies) */}
-          <div className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-white/10 w-full shrink-0">
+          <div className="flex items-center gap-1.5 bg-slate-900/95 p-1.5 rounded-2xl border border-white/15 w-full shrink-0 shadow-lg">
             <button
               onClick={() => {
                 gameAudio.playUiTap('select');
@@ -423,10 +423,14 @@ export default function PlayingXIPage() {
               style={activeTab === 'xi' ? {
                 backgroundColor: myTheme.pillBg,
                 color: myTheme.pillText,
-                boxShadow: `0 0 12px ${myTheme.primary}`,
-              } : {}}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'xi' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
+                boxShadow: `0 0 14px ${myTheme.primary}80`,
+              } : {
+                backgroundColor: '#1e293b',
+                color: '#cbd5e1',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+              }}
+              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                activeTab === 'xi' ? 'scale-[1.01]' : 'hover:bg-slate-700/80 hover:text-white'
               }`}
             >
               <Users size={13} />
@@ -440,10 +444,14 @@ export default function PlayingXIPage() {
               style={activeTab === 'schedule' ? {
                 backgroundColor: myTheme.pillBg,
                 color: myTheme.pillText,
-                boxShadow: `0 0 12px ${myTheme.primary}`,
-              } : {}}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'schedule' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
+                boxShadow: `0 0 14px ${myTheme.primary}80`,
+              } : {
+                backgroundColor: '#1e293b',
+                color: '#cbd5e1',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+              }}
+              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                activeTab === 'schedule' ? 'scale-[1.01]' : 'hover:bg-slate-700/80 hover:text-white'
               }`}
             >
               <Calendar size={13} />
@@ -457,10 +465,14 @@ export default function PlayingXIPage() {
               style={activeTab === 'caps_trophies' ? {
                 backgroundColor: myTheme.pillBg,
                 color: myTheme.pillText,
-                boxShadow: `0 0 12px ${myTheme.primary}`,
-              } : {}}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'caps_trophies' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
+                boxShadow: `0 0 14px ${myTheme.primary}80`,
+              } : {
+                backgroundColor: '#1e293b',
+                color: '#cbd5e1',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+              }}
+              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                activeTab === 'caps_trophies' ? 'scale-[1.01]' : 'hover:bg-slate-700/80 hover:text-white'
               }`}
             >
               <Trophy size={13} />
