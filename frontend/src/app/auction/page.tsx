@@ -1653,21 +1653,24 @@ export default function MiniAuctionPage() {
 
         {/* Global Bottom Proceed Floating Bar when squad minimums satisfied */}
         {activeSquadCount >= 18 && (
-          <div className="mt-2.5 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-slate-900/95 via-slate-900 to-slate-950 border border-emerald-500/40 flex items-center justify-between gap-2 shadow-2xl shrink-0">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <div>
-                <div className="text-xs font-bold text-white">
-                  Squad Ready for Matchday ({activeSquadCount} Players)
+          <div className="mt-2.5 p-3 rounded-2xl bg-slate-900/95 border border-emerald-500/50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shadow-2xl shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <div className="min-w-0">
+                <div className="text-xs font-black text-white flex items-center gap-1.5 flex-wrap">
+                  <span>Squad Ready for Matchday</span>
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">
+                    {activeSquadCount}/25 Players
+                  </span>
                 </div>
-                <div className="text-[10px] text-gray-400 font-mono">
-                  BCCI Roster Minimums Satisfied • Remaining Purse: ₹{campaign.remainingPurse.toFixed(2)} Cr
+                <div className="text-[10px] text-gray-300 font-mono truncate">
+                  BCCI Rules Met • Remaining Purse: ₹{campaign.remainingPurse.toFixed(2)} Cr
                 </div>
               </div>
             </div>
             <button
               onClick={handleFinishAuction}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.35)] hover:scale-[1.01] active:scale-95 transition-all shrink-0"
             >
               <span>Proceed to Playing XI & Schedule</span>
               <ArrowRight size={14} />
