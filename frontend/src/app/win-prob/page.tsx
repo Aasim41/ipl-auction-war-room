@@ -64,7 +64,7 @@ export default function WinProbabilityPage() {
   ] : [];
 
   return (
-    <div className="min-h-screen bg-transparent text-white p-6 pt-20">
+    <div className="min-h-screen bg-transparent text-white px-4 sm:px-6 safe-page-top pb-16">
       <div className="max-w-7xl mx-auto space-y-8 animate-fade-up">
         
         <div className="glass-panel p-8 rounded-3xl border border-slate-700/50 flex flex-col md:flex-row items-center justify-between gap-8">

@@ -81,7 +81,7 @@ export default function SelectTeamPage() {
       {/* Top Left Back Button */}
       <button
         onClick={() => router.push('/')}
-        className="absolute top-3 sm:top-4 left-3 sm:left-6 z-30 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 border border-white/15 cursor-pointer shadow-lg backdrop-blur-md"
+        className="fixed top-[max(env(safe-area-inset-top,0px),14px)] left-[max(env(safe-area-inset-left,0px),14px)] z-40 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 border border-white/20 cursor-pointer shadow-xl backdrop-blur-md"
         title="Return to Home Screen"
       >
         <ArrowLeft size={14} className="text-amber-400" />

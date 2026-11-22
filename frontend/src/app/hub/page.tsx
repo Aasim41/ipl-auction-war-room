@@ -68,7 +68,7 @@ export default function AnalyticsHub() {
   })
 
   return (
-    <div className="max-w-7xl mx-auto px-6 pt-20 pb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 safe-page-top pb-16">
       
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
