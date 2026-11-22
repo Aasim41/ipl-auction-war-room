@@ -2225,7 +2225,7 @@ export default function BallByBallMatchSimulator({
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 bg-slate-950 text-white overflow-hidden select-none">
       <div 
-        className="relative w-full h-[100dvh] max-w-lg bg-slate-950 flex flex-col shadow-2xl overflow-hidden sm:border sm:border-white/20 sm:rounded-3xl sm:h-[96dvh]"
+        className="relative w-full h-[100dvh] max-w-lg bg-slate-950 flex flex-col shadow-2xl overflow-hidden sm:border sm:border-white/20 sm:rounded-3xl sm:h-[96dvh] pb-safe"
       >
         
         {/* Top Header & Navigation Bar */}

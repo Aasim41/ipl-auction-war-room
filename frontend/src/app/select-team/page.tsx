@@ -76,7 +76,7 @@ export default function SelectTeamPage() {
   if (!mounted) return null
 
   return (
-    <div ref={containerRef} className="min-h-screen relative overflow-x-hidden touch-pan-y p-3 sm:p-6 pt-10 sm:pt-12 flex flex-col justify-between text-white w-full max-w-full">
+    <div ref={containerRef} className="min-h-screen relative overflow-x-hidden touch-pan-y p-3 sm:p-6 pt-[calc(max(env(safe-area-inset-top,0px),14px)+3.2rem)] pb-16 flex flex-col justify-between text-white w-full max-w-full">
 
       {/* Top Left Back Button */}
       <button
