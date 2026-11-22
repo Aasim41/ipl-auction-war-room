@@ -962,17 +962,6 @@ export default function PlayingXIPage() {
                     );
                   })}
                 </div>
-                            ) : (
-                              <span className="text-[10px] text-gray-500 font-mono uppercase px-2 py-1 rounded-lg bg-white/5 border border-white/5">
-                                Upcoming
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
 
               {/* Right 5 Columns: Live 10-Team Standings Points Table */}
