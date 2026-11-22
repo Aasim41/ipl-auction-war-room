@@ -31,121 +31,64 @@ export function AmbientBackground() {
       style={{ backgroundColor: t.bgDeep }}
       aria-hidden="true"
     >
-      {/* ─── LAYER 0: Realistic Hyper-Realistic Cricket Stadium Ground & Pitch ─── */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-all duration-700 ease-out"
-        style={{
-          backgroundImage: `url('/stadium-pitch-ground.jpg')`,
-          filter: 'brightness(0.72) contrast(1.18) saturate(1.15)',
-        }}
-      />
-
-      {/* ─── LAYER 1: Signature Team Stadium Floodlight Atmospheric Tint ─── */}
+      {/* ─── LAYER 1: Deep Stadium Night Atmosphere & Team Glow ─── */}
       <div 
         className="absolute inset-0 transition-all duration-700 ease-out"
         style={{
           background: `
-            radial-gradient(ellipse at 50% 12%, ${t.glowPrimary} 0%, transparent 65%),
+            radial-gradient(ellipse at 50% 0%, ${t.glowPrimary} 0%, transparent 60%),
             linear-gradient(180deg, 
-              ${t.bgDeep}cc 0%, 
-              transparent 25%, 
-              transparent 70%, 
-              ${t.bgDeep}f0 100%
+              ${t.bgDeep} 0%, 
+              ${t.bgMid || t.bgDeep}99 40%, 
+              #030712 100%
             )
           `
         }}
       />
 
-      {/* ─── LAYER 2: Radiant Top Stadium Spotlight in Team Primary Color ─── */}
+      {/* ─── LAYER 2: Radiant Top Stadium Floodlight Spotlight ─── */}
       <div
-        className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1200px] h-[650px] pointer-events-none transition-all duration-700 ease-out"
+        className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[500px] pointer-events-none transition-all duration-700 ease-out"
         style={{
           background: `radial-gradient(ellipse at 50% 20%, ${t.glowPrimary} 0%, ${t.glowSecondary} 40%, transparent 75%)`,
-          filter: 'blur(40px)',
-          opacity: 0.85,
-        }}
-      />
-
-      {/* ─── LAYER 3: Dual Flank Halos (Left Primary, Right Accent) ─── */}
-      {/* Left Team Aura */}
-      <div
-        className="absolute top-0 left-0 w-[600px] h-[600px] pointer-events-none transition-all duration-700 ease-out"
-        style={{
-          background: `radial-gradient(circle at 10% 20%, ${t.glowPrimary} 0%, transparent 65%)`,
-          filter: 'blur(50px)',
-          opacity: 0.7,
-        }}
-      />
-      {/* Right Team Aura */}
-      <div
-        className="absolute top-0 right-0 w-[600px] h-[600px] pointer-events-none transition-all duration-700 ease-out"
-        style={{
-          background: `radial-gradient(circle at 90% 20%, ${t.glowSecondary} 0%, transparent 65%)`,
           filter: 'blur(50px)',
           opacity: 0.65,
         }}
       />
 
-      {/* ─── LAYER 4: Mid-Arena Team Glow Core ─── */}
+      {/* ─── LAYER 3: Flank Atmospheric Auras ─── */}
       <div
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] pointer-events-none transition-all duration-700 ease-out"
+        className="absolute top-0 left-0 w-[450px] h-[450px] pointer-events-none transition-all duration-700 ease-out"
         style={{
-          background: `radial-gradient(ellipse at 50% 50%, ${t.glowPrimary} 0%, transparent 65%)`,
+          background: `radial-gradient(circle at 10% 20%, ${t.glowPrimary} 0%, transparent 65%)`,
           filter: 'blur(60px)',
-          opacity: 0.35,
-        }}
-      />
-
-      {/* ─── LAYER 5: Bottom Uplight Glow ─── */}
-      <div
-        className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] pointer-events-none transition-all duration-700 ease-out"
-        style={{
-          background: `radial-gradient(ellipse at 50% 80%, ${t.glowSecondary} 0%, transparent 70%)`,
-          filter: 'blur(50px)',
           opacity: 0.45,
         }}
       />
-
-      {/* ─── LAYER 6: Subtle Geometric Cyber Grid Tinted with Team Color ─── */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-20 transition-all duration-700 ease-out"
+        className="absolute top-0 right-0 w-[450px] h-[450px] pointer-events-none transition-all duration-700 ease-out"
         style={{
-          backgroundImage: `
-            radial-gradient(circle at 50% 50%, ${t.primary} 1.2px, transparent 1.2px)
-          `,
-          backgroundSize: '32px 32px',
+          background: `radial-gradient(circle at 90% 20%, ${t.glowSecondary} 0%, transparent 65%)`,
+          filter: 'blur(60px)',
+          opacity: 0.4,
         }}
       />
 
-      {/* ─── LAYER 7: Dynamic Team Identity Watermark & Motto ─── */}
-      <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 text-center pointer-events-none select-none transition-all duration-700 ease-out w-full max-w-4xl px-4">
-        <span 
-          className="font-display uppercase text-7xl sm:text-9xl font-black tracking-widest block transition-all duration-700 ease-out"
-          style={{
-            color: t.primary,
-            opacity: 0.05,
-            textShadow: `0 0 60px ${t.primary}`,
-          }}
-        >
-          {t.short}
-        </span>
-        <span 
-          className="text-[11px] sm:text-xs uppercase tracking-[0.4em] font-mono font-bold block mt-1 transition-all duration-700 ease-out"
-          style={{
-            color: t.accent,
-            opacity: 0.08,
-          }}
-        >
-          {t.city} • {t.motto}
-        </span>
-      </div>
+      {/* ─── LAYER 4: Subtle Clean Cyber Dot Pattern ─── */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-10 transition-all duration-700 ease-out"
+        style={{
+          backgroundImage: `radial-gradient(circle at 50% 50%, ${t.primary} 1px, transparent 1px)`,
+          backgroundSize: '28px 28px',
+        }}
+      />
 
-      {/* ─── LAYER 8: Soft Vignette for 100% Legibility of Cards & Tables ─── */}
+      {/* ─── LAYER 5: Soft Vignette for 100% High-Contrast Legibility ─── */}
       <div 
         className="absolute inset-0 pointer-events-none transition-all duration-700 ease-out"
         style={{
-          background: `radial-gradient(ellipse at 50% 50%, transparent 45%, ${t.bgDeep} 95%)`,
-          opacity: 0.65,
+          background: `radial-gradient(ellipse at 50% 50%, transparent 40%, #030712f5 95%)`,
+          opacity: 0.7,
         }}
       />
     </div>
