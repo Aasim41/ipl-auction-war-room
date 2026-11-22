@@ -40,6 +40,7 @@ import { formatPlayerInitial } from '../lib/nameFormatter';
 import { useCampaignStore } from '../store/useCampaignStore';
 import { getDetailedPlayerRole, isPlayerSpinner } from '../lib/bowlerClassification';
 import { getTeamTheme } from '../data/teamThemes';
+import { ImpactPlayerSubModal } from './ImpactPlayerSubModal';
 
 interface BallByBallMatchSimulatorProps {
   isOpen: boolean;
@@ -351,6 +352,12 @@ export default function BallByBallMatchSimulator({
   const [eventBanner, setEventBanner] = useState<{ text: string; subtext: string; color: string } | null>(null);
   const [lastShotTraj, setLastShotTraj] = useState<{ x: number; y: number; name: string } | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+
+  // Strategic Impact Sub & Radar View Mode
+  const [showImpactSubModal, setShowImpactSubModal] = useState(false);
+  const [impactSubUsed, setImpactSubUsed] = useState(false);
+  const [impactNotification, setImpactNotification] = useState<string | null>(null);
+  const [radarViewMode, setRadarViewMode] = useState<'field' | 'wagon'>('field');
 
   useEffect(() => {
     setIsMuted(gameAudio.isMuted());
@@ -1655,6 +1662,19 @@ export default function BallByBallMatchSimulator({
     }
 
     return { runs, isWicket, isFour, isSix, dismissal, commentary, shotZone };
+  };
+
+  const handleConfirmImpactSub = (outPlayerName: string, inPlayerName: string, inPlayerObj: any) => {
+    setImpactSubUsed(true);
+    setImpactNotification(`${formatPlayerInitial(inPlayerName)} IN FOR ${formatPlayerInitial(outPlayerName)}`);
+    setTimeout(() => setImpactNotification(null), 6000);
+
+    // Update squads with the newly introduced Impact Player
+    if (aBatsFirst ? currentInnings === 1 : currentInnings === 2) {
+      setBat1Squad((prev) => prev.map((p) => (p.name === outPlayerName ? inPlayerObj : p)));
+    } else {
+      setBowl1Squad((prev) => prev.map((p) => (p.name === outPlayerName ? inPlayerObj : p)));
+    }
   };
 
   // Simulate Over: Atomically bowls all remaining balls in current over
