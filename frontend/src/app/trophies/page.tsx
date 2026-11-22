@@ -91,10 +91,10 @@ export default function TrophyCabinetPage() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent text-white flex flex-col select-none pt-12 sm:pt-14 pb-12 px-3 sm:px-6 max-w-4xl mx-auto w-full overflow-x-hidden min-w-0">
+    <div className="min-h-screen bg-transparent text-white flex flex-col select-none safe-page-top pb-16 px-3 sm:px-6 max-w-4xl mx-auto w-full overflow-x-hidden min-w-0">
       
       {/* ─── CLEAN HEADER (Back Button + Franchise Name) ─── */}
-      <div className="flex items-center justify-between py-2 border-b border-white/10 gap-2 shrink-0 mb-4">
+      <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900/95 border border-white/15 shadow-xl gap-2 shrink-0 mb-4">
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => {
@@ -102,7 +102,7 @@ export default function TrophyCabinetPage() {
               triggerGameHaptic('light');
               router.push('/playing-xi');
             }}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-bold border border-white/10 cursor-pointer transition-all"
+            className="p-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1.5 text-xs font-bold border border-white/15 cursor-pointer transition-all shadow-sm"
             title="Return to Playing 11"
           >
             <ArrowLeft size={15} className="text-amber-400" />
@@ -118,7 +118,7 @@ export default function TrophyCabinetPage() {
         </div>
 
         <div className="flex items-center gap-1.5 font-mono text-xs">
-          <span className="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+          <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold shadow-sm">
             🏆 {earnedTrophies.filter(t => t.type === 'champion').length} Trophies
           </span>
         </div>
