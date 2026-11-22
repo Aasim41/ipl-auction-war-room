@@ -280,15 +280,15 @@ export default function SquadRetainReleasePage() {
                 <div
                   key={player.player_id}
                   style={isReleased ? {
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    borderColor: 'rgba(244, 63, 94, 0.4)',
+                    background: 'rgba(15, 23, 42, 0.95)',
+                    borderColor: 'rgba(244, 63, 94, 0.5)',
                   } : {
-                    background: myTheme.cardBg,
-                    borderColor: myTheme.cardBorder,
-                    boxShadow: myTheme.cardGlow,
+                    background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
+                    borderColor: `${myTheme.primary}70`,
+                    boxShadow: `0 4px 20px ${myTheme.primary}25`,
                   }}
-                  className={`p-2.5 rounded-xl border transition-all flex flex-col justify-between overflow-hidden ${
-                    isReleased ? 'opacity-70' : 'hover:scale-[1.01]'
+                  className={`p-3 rounded-2xl border transition-all flex flex-col justify-between overflow-hidden ${
+                    isReleased ? 'opacity-65' : 'hover:scale-[1.01]'
                   }`}
                 >
                   {/* Top: Name, Role, Rating */}
@@ -302,38 +302,33 @@ export default function SquadRetainReleasePage() {
                     <div className="flex items-start justify-between mb-0.5">
                       <div>
                         <div 
-                          style={{ color: isReleased ? '#ffffff' : myTheme.contrastText }}
-                          className="font-black text-xs sm:text-sm flex items-center gap-1.5 drop-shadow-sm"
+                          className="font-black text-xs sm:text-sm flex items-center gap-1.5 drop-shadow-sm text-white"
                         >
                           <span>{player.name}</span>
                           {player.is_overseas && (
                             <span 
-                              style={{
-                                backgroundColor: isReleased ? 'rgba(56, 189, 248, 0.2)' : myTheme.bgDeep,
-                                color: isReleased ? '#7dd3fc' : myTheme.contrastText,
-                                borderColor: isReleased ? 'rgba(56, 189, 248, 0.4)' : myTheme.cardBorder,
-                              }}
-                              className="text-[8px] px-1.5 py-0.2 rounded border font-extrabold"
+                              className="text-[8px] px-1.5 py-0.2 rounded border font-extrabold bg-sky-500/20 text-sky-300 border-sky-400/40"
                             >
                               OS
+                            </span>
+                          )}
+                          {player.is_captain && (
+                            <span 
+                              className="text-[8px] px-1.5 py-0.2 rounded border font-extrabold bg-amber-500/20 text-amber-300 border-amber-400/40"
+                            >
+                              CAPTAIN
                             </span>
                           )}
                         </div>
                         <div className="text-[10px] font-mono flex items-center gap-1.5 mt-0.5">
                           <span 
-                            style={{
-                              backgroundColor: isReleased ? 'rgba(255, 255, 255, 0.08)' : myTheme.bgDeep,
-                              color: isReleased ? '#e2e8f0' : myTheme.contrastText,
-                              border: `1px solid ${isReleased ? 'rgba(255,255,255,0.15)' : myTheme.cardBorder}`
-                            }}
-                            className="px-1.5 py-0.5 rounded text-[9px] font-bold"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-white/10 text-gray-200 border border-white/10"
                           >
                             {getDetailedPlayerRole(player)}
                           </span>
-                          <span>•</span>
+                          <span className="text-gray-500">•</span>
                           <span 
-                            style={{ color: isReleased ? '#e2e8f0' : myTheme.contrastText }}
-                            className="font-black"
+                            className="font-black text-emerald-400"
                           >
                             ₹{player.price} Cr
                           </span>
@@ -343,9 +338,9 @@ export default function SquadRetainReleasePage() {
                       <div className="text-right">
                         <span 
                           style={{
-                            backgroundColor: isReleased ? 'rgba(255, 255, 255, 0.1)' : myTheme.bgDeep,
-                            color: isReleased ? '#ffffff' : myTheme.contrastText,
-                            borderColor: isReleased ? 'rgba(255, 255, 255, 0.2)' : myTheme.cardBorder,
+                            backgroundColor: `${myTheme.primary}20`,
+                            color: myTheme.primary,
+                            borderColor: `${myTheme.primary}50`,
                           }}
                           className="text-[9px] font-black px-2 py-0.5 rounded border block shadow-sm"
                         >
