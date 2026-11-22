@@ -935,7 +935,7 @@ export default function PlayingXIPage() {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    gameAudio.playWillowCrack('boundary');
+                                    gameAudio.playWillowCrack('four');
                                     triggerGameHaptic('medium');
                                     simulateScheduleMatch(fixture.matchNo);
                                   }}
