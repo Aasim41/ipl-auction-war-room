@@ -45,7 +45,6 @@ import {
   BatterTournamentStats, 
   BowlerTournamentStats 
 } from '../../lib/tournamentLeaderboards';
-import { ChampionshipCelebrationModal } from '../../components/ChampionshipCelebrationModal';
 
 const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: string, hint: string, favRole: string }> = {
   Chennai: {
@@ -193,13 +192,12 @@ export default function PlayingXIPage() {
   } = useCampaignStore();
   
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'xi' | 'schedule' | 'playoffs_caps'>('xi');
-  const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('all');
+  const [activeTab, setActiveTab] = useState<'xi' | 'schedule' | 'caps_trophies'>('xi');
+  const [scheduleFilter, setScheduleFilter] = useState<'all' | 'my' | 'playoffs'>('all');
   const [lineupMode, setLineupMode] = useState<'bat_first' | 'bowl_first'>('bat_first');
   const [strategyToast, setStrategyToast] = useState<string | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
   const [showSimulator, setShowSimulator] = useState(false);
-  const [showTrophyModal, setShowTrophyModal] = useState(false);
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
   const [viewingScorecardFixture, setViewingScorecardFixture] = useState<TournamentFixture | null>(null);
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
@@ -383,102 +381,91 @@ export default function PlayingXIPage() {
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-4">
         
         {/* ─── Sleek Minimal Header & Tab Controls ─── */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pb-2 border-b border-white/10 gap-2">
-          <div className="flex items-center gap-2">
-            <TeamLogo teamId={franchise.id} size={24} />
-            <div className="flex items-baseline gap-1.5">
-              <h1 
-                style={{ color: myTheme.primary }}
-                className="text-base sm:text-lg font-black font-mono"
-              >
-                {franchise.name}
-              </h1>
-              <span className="text-[11px] text-gray-300 font-mono">
-                Match #{currentMatch?.matchNo || 1}
-              </span>
-            </div>
-          </div>
-
-          {/* View Mode Switcher (Tabs) & Single Play Match Button */}
-          <div className="flex items-center justify-between sm:justify-end gap-2">
-            <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-xl border border-white/10 w-full sm:w-auto">
-              <button
-                onClick={() => {
-                  gameAudio.playUiTap('select');
-                  setActiveTab('xi');
-                }}
-                style={activeTab === 'xi' ? {
-                  backgroundColor: myTheme.pillBg,
-                  color: myTheme.pillText,
-                  boxShadow: `0 0 12px ${myTheme.primary}`,
-                } : {}}
-                className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === 'xi' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Users size={12} />
-                <span>Playing 11</span>
-              </button>
-              <button
-                onClick={() => {
-                  gameAudio.playUiTap('select');
-                  setActiveTab('schedule');
-                }}
-                style={activeTab === 'schedule' ? {
-                  backgroundColor: myTheme.pillBg,
-                  color: myTheme.pillText,
-                  boxShadow: `0 0 12px ${myTheme.primary}`,
-                } : {}}
-                className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === 'schedule' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Calendar size={12} />
-                <span>Schedule (74)</span>
-              </button>
-              <button
-                onClick={() => {
-                  gameAudio.playUiTap('select');
-                  setActiveTab('playoffs_caps');
-                }}
-                style={activeTab === 'playoffs_caps' ? {
-                  backgroundColor: myTheme.pillBg,
-                  color: myTheme.pillText,
-                  boxShadow: `0 0 12px ${myTheme.primary}`,
-                } : {}}
-                className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === 'playoffs_caps' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Trophy size={12} />
-                <span>Playoffs & Caps</span>
-              </button>
-              <Link
-                href="/trophies"
-                onClick={() => {
-                  gameAudio.playUiTap('select');
-                  triggerGameHaptic('light');
-                }}
-                className="flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer text-gray-400 hover:text-white hover:bg-white/5"
-                title="Franchise Trophies & Honors"
-              >
-                <Trophy size={12} style={{ color: myTheme.primary }} />
-                <span>Trophies</span>
-              </Link>
+        <div className="flex flex-col gap-2 pb-2.5 border-b border-white/10 shrink-0">
+          {/* Row 1: Brand Info & Play Match CTA */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <TeamLogo teamId={franchise.id} size={26} />
+              <div className="flex items-baseline gap-1.5 min-w-0 truncate">
+                <h1 
+                  style={{ color: myTheme.primary }}
+                  className="text-base sm:text-lg font-black font-mono truncate"
+                >
+                  {franchise.name}
+                </h1>
+                <span className="text-[11px] text-gray-300 font-mono shrink-0">
+                  Match #{currentMatch?.matchNo || 1}
+                </span>
+              </div>
             </div>
 
-            {/* Strictly Single Play/Resume Match CTA */}
+            {/* Strictly Single Play/Resume Match CTA - Always visible on right */}
             <button
               onClick={() => handleLaunchMatch()}
               style={{
                 backgroundColor: myTheme.pillBg,
                 color: myTheme.pillText,
-                boxShadow: `0 0 20px ${myTheme.primary}90`,
+                boxShadow: `0 0 16px ${myTheme.primary}90`,
               }}
-              className="px-4 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+              className="px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0 shadow-md"
             >
-              {isMatchActive ? <Play size={12} /> : <Swords size={12} />}
-              <span>{isMatchActive ? `Resume (${activeOversStr} ov)` : `Play #${currentMatch?.matchNo || 1}`}</span>
+              {isMatchActive ? <Play size={12} fill="currentColor" /> : <Swords size={12} />}
+              <span>{isMatchActive ? `Resume (${activeOversStr} ov)` : `Play Match`}</span>
+            </button>
+          </div>
+
+          {/* Row 2: 3-Tab Switcher (Playing 11, Schedule (74), Caps & Trophies) */}
+          <div className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-white/10 w-full shrink-0">
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('select');
+                setActiveTab('xi');
+              }}
+              style={activeTab === 'xi' ? {
+                backgroundColor: myTheme.pillBg,
+                color: myTheme.pillText,
+                boxShadow: `0 0 12px ${myTheme.primary}`,
+              } : {}}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'xi' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Users size={13} />
+              <span>Playing 11</span>
+            </button>
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('select');
+                setActiveTab('schedule');
+              }}
+              style={activeTab === 'schedule' ? {
+                backgroundColor: myTheme.pillBg,
+                color: myTheme.pillText,
+                boxShadow: `0 0 12px ${myTheme.primary}`,
+              } : {}}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'schedule' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Calendar size={13} />
+              <span>Schedule (74)</span>
+            </button>
+            <button
+              onClick={() => {
+                gameAudio.playUiTap('select');
+                setActiveTab('caps_trophies');
+              }}
+              style={activeTab === 'caps_trophies' ? {
+                backgroundColor: myTheme.pillBg,
+                color: myTheme.pillText,
+                boxShadow: `0 0 12px ${myTheme.primary}`,
+              } : {}}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'caps_trophies' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Trophy size={13} />
+              <span>Caps & Trophies</span>
             </button>
           </div>
         </div>
