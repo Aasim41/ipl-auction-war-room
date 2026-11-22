@@ -3820,19 +3820,19 @@ export default function BallByBallMatchSimulator({
 
             <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
               {bowlingSquad.slice(0, 11).map((b, bIdx) => {
-                const isCurrent = currentBowlerIdx === bIdx;
                 const ovsCount = getBowlerOversCount(activeInnings.bowlingFigures, b.name);
                 const fig = activeInnings.bowlingFigures.find(f => f.name === b.name);
                 const isQuotaFull = ovsCount >= 4;
                 const isLastBowler = lastBowlerIdx !== null && bIdx === lastBowlerIdx;
                 const isDisabled = isQuotaFull || isLastBowler;
+                const isCurrent = currentBowlerIdx === bIdx && !isLastBowler;
 
                 return (
                   <div
                     key={b.player_id || b.name}
                     className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2.5 ${
                       isCurrent
-                        ? 'bg-rose-500/20 border-rose-500 shadow-md ring-1 ring-rose-400'
+                        ? 'bg-amber-500/15 border-amber-500 shadow-md ring-1 ring-amber-400'
                         : isLastBowler
                         ? 'bg-slate-950/60 border-amber-500/30 opacity-70'
                         : isDisabled
@@ -3854,11 +3854,11 @@ export default function BallByBallMatchSimulator({
                           {getDetailedPlayerRole(b)}
                         </span>
                         {isCurrent && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500 text-white font-black font-mono">
-                            BOWLING NOW
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 font-black font-mono">
+                            SELECTED BOWLER
                           </span>
                         )}
-                        {isLastBowler && !isCurrent && (
+                        {isLastBowler && (
                           <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold font-mono">
                             BOWLED PREV OVER
                           </span>
@@ -3871,10 +3871,10 @@ export default function BallByBallMatchSimulator({
 
                     <button
                       onClick={() => handleSelectBowler(bIdx)}
-                      disabled={isDisabled || isCurrent}
+                      disabled={isDisabled}
                       className={`px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider shrink-0 cursor-pointer transition-all ${
                         isCurrent
-                          ? 'bg-rose-600 text-white cursor-default'
+                          ? 'bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-md ring-1 ring-amber-300'
                           : isQuotaFull
                           ? 'bg-white/10 text-gray-500 cursor-not-allowed'
                           : isLastBowler
@@ -3882,7 +3882,7 @@ export default function BallByBallMatchSimulator({
                           : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md active:scale-95'
                       }`}
                     >
-                      {isCurrent ? 'Active Spell' : isQuotaFull ? 'Quota Full 🔒' : isLastBowler ? 'Prev Over 🚫' : 'Allot Spell ➔'}
+                      {isCurrent ? 'Selected ✓' : isQuotaFull ? 'Quota Full 🔒' : isLastBowler ? 'Prev Over 🚫' : 'Allot Spell ➔'}
                     </button>
                   </div>
                 );
@@ -4020,9 +4020,9 @@ export default function BallByBallMatchSimulator({
             <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
               {currentBatSquad.slice(0, 11).map((p, pIdx) => {
                 const bScore = activeInnings.battingScorecard.find(b => b.name === p.name);
-                const isOut = bScore && bScore.dismissal !== 'not out';
-                const isCurrentlyBatting = pIdx === nonStrikerIdx;
-                const isSelected = pIdx === strikerIdx;
+                const isOut = isBatterDismissed(p.name, activeInnings) || p.name === dismissedBatterName;
+                const isCurrentlyBatting = dismissedBatterSlot === 'striker' ? (pIdx === nonStrikerIdx) : (pIdx === strikerIdx);
+                const isSelected = !isOut && (dismissedBatterSlot === 'striker' ? (pIdx === strikerIdx) : (pIdx === nonStrikerIdx));
                 const isAvailable = !isOut && !isCurrentlyBatting;
 
                 return (
@@ -4058,17 +4058,17 @@ export default function BallByBallMatchSimulator({
                         </span>
                         {isCurrentlyBatting && (
                           <span className="text-[8px] px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 font-mono">
-                            AT CREASE (NON-STRIKER)
+                            AT CREASE (RUNNER)
                           </span>
                         )}
                         {isOut && (
-                          <span className="text-[8px] px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-300 font-mono">
-                            DISMISSED
+                          <span className="text-[8px] px-1.5 py-0.2 rounded bg-rose-500/40 text-rose-300 font-black font-mono">
+                            OUT (DISMISSED) 🚫
                           </span>
                         )}
                       </div>
                       <div className="text-[10px] text-gray-400 font-mono mt-0.5">
-                        {isAvailable ? 'Ready in dugout • Tap to send in' : isOut ? bScore?.dismissal : 'Currently at runner end'}
+                        {isAvailable ? 'Ready in dugout • Tap to send in' : isOut ? (bScore?.dismissal || 'Dismissed') : 'Currently at runner end'}
                       </div>
                     </div>
 
@@ -4084,8 +4084,23 @@ export default function BallByBallMatchSimulator({
 
             <div className="pt-3 border-t border-white/10 shrink-0 flex justify-end">
               <button
-                onClick={() => setShowNextBatterModal(false)}
-                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase cursor-pointer"
+                onClick={() => {
+                  // Safety: If current slot points to an out batter, auto-select first available not-out batter
+                  const currentSlotIdx = dismissedBatterSlot === 'striker' ? strikerIdx : nonStrikerIdx;
+                  const currentSlotPlayer = currentBatSquad[currentSlotIdx];
+                  if (!currentSlotPlayer || isBatterDismissed(currentSlotPlayer.name, activeInnings) || currentSlotPlayer.name === dismissedBatterName) {
+                    const fallbackIdx = currentBatSquad.findIndex((cand, cIdx) => 
+                      !isBatterDismissed(cand.name, activeInnings) && cand.name !== dismissedBatterName && cIdx !== (dismissedBatterSlot === 'striker' ? nonStrikerIdx : strikerIdx) && cIdx < 11
+                    );
+                    if (fallbackIdx !== -1) {
+                      if (dismissedBatterSlot === 'striker') setStrikerIdx(fallbackIdx);
+                      else setNonStrikerIdx(fallbackIdx);
+                      setNextBatterIdx(prev => Math.max(prev, fallbackIdx + 1));
+                    }
+                  }
+                  setShowNextBatterModal(false);
+                }}
+                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer shadow-lg"
               >
                 Confirm Batter
               </button>
