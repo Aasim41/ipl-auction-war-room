@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { lockOrientation, getCurrentLockedOrientation } from '../lib/orientationManager'
+import { lockOrientation } from '../lib/orientationManager'
+import { setupNotificationChannels, scheduleRandomDailyNotifications } from '../lib/notificationService'
 
 export function CapacitorDeviceManager() {
   const router = useRouter()
@@ -12,18 +13,39 @@ export function CapacitorDeviceManager() {
     // 1. Maintain Portrait orientation across franchise war rooms and simulation arena
     lockOrientation('portrait')
 
-    // 2. Android Hardware Back Button listener
+    // 2. Initialize native push notification channel and schedule random IPL alerts to the phone
+    const initNotifications = async () => {
+      try {
+        await setupNotificationChannels()
+        await scheduleRandomDailyNotifications()
+      } catch (e) {
+        console.warn('[CapacitorDeviceManager] Notification scheduling error:', e)
+      }
+    }
+    initNotifications()
+
+    // 3. App Lifecycle & Back Button listeners
     let backListenerHandle: any = null
-    const setupBackButton = async () => {
+    let appStateListenerHandle: any = null
+
+    const setupAppListeners = async () => {
       try {
         const { App: CapApp } = await import('@capacitor/app')
+        
+        // Listen to app backgrounding / foregrounding to refresh scheduled random notifications
+        appStateListenerHandle = await CapApp.addListener('appStateChange', (state) => {
+          if (!state.isActive) {
+            // App went to background / screen turned off: ensure random alerts are queued into the future
+            scheduleRandomDailyNotifications()
+          }
+        })
+
+        // Android Hardware Back Button listener
         backListenerHandle = await CapApp.addListener('backButton', ({ canGoBack }) => {
           const currentPath = window.location.pathname
           if (currentPath === '/' || currentPath === '/select-team') {
             CapApp.exitApp()
           } else if (currentPath === '/playing-xi' || currentPath === '/auction' || currentPath === '/squad' || currentPath === '/trade') {
-            // Strict cycle lockdown: Never go back into closed auction or trade rooms!
-            // Return to Home Dashboard, preserving campaign state
             router.push('/')
           } else if (canGoBack) {
             window.history.back()
@@ -35,11 +57,14 @@ export function CapacitorDeviceManager() {
         // Not native Capacitor environment
       }
     }
-    setupBackButton()
+    setupAppListeners()
 
     return () => {
       if (backListenerHandle && typeof backListenerHandle.remove === 'function') {
         backListenerHandle.remove()
+      }
+      if (appStateListenerHandle && typeof appStateListenerHandle.remove === 'function') {
+        appStateListenerHandle.remove()
       }
     }
   }, [router, pathname])
