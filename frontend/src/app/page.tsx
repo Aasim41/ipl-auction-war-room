@@ -426,8 +426,8 @@ export default function UnifiedTeamSelectHomePage() {
 
               <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
                 <span className="text-[9px] font-mono text-gray-400 uppercase block">Squad</span>
-                <span className="text-[11px] font-bold text-white block">25 Players</span>
-                <span className="text-[9px] font-mono text-purple-400">₹125.0 Cr</span>
+                <span className="text-[11px] font-bold text-white block">{activeFranchise.squad2026.length} Players</span>
+                <span className="text-[9px] font-mono text-amber-300 truncate block" title={`Captain: ${activeFranchise.captain}`}>C: {activeFranchise.captain}</span>
               </div>
             </div>
 

@@ -2351,7 +2351,7 @@ export default function BallByBallMatchSimulator({
                 <div className="min-w-0 w-full">
                   <h3 className="text-xs font-black text-white truncate">{myFranchise.short}</h3>
                   <div className="text-[10px] text-gray-300 truncate">
-                    {mySquad[0]?.name || 'Captain'} (C)
+                    {mySquad[0]?.name || myFranchise.captain || 'Captain'} (C)
                   </div>
                   <div className="text-[8px] text-emerald-400 font-mono mt-0.5 truncate">
                     ✓ Dual Lineups Ready
@@ -2370,7 +2370,7 @@ export default function BallByBallMatchSimulator({
                 <div className="min-w-0 w-full">
                   <h3 className="text-xs font-black text-white truncate">{rivalFranchise.short}</h3>
                   <div className="text-[10px] text-gray-300 truncate">
-                    {(rivalFranchise.squad2026?.[0]?.name) || 'Opp Captain'} (C)
+                    {rivalFranchise.captain || rivalFranchise.squad2026?.[0]?.name || 'Opp Captain'} (C)
                   </div>
                   <div className="text-[8px] text-purple-300 font-mono mt-0.5 truncate">
                     {rivalFranchise.short === 'CSK' ? 'Spin Choke' : rivalFranchise.short === 'SRH' ? 'Blitzkrieg' : 'Aggressive'}
