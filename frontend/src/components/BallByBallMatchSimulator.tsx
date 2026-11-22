@@ -3191,6 +3191,50 @@ export default function BallByBallMatchSimulator({
                   {/* Close 2D Tactical Field */}
                 </div>
 
+            {/* ─── TACTICAL SUB-NAVBAR: BALL-BY-BALL vs FULL OVER ─── */}
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-950/90 border border-white/10 shrink-0 shadow-lg">
+              <button
+                onClick={() => {
+                  setSimControlMode('ball_by_ball');
+                  gameAudio.playUiTap('select');
+                  triggerGameHaptic('light');
+                }}
+                style={simControlMode === 'ball_by_ball' ? {
+                  backgroundColor: isUserBatting ? battingTheme.primary : bowlingTheme.primary,
+                  color: isUserBatting ? battingTheme.contrastText : bowlingTheme.contrastText,
+                  borderColor: isUserBatting ? battingTheme.cardBorder : bowlingTheme.cardBorder,
+                } : {}}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  simControlMode === 'ball_by_ball'
+                    ? 'shadow-md border scale-[1.01]'
+                    : 'text-gray-400 hover:text-white border border-transparent'
+                }`}
+              >
+                <span>🏏 Ball-by-Ball</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setSimControlMode('full_over');
+                  gameAudio.playUiTap('select');
+                  triggerGameHaptic('light');
+                }}
+                style={simControlMode === 'full_over' ? {
+                  backgroundColor: isUserBatting ? battingTheme.primary : bowlingTheme.primary,
+                  color: isUserBatting ? battingTheme.contrastText : bowlingTheme.contrastText,
+                  borderColor: isUserBatting ? battingTheme.cardBorder : bowlingTheme.cardBorder,
+                } : {}}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  simControlMode === 'full_over'
+                    ? 'shadow-md border scale-[1.01]'
+                    : 'text-gray-400 hover:text-white border border-transparent'
+                }`}
+              >
+                <FastForward size={12} />
+                <span>⚡ Full Over</span>
+              </button>
+            </div>
+
             {/* ─── USER TACTICAL COMMAND DECK ─── */}
             <div 
               style={{
@@ -3208,12 +3252,15 @@ export default function BallByBallMatchSimulator({
                 >
                   <Zap size={13} />
                   {isUserBatting ? `${myFranchise.short} Batting Tactics` : `${myFranchise.short} Bowling Tactics`}
+                  <span className="text-[10px] font-mono opacity-80 lowercase font-normal">
+                    ({simControlMode === 'ball_by_ball' ? 'ball-by-ball' : 'full over mode'})
+                  </span>
                 </span>
               </div>
 
               {isUserBatting ? (
-                <>
-                  {/* 6 Shot Intent Buttons for Ball-by-Ball (0, 1, 2, 3, 4, 6) */}
+                simControlMode === 'ball_by_ball' ? (
+                  /* 6 Shot Intent Buttons for Ball-by-Ball (0, 1, 2, 3, 4, 6) */
                   <div className="grid grid-cols-6 gap-1">
                     {[
                       { val: '0', label: '0', sub: 'Dot', color: 'border-slate-500/70 bg-slate-800/80 text-gray-200' },
@@ -3241,30 +3288,24 @@ export default function BallByBallMatchSimulator({
                       </button>
                     ))}
                   </div>
-
-                  {/* Full Over Batting Options */}
-                  <div className="flex items-center justify-between pt-1 border-t border-white/10">
-                    <span 
-                      style={{ color: battingTheme.primary }}
-                      className="text-[10px] font-mono font-black uppercase flex items-center gap-1"
-                    >
-                      <FastForward size={11} /> Full Over Simulation:
-                    </span>
-                  </div>
+                ) : (
+                  /* Full Over Batting Options */
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => handleSimulateOver('DEFEND_OVER', undefined)}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-xs font-bold text-gray-200">🛡️ Defend</div>
+                      <div className="text-xs font-bold text-gray-200">🛡️ Defend Over</div>
+                      <div className="text-[9px] text-gray-400 mt-0.5">Anchor & preserve wickets</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver('NORMAL_OVER', undefined)}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-xs font-bold text-emerald-300">⚖️ Normal</div>
+                      <div className="text-xs font-bold text-emerald-300">⚖️ Normal Over</div>
+                      <div className="text-[9px] text-gray-400 mt-0.5">Rotate strike & punish bad balls</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver('ATTACK_OVER', undefined)}
@@ -3275,15 +3316,16 @@ export default function BallByBallMatchSimulator({
                         borderColor: battingTheme.cardBorder,
                         boxShadow: `0 0 12px ${battingTheme.primary}`,
                       }}
-                      className="py-2 px-2 rounded-xl border text-center font-black transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2.5 px-2 rounded-xl border text-center font-black transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-xs font-black">⚡ Attack</div>
+                      <div className="text-xs font-black">⚡ Attack Over</div>
+                      <div className="text-[9px] opacity-90 mt-0.5">Max aggression & boundary hunt</div>
                     </button>
                   </div>
-                </>
+                )
               ) : (
-                <>
-                  {/* 3 Bowling Delivery Buttons for Ball-by-Ball (Defend, Normal, Attack) */}
+                simControlMode === 'ball_by_ball' ? (
+                  /* 3 Bowling Delivery Buttons for Ball-by-Ball (Defend, Normal, Attack) */
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => {
@@ -3292,9 +3334,10 @@ export default function BallByBallMatchSimulator({
                         executeBall('DEFEND');
                       }}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-sky-500/50 text-center text-white transition-all active:scale-95 cursor-pointer shadow-md"
+                      className="py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-sky-500/50 text-center text-white transition-all active:scale-95 cursor-pointer shadow-md"
                     >
-                      <div className="text-xs font-bold text-sky-300">🛡️ Defend</div>
+                      <div className="text-xs font-bold text-sky-300">🛡️ Defensive Line</div>
+                      <div className="text-[9px] text-gray-400 mt-0.5">Wide of off & defensive field</div>
                     </button>
                     <button
                       onClick={() => {
@@ -3303,9 +3346,10 @@ export default function BallByBallMatchSimulator({
                         executeBall('NORMAL');
                       }}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-emerald-500/50 text-center text-white transition-all active:scale-95 cursor-pointer shadow-md"
+                      className="py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-emerald-500/50 text-center text-white transition-all active:scale-95 cursor-pointer shadow-md"
                     >
                       <div className="text-xs font-bold text-emerald-300">⚖️ Good Length</div>
+                      <div className="text-[9px] text-gray-400 mt-0.5">Top of off stump corridor</div>
                     </button>
                     <button
                       onClick={() => {
@@ -3320,35 +3364,30 @@ export default function BallByBallMatchSimulator({
                         borderColor: bowlingTheme.cardBorder,
                         boxShadow: `0 0 12px ${bowlingTheme.primary}`,
                       }}
-                      className="py-2 px-2 rounded-xl border text-center font-black transition-all active:scale-95 cursor-pointer shadow-md"
+                      className="py-2.5 px-2 rounded-xl border text-center font-black transition-all active:scale-95 cursor-pointer shadow-md"
                     >
-                      <div className="text-xs font-black">⚡ Yorker</div>
+                      <div className="text-xs font-black">⚡ Yorker / Bouncer</div>
+                      <div className="text-[9px] opacity-90 mt-0.5">Wicket-taking lethal delivery</div>
                     </button>
                   </div>
-
-                  {/* Full Over Bowling Options */}
-                  <div className="flex items-center justify-between pt-1 border-t border-white/10">
-                    <span 
-                      style={{ color: bowlingTheme.primary }}
-                      className="text-[10px] font-mono font-black uppercase flex items-center gap-1"
-                    >
-                      <FastForward size={11} /> Full Over Simulation:
-                    </span>
-                  </div>
+                ) : (
+                  /* Full Over Bowling Options */
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => handleSimulateOver(undefined, 'DEFEND')}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-xs font-bold text-sky-300">🛡️ Defend</div>
+                      <div className="text-xs font-bold text-sky-300">🛡️ Defend Over</div>
+                      <div className="text-[9px] text-gray-400 mt-0.5">Choke runs & bowl to sweepers</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver(undefined, 'NORMAL')}
                       disabled={matchDone}
-                      className="py-2 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/15 text-center text-white transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-xs font-bold text-emerald-300">⚖️ Normal</div>
+                      <div className="text-xs font-bold text-emerald-300">⚖️ Normal Over</div>
+                      <div className="text-[9px] text-gray-400 mt-0.5">Disciplined seam & spin control</div>
                     </button>
                     <button
                       onClick={() => handleSimulateOver(undefined, 'ATTACK')}
@@ -3359,16 +3398,17 @@ export default function BallByBallMatchSimulator({
                         borderColor: bowlingTheme.cardBorder,
                         boxShadow: `0 0 12px ${bowlingTheme.primary}`,
                       }}
-                      className="py-2 px-2 rounded-xl border text-center font-black transition-all active:scale-95 cursor-pointer shadow-sm"
+                      className="py-2.5 px-2 rounded-xl border text-center font-black transition-all active:scale-95 cursor-pointer shadow-sm"
                     >
-                      <div className="text-xs font-black">⚡ Attack</div>
+                      <div className="text-xs font-black">⚡ Attack Over</div>
+                      <div className="text-[9px] opacity-90 mt-0.5">All-out attacking field & bouncers</div>
                     </button>
                   </div>
-                </>
+                )
               )}
 
-              {/* Call Strategic Impact Sub */}
-              {!impactSubUsed && !matchDone && (
+              {/* Call Strategic Impact Sub (Unrestricted User Control) */}
+              {!matchDone && (
                 <div className="pt-1 border-t border-white/10">
                   <button
                     onClick={() => {
@@ -3390,18 +3430,6 @@ export default function BallByBallMatchSimulator({
                   <span>🚨 STRATEGIC IMPACT SUB: {impactNotification}!</span>
                 </div>
               )}
-
-              {/* Instant Result Action */}
-              <div className="pt-1 border-t border-white/10 flex items-center justify-end">
-                <button
-                  onClick={handleInstantResult}
-                  disabled={matchDone}
-                  className="w-full py-1.5 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm"
-                >
-                  <span>Instant Result (Skip to Match End)</span>
-                  <ChevronRight size={13} />
-                </button>
-              </div>
 
             </div>
 
