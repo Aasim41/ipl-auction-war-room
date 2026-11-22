@@ -275,7 +275,6 @@ export default function SquadRetainReleasePage() {
               const isReleased = player.is_released
               const isExpanded = expandedSquadPlayerId === player.player_id
               const ovr = Number(player.Power_Index) || 80
-              const formBadge = ovr >= 90 ? '🔥 ON FIRE' : ovr >= 80 ? '⚡ IN FORM' : '❄️ COLD'
 
               return (
                 <div
