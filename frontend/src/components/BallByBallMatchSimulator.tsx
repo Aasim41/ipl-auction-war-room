@@ -2538,16 +2538,6 @@ export default function BallByBallMatchSimulator({
           </div>
         ) : (
           <>
-            {/* Dynamic Event Banner Overlay */}
-            {eventBanner && (
-              <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-bounce">
-                <div className={`px-6 py-2.5 rounded-2xl bg-gradient-to-r ${eventBanner.color} text-white font-black text-center shadow-2xl border border-white/40`}>
-                  <div className="text-lg sm:text-xl tracking-wider drop-shadow-md">{eventBanner.text}</div>
-                  <div className="text-xs font-sans text-white/90 drop-shadow">{eventBanner.subtext}</div>
-                </div>
-              </div>
-            )}
-
             {/* Tab 1: Interactive Match Arena (Portrait Mobile First - Fits Perfectly) */}
             {activeTab === 'arena' ? (
               <div className="flex-1 flex flex-col justify-between gap-1.5 p-2 sm:p-2.5 overflow-y-auto select-none">
@@ -2713,25 +2703,6 @@ export default function BallByBallMatchSimulator({
                         >
                           <span>🎯</span>
                           <span className="truncate">{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
-                          {isUserBowling && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                gameAudio.playUiTap('select');
-                                triggerGameHaptic('light');
-                                setShowBowlerModal(true);
-                              }}
-                              style={{
-                                backgroundColor: bowlingTheme.bgDeep,
-                                color: bowlingTheme.contrastText,
-                                borderColor: bowlingTheme.cardBorder,
-                              }}
-                              className="w-5 h-5 rounded-full border flex items-center justify-center p-0.5 hover:rotate-180 transition-transform cursor-pointer shadow-xs shrink-0"
-                              title="Rotate / Replace Bowler"
-                            >
-                              <RotateCw size={10} />
-                            </button>
-                          )}
                         </div>
                         <div 
                           style={{ color: bowlingTheme.contrastText }}
