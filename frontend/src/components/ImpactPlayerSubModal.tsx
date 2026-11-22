@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Zap, X, ArrowRight, Shield, AlertTriangle, Users } from 'lucide-react';
 import { formatPlayerInitial } from '../lib/nameFormatter';
-import { getDetailedPlayerRole } from '../lib/playerRoles';
+import { getDetailedPlayerRole } from '../lib/bowlerClassification';
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
 
 interface ImpactSubModalProps {

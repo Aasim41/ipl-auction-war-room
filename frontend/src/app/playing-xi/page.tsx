@@ -1123,6 +1123,475 @@ export default function PlayingXIPage() {
           </div>
         )}
 
+        {/* ─── TAB 3: IPL PLAYOFF BRACKET, ORANGE/PURPLE CAP RACES & SQUAD MOMENTUM ─── */}
+        {activeTab === 'playoffs_caps' && (
+          <div className="flex flex-col gap-5 animate-fadeIn">
+            
+            {/* Championship Trophy Banner */}
+            <div 
+              style={{
+                background: userWonFinal 
+                  ? 'linear-gradient(135deg, #b45309 0%, #1e1b4b 60%, #0f172a 100%)' 
+                  : 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)',
+                borderColor: userWonFinal ? '#fbbf24' : 'rgba(255, 255, 255, 0.15)',
+              }}
+              className="p-4 sm:p-5 rounded-2xl border-2 shadow-2xl relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-3.5 z-10">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shrink-0 shadow-lg">
+                  <Trophy size={26} className="text-amber-400 animate-bounce" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono uppercase font-black tracking-widest text-amber-300">
+                      {userWonFinal ? '🏆 Champions of India' : 'IPL 2027 Season Climax'}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 font-black">
+                      Official Knockouts
+                    </span>
+                  </div>
+                  <h2 className="text-base sm:text-xl font-black text-white font-display">
+                    {userWonFinal 
+                      ? `${franchise.name.toUpperCase()} LIFT THE IPL 2027 TROPHY!` 
+                      : 'Playoffs Knockout Stage & Individual Honors'}
+                  </h2>
+                  <p className="text-xs text-gray-300 mt-0.5">
+                    {userWonFinal 
+                      ? 'Tactical GM Rating: S+ (Elite Grandmaster) • Champion honors recorded in franchise cabinet'
+                      : 'Top 4 teams battle for supremacy in Qualifier 1, Eliminator, Qualifier 2, and the Grand Final.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 z-10 w-full sm:w-auto">
+                <button
+                  onClick={() => {
+                    gameAudio.playUiTap('select');
+                    setShowTrophyModal(true);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg active:scale-95 cursor-pointer transition-all"
+                >
+                  <Trophy size={14} />
+                  <span>{userWonFinal ? '🏆 Celebrate Trophy Lift' : 'Preview Trophy Ceremony'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* SECTION 1: 4-Match Playoff Knockout Bracket */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Swords size={16} className="text-amber-400" />
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider font-display">
+                    Playoff Knockout Bracket
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono text-gray-400">
+                  Matches #71 - #74
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                {playoffBracket.map((node) => {
+                  const fixture = schedule.find(f => f.matchNo === node.matchNo);
+                  const isCurrent = fixture?.status === 'CURRENT';
+                  const isCompleted = fixture?.status === 'COMPLETED';
+
+                  return (
+                    <div
+                      key={node.matchNo}
+                      className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 shadow-lg ${
+                        isCurrent
+                          ? 'bg-slate-900 border-amber-400/60 shadow-amber-500/20 ring-1 ring-amber-400/30'
+                          : isCompleted
+                          ? 'bg-slate-900/90 border-white/15'
+                          : 'bg-slate-950/80 border-white/10 opacity-75'
+                      }`}
+                    >
+                      {/* Header */}
+                      <div>
+                        <div className="flex items-center justify-between gap-1 pb-2 border-b border-white/10 mb-2.5">
+                          <span className="text-[10px] font-black font-mono tracking-wider text-amber-400 truncate">
+                            {node.title}
+                          </span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-black font-mono shrink-0 ${
+                            isCompleted 
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                              : isCurrent 
+                              ? 'bg-amber-400 text-slate-950 font-black animate-pulse' 
+                              : 'bg-white/10 text-gray-400'
+                          }`}>
+                            {isCompleted ? 'FINAL' : isCurrent ? 'LIVE NEXT' : 'UPCOMING'}
+                          </span>
+                        </div>
+
+                        {/* Teams in Node */}
+                        <div className="space-y-2">
+                          {/* Team A */}
+                          <div 
+                            style={{
+                              backgroundColor: node.teamA?.isWinner ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                              borderColor: node.teamA?.isWinner ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.08)',
+                            }}
+                            className="p-2 rounded-xl border flex items-center justify-between gap-2"
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              <TeamLogo teamId={node.teamA?.short || ''} size={20} />
+                              <div className="truncate">
+                                <span className={`text-xs font-black truncate block ${node.teamA?.isWinner ? 'text-emerald-300 font-extrabold' : 'text-white'}`}>
+                                  {node.teamA?.name || 'Top Ranker'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              {node.teamA?.score ? (
+                                <span className="text-xs font-mono font-black text-amber-300">
+                                  {node.teamA.score}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-mono text-gray-500">TBD</span>
+                              )}
+                              {node.teamA?.isWinner && (
+                                <CheckCircle2 size={12} className="text-emerald-400 inline ml-1" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Team B */}
+                          <div 
+                            style={{
+                              backgroundColor: node.teamB?.isWinner ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                              borderColor: node.teamB?.isWinner ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.08)',
+                            }}
+                            className="p-2 rounded-xl border flex items-center justify-between gap-2"
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              <TeamLogo teamId={node.teamB?.short || ''} size={20} />
+                              <div className="truncate">
+                                <span className={`text-xs font-black truncate block ${node.teamB?.isWinner ? 'text-emerald-300 font-extrabold' : 'text-white'}`}>
+                                  {node.teamB?.name || 'Top Ranker'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              {node.teamB?.score ? (
+                                <span className="text-xs font-mono font-black text-amber-300">
+                                  {node.teamB.score}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-mono text-gray-500">TBD</span>
+                              )}
+                              {node.teamB?.isWinner && (
+                                <CheckCircle2 size={12} className="text-emerald-400 inline ml-1" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Venue / Date */}
+                        <div className="text-[10px] text-gray-400 font-mono mt-2 truncate flex items-center gap-1">
+                          <MapPin size={10} className="shrink-0" />
+                          <span className="truncate">{node.stadium.split(',')[0]}</span>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="pt-2 border-t border-white/10">
+                        {isCompleted && fixture ? (
+                          <button
+                            onClick={() => {
+                              gameAudio.playUiTap('light');
+                              setViewingScorecardFixture(fixture);
+                            }}
+                            className="w-full py-1.5 px-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-white font-bold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition-all"
+                          >
+                            <Award size={12} className="text-amber-400" />
+                            <span>View Scorecard</span>
+                          </button>
+                        ) : isCurrent && fixture ? (
+                          <button
+                            onClick={() => handleLaunchMatch(fixture)}
+                            className="w-full py-1.5 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] flex items-center justify-center gap-1 cursor-pointer transition-all shadow-md active:scale-95 animate-pulse"
+                          >
+                            <Play size={12} fill="currentColor" />
+                            <span>Play Knockout Match</span>
+                          </button>
+                        ) : (
+                          <div className="py-1 px-2 text-center text-[10px] font-mono text-gray-500 flex items-center justify-center gap-1">
+                            <Lock size={10} />
+                            <span>Stage Locked</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SECTION 2: Live Orange & Purple Cap Races (Side-by-Side) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              
+              {/* ORANGE CAP (Batting Royalty) */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border-2 border-amber-500/40 shadow-xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
+                        🧢
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black text-amber-400 font-display uppercase tracking-wider">
+                          Orange Cap Leaderboard
+                        </h3>
+                        <span className="text-[10px] text-gray-400 font-mono">Most Runs Across Tournament</span>
+                      </div>
+                    </div>
+                    {leaderboards.orangeCapLeader && (
+                      <span className="text-xs font-mono font-black text-amber-300 px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/30">
+                        {leaderboards.orangeCapLeader.runs} Runs Leader
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Leader Spotlight Banner */}
+                  {leaderboards.orangeCapLeader && (
+                    <div 
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%)',
+                        borderColor: '#f59e0b',
+                      }}
+                      className="p-3 rounded-xl border-2 mb-3 flex items-center justify-between gap-3 shadow-md"
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-xs shrink-0 shadow-md">
+                          #1
+                        </div>
+                        <div className="truncate">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span className="font-black text-white text-sm truncate">{leaderboards.orangeCapLeader.name}</span>
+                            <span 
+                              style={{ backgroundColor: leaderboards.orangeCapLeader.teamColor }}
+                              className="text-[9px] px-1.5 py-0.2 rounded font-black text-white font-mono shrink-0 shadow-sm"
+                            >
+                              {leaderboards.orangeCapLeader.teamShort}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-amber-300 font-mono">
+                            Avg: {leaderboards.orangeCapLeader.average} • SR: {leaderboards.orangeCapLeader.strikeRate} • HS: {leaderboards.orangeCapLeader.highestScore}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xl font-black font-mono text-amber-400">{leaderboards.orangeCapLeader.runs}</div>
+                        <span className="text-[9px] font-mono text-gray-400 uppercase">RUNS</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Table of Ranks 2-10 */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead>
+                        <tr className="text-gray-400 border-b border-white/10 text-[10px]">
+                          <th className="py-1">Rank</th>
+                          <th className="py-1">Player</th>
+                          <th className="py-1 text-center">Mat</th>
+                          <th className="py-1 text-right font-black text-amber-300">Runs</th>
+                          <th className="py-1 text-right">Avg</th>
+                          <th className="py-1 text-right">SR</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-gray-200">
+                        {leaderboards.orangeCapList.slice(0, 10).map((b, idx) => (
+                          <tr key={b.name} className="hover:bg-white/5 transition-colors">
+                            <td className="py-1.5 text-gray-400 font-bold">#{idx + 1}</td>
+                            <td className="py-1.5 font-sans font-bold flex items-center gap-1.5 truncate">
+                              <span className="truncate">{formatPlayerInitial(b.name)}</span>
+                              <span 
+                                style={{ backgroundColor: b.teamColor }}
+                                className="text-[8px] px-1 py-0.2 rounded text-white font-mono shrink-0"
+                              >
+                                {b.teamShort}
+                              </span>
+                            </td>
+                            <td className="py-1.5 text-center text-gray-400">{b.matches}</td>
+                            <td className="py-1.5 text-right font-black text-amber-300">{b.runs}</td>
+                            <td className="py-1.5 text-right text-gray-300">{b.average}</td>
+                            <td className="py-1.5 text-right text-gray-300">{b.strikeRate}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* PURPLE CAP (Bowling Royalty) */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border-2 border-purple-500/40 shadow-xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-black shadow-md">
+                        🧢
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black text-purple-400 font-display uppercase tracking-wider">
+                          Purple Cap Leaderboard
+                        </h3>
+                        <span className="text-[10px] text-gray-400 font-mono">Most Wickets Across Tournament</span>
+                      </div>
+                    </div>
+                    {leaderboards.purpleCapLeader && (
+                      <span className="text-xs font-mono font-black text-purple-300 px-2 py-0.5 rounded-md bg-purple-500/20 border border-purple-500/30">
+                        {leaderboards.purpleCapLeader.wickets} Wkts Leader
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Leader Spotlight Banner */}
+                  {leaderboards.purpleCapLeader && (
+                    <div 
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%)',
+                        borderColor: '#9333ea',
+                      }}
+                      className="p-3 rounded-xl border-2 mb-3 flex items-center justify-between gap-3 shadow-md"
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <div className="w-9 h-9 rounded-xl bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow-md">
+                          #1
+                        </div>
+                        <div className="truncate">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span className="font-black text-white text-sm truncate">{leaderboards.purpleCapLeader.name}</span>
+                            <span 
+                              style={{ backgroundColor: leaderboards.purpleCapLeader.teamColor }}
+                              className="text-[9px] px-1.5 py-0.2 rounded font-black text-white font-mono shrink-0 shadow-sm"
+                            >
+                              {leaderboards.purpleCapLeader.teamShort}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-purple-300 font-mono">
+                            Econ: {leaderboards.purpleCapLeader.economy} • Overs: {leaderboards.purpleCapLeader.overs} • Best: {leaderboards.purpleCapLeader.bestBowling}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xl font-black font-mono text-purple-400">{leaderboards.purpleCapLeader.wickets}</div>
+                        <span className="text-[9px] font-mono text-gray-400 uppercase">WKTS</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Table of Ranks 2-10 */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead>
+                        <tr className="text-gray-400 border-b border-white/10 text-[10px]">
+                          <th className="py-1">Rank</th>
+                          <th className="py-1">Player</th>
+                          <th className="py-1 text-center">Mat</th>
+                          <th className="py-1 text-right font-black text-purple-300">Wkts</th>
+                          <th className="py-1 text-right">Econ</th>
+                          <th className="py-1 text-right">Best</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-gray-200">
+                        {leaderboards.purpleCapList.slice(0, 10).map((bw, idx) => (
+                          <tr key={bw.name} className="hover:bg-white/5 transition-colors">
+                            <td className="py-1.5 text-gray-400 font-bold">#{idx + 1}</td>
+                            <td className="py-1.5 font-sans font-bold flex items-center gap-1.5 truncate">
+                              <span className="truncate">{formatPlayerInitial(bw.name)}</span>
+                              <span 
+                                style={{ backgroundColor: bw.teamColor }}
+                                className="text-[8px] px-1 py-0.2 rounded text-white font-mono shrink-0"
+                              >
+                                {bw.teamShort}
+                              </span>
+                            </td>
+                            <td className="py-1.5 text-center text-gray-400">{bw.matches}</td>
+                            <td className="py-1.5 text-right font-black text-purple-300">{bw.wickets}</td>
+                            <td className="py-1.5 text-right text-gray-300">{bw.economy}</td>
+                            <td className="py-1.5 text-right text-gray-300">{bw.bestBowling}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* SECTION 3: Franchise Squad Dynamic Momentum & Tactical Form */}
+            <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/15 shadow-xl space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <Flame size={16} className="text-rose-400" />
+                  <h3 className="text-sm font-black text-white font-display uppercase tracking-wider">
+                    {franchise.name} Squad Form & Dynamic Momentum
+                  </h3>
+                </div>
+                <span className="text-[10px] font-mono text-gray-400">
+                  Performance-Adjusted Attributes
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {activeSquad.map((player) => {
+                  const form = leaderboards.playerFormMap[player.name.toLowerCase()];
+                  const status = form?.status || 'normal';
+                  const isHot = status === 'hot';
+                  const isCold = status === 'cold';
+
+                  return (
+                    <div
+                      key={player.player_id}
+                      className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                        isHot 
+                          ? 'bg-rose-500/10 border-rose-500/40 text-white' 
+                          : isCold 
+                          ? 'bg-cyan-500/10 border-cyan-500/40 text-gray-300' 
+                          : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="font-bold text-xs flex items-center gap-1.5 truncate">
+                          <span className="truncate">{formatPlayerInitial(player.name)}</span>
+                          <span className="text-[9px] font-mono opacity-75">({player.role})</span>
+                        </div>
+                        <div className="text-[10px] font-mono text-gray-400 truncate mt-0.5">
+                          {form ? form.streakText : 'Steady baseline form'}
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 text-right">
+                        {isHot && (
+                          <span className="px-1.5 py-0.5 rounded bg-rose-500 text-white font-black text-[9px] font-mono flex items-center gap-0.5 shadow-sm">
+                            <TrendingUp size={10} /> +8%
+                          </span>
+                        )}
+                        {isCold && (
+                          <span className="px-1.5 py-0.5 rounded bg-cyan-600 text-white font-black text-[9px] font-mono flex items-center gap-0.5 shadow-sm">
+                            <TrendingDown size={10} /> -5%
+                          </span>
+                        )}
+                        {!isHot && !isCold && (
+                          <span className="px-1.5 py-0.5 rounded bg-white/10 text-gray-400 font-bold text-[9px] font-mono">
+                            STEADY
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        )}
+
 
 
       </main>
@@ -1238,8 +1707,26 @@ export default function PlayingXIPage() {
                 res,
                 (res as any).scorecard
               );
+              if (activeMatchFixture?.matchNo === 74 && res.winnerTeamId === campaign.teamId) {
+                setTimeout(() => {
+                  setShowTrophyModal(true);
+                }, 800);
+              }
             }
           }}
+        />
+      )}
+
+      {/* Championship Trophy Celebration Modal */}
+      {showTrophyModal && (
+        <ChampionshipCelebrationModal
+          isOpen={showTrophyModal}
+          onClose={() => setShowTrophyModal(false)}
+          teamId={franchise.id}
+          teamName={franchise.name}
+          resultSummary={`${franchise.name} are the IPL 2027 Champions!`}
+          seasonLabel="IPL 2027"
+          onViewTrophies={() => router.push('/trophies')}
         />
       )}
     </div>

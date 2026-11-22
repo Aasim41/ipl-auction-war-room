@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Trophy, Award, Sparkles, X, ChevronRight, Share2 } from 'lucide-react';
-import { TeamLogo } from './TeamLogo';
+import TeamLogo from './TeamLogo';
 import { getTeamTheme } from '../data/teamThemes';
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics';
 

@@ -338,7 +338,7 @@ export function getPlayoffBracket(schedule: TournamentFixture[]): PlayoffBracket
       matchNo: f.matchNo,
       title: f.stage || defaultTitle,
       status: f.status,
-      dateStr: f.date || defaultDate,
+      dateStr: (f as any).date || defaultDate,
       stadium: f.stadiumName || defaultStadium,
       winnerId: res?.winnerTeamId,
       teamA: {
