@@ -31,16 +31,26 @@ export function AmbientBackground() {
       style={{ backgroundColor: t.bgDeep }}
       aria-hidden="true"
     >
-      {/* ─── LAYER 1: Deep Stadium Night Atmosphere & Team Glow ─── */}
+      {/* ─── LAYER 0: Authentic Cricket Stadium Ground & Pitch (Preserved & Immersive) ─── */}
       <div 
-        className="absolute inset-0 transition-all duration-700 ease-out"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transition-all duration-700 ease-out"
+        style={{
+          backgroundImage: `url('/stadium-pitch-ground.jpg')`,
+          filter: 'brightness(0.70) contrast(1.15) saturate(1.10)',
+        }}
+      />
+
+      {/* ─── LAYER 1: Signature Team Stadium Floodlight Atmospheric Tint & Scrim ─── */}
+      <div 
+        className="absolute inset-0 transition-all duration-700 ease-out pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse at 50% 0%, ${t.glowPrimary} 0%, transparent 60%),
+            radial-gradient(ellipse at 50% 10%, ${t.glowPrimary} 0%, transparent 65%),
             linear-gradient(180deg, 
-              ${t.bgDeep} 0%, 
-              ${t.bgMid || t.bgDeep}99 40%, 
-              #030712 100%
+              ${t.bgDeep}ee 0%, 
+              rgba(3, 7, 18, 0.40) 25%, 
+              rgba(3, 7, 18, 0.55) 70%, 
+              #030712f5 100%
             )
           `
         }}
