@@ -28,8 +28,7 @@ import {
   ListOrdered,
   Users,
   Info,
-  AlertCircle,
-  RotateCw
+  AlertCircle
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';
 import { TournamentFixture, MatchScorecard } from '../data/scheduleGenerator';
@@ -3002,13 +3001,49 @@ export default function BallByBallMatchSimulator({
                     {/* Dynamic Trajectories / Full Wagon Wheel */}
                     {radarViewMode === 'wagon' ? (
                       <g>
+                        {/* 8 Batting Sectors Divider Rays radiating from batting crease (500, 450) */}
+                        <line x1="500" y1="450" x2="200" y2="535" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+                        <line x1="500" y1="450" x2="100" y2="410" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+                        <line x1="500" y1="450" x2="140" y2="200" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+                        <line x1="500" y1="450" x2="360" y2="70" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+                        <line x1="500" y1="450" x2="640" y2="70" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+                        <line x1="500" y1="450" x2="860" y2="200" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+                        <line x1="500" y1="450" x2="900" y2="410" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+                        <line x1="500" y1="450" x2="800" y2="535" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="4 4" strokeOpacity="0.35" />
+
+                        {/* Zone Labels with subtle dark pills for maximum readability */}
+                        <rect x="145" y="538" width="80" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="185" y="551" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">THIRD MAN</text>
+
+                        <rect x="35" y="398" width="55" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="62" y="411" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">POINT</text>
+
+                        <rect x="75" y="185" width="60" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="105" y="198" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">COVER</text>
+
+                        <rect x="315" y="48" width="75" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="352" y="61" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">LONG-OFF</text>
+
+                        <rect x="610" y="48" width="75" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="647" y="61" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">LONG-ON</text>
+
+                        <rect x="850" y="185" width="80" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="890" y="198" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">MID-WICKET</text>
+
+                        <rect x="890" y="398" width="85" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="932" y="411" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">SQUARE LEG</text>
+
+                        <rect x="765" y="538" width="75" height="18" rx="4" fill="#020617" fillOpacity="0.8" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" />
+                        <text x="802" y="551" fill="#cbd5e1" fontSize="9.5" fontWeight="900" fontFamily="monospace" textAnchor="middle">FINE LEG</text>
+
+                        {/* Distinct, High-Visibility Trajectory Lines */}
                         {activeInnings.balls.map((b, bIdx) => {
                           const dir = b.shotDirection || SHOT_ZONES[bIdx % SHOT_ZONES.length];
                           const targetX = (dir.x / 100) * 1000;
                           const targetY = (dir.y / 100) * 600;
                           const isBoundary = b.isFour || b.isSix;
-                          const strokeColor = b.isSix ? '#c084fc' : b.isFour ? '#facc15' : b.isWicket ? '#f87171' : 'rgba(56, 189, 248, 0.4)';
-                          const strokeW = b.isSix ? 2.5 : b.isFour ? 2.0 : b.isWicket ? 1.8 : 1.0;
+                          const strokeColor = b.isSix ? '#c084fc' : b.isFour ? '#facc15' : b.isWicket ? '#f87171' : '#34d399';
+                          const strokeW = b.isSix ? 3.5 : b.isFour ? 2.8 : b.isWicket ? 2.0 : 1.5;
                           return (
                             <g key={bIdx}>
                               <line
@@ -3018,14 +3053,23 @@ export default function BallByBallMatchSimulator({
                                 y2={targetY}
                                 stroke={strokeColor}
                                 strokeWidth={strokeW}
-                                strokeDasharray={b.isSix ? 'none' : b.isFour ? 'none' : '3 3'}
-                                strokeOpacity={isBoundary || b.isWicket ? 0.9 : 0.4}
+                                strokeDasharray={b.isSix ? 'none' : b.isFour ? 'none' : '4 3'}
+                                strokeOpacity={isBoundary ? 1 : b.isWicket ? 0.95 : 0.6}
                               />
-                              {isBoundary && (
-                                <circle cx={targetX} cy={targetY} r={b.isSix ? 4.5 : 3.5} fill={strokeColor} />
+                              {b.isSix && (
+                                <g>
+                                  <circle cx={targetX} cy={targetY} r="7" fill="#c084fc" stroke="#581c87" strokeWidth="1" />
+                                  <text x={targetX} y={targetY + 3.5} fill="#0f172a" fontSize="9" fontWeight="900" textAnchor="middle">6</text>
+                                </g>
+                              )}
+                              {b.isFour && (
+                                <g>
+                                  <circle cx={targetX} cy={targetY} r="6" fill="#facc15" stroke="#713f12" strokeWidth="1" />
+                                  <text x={targetX} y={targetY + 3} fill="#0f172a" fontSize="8" fontWeight="900" textAnchor="middle">4</text>
+                                </g>
                               )}
                               {b.isWicket && (
-                                <text x={targetX} y={targetY} fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">✕</text>
+                                <text x={targetX} y={targetY + 4} fill="#ef4444" fontSize="13" fontWeight="900" textAnchor="middle">✕</text>
                               )}
                             </g>
                           );
@@ -3087,99 +3131,125 @@ export default function BallByBallMatchSimulator({
                     </div>
                   </div>
 
-                  {/* 2. WICKETKEEPER (Directly Behind Stumps) */}
-                  <div 
-                    className="absolute z-10 flex flex-col items-center pointer-events-none"
-                    style={{ left: '50%', top: '86%', transform: 'translate(-50%, -50%)' }}
-                  >
-                    <div 
-                      className="w-4.5 h-4.5 rounded-full border border-white/70 flex items-center justify-center text-[9px] shadow-sm"
-                      style={{ backgroundColor: bowlingTeamColor }}
-                    >
-                      🧤
-                    </div>
-                    <span className="text-[7px] font-mono text-gray-200 bg-slate-950/80 px-1 py-0.2 rounded border border-white/10 mt-0.5">
-                      WK
-                    </span>
-                  </div>
-
-                  {/* 3. 1ST SLIP */}
-                  <div 
-                    className="absolute z-10 flex flex-col items-center pointer-events-none"
-                    style={{ left: '40%', top: '85%', transform: 'translate(-50%, -50%)' }}
-                  >
-                    <div 
-                      className="w-4 h-4 rounded-full border border-white/50 flex items-center justify-center text-[8px] shadow-xs opacity-90"
-                      style={{ backgroundColor: bowlingTeamColor }}
-                    >
-                      ⚡
-                    </div>
-                    <span className="text-[7px] font-mono text-gray-300">Slip</span>
-                  </div>
-
-                  {/* 4. BOWLER (At Bowling Crease - Offset Left to prevent overlap) */}
-                  <div 
-                    className="absolute z-20 flex flex-col items-center pointer-events-none transition-transform duration-300"
-                    style={{ left: '36%', top: '12%', transform: 'translate(-50%, -50%)' }}
-                  >
-                    <div className="mb-0.5 px-1.5 py-0.2 rounded-full bg-slate-950/90 border border-rose-500 text-[8px] font-mono font-bold text-rose-300 whitespace-nowrap shadow-md flex items-center gap-0.5 backdrop-blur-md">
-                      <span>🎯</span>
-                      <span>{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
-                    </div>
-                    <div className={`relative flex items-center justify-center transition-transform duration-300 ${isBallAnimating ? 'scale-125 translate-y-1' : ''}`}>
-                      <div className="absolute -inset-1 rounded-full bg-rose-500/30 blur-xs animate-pulse" />
+                  {/* CHARACTERS: Wicketkeeper, 1st Slip, Bowler, Runner, Dynamic Fielders ONLY IN FIELD MODE */}
+                  {radarViewMode === 'field' && (
+                    <>
+                      {/* 2. WICKETKEEPER (Directly Behind Stumps) */}
                       <div 
-                        className="w-5.5 h-5.5 rounded-full border border-white flex items-center justify-center text-[10px] shadow-lg font-bold"
-                        style={{ backgroundColor: bowlingTeamColor }}
+                        className="absolute z-10 flex flex-col items-center pointer-events-none"
+                        style={{ left: '50%', top: '86%', transform: 'translate(-50%, -50%)' }}
                       >
-                        🔴
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 5. NON-STRIKER (Backing Up - Offset Right Safely Clear of Crease) */}
-                  <div 
-                    className="absolute z-10 flex flex-col items-center pointer-events-none"
-                    style={{ left: '68%', top: '24%', transform: 'translate(-50%, -50%)' }}
-                  >
-                    <div 
-                      className="w-4.5 h-4.5 rounded-full border border-amber-400/70 flex items-center justify-center text-[9px] shadow-xs"
-                      style={{ backgroundColor: battingTeamColor }}
-                    >
-                      🏃
-                    </div>
-                    <div className="text-[7.5px] font-mono font-bold text-amber-200 bg-slate-950/90 px-1.5 py-0.2 rounded-full border border-white/20 mt-0.5 whitespace-nowrap shadow-sm">
-                      {formatPlayerInitial(nonStrikerPlayer?.name) || 'Runner'}
-                    </div>
-                  </div>
-
-                  {/* ─── 9 DYNAMIC BROADCAST FIELDERS (COMPACT TACTICAL MARKERS) ─── */}
-                  {dynamicFielders.map((f, idx) => (
-                    <div 
-                      key={idx}
-                      className="absolute z-10 flex flex-col items-center pointer-events-none transition-all duration-700 ease-out"
-                      style={{ left: f.x, top: f.y, transform: 'translate(-50%, -50%)' }}
-                    >
-                      <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shadow-md ${
-                        f.isDeep 
-                          ? 'border-rose-400 bg-rose-950 ring-1 ring-rose-500/50' 
-                          : 'border-emerald-400 bg-slate-950'
-                      }`}>
                         <div 
-                          className="w-2 h-2 rounded-full"
+                          className="w-4.5 h-4.5 rounded-full border border-white/70 flex items-center justify-center text-[9px] shadow-sm"
                           style={{ backgroundColor: bowlingTeamColor }}
-                        />
+                        >
+                          🧤
+                        </div>
+                        <span className="text-[7px] font-mono text-gray-200 bg-slate-950/80 px-1 py-0.2 rounded border border-white/10 mt-0.5">
+                          WK
+                        </span>
                       </div>
-                      <span className={`mt-0.5 text-[7.5px] font-bold font-mono px-1 py-0.2 rounded-full shadow-md flex items-center gap-0.5 whitespace-nowrap border backdrop-blur-md ${
-                        f.isDeep 
-                          ? 'bg-rose-950/90 text-rose-200 border-rose-500/80' 
-                          : 'bg-slate-950/90 text-emerald-200 border-emerald-500/70'
-                      }`}>
-                        {f.isDeep && <span>🚩</span>}
-                        <span>{f.name}</span>
+
+                      {/* 3. 1ST SLIP */}
+                      <div 
+                        className="absolute z-10 flex flex-col items-center pointer-events-none"
+                        style={{ left: '40%', top: '85%', transform: 'translate(-50%, -50%)' }}
+                      >
+                        <div 
+                          className="w-4 h-4 rounded-full border border-white/50 flex items-center justify-center text-[8px] shadow-xs opacity-90"
+                          style={{ backgroundColor: bowlingTeamColor }}
+                        >
+                          ⚡
+                        </div>
+                        <span className="text-[7px] font-mono text-gray-300">Slip</span>
+                      </div>
+
+                      {/* 4. BOWLER (At Bowling Crease - Offset Left to prevent overlap) */}
+                      <div 
+                        className="absolute z-20 flex flex-col items-center pointer-events-none transition-transform duration-300"
+                        style={{ left: '36%', top: '12%', transform: 'translate(-50%, -50%)' }}
+                      >
+                        <div className="mb-0.5 px-1.5 py-0.2 rounded-full bg-slate-950/90 border border-rose-500 text-[8px] font-mono font-bold text-rose-300 whitespace-nowrap shadow-md flex items-center gap-0.5 backdrop-blur-md">
+                          <span>🎯</span>
+                          <span>{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
+                        </div>
+                        <div className={`relative flex items-center justify-center transition-transform duration-300 ${isBallAnimating ? 'scale-125 translate-y-1' : ''}`}>
+                          <div className="absolute -inset-1 rounded-full bg-rose-500/30 blur-xs animate-pulse" />
+                          <div 
+                            className="w-5.5 h-5.5 rounded-full border border-white flex items-center justify-center text-[10px] shadow-lg font-bold"
+                            style={{ backgroundColor: bowlingTeamColor }}
+                          >
+                            🔴
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 5. NON-STRIKER (Backing Up - Offset Right Safely Clear of Crease) */}
+                      <div 
+                        className="absolute z-10 flex flex-col items-center pointer-events-none"
+                        style={{ left: '68%', top: '24%', transform: 'translate(-50%, -50%)' }}
+                      >
+                        <div 
+                          className="w-4.5 h-4.5 rounded-full border border-amber-400/70 flex items-center justify-center text-[9px] shadow-xs"
+                          style={{ backgroundColor: battingTeamColor }}
+                        >
+                          🏃
+                        </div>
+                        <div className="text-[7.5px] font-mono font-bold text-amber-200 bg-slate-950/90 px-1.5 py-0.2 rounded-full border border-white/20 mt-0.5 whitespace-nowrap shadow-sm">
+                          {formatPlayerInitial(nonStrikerPlayer?.name) || 'Runner'}
+                        </div>
+                      </div>
+
+                      {/* ─── 9 DYNAMIC BROADCAST FIELDERS (COMPACT TACTICAL MARKERS) ─── */}
+                      {dynamicFielders.map((f, idx) => (
+                        <div 
+                          key={idx}
+                          className="absolute z-10 flex flex-col items-center pointer-events-none transition-all duration-700 ease-out"
+                          style={{ left: f.x, top: f.y, transform: 'translate(-50%, -50%)' }}
+                        >
+                          <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shadow-md ${
+                            f.isDeep 
+                              ? 'border-rose-400 bg-rose-950 ring-1 ring-rose-500/50' 
+                              : 'border-emerald-400 bg-slate-950'
+                          }`}>
+                            <div 
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: bowlingTeamColor }}
+                            />
+                          </div>
+                          <span className={`mt-0.5 text-[7.5px] font-bold font-mono px-1 py-0.2 rounded-full shadow-md flex items-center gap-0.5 whitespace-nowrap border backdrop-blur-md ${
+                            f.isDeep 
+                              ? 'bg-rose-950/90 text-rose-200 border-rose-500/80' 
+                              : 'bg-slate-950/90 text-emerald-200 border-emerald-500/70'
+                          }`}>
+                            {f.isDeep && <span>🚩</span>}
+                            <span>{f.name}</span>
+                          </span>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Wagon Wheel Broadcast HUD & Legend (Bottom of Radar) */}
+                  {radarViewMode === 'wagon' && (
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-slate-950/95 px-3 py-1 rounded-full border border-amber-500/40 text-[9px] font-mono text-white shadow-xl backdrop-blur-md whitespace-nowrap">
+                      <span className="flex items-center gap-1 text-purple-300 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" /> 6s ({activeInnings.balls.filter(b => b.isSix).length})
+                      </span>
+                      <span className="text-gray-600">•</span>
+                      <span className="flex items-center gap-1 text-amber-300 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" /> 4s ({activeInnings.balls.filter(b => b.isFour).length})
+                      </span>
+                      <span className="text-gray-600">•</span>
+                      <span className="flex items-center gap-1 text-emerald-300 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Runs ({activeInnings.balls.filter(b => b.runs > 0 && !b.isFour && !b.isSix).length})
+                      </span>
+                      <span className="text-gray-600">•</span>
+                      <span className="flex items-center gap-1 text-rose-300 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" /> Wkts ({activeInnings.balls.filter(b => b.isWicket).length})
                       </span>
                     </div>
-                  ))}
+                  )}
 
                   {/* Close 2D Tactical Field */}
                 </div>
