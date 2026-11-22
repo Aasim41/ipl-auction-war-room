@@ -841,7 +841,7 @@ export default function PlayingXIPage() {
                       <button
                         onClick={() => setScheduleFilter('all')}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                          scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                          scheduleFilter === 'all' ? 'bg-amber-500 text-slate-950 font-black' : 'text-gray-400 hover:text-white'
                         }`}
                       >
                         All 74 Fixtures
@@ -849,18 +849,106 @@ export default function PlayingXIPage() {
                       <button
                         onClick={() => setScheduleFilter('my')}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
-                          scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950' : 'text-gray-400 hover:text-white'
+                          scheduleFilter === 'my' ? 'bg-amber-500 text-slate-950 font-black' : 'text-gray-400 hover:text-white'
                         }`}
                       >
                         My 14 Matches
+                      </button>
+                      <button
+                        onClick={() => setScheduleFilter('playoffs')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${
+                          scheduleFilter === 'playoffs' ? 'bg-amber-500 text-slate-950 font-black' : 'text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        Playoffs (4)
                       </button>
                     </div>
                   </div>
                 </div>
 
+                {/* 4-Match Playoff Knockout Bracket inside Schedule */}
+                <div className="p-3 rounded-2xl bg-slate-950/90 border border-amber-500/30 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Swords size={13} className="text-amber-400" />
+                      <span className="text-xs font-black uppercase text-amber-400 tracking-wider">
+                        IPL Playoff Knockout Bracket
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-gray-400">Matches #71 - #74</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {playoffBracket.map((node) => {
+                      const fixture = schedule.find(f => f.matchNo === node.matchNo);
+                      const isCurrent = fixture?.status === 'CURRENT';
+                      const isCompleted = fixture?.status === 'COMPLETED';
+
+                      return (
+                        <div
+                          key={node.matchNo}
+                          className={`p-2.5 rounded-xl border flex flex-col justify-between gap-1.5 ${
+                            isCurrent
+                              ? 'bg-slate-900 border-amber-400 shadow-md ring-1 ring-amber-400/40'
+                              : isCompleted
+                              ? 'bg-slate-900/80 border-white/10'
+                              : 'bg-slate-950 border-white/5 opacity-75'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                            <span className="text-[9.5px] font-black font-mono text-amber-400 truncate">{node.title}</span>
+                            <span className={`text-[8px] px-1 py-0.2 rounded font-black font-mono ${
+                              isCompleted ? 'bg-emerald-500/20 text-emerald-300' : isCurrent ? 'bg-amber-400 text-slate-950' : 'bg-white/10 text-gray-400'
+                            }`}>
+                              {isCompleted ? 'FINAL' : isCurrent ? 'LIVE' : 'UPCOMING'}
+                            </span>
+                          </div>
+
+                          <div className="space-y-1 text-[11px]">
+                            <div className="flex items-center justify-between gap-1">
+                              <div className="flex items-center gap-1 truncate">
+                                <TeamLogo teamId={node.teamA?.short || ''} size={14} />
+                                <span className={`truncate font-bold ${node.teamA?.isWinner ? 'text-emerald-300' : 'text-white'}`}>{node.teamA?.short || 'TBD'}</span>
+                              </div>
+                              <span className="font-mono text-[10px] text-amber-300">{node.teamA?.score || '-'}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-1">
+                              <div className="flex items-center gap-1 truncate">
+                                <TeamLogo teamId={node.teamB?.short || ''} size={14} />
+                                <span className={`truncate font-bold ${node.teamB?.isWinner ? 'text-emerald-300' : 'text-white'}`}>{node.teamB?.short || 'TBD'}</span>
+                              </div>
+                              <span className="font-mono text-[10px] text-amber-300">{node.teamB?.score || '-'}</span>
+                            </div>
+                          </div>
+
+                          {isCompleted && fixture ? (
+                            <button
+                              onClick={() => {
+                                gameAudio.playUiTap('light');
+                                setViewingScorecardFixture(fixture);
+                              }}
+                              className="w-full py-1 rounded bg-white/10 hover:bg-white/15 text-white font-bold text-[10px] flex items-center justify-center gap-1 cursor-pointer transition-all mt-1"
+                            >
+                              <Award size={10} className="text-amber-400" />
+                              <span>Scorecard</span>
+                            </button>
+                          ) : isCurrent && fixture ? (
+                            <button
+                              onClick={() => handleLaunchMatch(fixture)}
+                              className="w-full py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] flex items-center justify-center gap-1 cursor-pointer transition-all mt-1 shadow"
+                            >
+                              <Play size={10} fill="currentColor" />
+                              <span>Play Match</span>
+                            </button>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Fixture cards list */}
                 <div className="space-y-2 max-h-[600px] overflow-y-auto overscroll-contain touch-pan-y pr-1">
-                  {(scheduleFilter === 'my' ? myFixtures : schedule).map((fixture) => {
+                  {(scheduleFilter === 'my' ? myFixtures : scheduleFilter === 'playoffs' ? schedule.filter(f => f.stage !== 'League') : schedule).map((fixture) => {
                     const isCurrent = fixture.status === 'CURRENT';
                     const isDone = fixture.status === 'COMPLETED';
                     const isPlayoff = fixture.stage !== 'League';
