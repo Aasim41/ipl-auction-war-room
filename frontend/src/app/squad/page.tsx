@@ -117,18 +117,25 @@ export default function SquadRetainReleasePage() {
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3.5">
         
         {/* Minimal Header */}
-        <div className="flex items-center justify-between pb-2 border-b border-white/10 gap-2 shrink-0">
+        <div 
+          style={{
+            background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+            borderColor: `${myTheme.primary}70`,
+            boxShadow: `0 4px 20px rgba(0, 0, 0, 0.5), 0 0 14px ${myTheme.primary}20`,
+          }}
+          className="p-3 rounded-2xl border flex items-center justify-between gap-2 shrink-0 shadow-xl"
+        >
           <div className="flex items-center gap-2">
-            <h1 className="text-sm sm:text-base font-black font-display text-white">
+            <h1 className="text-sm sm:text-base font-black font-display text-white tracking-wide">
               {franchise.short} Retentions
             </h1>
             <span 
               style={{
                 backgroundColor: `${myTheme.primary}30`,
-                borderColor: `${myTheme.primary}60`,
-                color: myTheme.contrastText === '#000000' ? '#fbbf24' : '#ffffff',
+                borderColor: `${myTheme.primary}70`,
+                color: '#ffffff',
               }}
-              className="px-2 py-0.5 rounded-full border text-[9px] font-mono font-bold shadow-sm"
+              className="px-2.5 py-0.5 rounded-full border text-[10px] font-mono font-black shadow-sm"
             >
               {retainedPlayers.length} Retained
             </span>
@@ -139,47 +146,47 @@ export default function SquadRetainReleasePage() {
             style={{
               backgroundColor: myTheme.pillBg,
               color: myTheme.pillText,
-              boxShadow: `0 0 15px ${myTheme.primary}60`,
+              boxShadow: `0 0 16px ${myTheme.primary}80`,
             }}
-            className="px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-sm cursor-pointer active:scale-95 transition-all shrink-0 hover:brightness-110"
+            className="px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95 transition-all shrink-0 hover:brightness-110"
           >
             <span>To Auction</span>
-            <ArrowRight size={12} />
+            <ArrowRight size={13} />
           </button>
         </div>
 
         {/* Minimal 4 Vitals Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div 
             style={{
-              background: myTheme.cardBg,
-              borderColor: myTheme.cardBorder,
-              boxShadow: myTheme.cardGlow,
+              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+              borderColor: `${myTheme.primary}60`,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
             }}
-            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
           >
-            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Purse</span>
-            <div className="text-base font-black text-emerald-400 font-mono">
-              ₹{campaign.remainingPurse.toFixed(1)} <span className="text-[10px] text-gray-300">Cr</span>
+            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Purse</span>
+            <div className="text-lg font-black text-emerald-400 font-mono my-0.5">
+              ₹{campaign.remainingPurse.toFixed(1)} <span className="text-xs text-gray-300 font-bold">Cr</span>
             </div>
-            <span className="text-[9px] text-emerald-300 font-mono font-bold">+₹{releasedPurseGain.toFixed(1)} Cr back</span>
+            <span className="text-[10px] text-emerald-300 font-mono font-bold">+₹{releasedPurseGain.toFixed(1)} Cr back</span>
           </div>
 
           <div 
             style={{
-              background: myTheme.cardBg,
-              borderColor: myTheme.cardBorder,
-              boxShadow: myTheme.cardGlow,
+              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+              borderColor: `${myTheme.primary}60`,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
             }}
-            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
           >
-            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Squad</span>
-            <div className="text-base font-black text-white font-mono">
-              {retainedPlayers.length} <span className="text-[10px] text-gray-400">/ 25</span>
+            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Squad</span>
+            <div className="text-lg font-black text-white font-mono my-0.5">
+              {retainedPlayers.length} <span className="text-xs text-gray-400 font-bold">/ 25</span>
             </div>
             <span 
               style={{ color: myTheme.accent }}
-              className="text-[9px] font-mono font-bold"
+              className="text-[10px] font-mono font-bold"
             >
               {25 - retainedPlayers.length} open
             </span>
@@ -187,36 +194,36 @@ export default function SquadRetainReleasePage() {
 
           <div 
             style={{
-              background: myTheme.cardBg,
-              borderColor: myTheme.cardBorder,
-              boxShadow: myTheme.cardGlow,
+              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+              borderColor: `${myTheme.primary}60`,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
             }}
-            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
           >
-            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Overseas</span>
-            <div className={`text-base font-black font-mono ${overseasCount >= 8 ? 'text-rose-400' : 'text-sky-300'}`}>
-              {overseasCount} <span className="text-[10px] text-gray-400">/ 8</span>
+            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Overseas</span>
+            <div className={`text-lg font-black font-mono my-0.5 ${overseasCount >= 8 ? 'text-rose-400' : 'text-sky-300'}`}>
+              {overseasCount} <span className="text-xs text-gray-400 font-bold">/ 8</span>
             </div>
-            <span className="text-[9px] text-gray-300 font-mono">{8 - overseasCount} open</span>
+            <span className="text-[10px] text-gray-300 font-mono font-bold">{8 - overseasCount} open</span>
           </div>
 
           <div 
             style={{
-              background: myTheme.cardBg,
-              borderColor: myTheme.cardBorder,
-              boxShadow: myTheme.cardGlow,
+              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+              borderColor: `${myTheme.primary}60`,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
             }}
-            className="p-2.5 rounded-2xl border flex flex-col justify-between shadow-md"
+            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
           >
-            <span className="text-[9px] font-mono text-gray-300 uppercase font-bold">Composition</span>
-            <div className="text-[11px] font-bold text-white font-mono flex items-center gap-1 flex-wrap">
-              <span className={wkCount >= 2 ? 'text-emerald-400' : 'text-amber-300'}>{wkCount} WK</span>
-              <span>•</span>
-              <span className="text-sky-300">{batCount} BAT</span>
-              <span>•</span>
-              <span className="text-rose-300">{bowlCount} BOWL</span>
+            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Composition</span>
+            <div className="text-[11px] font-bold text-white font-mono flex items-center gap-1 flex-wrap my-0.5">
+              <span className={wkCount >= 2 ? 'text-emerald-400 font-black' : 'text-amber-300 font-black'}>{wkCount} WK</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-sky-300 font-black">{batCount} BAT</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-rose-300 font-black">{bowlCount} BOWL</span>
             </div>
-            <span className={`text-[9px] font-mono font-bold ${wkCount >= 2 ? 'text-emerald-400' : 'text-amber-300'}`}>
+            <span className={`text-[10px] font-mono font-bold ${wkCount >= 2 ? 'text-emerald-400' : 'text-amber-300'}`}>
               {wkCount >= 2 ? '✓ Satisfied' : '⚠️ Need 2+ WK'}
             </span>
           </div>
@@ -226,29 +233,35 @@ export default function SquadRetainReleasePage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5">
           <div 
             style={{
-              background: `${myTheme.bgDeep}ee`,
-              borderColor: `${myTheme.primary}45`,
+              background: '#0f172a',
+              borderColor: 'rgba(255, 255, 255, 0.15)',
             }}
-            className="flex items-center gap-1.5 p-1 rounded-2xl border w-full sm:w-auto overflow-x-auto shadow-md"
+            className="flex items-center gap-1.5 p-1.5 rounded-2xl border w-full sm:w-auto overflow-x-auto shadow-lg"
           >
-            {(['ALL', 'BAT', 'BOWL', 'AR', 'WK'] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRoleFilter(r)}
-                style={roleFilter === r ? {
-                  backgroundColor: myTheme.pillBg,
-                  color: myTheme.pillText,
-                  boxShadow: `0 0 12px ${myTheme.primary}70`,
-                } : {
-                  color: '#ffffff',
-                }}
-                className={`px-3 py-1 rounded-xl text-xs font-black cursor-pointer transition-all ${
-                  roleFilter === r ? 'font-black scale-[1.02]' : 'hover:bg-white/10'
-                }`}
-              >
-                {r === 'ALL' ? 'All Roles' : r}
-              </button>
-            ))}
+            {(['ALL', 'BAT', 'BOWL', 'AR', 'WK'] as const).map((r) => {
+              const isSelected = roleFilter === r;
+              return (
+                <button
+                  key={r}
+                  onClick={() => setRoleFilter(r)}
+                  style={isSelected ? {
+                    backgroundColor: myTheme.pillBg,
+                    color: myTheme.pillText,
+                    borderColor: myTheme.primary,
+                    boxShadow: `0 0 14px ${myTheme.primary}80`,
+                  } : {
+                    backgroundColor: '#1e293b',
+                    color: '#e2e8f0',
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black cursor-pointer transition-all border shadow-sm ${
+                    isSelected ? 'scale-[1.02]' : 'hover:bg-slate-700/80 hover:text-white'
+                  }`}
+                >
+                  {r === 'ALL' ? 'All Roles' : r}
+                </button>
+              )
+            })}
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -259,10 +272,10 @@ export default function SquadRetainReleasePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
-                background: `${myTheme.bgDeep}ee`,
-                borderColor: `${myTheme.primary}45`,
+                background: '#0f172a',
+                borderColor: `${myTheme.primary}60`,
               }}
-              className="w-full border rounded-2xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-white shadow-md transition-all"
+              className="w-full border rounded-2xl pl-9 pr-3 py-2 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-white shadow-lg transition-all"
             />
           </div>
         </div>
@@ -280,15 +293,16 @@ export default function SquadRetainReleasePage() {
                 <div
                   key={player.player_id}
                   style={isReleased ? {
-                    background: 'rgba(15, 23, 42, 0.95)',
-                    borderColor: 'rgba(244, 63, 94, 0.5)',
+                    background: 'linear-gradient(145deg, #080d1a 0%, #171f33 100%)',
+                    borderColor: 'rgba(244, 63, 94, 0.7)',
+                    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.6)',
                   } : {
-                    background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
-                    borderColor: `${myTheme.primary}70`,
-                    boxShadow: `0 4px 20px ${myTheme.primary}25`,
+                    background: 'linear-gradient(145deg, #0b1329 0%, #1e293b 100%)',
+                    borderColor: `${myTheme.primary}80`,
+                    boxShadow: `0 6px 20px rgba(0, 0, 0, 0.6), 0 0 16px ${myTheme.primary}25`,
                   }}
-                  className={`p-3 rounded-2xl border transition-all flex flex-col justify-between overflow-hidden ${
-                    isReleased ? 'opacity-65' : 'hover:scale-[1.01]'
+                  className={`p-3 rounded-2xl border transition-all flex flex-col justify-between overflow-hidden shadow-xl ${
+                    isReleased ? 'opacity-75 ring-1 ring-rose-500/30' : 'hover:scale-[1.01]'
                   }`}
                 >
                   {/* Top: Name, Role, Rating */}
@@ -307,28 +321,28 @@ export default function SquadRetainReleasePage() {
                           <span>{player.name}</span>
                           {player.is_overseas && (
                             <span 
-                              className="text-[8px] px-1.5 py-0.2 rounded border font-extrabold bg-sky-500/20 text-sky-300 border-sky-400/40"
+                              className="text-[9px] px-1.5 py-0.5 rounded font-black bg-sky-500/25 text-sky-300 border border-sky-400/50 shadow-sm"
                             >
                               OS
                             </span>
                           )}
                           {player.is_captain && (
                             <span 
-                              className="text-[8px] px-1.5 py-0.2 rounded border font-extrabold bg-amber-500/20 text-amber-300 border-amber-400/40"
+                              className="text-[9px] px-1.5 py-0.5 rounded font-black bg-amber-500/25 text-amber-300 border border-amber-400/50 shadow-sm"
                             >
                               CAPTAIN
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] font-mono flex items-center gap-1.5 mt-0.5">
+                        <div className="text-[10px] font-mono flex items-center gap-1.5 mt-1">
                           <span 
-                            className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-white/10 text-gray-200 border border-white/10"
+                            className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-100 border border-white/20 shadow-sm"
                           >
                             {getDetailedPlayerRole(player)}
                           </span>
                           <span className="text-gray-500">•</span>
                           <span 
-                            className="font-black text-emerald-400"
+                            className="font-black text-emerald-400 font-mono text-xs"
                           >
                             ₹{player.price} Cr
                           </span>
@@ -338,11 +352,11 @@ export default function SquadRetainReleasePage() {
                       <div className="text-right">
                         <span 
                           style={{
-                            backgroundColor: `${myTheme.primary}20`,
-                            color: myTheme.primary,
-                            borderColor: `${myTheme.primary}50`,
+                            backgroundColor: 'rgba(251, 191, 36, 0.15)',
+                            color: '#fbbf24',
+                            borderColor: 'rgba(251, 191, 36, 0.4)',
                           }}
-                          className="text-[9px] font-black px-2 py-0.5 rounded border block shadow-sm"
+                          className="text-[10px] font-black px-2 py-0.5 rounded border block shadow-sm font-mono"
                         >
                           {ovr} OVR
                         </span>
@@ -351,32 +365,41 @@ export default function SquadRetainReleasePage() {
 
                     {/* Expandable Player Profile Tray */}
                     {isExpanded && (
-                      <div className="mt-1.5 pt-1.5 border-t border-white/20 grid grid-cols-2 gap-1 text-[10px] font-mono animate-fadeIn">
-                        <div className="p-1 rounded bg-black/40 border border-white/10">
-                          <span className="text-[8px] text-gray-300 block">Cap Share</span>
-                          <span className="text-white font-black">~{((Number(player.price) / 125) * 100).toFixed(1)}%</span>
+                      <div className="mt-2 pt-2 border-t border-white/20 grid grid-cols-2 gap-1.5 text-[10px] font-mono animate-fadeIn">
+                        <div className="p-1.5 rounded-xl bg-slate-950/80 border border-white/15">
+                          <span className="text-[9px] text-gray-300 block uppercase font-bold">Cap Share</span>
+                          <span className="text-white font-black text-xs">~{((Number(player.price) / 125) * 100).toFixed(1)}%</span>
                         </div>
-                        <div className="p-1 rounded bg-black/40 border border-white/10">
-                          <span className="text-[8px] text-gray-300 block">Fit</span>
-                          <span className="text-white font-black">✓ 93% Match</span>
+                        <div className="p-1.5 rounded-xl bg-slate-950/80 border border-white/15">
+                          <span className="text-[9px] text-gray-300 block uppercase font-bold">Fit</span>
+                          <span className="text-emerald-400 font-black text-xs">✓ 93% Match</span>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Bottom: Retain / Release Action Button */}
-                  <div className="mt-1.5 pt-1.5 border-t border-white/20 flex items-center justify-between">
-                    <span className="text-[9px] font-mono">
+                  <div className="mt-2 pt-2 border-t border-white/15 flex items-center justify-between">
+                    <span className="text-[10px] font-mono">
                       {isReleased ? (
-                        <span className="text-rose-400 font-black">Auction Pool</span>
+                        <span 
+                          style={{
+                            backgroundColor: 'rgba(244, 63, 94, 0.25)',
+                            color: '#fda4af',
+                            border: '1px solid rgba(244, 63, 94, 0.6)'
+                          }} 
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-black shadow-sm"
+                        >
+                          Auction Pool
+                        </span>
                       ) : (
                         <span 
                           style={{
-                            backgroundColor: myTheme.bgDeep,
-                            color: myTheme.contrastText,
-                            border: `1px solid ${myTheme.cardBorder}`
+                            backgroundColor: 'rgba(16, 185, 129, 0.25)',
+                            color: '#6ee7b7',
+                            border: '1px solid rgba(16, 185, 129, 0.6)'
                           }} 
-                          className="px-2 py-0.5 rounded text-[9px] font-black shadow-sm"
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-black shadow-sm"
                         >
                           ✓ Retained
                         </span>
@@ -390,24 +413,26 @@ export default function SquadRetainReleasePage() {
                         togglePlayerRetention(player.player_id)
                       }}
                       style={isReleased ? {
-                        backgroundColor: myTheme.pillBg,
-                        color: myTheme.pillText,
-                        borderColor: myTheme.cardBorder,
-                      } : {
-                        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                        backgroundColor: '#059669',
                         color: '#ffffff',
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        border: '1px solid #10b981',
+                        boxShadow: '0 0 14px rgba(16, 185, 129, 0.5)',
+                      } : {
+                        backgroundColor: '#1e293b',
+                        color: '#fda4af',
+                        border: '1px solid rgba(244, 63, 94, 0.6)',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
                       }}
-                      className="px-2.5 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 cursor-pointer transition-all border shadow-md hover:scale-105 active:scale-95"
+                      className="px-3.5 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-md hover:scale-105 active:scale-95"
                     >
                       {isReleased ? (
                         <>
-                          <Check size={11} />
+                          <Check size={12} className="stroke-[3]" />
                           <span>Retain</span>
                         </>
                       ) : (
                         <>
-                          <X size={11} />
+                          <X size={12} className="stroke-[3]" />
                           <span>Release (+₹{player.price}Cr)</span>
                         </>
                       )}
@@ -421,16 +446,16 @@ export default function SquadRetainReleasePage() {
         {/* Bottom Banner */}
         <div 
           style={{
-            background: myTheme.cardBg,
-            borderColor: myTheme.cardBorder,
-            boxShadow: myTheme.cardGlow,
+            background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+            borderColor: `${myTheme.primary}80`,
+            boxShadow: `0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px ${myTheme.primary}25`,
           }}
-          className="mt-2 p-2.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0 shadow-lg"
+          className="mt-3 p-3 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 shadow-2xl"
         >
-          <div className="text-[11px] text-gray-200 text-center sm:text-left">
+          <div className="text-xs text-gray-200 text-center sm:text-left">
             <span>Retained <strong className="text-white font-black">{retainedPlayers.length}</strong> players ({25 - retainedPlayers.length} open auction slots).</span>
-            <span className="block text-[10px] text-gray-300 font-mono">
-              Mini-Auction Purse: <strong className="text-white font-black">₹{campaign.remainingPurse.toFixed(2)} Cr</strong>
+            <span className="block text-[11px] text-gray-300 font-mono mt-0.5">
+              Mini-Auction Purse: <strong className="text-emerald-400 font-black">₹{campaign.remainingPurse.toFixed(2)} Cr</strong>
             </span>
           </div>
 
@@ -441,7 +466,7 @@ export default function SquadRetainReleasePage() {
               color: myTheme.pillText,
               boxShadow: `0 0 20px ${myTheme.primary}80`,
             }}
-            className="w-full sm:w-auto px-6 py-2 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg text-white"
           >
             <span>Lock & Start Auction</span>
             <ArrowRight size={14} />
