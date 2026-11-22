@@ -739,32 +739,6 @@ export default function PlayingXIPage() {
                                   🧢 PURPLE CAP
                                 </span>
                               )}
-                              {pForm?.status === 'hot' && (
-                                <span 
-                                  style={{
-                                    backgroundColor: '#dc2626',
-                                    color: '#ffffff',
-                                    border: '1px solid #fecaca',
-                                  }}
-                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm flex items-center gap-0.5"
-                                  title={pForm.streakText}
-                                >
-                                  <Flame size={9} /> +8% FORM
-                                </span>
-                              )}
-                              {pForm?.status === 'cold' && (
-                                <span 
-                                  style={{
-                                    backgroundColor: '#0284c7',
-                                    color: '#ffffff',
-                                    border: '1px solid #bae6fd',
-                                  }}
-                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm flex items-center gap-0.5"
-                                  title={pForm.streakText}
-                                >
-                                  ❄️ SLUMP (-5%)
-                                </span>
-                              )}
                             </div>
                             <div 
                               style={{ color: myTheme.contrastText }}
@@ -860,61 +834,6 @@ export default function PlayingXIPage() {
         {/* ─── TAB 2: FULL IPL TOURNAMENT SEASON & SCHEDULE (74 MATCHES) ─── */}
         {activeTab === 'schedule' && (
           <div className="flex flex-col gap-4">
-            
-            {/* Auto-Simulated Wave Notification Banner */}
-            {campaign.lastSimulatedWave && campaign.lastSimulatedWave.simulatedCount > 0 && (
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/10 border border-amber-500/40 text-xs shadow-xl animate-fadeIn">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-amber-400 shrink-0 animate-pulse" />
-                    <div>
-                      <span className="font-black uppercase tracking-wider text-[11px] text-amber-300">
-                        ⚡ League Progression Wave:
-                      </span>{' '}
-                      <span className="text-gray-200">
-                        {campaign.lastSimulatedWave.simulatedCount} AI matches simulated up to Match #{campaign.lastSimulatedWave.nextMatchNo} (vs {campaign.lastSimulatedWave.nextRivalShort})
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      gameAudio.playUiTap('light');
-                      dismissSimulatedWaveAlert();
-                    }}
-                    className="px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white text-[10px] font-bold cursor-pointer transition-all shrink-0 self-end sm:self-auto"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-
-                {/* Quick simulated matches list with clickable scorecard pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto mt-2 pt-2 border-t border-white/10 scrollbar-none py-0.5">
-                  <span className="text-[10px] font-mono text-gray-400 uppercase shrink-0">Scores:</span>
-                  {campaign.lastSimulatedWave.simulatedMatches.map((m) => {
-                    const fix = (campaign.schedule || []).find(f => f.matchNo === m.matchNo);
-                    return (
-                      <button
-                        key={m.matchNo}
-                        onClick={() => {
-                          if (fix) {
-                            gameAudio.playUiTap('select');
-                            triggerGameHaptic('light');
-                            setViewingScorecardFixture(fix);
-                          }
-                        }}
-                        className="px-2 py-0.5 rounded-lg bg-slate-950/80 hover:bg-slate-900 border border-white/10 hover:border-amber-400/50 text-[10px] font-mono text-gray-200 hover:text-white flex items-center gap-1.5 shrink-0 cursor-pointer transition-all"
-                        title="View Full Scorecard"
-                      >
-                        <span className="text-amber-400 font-bold">#{m.matchNo}</span>
-                        <span>{m.teamAShort} vs {m.teamBShort}</span>
-                        <span className="text-emerald-400 font-bold">📊</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               
               {/* Left 7 Columns: Fixtures Schedule with My 14 Matches vs All 74 Matches Toggle */}
@@ -1002,17 +921,31 @@ export default function PlayingXIPage() {
                           {/* Status or Launch Button */}
                           <div className="shrink-0">
                             {isCurrent ? (
-                              <button
-                                onClick={() => handleLaunchMatch(fixture)}
-                                className={`px-3.5 py-1.5 rounded-xl font-black text-xs uppercase flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all ${
-                                  isMatchActive
-                                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 shadow-emerald-500/40 animate-pulse'
-                                    : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 shadow-amber-500/30'
-                                }`}
-                              >
-                                {isMatchActive ? <Play size={13} className="fill-slate-950" /> : <Swords size={13} />}
-                                <span>{isMatchActive ? `Resume Match (${activeOversStr} ov)` : 'Play Match'}</span>
-                              </button>
+                              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                <button
+                                  onClick={() => handleLaunchMatch(fixture)}
+                                  className={`px-3 py-1.5 rounded-xl font-black text-xs uppercase flex items-center gap-1.5 shadow-md cursor-pointer hover:scale-[1.02] active:scale-95 transition-all ${
+                                    isMatchActive
+                                      ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 shadow-emerald-500/40 animate-pulse'
+                                      : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 shadow-amber-500/30'
+                                  }`}
+                                >
+                                  {isMatchActive ? <Play size={13} className="fill-slate-950" /> : <Swords size={13} />}
+                                  <span>{isMatchActive ? `Resume Match (${activeOversStr} ov)` : 'Play Match'}</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    gameAudio.playWillowCrack('boundary');
+                                    triggerGameHaptic('medium');
+                                    simulateScheduleMatch(fixture.matchNo);
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-xl font-black text-xs uppercase flex items-center gap-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 shadow-sm cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shrink-0"
+                                  title="Instant Result (Quick Simulate Match)"
+                                >
+                                  <Zap size={12} className="text-amber-400 fill-amber-400" />
+                                  <span>Instant Result</span>
+                                </button>
+                              </div>
                             ) : isDone ? (
                               <div className="flex items-center gap-2">
                                 <div className="text-right">
