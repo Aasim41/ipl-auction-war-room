@@ -529,13 +529,13 @@ export default function TradeWindowPage() {
                       setPlayerOut(isSelected ? null : p)
                     }}
                     style={isSelected ? {
-                      background: myTheme.cardBg,
+                      background: myTheme.primary,
                       borderColor: '#ffffff',
                       boxShadow: `0 0 20px ${myTheme.primary}, 0 0 0 2px #ffffff`,
                     } : {
-                      background: myTheme.cardBg,
-                      borderColor: myTheme.cardBorder,
-                      boxShadow: myTheme.cardGlow,
+                      background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+                      borderColor: `${myTheme.primary}70`,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
                     }}
                     className={`p-2.5 rounded-xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
@@ -545,27 +545,22 @@ export default function TradeWindowPage() {
                   >
                     <div className="truncate mr-1 min-w-0">
                       <div 
-                        style={{ color: myTheme.contrastText }}
+                        style={{ color: isSelected ? myTheme.contrastText : '#ffffff' }}
                         className="font-black text-xs sm:text-sm flex items-center gap-1.5 truncate drop-shadow-sm"
                       >
                         <span className="truncate">{p.name}</span>
                         {p.is_overseas && (
                           <span 
-                            style={{
-                              backgroundColor: myTheme.bgDeep,
-                              color: myTheme.contrastText,
-                            }}
-                            className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm"
+                            className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm bg-sky-500/25 text-sky-300 border border-sky-400/40"
                           >
                             OS
                           </span>
                         )}
                       </div>
                       <div 
-                        style={{ color: myTheme.contrastText }}
-                        className="text-[10px] font-mono font-bold mt-0.5 opacity-90 truncate"
+                        className="text-[10px] font-mono font-bold mt-0.5 truncate text-gray-300"
                       >
-                        {getDetailedPlayerRole(p)} • ₹{p.price}Cr
+                        {getDetailedPlayerRole(p)} • <strong className="text-emerald-400">₹{p.price}Cr</strong>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -575,9 +570,9 @@ export default function TradeWindowPage() {
                           color: '#ffffff',
                           boxShadow: '0 0 10px rgba(0,0,0,0.5)',
                         } : {
-                          backgroundColor: `${myTheme.bgDeep}e6`,
-                          color: myTheme.contrastText,
-                          border: `1px solid ${myTheme.cardBorder}`,
+                          backgroundColor: '#1e293b',
+                          color: '#fda4af',
+                          border: '1px solid rgba(244, 63, 94, 0.6)',
                         }}
                         className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all shadow-md"
                       >
@@ -812,13 +807,13 @@ export default function TradeWindowPage() {
                       setPlayerIn(isSelected ? null : p)
                     }}
                     style={isSelected ? {
-                      background: rivalTheme.cardBg,
+                      background: rivalTheme.primary,
                       borderColor: '#ffffff',
                       boxShadow: `0 0 20px ${rivalTheme.primary}, 0 0 0 2px #ffffff`,
                     } : {
-                      background: rivalTheme.cardBg,
-                      borderColor: rivalTheme.cardBorder,
-                      boxShadow: rivalTheme.cardGlow,
+                      background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+                      borderColor: `${rivalTheme.primary}70`,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
                     }}
                     className={`p-2.5 rounded-xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
@@ -828,27 +823,22 @@ export default function TradeWindowPage() {
                   >
                     <div className="truncate mr-1 min-w-0">
                       <div 
-                        style={{ color: rivalTheme.contrastText }}
+                        style={{ color: isSelected ? rivalTheme.contrastText : '#ffffff' }}
                         className="font-black text-xs sm:text-sm flex items-center gap-1.5 truncate drop-shadow-sm"
                       >
                         <span className="truncate">{p.name}</span>
                         {p.is_overseas && (
                           <span 
-                            style={{
-                              backgroundColor: rivalTheme.bgDeep,
-                              color: rivalTheme.contrastText,
-                            }}
-                            className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm"
+                            className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm bg-sky-500/25 text-sky-300 border border-sky-400/40"
                           >
                             OS
                           </span>
                         )}
                       </div>
                       <div 
-                        style={{ color: rivalTheme.contrastText }}
-                        className="text-[10px] font-mono font-bold mt-0.5 opacity-90 truncate"
+                        className="text-[10px] font-mono font-bold mt-0.5 truncate text-gray-300"
                       >
-                        {getDetailedPlayerRole(p)} • ₹{p.price}Cr
+                        {getDetailedPlayerRole(p)} • <strong className="text-emerald-400">₹{p.price}Cr</strong>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -858,9 +848,9 @@ export default function TradeWindowPage() {
                           color: '#ffffff',
                           boxShadow: '0 0 10px rgba(0,0,0,0.5)',
                         } : {
-                          backgroundColor: `${rivalTheme.bgDeep}e6`,
-                          color: rivalTheme.contrastText,
-                          border: `1px solid ${rivalTheme.cardBorder}`,
+                          backgroundColor: '#065f46',
+                          color: '#6ee7b7',
+                          border: '1px solid #10b981',
                         }}
                         className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider block transition-all shadow-md"
                       >
