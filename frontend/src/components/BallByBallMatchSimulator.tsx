@@ -3259,6 +3259,30 @@ export default function BallByBallMatchSimulator({
                 </>
               )}
 
+              {/* Call Strategic Impact Sub */}
+              {!impactSubUsed && !matchDone && (
+                <div className="pt-1 border-t border-white/10">
+                  <button
+                    onClick={() => {
+                      gameAudio.playUiTap('select');
+                      setShowImpactSubModal(true);
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-500/30 hover:from-amber-500/40 hover:to-amber-500/40 text-amber-300 border border-amber-400/50 text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
+                  >
+                    <Zap size={14} className="text-amber-400 animate-bounce" />
+                    <span>Call Strategic Impact Player Sub (12th Man)</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Impact Player Active Banner */}
+              {impactNotification && (
+                <div className="p-2.5 rounded-2xl bg-amber-400 text-slate-950 font-black text-xs text-center shadow-2xl flex items-center justify-center gap-2 animate-bounce">
+                  <Zap size={15} />
+                  <span>🚨 STRATEGIC IMPACT SUB: {impactNotification}!</span>
+                </div>
+              )}
+
               {/* Instant Result Action */}
               <div className="pt-1 border-t border-white/10 flex items-center justify-end">
                 <button
@@ -3278,23 +3302,47 @@ export default function BallByBallMatchSimulator({
           /* Tab 2: Full Detailed Scorecard */
           <div className="flex-1 p-4 overflow-y-auto space-y-4">
             
-            {/* Match Winner Summary Banner */}
+            {/* Match Winner Summary Banner & Presentation Podium */}
             {potm && (
-              <div className="p-4 rounded-3xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-amber-500/20 border border-amber-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left shadow-2xl">
-                <div>
-                  <span className="text-[10px] font-mono font-black text-amber-400 uppercase tracking-widest">
-                    MATCH RESULT & PRESENTATION
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
-                    {matchResultSummary?.winnerName} Won by {matchResultSummary?.margin}!
-                  </h3>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-950 border border-white/15 text-center">
-                  <div className="text-[10px] text-gray-400 font-bold uppercase flex items-center justify-center gap-1">
-                    <Trophy size={11} className="text-amber-400" /> Player of the Match
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-amber-500/20 border-2 border-amber-500/50 flex flex-col gap-3 shadow-2xl animate-fadeIn">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                  <div>
+                    <span className="text-[10px] font-mono font-black text-amber-400 uppercase tracking-widest flex items-center justify-center sm:justify-start gap-1">
+                      <Sparkles size={12} /> OFFICIAL MATCH PRESENTATION & HONORS
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black font-display text-white mt-0.5">
+                      {matchResultSummary?.winnerName} Won by {matchResultSummary?.margin}!
+                    </h3>
                   </div>
-                  <strong className="text-sm font-black text-amber-300 block">{formatPlayerInitial(potm.player)}</strong>
-                  <span className="text-[11px] text-gray-400 font-mono">{potm.stats}</span>
+                  {/* POTM Cheque Trophy Award */}
+                  <div className="p-3 rounded-2xl bg-slate-950 border border-amber-400/40 text-center shadow-lg min-w-[200px]">
+                    <div className="text-[9.5px] text-amber-300 font-bold uppercase flex items-center justify-center gap-1">
+                      <Trophy size={12} className="text-amber-400" /> Player of the Match
+                    </div>
+                    <strong className="text-base font-black text-white block mt-0.5">{formatPlayerInitial(potm.player)}</strong>
+                    <span className="text-xs text-amber-300 font-mono font-bold block">{potm.stats}</span>
+                    <span className="text-[9px] text-emerald-400 font-mono font-bold block mt-0.5">₹1,00,000 Cash Award • Trophy Awarded</span>
+                  </div>
+                </div>
+
+                {/* GM Tactical Efficiency Rating & Cap Race Movement */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs font-mono">
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-white/10 flex items-center justify-between">
+                    <div>
+                      <span className="text-[9.5px] text-gray-400 uppercase font-bold block">GM Tactical Mastery</span>
+                      <strong className="text-emerald-400 font-black text-xs">GRADE A+ • 96% Efficiency</strong>
+                    </div>
+                    <Award size={20} className="text-emerald-400" />
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-white/10 flex items-center justify-between">
+                    <div>
+                      <span className="text-[9.5px] text-gray-400 uppercase font-bold block">Tournament Cap Alert</span>
+                      <strong className="text-amber-300 font-bold text-xs truncate block">
+                        🧢 {formatPlayerInitial(potm.player)} climbs leaderboard!
+                      </strong>
+                    </div>
+                    <Flame size={20} className="text-amber-400" />
+                  </div>
                 </div>
               </div>
             )}
