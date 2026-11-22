@@ -1338,7 +1338,7 @@ export default function MiniAuctionPage() {
               borderColor: myTheme.cardBorder,
               boxShadow: myTheme.cardGlow,
             }}
-            className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl border p-3 shadow-xl h-[520px] max-h-[85vh] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
+            className={`lg:col-span-5 flex flex-col gap-2 rounded-2xl border p-3 shadow-xl flex-1 min-h-[500px] lg:h-[540px] max-h-[85vh] overflow-hidden select-none ${auctionView !== 'stage' ? 'flex' : 'hidden lg:flex'}`}
           >
             
             {/* Tab Navigation: 4 Tabs - HIDE ON MOBILE TO PREVENT REPEATED NAVBARS */}
@@ -1400,7 +1400,7 @@ export default function MiniAuctionPage() {
               <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-hidden">
                 
                 {/* Search & Role Filters Bar */}
-                <div className="space-y-1.5 pb-2 mb-1.5 border-b border-white/5 shrink-0">
+                <div className="flex flex-col gap-1.5 pb-2 mb-1 border-b border-white/5 shrink-0">
                   <div className="flex items-center gap-1.5">
                     <div className="relative flex-1">
                       <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -1458,7 +1458,7 @@ export default function MiniAuctionPage() {
                 </div>
 
                 {/* Pool Players Scrollable List */}
-                <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
+                <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1.5 pr-1">
                   {filteredAuctionPool.length === 0 ? (
                     <div className="h-40 flex flex-col items-center justify-center text-xs text-gray-500 text-center">
                       <Search size={20} className="mb-1 text-gray-600" />
@@ -1561,29 +1561,46 @@ export default function MiniAuctionPage() {
                 </div>
 
                 {/* Vitals of inspected team */}
-                <div className="p-2 rounded-xl bg-slate-950/80 border border-white/10 mb-2 flex items-center justify-between text-[11px] font-mono">
-                  <div>
-                    <span className="text-gray-400 block text-[9px] uppercase">Purse Left</span>
-                    <strong className="text-emerald-400">
-                      ₹{displayPurse.toFixed(2)} Cr
-                    </strong>
+                <div className="p-2 rounded-xl bg-slate-950/80 border border-white/10 mb-1 flex flex-col gap-1.5 text-[11px] font-mono shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-gray-400 block text-[9px] uppercase">Purse Left</span>
+                      <strong className="text-emerald-400 font-bold">
+                        ₹{displayPurse.toFixed(2)} Cr
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 block text-[9px] uppercase">Squad Size</span>
+                      <strong className="text-indigo-300 font-bold">
+                        {displaySquad.length}/25
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 block text-[9px] uppercase">Overseas</span>
+                      <strong className="text-sky-300 font-bold">
+                        {displaySquad.filter((p) => p.is_overseas).length}/8
+                      </strong>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-gray-400 block text-[9px] uppercase">Squad Size</span>
-                    <strong className="text-indigo-300">
-                      {displaySquad.length}/25
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 block text-[9px] uppercase">Overseas</span>
-                    <strong className="text-sky-300">
-                      {displaySquad.filter((p) => p.is_overseas).length}/8
-                    </strong>
+                  {/* Role composition strip */}
+                  <div className="flex items-center gap-1.5 pt-1 border-t border-white/10 text-[9px] font-mono">
+                    <span className="px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300">
+                      BAT: {displaySquad.filter(p => p.role === 'BAT').length}
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300">
+                      WK: {displaySquad.filter(p => p.role === 'WK').length}
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300">
+                      AR: {displaySquad.filter(p => p.role === 'AR').length}
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300">
+                      BOWL: {displaySquad.filter(p => p.role === 'BOWL').length}
+                    </span>
                   </div>
                 </div>
 
                 {/* Squad Members Scroll List */}
-                <div className="flex-1 min-h-0 overflow-y-auto space-y-1 pr-1">
+                <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 pr-1">
                   {displaySquad.map((p, idx) => (
                     <div
                       key={`${p.player_id || p.name}_${idx}`}
