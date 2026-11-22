@@ -1537,10 +1537,10 @@ export default function MiniAuctionPage() {
 
             {/* TAB 2: SQUADS & PURSES */}
             {sideTab === 'squads' && (
-              <div className="flex-1 flex flex-col justify-between overflow-hidden">
+              <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-hidden">
                 
                 {/* Franchise Selector */}
-                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/5 gap-2">
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/5 gap-2 shrink-0">
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Inspect:</span>
                   <select
                     value={selectedFranchiseView}
@@ -1583,7 +1583,7 @@ export default function MiniAuctionPage() {
                 </div>
 
                 {/* Squad Members Scroll List */}
-                <div className="flex-1 overflow-y-auto space-y-1 pr-1 max-h-56">
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-1 pr-1">
                   {displaySquad.map((p, idx) => (
                     <div
                       key={`${p.player_id || p.name}_${idx}`}
@@ -1627,7 +1627,7 @@ export default function MiniAuctionPage() {
                     </button>
                   </div>
                 )}
-                <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-72">
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
                   {soldLog.length === 0 ? (
                     <div className="h-40 flex items-center justify-center text-xs text-gray-500 text-center">
                       No lots sold yet.
