@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Play, 
   Pause, 
@@ -305,6 +306,11 @@ export default function BallByBallMatchSimulator({
   matchFixture,
   onMatchComplete
 }: BallByBallMatchSimulatorProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Tabs: 'arena' | 'scorecard'
   const [activeTab, setActiveTab] = useState<'arena' | 'scorecard'>('arena');
 
