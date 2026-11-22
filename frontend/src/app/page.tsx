@@ -408,7 +408,7 @@ export default function UnifiedTeamSelectHomePage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2.5">
               <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5">
                 <span className="text-[9px] font-mono text-gray-400 uppercase block">Fortress</span>
-                <span className="text-[11px] font-bold text-white block truncate">{activeStadium.name.split(' ')[0]}</span>
+                <span className="text-[11px] font-bold text-white block truncate" title={activeStadium.name}>{activeStadium.name}</span>
                 <span className="text-[9px] font-mono text-emerald-400">Par {activeStadium.avgFirstInnings}</span>
               </div>
 

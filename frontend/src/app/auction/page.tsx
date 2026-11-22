@@ -1397,10 +1397,10 @@ export default function MiniAuctionPage() {
 
             {/* TAB 1: AUCTION PLAYER POOL (Interactive 64 Stars Schedule) */}
             {sideTab === 'pool' && (
-              <div className="flex-1 flex flex-col justify-between overflow-hidden">
+              <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-hidden">
                 
                 {/* Search & Role Filters Bar */}
-                <div className="space-y-1.5 pb-2 mb-1.5 border-b border-white/5">
+                <div className="space-y-1.5 pb-2 mb-1.5 border-b border-white/5 shrink-0">
                   <div className="flex items-center gap-1.5">
                     <div className="relative flex-1">
                       <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -1458,7 +1458,7 @@ export default function MiniAuctionPage() {
                 </div>
 
                 {/* Pool Players Scrollable List */}
-                <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-64">
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
                   {filteredAuctionPool.length === 0 ? (
                     <div className="h-40 flex flex-col items-center justify-center text-xs text-gray-500 text-center">
                       <Search size={20} className="mb-1 text-gray-600" />
