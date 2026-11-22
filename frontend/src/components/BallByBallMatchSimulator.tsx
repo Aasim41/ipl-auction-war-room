@@ -4137,6 +4137,27 @@ export default function BallByBallMatchSimulator({
         </div>
       )}
 
+      {/* Strategic Impact Player Modal */}
+      <ImpactPlayerSubModal
+        isOpen={showImpactSubModal}
+        onClose={() => setShowImpactSubModal(false)}
+        onConfirmSub={handleConfirmImpactSub}
+        activePlayers={
+          ((aBatsFirst ? currentInnings === 1 : currentInnings === 2)
+            ? bat1Squad
+            : bowl1Squad
+          ).map((p) => ({ name: p.name, role: p.role }))
+        }
+        benchPlayers={(mySquad || []).filter(
+          (p) =>
+            !((aBatsFirst ? currentInnings === 1 : currentInnings === 2)
+              ? bat1Squad
+              : bowl1Squad
+            ).some((b) => b.name === p.name)
+        )}
+        teamColor={myFranchise.color}
+      />
+
       </div>
     </div>
   );
