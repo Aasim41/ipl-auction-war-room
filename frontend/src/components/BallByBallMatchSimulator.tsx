@@ -2773,9 +2773,27 @@ export default function BallByBallMatchSimulator({
                   )}
                 </div>
 
+                {/* ─── IN-FLOW OVER/EVENT NOTIFICATION (NEVER OBSCORES SCORECARD HUD) ─── */}
+                {eventBanner && (
+                  <div className="shrink-0 my-0.5 animate-fadeIn z-20">
+                    <div className={`px-3 py-1.5 rounded-xl bg-gradient-to-r ${eventBanner.color} text-white font-black shadow-lg border border-white/40 flex items-center justify-between gap-2`}>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="text-sm">⚡</span>
+                        <div className="truncate">
+                          <span className="text-xs sm:text-sm font-black tracking-wide drop-shadow block truncate">{eventBanner.text}</span>
+                          <span className="text-[10px] text-white/90 drop-shadow truncate block">{eventBanner.subtext}</span>
+                        </div>
+                      </div>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/20 text-white font-mono uppercase font-black shrink-0">
+                        OVER UPDATE
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR (COMPACT FIT) ─── */}
                 {/* ─── ARENA FIELD POV: HYPER-REALISTIC BROADCAST STADIUM GROUND & 22-YARD PITCH ─── */}
-                <div className="relative my-0.5 h-[270px] sm:h-[310px] md:h-[350px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/30 bg-[#05080c] shadow-2xl select-none">
+                <div className="relative my-0.5 h-[305px] sm:h-[340px] md:h-[380px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/30 bg-[#05080c] shadow-2xl select-none">
                   
                   {/* Mode Switcher: Field Positions vs Wagon Wheel (Top-Left) */}
                   <div className="absolute top-2 left-3 z-30 flex items-center gap-1 bg-slate-950/90 p-0.5 rounded-lg border border-white/10 text-[9px] font-mono backdrop-blur-md shadow-md">
@@ -2804,8 +2822,12 @@ export default function BallByBallMatchSimulator({
                   </div>
 
                   {/* Field Strategy & Deep Fielders Indicator (Top-Right) */}
-                  <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/90 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono text-emerald-300 backdrop-blur-md shadow-md">
-                    <span>🛡️ {deepCount} Deep Fielders</span>
+                  <div className="absolute top-2 right-3 z-10 flex items-center gap-1 bg-slate-950/90 px-2.5 py-0.5 rounded-full border border-white/10 text-[9px] font-mono backdrop-blur-md shadow-md">
+                    {radarViewMode === 'wagon' ? (
+                      <span className="text-amber-300 font-bold">🎯 {activeInnings.balls.length} Shots Mapped</span>
+                    ) : (
+                      <span className="text-emerald-300 font-bold">🛡️ {deepCount} Deep Fielders</span>
+                    )}
                   </div>
                   
                   {/* Corner Stadium Floodlight Glows */}
