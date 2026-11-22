@@ -95,10 +95,10 @@ export default function ComparePlayers() {
   ]
 
   return (
-    <div className="min-h-screen text-white p-6 pt-24 font-sans max-w-6xl mx-auto">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-black font-display uppercase tracking-widest text-[var(--accent-primary)] mb-2">Head-to-Head Comparison</h1>
-        <p className="text-gray-400 max-w-2xl mx-auto">Compare player analytics and overall value in the mega auction.</p>
+    <div className="min-h-screen text-white px-4 sm:px-6 safe-page-top pb-16 font-sans max-w-6xl mx-auto">
+      <div className="text-center mb-8 p-4 rounded-2xl bg-slate-900/90 border border-white/15 shadow-xl">
+        <h1 className="text-2xl sm:text-4xl font-black font-display uppercase tracking-widest text-amber-400 mb-1">Head-to-Head Comparison</h1>
+        <p className="text-xs sm:text-sm text-gray-300 max-w-2xl mx-auto">Compare player analytics and overall value in the mega auction.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">

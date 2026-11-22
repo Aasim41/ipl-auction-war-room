@@ -95,44 +95,44 @@ export default function StatsHub() {
   })
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-20 pb-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 safe-page-top pb-16">
       
       {/* Header */}
-      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/90 border border-white/15 shadow-xl">
         <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white">
             Stats <span className="text-[var(--accent-primary)]">Analyzer</span>
           </h1>
-          <p className="text-xs text-gray-400 mt-1">Click on any player to view deep technical performance metrics.</p>
+          <p className="text-xs text-gray-300 mt-1">Click on any player to view deep technical performance metrics.</p>
         </div>
         
-        <div className="flex gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <div className="relative flex-1 md:flex-initial">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 
               type="text" 
               placeholder="Search player name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-[var(--input)] border border-white/10 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-colors w-64 text-white"
+              className="bg-slate-950/90 border border-white/15 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-amber-400 transition-colors w-full md:w-64 text-white placeholder-gray-500 shadow-inner"
             />
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             {[
-              { value: 'ALL', label: 'All Roles', color: 'bg-white/5 text-white border-white/10 hover:bg-white/10' },
-              { value: 'BAT', label: '🏏 Batters', color: 'bg-sky-500/10 text-sky-400 border-sky-400/30 hover:bg-sky-500/20' },
-              { value: 'BOWL', label: '🎯 Bowlers', color: 'bg-rose-500/10 text-rose-400 border-rose-400/30 hover:bg-rose-500/20' },
-              { value: 'AR', label: '⚡ All-Rounders', color: 'bg-amber-500/10 text-amber-400 border-amber-400/30 hover:bg-amber-500/20' },
-              { value: 'WK', label: '🧤 Keepers', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/30 hover:bg-emerald-500/20' },
+              { value: 'ALL', label: 'All Roles', color: 'bg-slate-800 text-white border-white/20 hover:bg-slate-700' },
+              { value: 'BAT', label: '🏏 Batters', color: 'bg-sky-500/20 text-sky-300 border-sky-400/40 hover:bg-sky-500/30' },
+              { value: 'BOWL', label: '🎯 Bowlers', color: 'bg-rose-500/20 text-rose-300 border-rose-400/40 hover:bg-rose-500/30' },
+              { value: 'AR', label: '⚡ All-Rounders', color: 'bg-amber-500/20 text-amber-300 border-amber-400/40 hover:bg-amber-500/30' },
+              { value: 'WK', label: '🧤 Keepers', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/30' },
             ].map(f => (
               <button
                 key={f.value}
                 onClick={() => setRoleFilter(f.value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-sm ${
                   roleFilter === f.value
-                    ? f.color + ' ring-1 ring-current shadow-lg'
-                    : 'bg-white/5 text-gray-500 border-white/10 hover:text-white'
+                    ? f.color + ' ring-1 ring-white/30 font-black scale-[1.02]'
+                    : 'bg-slate-950/80 text-gray-400 border-white/10 hover:text-white'
                 }`}
               >
                 {f.label}

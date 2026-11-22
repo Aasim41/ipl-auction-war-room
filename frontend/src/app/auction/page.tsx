@@ -1347,18 +1347,23 @@ export default function MiniAuctionPage() {
           >
             
             {/* Tab Navigation: 4 Tabs - HIDE ON MOBILE TO PREVENT REPEATED NAVBARS */}
-            <div className="hidden lg:flex items-center gap-1 pb-2 border-b border-white/10">
+            <div className="hidden lg:flex items-center gap-1.5 pb-2 border-b border-white/10">
               <button
                 onClick={() => setSideTab('pool')}
                 style={sideTab === 'pool' ? {
                   backgroundColor: myTheme.pillBg,
                   color: myTheme.pillText,
-                  boxShadow: `0 0 10px ${myTheme.primary}70`,
-                } : {}}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
+                  boxShadow: `0 0 12px ${myTheme.primary}80`,
+                  borderColor: myTheme.primary,
+                } : {
+                  backgroundColor: '#1e293b',
+                  color: '#cbd5e1',
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                }}
+                className={`flex-1 py-1 px-1.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all border shadow-sm ${
                   sideTab === 'pool'
-                    ? 'shadow-sm'
-                    : 'text-gray-400 hover:text-white bg-white/5'
+                    ? 'scale-[1.01]'
+                    : 'hover:bg-slate-700/80 hover:text-white'
                 }`}
               >
                 <ListOrdered size={12} />
@@ -1370,12 +1375,17 @@ export default function MiniAuctionPage() {
                 style={sideTab === 'squads' ? {
                   backgroundColor: myTheme.pillBg,
                   color: myTheme.pillText,
-                  boxShadow: `0 0 10px ${myTheme.primary}70`,
-                } : {}}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
+                  boxShadow: `0 0 12px ${myTheme.primary}80`,
+                  borderColor: myTheme.primary,
+                } : {
+                  backgroundColor: '#1e293b',
+                  color: '#cbd5e1',
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                }}
+                className={`flex-1 py-1 px-1.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all border shadow-sm ${
                   sideTab === 'squads'
-                    ? 'shadow-sm'
-                    : 'text-gray-400 hover:text-white bg-white/5'
+                    ? 'scale-[1.01]'
+                    : 'hover:bg-slate-700/80 hover:text-white'
                 }`}
               >
                 <Users size={12} />
@@ -1387,12 +1397,17 @@ export default function MiniAuctionPage() {
                 style={sideTab === 'ledger' ? {
                   backgroundColor: myTheme.pillBg,
                   color: myTheme.pillText,
-                  boxShadow: `0 0 10px ${myTheme.primary}70`,
-                } : {}}
-                className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
+                  boxShadow: `0 0 12px ${myTheme.primary}80`,
+                  borderColor: myTheme.primary,
+                } : {
+                  backgroundColor: '#1e293b',
+                  color: '#cbd5e1',
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                }}
+                className={`flex-1 py-1 px-1.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all border shadow-sm ${
                   sideTab === 'ledger'
-                    ? 'shadow-sm'
-                    : 'text-gray-400 hover:text-white bg-white/5'
+                    ? 'scale-[1.01]'
+                    : 'hover:bg-slate-700/80 hover:text-white'
                 }`}
               >
                 <CheckCircle2 size={12} />

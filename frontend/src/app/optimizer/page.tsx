@@ -82,7 +82,7 @@ export default function OptimizerPage() {
   }, {} as Record<string, Player[]>);
 
   return (
-    <div className="min-h-screen stadium-bg grid-pattern text-slate-100 p-6 pt-24 font-sans animate-fade-up">
+    <div className="min-h-screen bg-transparent text-slate-100 px-4 sm:px-6 safe-page-top pb-16 font-sans animate-fade-up">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
         
         {/* Left Control Panel */}
