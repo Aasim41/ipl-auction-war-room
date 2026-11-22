@@ -777,6 +777,126 @@ class ProceduralCricketAudio {
       // Ignored
     }
   }
+
+  /**
+   * Deep heartbeat tension thumps for death overs pressure
+   */
+  public playHeartbeatTension() {
+    if (this.muted) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+      const now = this.ctx.currentTime + 0.005;
+      const dest = this.getDestination();
+
+      // Lub
+      const osc1 = this.ctx.createOscillator();
+      const gain1 = this.ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(58, now);
+      osc1.frequency.exponentialRampToValueAtTime(40, now + 0.12);
+      gain1.gain.setValueAtTime(0.7, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      osc1.connect(gain1);
+      gain1.connect(dest);
+      osc1.start(now);
+      osc1.stop(now + 0.15);
+
+      // Dub (slightly higher pitch, slightly delayed)
+      const tDub = now + 0.14;
+      const osc2 = this.ctx.createOscillator();
+      const gain2 = this.ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(65, tDub);
+      osc2.frequency.exponentialRampToValueAtTime(45, tDub + 0.12);
+      gain2.gain.setValueAtTime(0.65, tDub);
+      gain2.gain.exponentialRampToValueAtTime(0.001, tDub + 0.14);
+      osc2.connect(gain2);
+      gain2.connect(dest);
+      osc2.start(tDub);
+      osc2.stop(tDub + 0.15);
+    } catch {
+      // Ignored
+    }
+  }
+
+  /**
+   * Broadcast siren sting for Impact Player activation & key tactical timeouts
+   */
+  public playSirenSting() {
+    if (this.muted) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+      const now = this.ctx.currentTime + 0.005;
+      const dest = this.getDestination();
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.linearRampToValueAtTime(880, now + 0.15);
+      osc.frequency.linearRampToValueAtTime(520, now + 0.3);
+      osc.frequency.linearRampToValueAtTime(950, now + 0.45);
+
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start(now);
+      osc.stop(now + 0.62);
+    } catch {
+      // Ignored
+    }
+  }
+
+  /**
+   * Grand Championship & Playoff Trophy Fanfare with rich golden harmonics
+   */
+  public playTrophyCelebrationFanfare() {
+    if (this.muted) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+      const now = this.ctx.currentTime + 0.005;
+      const chords = [
+        { t: 0.0, freqs: [523.25, 659.25, 783.99] }, // C5, E5, G5
+        { t: 0.18, freqs: [587.33, 739.99, 880.00] }, // D5, F#5, A5
+        { t: 0.36, freqs: [659.25, 783.99, 987.77] }, // E5, G5, B5
+        { t: 0.58, freqs: [783.99, 987.77, 1046.50, 1318.51] }, // G5, B5, C6, E6
+      ];
+      const dest = this.getDestination();
+
+      chords.forEach(({ t, freqs }) => {
+        freqs.forEach((freq) => {
+          if (!this.ctx) return;
+          const noteTime = now + t;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, noteTime);
+          gain.gain.setValueAtTime(0.35, noteTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.65);
+          osc.connect(gain);
+          gain.connect(dest);
+          osc.start(noteTime);
+          osc.stop(noteTime + 0.7);
+        });
+      });
+    } catch {
+      // Ignored
+    }
+  }
 }
 
 export const gameAudio = new ProceduralCricketAudio();
