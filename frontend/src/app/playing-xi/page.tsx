@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -24,7 +24,9 @@ import {
   Shield,
   Layers,
   Award,
-  Play
+  Play,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import { useCampaignStore, CampaignPlayer, sortCricketBattingOrder, computeOptimalPlayingXI } from '../../store/useCampaignStore';
 import { getFranchise } from '../../data/franchises';
@@ -36,6 +38,14 @@ import { TournamentFixture, TournamentPointsEntry } from '../../data/scheduleGen
 import { formatPlayerInitial } from '../../lib/nameFormatter';
 import { getDetailedPlayerRole, getCompactRoleBadge, isPlayerSpinner } from '../../lib/bowlerClassification';
 import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics';
+import { 
+  computeTournamentLeaderboards, 
+  getPlayoffBracket, 
+  PlayoffBracketNode, 
+  BatterTournamentStats, 
+  BowlerTournamentStats 
+} from '../../lib/tournamentLeaderboards';
+import { ChampionshipCelebrationModal } from '../../components/ChampionshipCelebrationModal';
 
 const VENUE_INSIGHTS: Record<string, { title: string, behavior: string, boost: string, hint: string, favRole: string }> = {
   Chennai: {
@@ -183,12 +193,13 @@ export default function PlayingXIPage() {
   } = useCampaignStore();
   
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'xi' | 'schedule'>('xi');
+  const [activeTab, setActiveTab] = useState<'xi' | 'schedule' | 'playoffs_caps'>('xi');
   const [scheduleFilter, setScheduleFilter] = useState<'my' | 'all'>('all');
   const [lineupMode, setLineupMode] = useState<'bat_first' | 'bowl_first'>('bat_first');
   const [strategyToast, setStrategyToast] = useState<string | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
   const [showSimulator, setShowSimulator] = useState(false);
+  const [showTrophyModal, setShowTrophyModal] = useState(false);
   const [selectedFixtureForMatch, setSelectedFixtureForMatch] = useState<TournamentFixture | null>(null);
   const [viewingScorecardFixture, setViewingScorecardFixture] = useState<TournamentFixture | null>(null);
   const [benchDrawerSlotIndex, setBenchDrawerSlotIndex] = useState<number | null>(null);
@@ -324,6 +335,17 @@ export default function PlayingXIPage() {
     }
   };
 
+  const leaderboards = useMemo(() => {
+    return computeTournamentLeaderboards(schedule);
+  }, [schedule]);
+
+  const playoffBracket = useMemo(() => {
+    return getPlayoffBracket(schedule);
+  }, [schedule]);
+
+  const finalFixture = schedule.find(f => f.matchNo === 74);
+  const userWonFinal = Boolean(finalFixture?.status === 'COMPLETED' && finalFixture.result?.winnerTeamId === campaign?.teamId);
+
   // Prevent SSR/Client Hydration Mismatch
   if (!mounted) {
     return (
@@ -413,6 +435,23 @@ export default function PlayingXIPage() {
               >
                 <Calendar size={12} />
                 <span>Schedule (74)</span>
+              </button>
+              <button
+                onClick={() => {
+                  gameAudio.playUiTap('select');
+                  setActiveTab('playoffs_caps');
+                }}
+                style={activeTab === 'playoffs_caps' ? {
+                  backgroundColor: myTheme.pillBg,
+                  color: myTheme.pillText,
+                  boxShadow: `0 0 12px ${myTheme.primary}`,
+                } : {}}
+                className={`flex-1 sm:flex-none px-2.5 py-1 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                  activeTab === 'playoffs_caps' ? 'shadow-sm' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Trophy size={12} />
+                <span>Playoffs & Caps</span>
               </button>
               <Link
                 href="/trophies"
@@ -613,6 +652,9 @@ export default function PlayingXIPage() {
               <div className="space-y-1.5 transition-all">
                 {fullPlayingXI.map((player, index) => {
                   const isExpanded = expandedPlayerId === player.player_id;
+                  const pForm = leaderboards.playerFormMap[player.name.toLowerCase()];
+                  const isOrangeCap = leaderboards.orangeCapLeader?.name.toLowerCase() === player.name.toLowerCase();
+                  const isPurpleCap = leaderboards.purpleCapLeader?.name.toLowerCase() === player.name.toLowerCase();
                   return (
                     <div
                       key={player.player_id}
@@ -671,6 +713,56 @@ export default function PlayingXIPage() {
                                   className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm"
                                 >
                                   WK
+                                </span>
+                              )}
+                              {isOrangeCap && (
+                                <span 
+                                  style={{
+                                    backgroundColor: '#ea580c',
+                                    color: '#ffffff',
+                                    border: '1px solid #fed7aa',
+                                  }}
+                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm flex items-center gap-1 animate-pulse"
+                                >
+                                  🧢 ORANGE CAP
+                                </span>
+                              )}
+                              {isPurpleCap && (
+                                <span 
+                                  style={{
+                                    backgroundColor: '#7e22ce',
+                                    color: '#ffffff',
+                                    border: '1px solid #e9d5ff',
+                                  }}
+                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm flex items-center gap-1 animate-pulse"
+                                >
+                                  🧢 PURPLE CAP
+                                </span>
+                              )}
+                              {pForm?.status === 'hot' && (
+                                <span 
+                                  style={{
+                                    backgroundColor: '#dc2626',
+                                    color: '#ffffff',
+                                    border: '1px solid #fecaca',
+                                  }}
+                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm flex items-center gap-0.5"
+                                  title={pForm.streakText}
+                                >
+                                  <Flame size={9} /> +8% FORM
+                                </span>
+                              )}
+                              {pForm?.status === 'cold' && (
+                                <span 
+                                  style={{
+                                    backgroundColor: '#0284c7',
+                                    color: '#ffffff',
+                                    border: '1px solid #bae6fd',
+                                  }}
+                                  className="text-[8.5px] px-1.5 py-0.2 rounded font-black font-mono shrink-0 shadow-sm flex items-center gap-0.5"
+                                  title={pForm.streakText}
+                                >
+                                  ❄️ SLUMP (-5%)
                                 </span>
                               )}
                             </div>
