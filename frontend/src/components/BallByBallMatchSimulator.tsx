@@ -1352,40 +1352,73 @@ export default function BallByBallMatchSimulator({
           // Over 1 finished -> Over 2 bowled by openingBowler2Idx
           const nextIdx = openingBowler2Idx % (currentBowlSquad.length || 1);
           setCurrentBowlerIdx(nextIdx);
+          setBowlerCurrentSpellOvers(1);
           setEventBanner({
             text: `OVER 2: ${currentBowlSquad[nextIdx]?.name || 'Opening Bowler 2'}`,
-            subtext: `Second opening spell starts from opposite end`,
+            subtext: `Second opening bowler operates from opposite end`,
+            color: 'from-sky-500 to-indigo-600'
+          });
+          setTimeout(() => setEventBanner(null), 2000);
+        } else if (currentOver === 1) {
+          // Over 2 finished -> Over 3 bowled by openingBowler1Idx (Overs 1 & 3 tandem)
+          const nextIdx = openingBowler1Idx % (currentBowlSquad.length || 1);
+          setCurrentBowlerIdx(nextIdx);
+          setBowlerCurrentSpellOvers(2);
+          setEventBanner({
+            text: `OVER 3: ${currentBowlSquad[nextIdx]?.name || 'Opening Bowler 1'}`,
+            subtext: `Opening spell continues (2nd over)`,
+            color: 'from-amber-500 to-orange-600'
+          });
+          setTimeout(() => setEventBanner(null), 2000);
+        } else if (currentOver === 2) {
+          // Over 3 finished -> Over 4 bowled by openingBowler2Idx (Overs 2 & 4 tandem)
+          const nextIdx = openingBowler2Idx % (currentBowlSquad.length || 1);
+          setCurrentBowlerIdx(nextIdx);
+          setBowlerCurrentSpellOvers(2);
+          setEventBanner({
+            text: `OVER 4: ${currentBowlSquad[nextIdx]?.name || 'Opening Bowler 2'}`,
+            subtext: `Opening spell continues (2nd over)`,
             color: 'from-sky-500 to-indigo-600'
           });
           setTimeout(() => setEventBanner(null), 2000);
         } else {
-          // Over 2 or subsequent over finished:
-          if (isUserBowling) {
-            // AUTOMATIC POPUP FOR NEXT BOWLER SELECTION!
-            setShowBowlerModal(true);
-          } else {
-            // AI Bowling: Select next eligible bowler from Playing XI who is NOT finishedBowlerIdx and < 4 overs
-            const candidateIndices: number[] = [];
-            currentBowlSquad.slice(0, 11).forEach((p, idx) => {
-              if (p.role === 'BOWL' || p.role === 'AR') candidateIndices.push(idx);
-            });
-            currentBowlSquad.slice(0, 11).forEach((_, idx) => {
-              if (!candidateIndices.includes(idx)) candidateIndices.push(idx);
-            });
+          // Over 4 or subsequent over finished:
+          // Check if the current bowler's spell is finished (2 overs in stint or 4-over quota)
+          const finishedName = currentBowlSquad[finishedBowlerIdx]?.name;
+          const finishedOvs = getBowlerOversCount(updatedBowlers, finishedName);
+          const isSpellDone = finishedOvs >= 4 || bowlerCurrentSpellOvers >= 2 || currentOver === 3;
 
-            let chosenNextIdx = -1;
-            for (const cIdx of candidateIndices) {
-              if (cIdx !== finishedBowlerIdx) {
-                const candidateName = currentBowlSquad[cIdx]?.name;
-                const ovs = getBowlerOversCount(updatedBowlers, candidateName);
-                if (ovs < 4) {
-                  chosenNextIdx = cIdx;
-                  break;
-                }
+          // AI or fallback next bowler must NOT bowl consecutive overs!
+          const candidateIndices: number[] = [];
+          currentBowlSquad.slice(0, 11).forEach((p, idx) => {
+            if (p.role === 'BOWL' || p.role === 'AR') candidateIndices.push(idx);
+          });
+          currentBowlSquad.slice(0, 11).forEach((_, idx) => {
+            if (!candidateIndices.includes(idx)) candidateIndices.push(idx);
+          });
+
+          let chosenNextIdx = -1;
+          for (const cIdx of candidateIndices) {
+            if (cIdx !== finishedBowlerIdx) {
+              const candidateName = currentBowlSquad[cIdx]?.name;
+              const ovs = getBowlerOversCount(updatedBowlers, candidateName);
+              if (ovs < 4) {
+                chosenNextIdx = cIdx;
+                break;
               }
             }
-            if (chosenNextIdx !== -1) {
-              setCurrentBowlerIdx(chosenNextIdx);
+          }
+          if (chosenNextIdx !== -1) {
+            setCurrentBowlerIdx(chosenNextIdx);
+          }
+
+          if (isUserBowling) {
+            // Bowler popup ONLY appears when spell is over
+            if (isSpellDone) {
+              setBowlerCurrentSpellOvers(0);
+              setShowBowlerModal(true);
+            } else {
+              setBowlerCurrentSpellOvers(prev => prev + 1);
             }
           }
         }
@@ -1926,13 +1959,17 @@ export default function BallByBallMatchSimulator({
       if (completedOversCount === 1) {
         // Over 1 finished -> Over 2 bowled by openingBowler2Idx
         nextBowlerIdx = openingBowler2Idx % (currentBowlSquad.length || 1);
+        setBowlerCurrentSpellOvers(1);
+      } else if (completedOversCount === 2) {
+        // Over 2 finished -> Over 3 bowled by openingBowler1Idx
+        nextBowlerIdx = openingBowler1Idx % (currentBowlSquad.length || 1);
+        setBowlerCurrentSpellOvers(2);
+      } else if (completedOversCount === 3) {
+        // Over 3 finished -> Over 4 bowled by openingBowler2Idx
+        nextBowlerIdx = openingBowler2Idx % (currentBowlSquad.length || 1);
+        setBowlerCurrentSpellOvers(2);
       } else {
-        // Over 2 or later finished:
-        if (isUserBowling) {
-          // AUTOMATIC NEXT BOWLER POPUP!
-          setShowBowlerModal(true);
-        }
-        // AI or fallback next bowler must NOT bowl consecutive overs!
+        // Over 4 or later finished:
         const candidateIndices: number[] = [];
         currentBowlSquad.slice(0, 11).forEach((p, idx) => {
           if (p.role === 'BOWL' || p.role === 'AR') candidateIndices.push(idx);
@@ -1949,6 +1986,19 @@ export default function BallByBallMatchSimulator({
               nextBowlerIdx = cIdx;
               break;
             }
+          }
+        }
+
+        const finishedName = currentBowlSquad[finishedBowlerIdx]?.name;
+        const finishedOvs = getBowlerOversCount(curBowlers, finishedName);
+        const isSpellDone = finishedOvs >= 4 || bowlerCurrentSpellOvers >= 2 || completedOversCount === 4;
+
+        if (isUserBowling) {
+          if (isSpellDone) {
+            setBowlerCurrentSpellOvers(0);
+            setShowBowlerModal(true);
+          } else {
+            setBowlerCurrentSpellOvers(prev => prev + 1);
           }
         }
       }
@@ -2659,10 +2709,29 @@ export default function BallByBallMatchSimulator({
                       <div className="truncate mr-1 min-w-0">
                         <div 
                           style={{ color: bowlingTheme.contrastText }}
-                          className="font-black truncate flex items-center gap-1 text-[11px] sm:text-xs drop-shadow-sm"
+                          className="font-black truncate flex items-center gap-1.5 text-[11px] sm:text-xs drop-shadow-sm"
                         >
                           <span>🎯</span>
                           <span className="truncate">{formatPlayerInitial(bowlerPlayer?.name) || 'Bowler'}</span>
+                          {isUserBowling && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                gameAudio.playUiTap('select');
+                                triggerGameHaptic('light');
+                                setShowBowlerModal(true);
+                              }}
+                              style={{
+                                backgroundColor: bowlingTheme.bgDeep,
+                                color: bowlingTheme.contrastText,
+                                borderColor: bowlingTheme.cardBorder,
+                              }}
+                              className="w-5 h-5 rounded-full border flex items-center justify-center p-0.5 hover:rotate-180 transition-transform cursor-pointer shadow-xs shrink-0"
+                              title="Rotate / Replace Bowler"
+                            >
+                              <RotateCw size={10} />
+                            </button>
+                          )}
                         </div>
                         <div 
                           style={{ color: bowlingTheme.contrastText }}
