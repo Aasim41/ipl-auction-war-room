@@ -63,23 +63,27 @@ export function Navbar() {
 
   // ─── STRICT BACK NAVIGATION: NEVER GO BACK TO LOCKED/PAST PHASES ───
   const handleBack = () => {
-    // If inside any tournament phase, back takes you to Home Dashboard, preserving all progress
-    // It NEVER steps back into closed trade windows or past auctions!
-    if (pathname === '/trade' || pathname === '/squad' || pathname === '/auction' || pathname === '/playing-xi') {
-      router.push('/')
-    } else if (pathname === '/win-prob' || pathname === '/stats' || pathname === '/hub') {
-      // Sub-tools return to your active campaign phase
-      const targetUrl = activeCamp?.currentPhase === 'playing_xi' || activeCamp?.currentPhase === 'match'
-        ? '/playing-xi'
-        : activeCamp?.currentPhase === 'mini_auction'
-        ? '/auction'
-        : activeCamp?.currentPhase === 'retain_release'
-        ? '/squad'
-        : '/trade'
-      router.push(targetUrl)
-    } else {
-      router.push('/')
+    if (pathname === '/trophies' || pathname === '/stats' || pathname === '/win-prob' || pathname === '/hub') {
+      router.push('/playing-xi')
+      return
     }
+    if (pathname === '/playing-xi') {
+      // Already on main tournament dashboard
+      return
+    }
+    if (pathname === '/auction') {
+      router.push('/squad')
+      return
+    }
+    if (pathname === '/squad') {
+      router.push('/trade')
+      return
+    }
+    if (pathname === '/trade') {
+      router.push('/select-team')
+      return
+    }
+    router.push('/playing-xi')
   }
 
   const triggerLockedAlert = (phaseName: string, isPast: boolean) => {
@@ -196,7 +200,7 @@ export function Navbar() {
           
           {/* Left: Navigation & Franchise Identity */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {pathname !== '/' ? (
+            {pathname !== '/' && pathname !== '/playing-xi' ? (
               <button
                 onClick={() => {
                   gameAudio.playUiTap('light')

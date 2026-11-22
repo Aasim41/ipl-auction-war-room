@@ -43,10 +43,16 @@ export function CapacitorDeviceManager() {
         // Android Hardware Back Button listener
         backListenerHandle = await CapApp.addListener('backButton', ({ canGoBack }) => {
           const currentPath = window.location.pathname
-          if (currentPath === '/' || currentPath === '/select-team') {
+          if (currentPath === '/' || currentPath === '/select-team' || currentPath === '/playing-xi') {
             CapApp.exitApp()
-          } else if (currentPath === '/playing-xi' || currentPath === '/auction' || currentPath === '/squad' || currentPath === '/trade') {
-            router.push('/')
+          } else if (currentPath === '/trophies' || currentPath === '/stats' || currentPath === '/win-prob' || currentPath === '/hub') {
+            router.push('/playing-xi')
+          } else if (currentPath === '/auction') {
+            router.push('/squad')
+          } else if (currentPath === '/squad') {
+            router.push('/trade')
+          } else if (currentPath === '/trade') {
+            router.push('/select-team')
           } else if (canGoBack) {
             window.history.back()
           } else {

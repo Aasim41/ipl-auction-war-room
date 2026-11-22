@@ -61,7 +61,12 @@ export default function UnifiedTeamSelectHomePage() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('rcb')
   const [selectedGameMode, setSelectedGameMode] = useState<'official_season' | 'scratch_inception'>('official_season')
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [showLoading, setShowLoading] = useState(true)
+  const [showLoading, setShowLoading] = useState(() => {
+    if (typeof window !== 'undefined' && (sessionStorage.getItem('auctionxi_session_loaded') || localStorage.getItem('auctionxi_boot_complete'))) {
+      return false
+    }
+    return true
+  })
   const [showGameModeModal, setShowGameModeModal] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [expandedFortress, setExpandedFortress] = useState(false)
@@ -106,7 +111,10 @@ export default function UnifiedTeamSelectHomePage() {
           setSelectedGameMode(activeCamp.mode)
         }
         setShowGameModeModal(false)
-        const targetUrl = (activeCamp.currentPhase === 'playing_xi' || activeCamp.currentPhase === 'match')
+        const isPlayingStage = activeCamp.currentPhase === 'playing_xi' || 
+          activeCamp.currentPhase === 'match' ||
+          Boolean(activeCamp.schedule && activeCamp.schedule.length > 0 && activeCamp.schedule.some((f: any) => f.status === 'COMPLETED' || f.isMyMatch));
+        const targetUrl = isPlayingStage
           ? '/playing-xi'
           : activeCamp.currentPhase === 'mini_auction'
           ? '/auction'
