@@ -481,6 +481,7 @@ export interface UserCampaign {
   bowlFirstImpactId?: string
   rulesAcknowledged: boolean
   lastSaved: string
+  rosterVersion?: string
   // Tournament season mode
   schedule: TournamentFixture[]
   currentMatchIndex: number
@@ -749,7 +750,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           currentMatchIndex: 0,
           pointsTable,
           lockedPhases: [],
-          rivalTeamsData: initialRivals
+          rivalTeamsData: initialRivals,
+          rosterVersion: '2026_official_v2'
         }
 
         set({
@@ -886,6 +888,42 @@ export const useCampaignStore = create<CampaignStoreState>()(
           // Self-heal: ensure tournament schedule (all 74 matches), points table, and dual playing XIs
           let needsUpdate = false
           let updatedActive = { ...active }
+
+          // Auto-upgrade user squad and rival squads to official 2026 squads
+          if (updatedActive.rosterVersion !== '2026_official_v2' && (updatedActive.currentPhase === 'trade' || updatedActive.currentPhase === 'rules')) {
+            const f = getFranchise(updatedActive.teamId);
+            updatedActive.squad = f.squad2026.map((p, idx) => ({
+              ...p,
+              player_id: p.player_id || `${updatedActive.teamId}_${idx + 1}`,
+              currentPrice: p.price,
+              is_retained: true,
+              is_released: false
+            }));
+            const initialRivals: Record<string, { remainingPurse: number; squad: CampaignPlayer[] }> = {};
+            ALL_TEAM_IDS.forEach((tId) => {
+              if (tId !== updatedActive.teamId) {
+                const rf = getFranchise(tId);
+                if (rf) {
+                  initialRivals[tId] = {
+                    remainingPurse: rf.miniAuctionPurse2026 || 15.0,
+                    squad: (rf.squad2026 || []).map((p, idx) => ({
+                      ...p,
+                      player_id: p.player_id || `${tId}_${idx + 1}`,
+                      currentPrice: p.price,
+                      is_retained: true,
+                      is_released: false
+                    }))
+                  };
+                }
+              }
+            });
+            updatedActive.rivalTeamsData = initialRivals;
+            const optXI = computeOptimalPlayingXI(updatedActive.squad);
+            updatedActive.playingXI = optXI.xiIds;
+            updatedActive.impactPlayerId = optXI.impactId;
+            updatedActive.rosterVersion = '2026_official_v2';
+            needsUpdate = true;
+          }
 
           // Self-heal: purge players added by AI auto-auction if user didn't purchase them
           const autoBoughtPlayers = (updatedActive.squad || []).filter(p => p.statsSummary && p.statsSummary.includes('AI Auto-Auction'));
