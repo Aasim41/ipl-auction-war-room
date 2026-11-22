@@ -29,6 +29,14 @@
   padding-right: max(env(safe-area-inset-right, 0px), 10px);
 }
 
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 10px) !important;
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px) !important;
+}
+
 .safe-page-top {
   padding-top: calc(max(env(safe-area-inset-top, 0px), 10px) + 3.8rem) !important;
   padding-left: max(env(safe-area-inset-left, 0px), 10px) !important;
