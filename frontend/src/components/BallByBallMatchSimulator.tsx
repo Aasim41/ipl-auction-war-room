@@ -2154,7 +2154,7 @@ export default function BallByBallMatchSimulator({
     setActiveTab('scorecard');
   };
 
-  if (!isOpen || !inn1 || !inn2) return null;
+  if (!isOpen || !mounted || !inn1 || !inn2) return null;
 
   const activeInnings = currentInnings === 1 ? inn1 : inn2;
   const lastBall = activeInnings.balls[activeInnings.balls.length - 1];
@@ -2222,14 +2222,14 @@ export default function BallByBallMatchSimulator({
     battingTactic
   );
 
-  return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 bg-slate-950 text-white overflow-hidden select-none">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 bg-slate-950 text-white overflow-hidden select-none">
       <div 
         className="relative w-full h-[100dvh] max-w-lg bg-slate-950 flex flex-col shadow-2xl overflow-hidden sm:border sm:border-white/20 sm:rounded-3xl sm:h-[96dvh]"
       >
         
         {/* Top Header & Navigation Bar */}
-        <div className="px-3 py-2 bg-slate-900/95 border-b border-white/10 flex items-center justify-between shrink-0 z-30">
+        <div className="px-3 py-2 sm:py-2.5 pt-safe bg-slate-900/95 border-b border-white/10 flex items-center justify-between shrink-0 z-30">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 font-display font-black text-xs">
               <TeamLogo teamId={myFranchise.short} size={20} />
@@ -2796,9 +2796,8 @@ export default function BallByBallMatchSimulator({
                   </div>
                 )}
 
-                {/* ─── ARENA FIELD POV: CRISP 2D TACTICAL BROADCAST RADAR (COMPACT FIT) ─── */}
                 {/* ─── ARENA FIELD POV: HYPER-REALISTIC BROADCAST STADIUM GROUND & 22-YARD PITCH ─── */}
-                <div className="relative my-0.5 h-[305px] sm:h-[340px] md:h-[380px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/30 bg-[#05080c] shadow-2xl select-none">
+                <div className="relative my-0.5 h-[370px] sm:h-[410px] md:h-[450px] shrink-0 rounded-xl overflow-hidden border border-emerald-500/30 bg-[#05080c] shadow-2xl select-none">
                   
                   {/* Mode Switcher: Field Positions vs Wagon Wheel (Top-Left) */}
                   <div className="absolute top-2 left-3 z-30 flex items-center gap-1 bg-slate-950/90 p-0.5 rounded-lg border border-white/10 text-[9px] font-mono backdrop-blur-md shadow-md">
@@ -4379,6 +4378,7 @@ export default function BallByBallMatchSimulator({
       />
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
