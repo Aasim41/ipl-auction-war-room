@@ -1115,6 +1115,25 @@ export const useCampaignStore = create<CampaignStoreState>()(
           is_released: false
         }))
 
+        const initialRivals: Record<string, { remainingPurse: number; squad: CampaignPlayer[] }> = {}
+        ALL_TEAM_IDS.forEach((tId) => {
+          if (tId !== current.teamId) {
+            const f = getFranchise(tId)
+            if (f) {
+              initialRivals[tId] = {
+                remainingPurse: f.miniAuctionPurse2026 || 15.0,
+                squad: (f.squad2026 || []).map((p, idx) => ({
+                  ...p,
+                  player_id: p.player_id || `${tId}_${idx + 1}`,
+                  currentPrice: p.price,
+                  is_retained: true,
+                  is_released: false
+                }))
+              }
+            }
+          }
+        })
+
         const resetXI = computeOptimalPlayingXI(resetSquad)
         const resetCamp: UserCampaign = {
           ...current,
@@ -1129,7 +1148,9 @@ export const useCampaignStore = create<CampaignStoreState>()(
           schedule: generateTournamentSchedule(current.teamId),
           currentMatchIndex: 0,
           pointsTable: generateInitialPointsTable(),
-          lockedPhases: []
+          lockedPhases: [],
+          rivalTeamsData: initialRivals,
+          rosterVersion: '2026_official_v2'
         }
 
         set({
