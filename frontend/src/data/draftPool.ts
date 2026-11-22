@@ -352,9 +352,9 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Indian',
     is_overseas: false,
     powerIndex: 91.0,
-    iplHeritage: 'Royal Challengers Bengaluru Ace',
+    iplHeritage: 'Gujarat Titans Ace',
     tacticalTag: 'Miyan Magic • Rapid Outswing & Seam-Up Hostility',
-    preferredTeamId: 'rcb',
+    preferredTeamId: 'gt',
     roundEligibility: 2
   },
   {
@@ -364,7 +364,7 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Indian',
     is_overseas: false,
     powerIndex: 92.0,
-    iplHeritage: 'Royal Challengers Bengaluru Power Hitter',
+    iplHeritage: 'Royal Challengers Bengaluru Captain',
     tacticalTag: 'Elite Spin Destroyer with 180+ Middle-Overs Strike Rate',
     preferredTeamId: 'rcb',
     roundEligibility: 2
@@ -376,7 +376,7 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Overseas',
     is_overseas: true,
     powerIndex: 94.0,
-    iplHeritage: 'Chennai Super Kings Slinger',
+    iplHeritage: 'Kolkata Knight Riders Slinger',
     tacticalTag: 'Baby Malinga • 150 km/h Reverse Swinger & Yorker Machine',
     preferredTeamId: 'csk',
     roundEligibility: 2
@@ -486,8 +486,8 @@ export const INAUGURAL_DRAFT_POOL: DraftProspect[] = [
     nationality: 'Indian',
     is_overseas: false,
     powerIndex: 91.0,
-    iplHeritage: 'Rajasthan Royals Match Winner',
-    tacticalTag: 'No. 4 Power Anchor & Helpful Finger Spin Option',
+    iplHeritage: 'Rajasthan Royals Captain',
+    tacticalTag: 'Captain & No. 4 Power Anchor & Helpful Finger Spin Option',
     preferredTeamId: 'rr',
     roundEligibility: 3
   },
