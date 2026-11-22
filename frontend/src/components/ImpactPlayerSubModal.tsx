@@ -67,9 +67,9 @@ export function ImpactPlayerSubModal({
 
         {/* Tactical Rule Notice */}
         <div className="p-2.5 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-start gap-2 text-xs">
-          <AlertTriangle size={15} className="text-amber-400 shrink-0 mt-0.5" />
+          <Zap size={15} className="text-amber-400 shrink-0 mt-0.5" />
           <p className="text-[11px] text-amber-200 leading-relaxed">
-            <strong>BCCI Impact Player Regulation:</strong> Replaces 1 player from the starting XI. If an overseas player is replaced, the incoming sub can only be overseas if the team started with fewer than 4 overseas players.
+            <strong>Tactical GM Control:</strong> Sub any player into the active XI whenever you want. You have complete tactical authority with no rigid restrictions.
           </p>
         </div>
 

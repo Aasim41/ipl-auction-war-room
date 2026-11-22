@@ -28,7 +28,8 @@ import {
   ListOrdered,
   Users,
   Info,
-  AlertCircle
+  AlertCircle,
+  RotateCw
 } from 'lucide-react';
 import { FranchiseData } from '../data/franchises';
 import { TournamentFixture, MatchScorecard } from '../data/scheduleGenerator';
@@ -358,6 +359,15 @@ export default function BallByBallMatchSimulator({
   const [impactSubUsed, setImpactSubUsed] = useState(false);
   const [impactNotification, setImpactNotification] = useState<string | null>(null);
   const [radarViewMode, setRadarViewMode] = useState<'field' | 'wagon'>('field');
+  const [simControlMode, setSimControlMode] = useState<'ball_by_ball' | 'full_over'>('ball_by_ball');
+  const [bowlerCurrentSpellOvers, setBowlerCurrentSpellOvers] = useState<number>(0);
+
+  const isBatterDismissed = (name?: string, inn?: InningsState | null) => {
+    if (!name || !inn) return false;
+    if (inn.fallOfWickets && inn.fallOfWickets.some(f => f.player === name)) return true;
+    const b = inn.battingScorecard?.find(sb => sb.name === name);
+    return !!(b && b.dismissal && b.dismissal !== 'not out');
+  };
 
   useEffect(() => {
     setIsMuted(gameAudio.isMuted());
@@ -841,8 +851,37 @@ export default function BallByBallMatchSimulator({
       return;
     }
 
-    const striker = currentBatSquad[strikerIdx]?.name || 'Batter';
-    const nonStriker = currentBatSquad[nonStrikerIdx]?.name || 'Non-Striker';
+    // ─── HARD CRICKET FAILSAFE: Ensure dismissed batters NEVER take strike or runner end ───
+    let effectiveStrikerIdx = strikerIdx;
+    let effectiveNonStrikerIdx = nonStrikerIdx;
+
+    if (activeInn.totalWickets < 10) {
+      const sName = currentBatSquad[effectiveStrikerIdx]?.name;
+      const nsName = currentBatSquad[effectiveNonStrikerIdx]?.name;
+
+      if (isBatterDismissed(sName, activeInn)) {
+        const replacementIdx = currentBatSquad.findIndex((p, idx) => 
+          !isBatterDismissed(p.name, activeInn) && idx !== effectiveNonStrikerIdx && idx < 11
+        );
+        if (replacementIdx !== -1) {
+          effectiveStrikerIdx = replacementIdx;
+          setStrikerIdx(replacementIdx);
+        }
+      }
+
+      if (isBatterDismissed(nsName, activeInn)) {
+        const replacementIdx = currentBatSquad.findIndex((p, idx) => 
+          !isBatterDismissed(p.name, activeInn) && idx !== effectiveStrikerIdx && idx < 11
+        );
+        if (replacementIdx !== -1) {
+          effectiveNonStrikerIdx = replacementIdx;
+          setNonStrikerIdx(replacementIdx);
+        }
+      }
+    }
+
+    const striker = currentBatSquad[effectiveStrikerIdx]?.name || 'Batter';
+    const nonStriker = currentBatSquad[effectiveNonStrikerIdx]?.name || 'Non-Striker';
     
     // Rotate bowlers across all eligible options in Playing XI
     const bowler = currentBowlSquad[currentBowlerIdx % (currentBowlSquad.length || 1)] || currentBowlSquad[0];
