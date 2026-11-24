@@ -117,25 +117,16 @@ export default function SquadRetainReleasePage() {
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 py-3 sm:py-4 flex-1 flex flex-col gap-3.5">
         
         {/* Minimal Header */}
+        {/* Header */}
         <div 
-          style={{
-            background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-            borderColor: `${myTheme.primary}70`,
-            boxShadow: `0 4px 20px rgba(0, 0, 0, 0.5), 0 0 14px ${myTheme.primary}20`,
-          }}
-          className="p-3 rounded-2xl border flex items-center justify-between gap-2 shrink-0 shadow-xl"
+          className="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center justify-between gap-2 shrink-0 shadow-lg"
         >
           <div className="flex items-center gap-2">
             <h1 className="text-sm sm:text-base font-black font-display text-white tracking-wide">
               {franchise.short} Retentions
             </h1>
             <span 
-              style={{
-                backgroundColor: `${myTheme.primary}30`,
-                borderColor: `${myTheme.primary}70`,
-                color: '#ffffff',
-              }}
-              className="px-2.5 py-0.5 rounded-full border text-[10px] font-mono font-black shadow-sm"
+              className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 text-white text-[10px] font-mono font-black"
             >
               {retainedPlayers.length} Retained
             </span>
@@ -143,12 +134,7 @@ export default function SquadRetainReleasePage() {
 
           <button
             onClick={handleProceedToAuction}
-            style={{
-              backgroundColor: myTheme.pillBg,
-              color: myTheme.pillText,
-              boxShadow: `0 0 16px ${myTheme.primary}80`,
-            }}
-            className="px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95 transition-all shrink-0 hover:brightness-110"
+            className="px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95 transition-all shrink-0 bg-amber-500 hover:bg-amber-400 text-slate-950"
           >
             <span>To Auction</span>
             <ArrowRight size={13} />
@@ -158,29 +144,19 @@ export default function SquadRetainReleasePage() {
         {/* Minimal 4 Vitals Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div 
-            style={{
-              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-              borderColor: `${myTheme.primary}60`,
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
-            }}
-            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
+            className="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-md"
           >
-            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Purse</span>
+            <span className="text-[10px] font-mono text-gray-400 uppercase font-black tracking-wider">Purse</span>
             <div className="text-lg font-black text-emerald-400 font-mono my-0.5">
               ₹{campaign.remainingPurse.toFixed(1)} <span className="text-xs text-gray-300 font-bold">Cr</span>
             </div>
-            <span className="text-[10px] text-emerald-300 font-mono font-bold">+₹{releasedPurseGain.toFixed(1)} Cr back</span>
+            <span className="text-[10px] text-emerald-400/90 font-mono font-bold">+₹{releasedPurseGain.toFixed(1)} Cr back</span>
           </div>
 
           <div 
-            style={{
-              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-              borderColor: `${myTheme.primary}60`,
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
-            }}
-            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
+            className="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-md"
           >
-            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Squad</span>
+            <span className="text-[10px] font-mono text-gray-400 uppercase font-black tracking-wider">Squad</span>
             <div className="text-lg font-black text-white font-mono my-0.5">
               {retainedPlayers.length} <span className="text-xs text-gray-400 font-bold">/ 25</span>
             </div>
@@ -193,29 +169,19 @@ export default function SquadRetainReleasePage() {
           </div>
 
           <div 
-            style={{
-              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-              borderColor: `${myTheme.primary}60`,
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
-            }}
-            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
+            className="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-md"
           >
-            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Overseas</span>
+            <span className="text-[10px] font-mono text-gray-400 uppercase font-black tracking-wider">Overseas</span>
             <div className={`text-lg font-black font-mono my-0.5 ${overseasCount >= 8 ? 'text-rose-400' : 'text-sky-300'}`}>
               {overseasCount} <span className="text-xs text-gray-400 font-bold">/ 8</span>
             </div>
-            <span className="text-[10px] text-gray-300 font-mono font-bold">{8 - overseasCount} open</span>
+            <span className="text-[10px] text-gray-400 font-mono font-bold">{8 - overseasCount} open</span>
           </div>
 
           <div 
-            style={{
-              background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-              borderColor: `${myTheme.primary}60`,
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
-            }}
-            className="p-3 rounded-2xl border flex flex-col justify-between shadow-lg"
+            className="p-3 rounded-2xl bg-slate-900/90 border border-white/10 flex flex-col justify-between shadow-md"
           >
-            <span className="text-[10px] font-mono text-gray-300 uppercase font-black tracking-wider">Composition</span>
+            <span className="text-[10px] font-mono text-gray-400 uppercase font-black tracking-wider">Composition</span>
             <div className="text-[11px] font-bold text-white font-mono flex items-center gap-1 flex-wrap my-0.5">
               <span className={wkCount >= 2 ? 'text-emerald-400 font-black' : 'text-amber-300 font-black'}>{wkCount} WK</span>
               <span className="text-gray-500">•</span>
@@ -248,14 +214,13 @@ export default function SquadRetainReleasePage() {
                     backgroundColor: myTheme.pillBg,
                     color: myTheme.pillText,
                     borderColor: myTheme.primary,
-                    boxShadow: `0 0 14px ${myTheme.primary}80`,
                   } : {
                     backgroundColor: '#1e293b',
                     color: '#e2e8f0',
-                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
                   }}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black cursor-pointer transition-all border shadow-sm ${
-                    isSelected ? 'scale-[1.02]' : 'hover:bg-slate-700/80 hover:text-white'
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all border ${
+                    isSelected ? 'shadow-sm' : 'hover:bg-slate-700/80 hover:text-white'
                   }`}
                 >
                   {r === 'ALL' ? 'All Roles' : r}

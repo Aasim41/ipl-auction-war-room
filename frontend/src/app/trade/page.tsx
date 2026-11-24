@@ -409,14 +409,13 @@ export default function TradeWindowPage() {
                       backgroundColor: tTheme.primary,
                       color: tTheme.contrastText,
                       borderColor: tTheme.primary,
-                      boxShadow: `0 0 16px ${tTheme.primary}70`,
                     } : {
-                      backgroundColor: `${tTheme.primary}20`,
-                      color: '#ffffff',
-                      borderColor: `${tTheme.primary}40`,
+                      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                      color: '#e2e8f0',
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
                     }}
                     className={`px-2 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition-all cursor-pointer shrink-0 border ${
-                      isSelected ? 'scale-105 font-black' : 'hover:brightness-125'
+                      isSelected ? 'scale-105 font-black shadow-md' : 'hover:bg-white/10'
                     }`}
                   >
                     <TeamLogo teamId={tid} size={15} />

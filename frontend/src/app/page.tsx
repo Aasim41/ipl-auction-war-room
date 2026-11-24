@@ -329,19 +329,14 @@ export default function UnifiedTeamSelectHomePage() {
 
         {/* Minimal Hero Franchise Card */}
         <div 
-          className="p-3 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col justify-between gap-3 relative overflow-hidden flex-1"
+          className="p-3 sm:p-4 rounded-3xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col justify-between gap-3 relative overflow-hidden flex-1"
         >
-          <div 
-            className="absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none"
-            style={{ backgroundColor: activeTeam.color }}
-          />
-
           <div>
             {/* Header: Crest & Team Name */}
             <div className="flex items-start justify-between pb-2.5 border-b border-white/10 gap-3">
               <div className="flex items-center gap-3">
                 <div 
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center p-1 shadow-xl border shrink-0"
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center p-1 border shrink-0"
                   style={{
                     backgroundColor: `${activeTeam.color}20`,
                     borderColor: `${activeTeam.color}40`
@@ -361,13 +356,13 @@ export default function UnifiedTeamSelectHomePage() {
                         gameAudio.playUiTap('select');
                         triggerGameHaptic('light');
                       }}
-                      className="text-amber-400 font-bold flex items-center gap-1 hover:underline cursor-pointer bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/30 transition-all hover:bg-amber-500/20 text-[11px]"
+                      className="text-amber-400 font-bold flex items-center gap-1 hover:underline cursor-pointer bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md border border-white/10 transition-all text-[11px]"
                       title="View Franchise Trophy Cabinet"
                     >
-                      <Trophy size={11} /> {activeTeam.titles}
+                      <Trophy size={11} className="text-amber-400" /> {activeTeam.titles}
                     </Link>
                     <span>•</span>
-                    <span className="text-[11px]">Cap: ₹125.0 Cr</span>
+                    <span className="text-[11px]">Salary Cap: ₹125.0 Cr</span>
                   </div>
                 </div>
               </div>
@@ -383,7 +378,7 @@ export default function UnifiedTeamSelectHomePage() {
             {existingCampaign?.activeMatchSimulation && !existingCampaign.activeMatchSimulation.matchDone && (
               <div 
                 onClick={() => router.push('/playing-xi')}
-                className="my-2.5 p-2.5 rounded-2xl bg-gradient-to-r from-emerald-500/25 via-emerald-600/15 to-slate-900 border border-emerald-400/50 flex items-center justify-between cursor-pointer shadow-lg hover:border-emerald-400 transition-all active:scale-[0.99] group animate-pulse"
+                className="my-2.5 p-2.5 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-between cursor-pointer shadow-lg hover:border-emerald-400 transition-all active:scale-[0.99] group"
               >
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
@@ -391,7 +386,7 @@ export default function UnifiedTeamSelectHomePage() {
                   </div>
                   <div>
                     <span className="text-[9px] font-mono font-black uppercase text-emerald-400 block tracking-wider">
-                      ⚡ MATCH IN PROGRESS
+                      MATCH IN PROGRESS
                     </span>
                     <span className="text-xs font-bold text-white">
                       Resume Active Match
@@ -407,7 +402,7 @@ export default function UnifiedTeamSelectHomePage() {
             {/* 4 Clean Key Stat Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2.5">
               <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
-                <span className="text-[9px] font-mono text-gray-400 uppercase block">Fortress</span>
+                <span className="text-[9px] font-mono text-gray-400 uppercase block">Home Ground</span>
                 <span className="text-[11px] font-bold text-white block truncate" title={activeStadium.name}>
                   {activeStadium.shortName || activeStadium.name.replace(' Stadium', '')}
                 </span>
@@ -415,15 +410,15 @@ export default function UnifiedTeamSelectHomePage() {
               </div>
 
               <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
-                <span className="text-[9px] font-mono text-gray-400 uppercase block">Pitch</span>
+                <span className="text-[9px] font-mono text-gray-400 uppercase block">Pitch Type</span>
                 <span className="text-[11px] font-bold text-amber-300 block truncate" title={activeStadium.pitchType}>{activeStadium.pitchType}</span>
                 <span className="text-[9px] font-mono text-gray-400 truncate block">{activeStadium.boundarySize}</span>
               </div>
 
               <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
-                <span className="text-[9px] font-mono text-gray-400 uppercase block">Focus</span>
+                <span className="text-[9px] font-mono text-gray-400 uppercase block">Play Style</span>
                 <span className="text-[11px] font-bold text-sky-300 block truncate" title={activeFranchiseAI.personality || 'Tactical'}>{activeFranchiseAI.personality || 'Tactical'}</span>
-                <span className="text-[9px] font-mono text-gray-400">Strategy</span>
+                <span className="text-[9px] font-mono text-gray-400">Approach</span>
               </div>
 
               <div className="p-2 rounded-xl bg-slate-950/70 border border-white/5 min-w-0">
@@ -437,7 +432,7 @@ export default function UnifiedTeamSelectHomePage() {
             <div className="p-2.5 rounded-xl bg-slate-950/70 border border-white/5">
               <span className="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
                 <Shield size={11} className="text-amber-400" />
-                <span>Core Stars</span>
+                <span>Key Retained Stars</span>
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {activeFranchiseAI.untouchables.map((star, idx) => (
@@ -458,31 +453,31 @@ export default function UnifiedTeamSelectHomePage() {
                 gameAudio.playUiTap('select');
                 triggerGameHaptic('light');
               }}
-              className="mt-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-slate-950 to-amber-500/10 border border-amber-500/30 flex items-center justify-between cursor-pointer hover:border-amber-400/60 transition-all active:scale-[0.99] group shadow-sm"
+              className="mt-2 p-2.5 rounded-xl bg-slate-950/80 border border-white/10 hover:border-amber-500/40 flex items-center justify-between cursor-pointer transition-all active:scale-[0.99] group shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center text-sm border border-amber-500/40 shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-300 flex items-center justify-center text-sm border border-amber-500/30 shrink-0">
                   🏆
                 </div>
                 <div>
                   <div className="text-[11px] font-black text-white flex items-center gap-1.5">
-                    <span>Trophy Cabinet & Season Honors</span>
+                    <span>Trophy Cabinet & Honors</span>
                   </div>
                   <div className="text-[9px] text-gray-400 font-mono">
-                    Silverware, Orange & Purple Cap standings & Hall of Fame
+                    Titles won, Orange & Purple Cap standings & Hall of Fame
                   </div>
                 </div>
               </div>
               <ChevronRight size={13} className="text-gray-400 group-hover:text-amber-400 transition-colors shrink-0" />
             </Link>
 
-            {/* Tactical Blueprint & Fortress Strengths (Eliminates dead space) */}
+            {/* Key Strengths & Conditions */}
             {activeFranchise.strengths && activeFranchise.strengths.length > 0 && (
               <div className="mt-2 p-2.5 rounded-xl bg-slate-950/70 border border-white/5">
                 <span className="text-[9px] font-mono font-bold text-gray-400 uppercase tracking-wider block mb-1 flex items-center justify-between">
                   <span className="flex items-center gap-1">
                     <Compass size={11} className="text-sky-400" />
-                    <span>Tactical Blueprint & Strengths</span>
+                    <span>Key Strengths & Venue Conditions</span>
                   </span>
                   <span className="text-[9px] text-gray-500 font-mono">{activeStadium.boundarySize}</span>
                 </span>
@@ -508,10 +503,9 @@ export default function UnifiedTeamSelectHomePage() {
           {/* Single High-Impact Primary CTA */}
           <button
             onClick={() => handleLaunchFranchise(activeTeam.id)}
-            className="w-full py-3 rounded-xl font-display text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl cursor-pointer hover:scale-[1.01] active:scale-95 transition-all text-slate-950"
+            className="w-full py-3 rounded-xl font-display text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:brightness-105 active:scale-[0.99] transition-all text-slate-950"
             style={{
-              backgroundColor: activeTeam.color,
-              boxShadow: `0 0 20px ${activeTeam.color}50`
+              backgroundColor: activeTeam.color
             }}
           >
             {existingCampaign?.activeMatchSimulation && !existingCampaign.activeMatchSimulation.matchDone ? (
