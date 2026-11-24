@@ -18,12 +18,14 @@ import {
   ChevronDown,
   AlertCircle,
   Play,
-  Trophy
+  Trophy,
+  HelpCircle
 } from 'lucide-react'
 import { useCampaignStore } from '../store/useCampaignStore'
 import { getFranchise } from '../data/franchises'
 import { OnboardingAuthModal } from './OnboardingAuthModal'
 import { BCCIRulesModal } from './BCCIRulesModal'
+import { GamerOnboardingModal } from './GamerOnboardingModal'
 import { gameAudio, triggerGameHaptic } from '../lib/gameAudioAndHaptics'
 import TeamLogo from './TeamLogo'
 
@@ -43,6 +45,7 @@ export function Navbar() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authModalTab, setAuthModalTab] = useState<'saves' | 'create' | 'switch'>('saves')
   const [showRulesModal, setShowRulesModal] = useState(false)
+  const [showGuideModal, setShowGuideModal] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [lockedToast, setLockedToast] = useState<string | null>(null)
 
@@ -308,6 +311,21 @@ export function Navbar() {
               </div>
             )}
 
+            {/* Universal Game Guide Button */}
+            <button
+              type="button"
+              onClick={() => {
+                gameAudio.playUiTap('light')
+                triggerGameHaptic('light')
+                setShowGuideModal(true)
+              }}
+              className="px-1.5 sm:px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-amber-300 hover:text-amber-200 flex items-center gap-1 text-[9.5px] sm:text-xs font-bold border border-white/10 transition-all cursor-pointer shrink-0"
+              title="Game Guide & Simple Rules"
+            >
+              <HelpCircle size={11} className="text-amber-400 shrink-0" />
+              <span className="hidden sm:inline">Guide</span>
+            </button>
+
             {/* GM Profile Pill */}
             <button
               type="button"
@@ -336,6 +354,12 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Universal Plain-Language Game Guide Modal */}
+      <GamerOnboardingModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+      />
 
       {/* Onboarding & Career Management Modal */}
       <OnboardingAuthModal
