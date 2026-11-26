@@ -61,6 +61,7 @@ export default function UnifiedTeamSelectHomePage() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>('rcb')
   const [selectedGameMode, setSelectedGameMode] = useState<'official_season' | 'scratch_inception'>('official_season')
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalTab, setAuthModalTab] = useState<'profile' | 'saves' | 'create' | 'switch'>('saves')
   const [showLoading, setShowLoading] = useState(() => {
     if (typeof window !== 'undefined' && (sessionStorage.getItem('auctionxi_session_loaded') || localStorage.getItem('auctionxi_boot_complete'))) {
       return false
@@ -145,7 +146,7 @@ export default function UnifiedTeamSelectHomePage() {
   const handleSelectTeamTab = (teamId: string) => {
     setSelectedTeamId(teamId)
     setTheme(teamId)
-    const matchingCamp = Object.values(campaigns).find(c => c.teamId === teamId)
+    const matchingCamp = Object.values(campaigns).find(c => c.userId === currentUser.id && c.teamId === teamId)
     if (matchingCamp) {
       switchCampaign(matchingCamp.id)
     }
@@ -159,8 +160,8 @@ export default function UnifiedTeamSelectHomePage() {
     if (selectedGameMode === 'scratch_inception') {
       gameAudio.playConfettiFanfare()
       triggerGameHaptic('heavy')
-      const scratchCampaignId = `${currentUser.id}_${teamId}_scratch_2027`
-      if (campaigns[scratchCampaignId]) {
+      const scratchCampaignId = `${currentUser.id}_${teamId}_scratch`
+      if (campaigns[scratchCampaignId] && campaigns[scratchCampaignId].userId === currentUser.id) {
         switchCampaign(scratchCampaignId)
         const c = campaigns[scratchCampaignId]
         const targetUrl = (c.currentPhase === 'playing_xi' || c.currentPhase === 'match')
@@ -177,7 +178,9 @@ export default function UnifiedTeamSelectHomePage() {
       gameAudio.playTradeDealSuccess()
       triggerGameHaptic('heavy')
       const officialCampaignId = `${currentUser.id}_${teamId}_2027`
-      const existing = campaigns[officialCampaignId] || Object.values(campaigns).find(c => c.teamId === teamId && c.mode !== 'scratch_inception')
+      const existing = (campaigns[officialCampaignId] && campaigns[officialCampaignId].userId === currentUser.id)
+        ? campaigns[officialCampaignId]
+        : Object.values(campaigns).find(c => c.userId === currentUser.id && c.teamId === teamId && c.mode !== 'scratch_inception')
       if (existing) {
         switchCampaign(existing.id)
         if (existing.activeMatchSimulation && !existing.activeMatchSimulation.matchDone) {
@@ -204,8 +207,8 @@ export default function UnifiedTeamSelectHomePage() {
   const activeFranchiseAI = getFranchiseAI(activeTeam.id)
   const activeFranchise = getFranchise(activeTeam.id)
   const existingCampaign = selectedGameMode === 'scratch_inception'
-    ? Object.values(campaigns).find(c => c.teamId === activeTeam.id && c.mode === 'scratch_inception')
-    : Object.values(campaigns).find(c => c.teamId === activeTeam.id && c.mode !== 'scratch_inception')
+    ? Object.values(campaigns).find(c => c.userId === currentUser.id && c.teamId === activeTeam.id && c.mode === 'scratch_inception')
+    : Object.values(campaigns).find(c => c.userId === currentUser.id && c.teamId === activeTeam.id && c.mode !== 'scratch_inception')
 
   return (
     <div className="min-h-screen relative overflow-x-hidden flex flex-col justify-between text-white bg-transparent safe-page-top pb-16 touch-manipulation select-none">
@@ -252,7 +255,12 @@ export default function UnifiedTeamSelectHomePage() {
                 : '/trade'
               router.replace(targetUrl)
             } else {
-              setShowGameModeModal(true)
+              if (!currentUser.isCustom) {
+                setAuthModalTab('create')
+                setShowAuthModal(true)
+              } else {
+                setShowGameModeModal(true)
+              }
             }
           }}
         />
@@ -288,11 +296,18 @@ export default function UnifiedTeamSelectHomePage() {
               <span>Guide</span>
             </button>
             <button
-              onClick={() => setShowAuthModal(true)}
-              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-white/10 transition-all shrink-0"
+              onClick={() => {
+                setAuthModalTab('profile')
+                setShowAuthModal(true)
+              }}
+              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-gray-200 font-bold text-xs flex items-center gap-2 cursor-pointer border border-white/10 transition-all shrink-0"
+              title="Manager Profile & Accounts"
             >
-              <span>{currentUser.avatar || '👑'}</span>
-              <span className="truncate max-w-[90px]">{currentUser.gamerTag}</span>
+              <span className="text-sm">{currentUser.avatar || '👑'}</span>
+              <div className="flex flex-col text-left leading-none">
+                <span className="truncate max-w-[90px] text-[11px] font-black text-amber-300">{currentUser.gamerTag}</span>
+                <span className="text-[9px] text-gray-400 font-mono">Profile</span>
+              </div>
             </button>
           </div>
         </div>
@@ -301,7 +316,7 @@ export default function UnifiedTeamSelectHomePage() {
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 shrink-0">
           {TEAMS.map((t) => {
             const isSelected = t.id === activeTeam.id
-            const hasSave = Object.values(campaigns).some(c => c.teamId === t.id)
+            const hasSave = Object.values(campaigns).some(c => c.userId === currentUser.id && c.teamId === t.id)
             return (
               <button
                 key={t.id}
@@ -541,6 +556,7 @@ export default function UnifiedTeamSelectHomePage() {
       <OnboardingAuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
+        initialTab={authModalTab}
       />
 
       <GamerOnboardingModal

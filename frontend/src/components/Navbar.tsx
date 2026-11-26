@@ -43,7 +43,7 @@ export function Navbar() {
 
   const [mounted, setMounted] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authModalTab, setAuthModalTab] = useState<'saves' | 'create' | 'switch'>('saves')
+  const [authModalTab, setAuthModalTab] = useState<'profile' | 'saves' | 'create' | 'switch'>('profile')
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showGuideModal, setShowGuideModal] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -332,13 +332,16 @@ export function Navbar() {
               onClick={() => {
                 gameAudio.playUiTap('light')
                 triggerGameHaptic('light')
-                setAuthModalTab('switch')
+                setAuthModalTab('profile')
                 setShowAuthModal(true)
               }}
-              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
-              title="Manager Profile & Careers"
+              className="px-1.5 sm:px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center gap-1 sm:gap-1.5 text-xs font-black cursor-pointer transition-all border border-white/15 shrink-0"
+              title="Manager Profile & Accounts"
             >
-              <span className="text-xs">{currentUser?.avatar || '👑'}</span>
+              <span className="text-xs sm:text-sm">{currentUser?.avatar || '👑'}</span>
+              <span className="text-[10px] sm:text-xs font-bold text-amber-300 hidden md:inline truncate max-w-[75px]">
+                {currentUser?.gamerTag}
+              </span>
             </button>
           </div>
 

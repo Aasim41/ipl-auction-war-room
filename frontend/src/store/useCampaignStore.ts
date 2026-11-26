@@ -532,7 +532,14 @@ export interface UserProfile {
   avatar: string
   pin?: string
   roleTitle?: string
+  favTeam?: string
   createdAt: string
+  isCustom?: boolean
+  careerStats?: {
+    titlesWon: number
+    matchesPlayed: number
+    matchesWon: number
+  }
 }
 
 interface CampaignStoreState {
@@ -543,11 +550,13 @@ interface CampaignStoreState {
   campaigns: Record<string, UserCampaign> // keyed by campaign id
   
   // User Authentication & Onboarding Actions
-  registerProfile: (gamerTag: string, avatar: string, pin?: string) => UserProfile
-  loginProfile: (gamerTag: string, pin?: string) => boolean
-  switchProfile: (userId: string) => void
+  registerProfile: (gamerTag: string, avatar: string, pin?: string, favTeam?: string, roleTitle?: string) => { success: boolean; error?: string; profile?: UserProfile }
+  loginProfile: (gamerTag: string, pin?: string) => { success: boolean; error?: string }
+  switchProfile: (userId: string, pin?: string) => { success: boolean; error?: string }
+  updateUserProfile: (updates: Partial<UserProfile>) => { success: boolean; error?: string }
   setUserProfile: (profile: Partial<UserProfile>) => void
   deleteProfile: (userId: string) => void
+  recordUserMatchStats: (isWin: boolean, isTitleWin?: boolean) => void
   
   // Campaign Actions
   createCampaign: (teamId: string) => UserCampaign
@@ -590,7 +599,14 @@ const DEFAULT_USER: UserProfile = {
   gamerTag: 'Franchise GM',
   avatar: '👑',
   roleTitle: 'Head of Cricket Operations',
-  createdAt: new Date().toISOString()
+  favTeam: 'rcb',
+  createdAt: new Date().toISOString(),
+  isCustom: false,
+  careerStats: {
+    titlesWon: 0,
+    matchesPlayed: 0,
+    matchesWon: 0
+  }
 }
 
 export const useCampaignStore = create<CampaignStoreState>()(
@@ -602,37 +618,110 @@ export const useCampaignStore = create<CampaignStoreState>()(
       activeCampaignId: null,
       campaigns: {},
 
-      registerProfile: (gamerTag, avatar, pin) => {
-        const id = `gm_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
-        const newProfile: UserProfile = {
-          id,
-          gamerTag: gamerTag.trim() || 'Franchise GM',
-          avatar: avatar || '👑',
-          pin: pin ? pin.trim() : undefined,
-          roleTitle: 'Franchise General Manager',
-          createdAt: new Date().toISOString()
+      registerProfile: (gamerTag, avatar, pin, favTeam, roleTitle) => {
+        const cleanTag = gamerTag.trim()
+        if (!cleanTag) {
+          return { success: false, error: 'Please enter a manager name or gamer tag.' }
         }
 
-        const updatedProfiles = { ...get().profiles, [id]: newProfile }
+        const { profiles } = get()
+        // Enforce uniqueness across all profiles on device (case-insensitive)
+        const isTaken = Object.values(profiles).some(
+          (p) => p.gamerTag.trim().toLowerCase() === cleanTag.toLowerCase()
+        )
+        if (isTaken) {
+          return { success: false, error: `Gamer Tag "${cleanTag}" is already registered. Please choose a unique name.` }
+        }
+
+        const id = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+        const newProfile: UserProfile = {
+          id,
+          gamerTag: cleanTag,
+          avatar: avatar || '👑',
+          pin: pin ? pin.trim() : undefined,
+          favTeam: favTeam || 'rcb',
+          roleTitle: roleTitle || 'Franchise General Manager',
+          createdAt: new Date().toISOString(),
+          isCustom: true,
+          careerStats: {
+            titlesWon: 0,
+            matchesPlayed: 0,
+            matchesWon: 0
+          }
+        }
+
+        const updatedProfiles = { ...profiles, [id]: newProfile }
         set({
           profiles: updatedProfiles,
           currentUserId: id,
-          currentUser: newProfile
+          currentUser: newProfile,
+          activeCampaignId: null
         })
-        return newProfile
+
+        return { success: true, profile: newProfile }
+      },
+
+      updateUserProfile: (updates) => {
+        const { profiles, currentUserId, currentUser } = get()
+        if (!currentUserId || !profiles[currentUserId]) {
+          return { success: false, error: 'No active profile to update.' }
+        }
+
+        if (updates.gamerTag) {
+          const cleanTag = updates.gamerTag.trim()
+          if (!cleanTag) {
+            return { success: false, error: 'Gamer Tag cannot be empty.' }
+          }
+          // Enforce uniqueness against other profiles
+          const isTaken = Object.values(profiles).some(
+            (p) => p.id !== currentUserId && p.gamerTag.trim().toLowerCase() === cleanTag.toLowerCase()
+          )
+          if (isTaken) {
+            return { success: false, error: `Gamer Tag "${cleanTag}" is already taken by another profile.` }
+          }
+          updates.gamerTag = cleanTag
+        }
+
+        if (updates.pin !== undefined) {
+          updates.pin = updates.pin ? updates.pin.trim() : undefined
+        }
+
+        const updated: UserProfile = {
+          ...currentUser,
+          ...updates,
+          isCustom: true
+        }
+
+        set({
+          currentUser: updated,
+          profiles: {
+            ...profiles,
+            [currentUserId]: updated
+          }
+        })
+
+        return { success: true }
+      },
+
+      setUserProfile: (profile) => {
+        get().updateUserProfile(profile)
       },
 
       loginProfile: (gamerTag, pin) => {
         const { profiles, campaigns } = get()
         const cleanTag = gamerTag.trim().toLowerCase()
         const target = Object.values(profiles).find(
-          (p) => p.gamerTag.toLowerCase() === cleanTag
+          (p) => p.gamerTag.trim().toLowerCase() === cleanTag
         )
 
-        if (!target) return false
+        if (!target) {
+          return { success: false, error: `Profile "${gamerTag}" not found.` }
+        }
 
-        if (target.pin && pin && target.pin !== pin.trim()) {
-          return false
+        if (target.pin && target.pin.trim() !== '') {
+          if (!pin || pin.trim() !== target.pin.trim()) {
+            return { success: false, error: 'Incorrect PIN for this profile.' }
+          }
         }
 
         const userCamps = Object.values(campaigns).filter((c) => c.userId === target.id)
@@ -644,13 +733,23 @@ export const useCampaignStore = create<CampaignStoreState>()(
           activeCampaignId: lastCamp ? lastCamp.id : null
         })
 
-        return true
+        return { success: true }
       },
 
-      switchProfile: (userId) => {
-        const target = get().profiles[userId]
-        if (!target) return
-        const userCamps = Object.values(get().campaigns).filter((c) => c.userId === userId)
+      switchProfile: (userId, pin) => {
+        const { profiles, campaigns } = get()
+        const target = profiles[userId]
+        if (!target) {
+          return { success: false, error: 'Profile not found.' }
+        }
+
+        if (target.pin && target.pin.trim() !== '') {
+          if (!pin || pin.trim() !== target.pin.trim()) {
+            return { success: false, error: 'Incorrect PIN.' }
+          }
+        }
+
+        const userCamps = Object.values(campaigns).filter((c) => c.userId === userId)
         const lastCamp = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())[0]
 
         set({
@@ -658,15 +757,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           currentUser: target,
           activeCampaignId: lastCamp ? lastCamp.id : null
         })
-      },
 
-      setUserProfile: (profile) => {
-        const current = get().currentUser
-        const updated = { ...current, ...profile }
-        set((state) => ({
-          currentUser: updated,
-          profiles: { ...state.profiles, [updated.id]: updated }
-        }))
+        return { success: true }
       },
 
       deleteProfile: (userId) => {
@@ -681,16 +773,59 @@ export const useCampaignStore = create<CampaignStoreState>()(
           }
         })
 
-        const remainingKeys = Object.keys(updatedProfiles)
-        const nextId = remainingKeys[0] || DEFAULT_USER.id
-        const nextProfile = updatedProfiles[nextId] || DEFAULT_USER
+        const remainingProfiles = Object.values(updatedProfiles)
+        let nextUser: UserProfile
+        if (remainingProfiles.length > 0) {
+          nextUser = remainingProfiles[0]
+        } else {
+          const freshId = `usr_${Date.now()}`
+          nextUser = {
+            id: freshId,
+            gamerTag: 'Franchise GM',
+            avatar: '👑',
+            roleTitle: 'Head of Cricket Operations',
+            favTeam: 'rcb',
+            createdAt: new Date().toISOString(),
+            isCustom: false,
+            careerStats: { titlesWon: 0, matchesPlayed: 0, matchesWon: 0 }
+          }
+          updatedProfiles[freshId] = nextUser
+        }
+
+        const nextUserCamps = Object.values(updatedCampaigns).filter((c) => c.userId === nextUser.id)
+        const lastCamp = nextUserCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())[0]
 
         set({
-          profiles: remainingKeys.length > 0 ? updatedProfiles : { [DEFAULT_USER.id]: DEFAULT_USER },
-          currentUserId: nextId,
-          currentUser: nextProfile,
+          profiles: updatedProfiles,
+          currentUserId: nextUser.id,
+          currentUser: nextUser,
           campaigns: updatedCampaigns,
-          activeCampaignId: null
+          activeCampaignId: lastCamp ? lastCamp.id : null
+        })
+      },
+
+      recordUserMatchStats: (isWin, isTitleWin) => {
+        const { currentUserId, currentUser, profiles } = get()
+        if (!currentUserId || !currentUser) return
+
+        const curStats = currentUser.careerStats || { titlesWon: 0, matchesPlayed: 0, matchesWon: 0 }
+        const updatedStats = {
+          titlesWon: curStats.titlesWon + (isTitleWin ? 1 : 0),
+          matchesPlayed: curStats.matchesPlayed + 1,
+          matchesWon: curStats.matchesWon + (isWin ? 1 : 0)
+        }
+
+        const updatedUser: UserProfile = {
+          ...currentUser,
+          careerStats: updatedStats
+        }
+
+        set({
+          currentUser: updatedUser,
+          profiles: {
+            ...profiles,
+            [currentUserId]: updatedUser
+          }
         })
       },
 
@@ -874,7 +1009,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
         const { activeCampaignId, campaigns, currentUserId } = get()
         let active: UserCampaign | null = null
 
-        if (activeCampaignId && campaigns[activeCampaignId]) {
+        if (activeCampaignId && campaigns[activeCampaignId] && campaigns[activeCampaignId].userId === currentUserId) {
           active = campaigns[activeCampaignId]
         } else {
           const userCamps = Object.values(campaigns).filter((c) => c.userId === currentUserId)
@@ -1070,14 +1205,14 @@ export const useCampaignStore = create<CampaignStoreState>()(
       updateActiveCampaign: (updater) => {
         const state = get()
         let activeId = state.activeCampaignId
-        if (!activeId || !state.campaigns[activeId]) {
+        if (!activeId || !state.campaigns[activeId] || state.campaigns[activeId].userId !== state.currentUserId) {
           const userCamps = Object.values(state.campaigns).filter((c) => c.userId === state.currentUserId)
           if (userCamps.length > 0) {
             const sorted = userCamps.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime())
             activeId = sorted[0].id
           }
         }
-        if (!activeId || !state.campaigns[activeId]) return
+        if (!activeId || !state.campaigns[activeId] || state.campaigns[activeId].userId !== state.currentUserId) return
         const updated = updater(state.campaigns[activeId])
         set({
           activeCampaignId: activeId,
@@ -1085,6 +1220,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
             ...state.campaigns,
             [activeId]: {
               ...updated,
+              userId: state.currentUserId,
               lastSaved: new Date().toISOString()
             }
           }
@@ -1092,13 +1228,15 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       deleteCampaign: (campaignId: string) => {
-        const { campaigns, activeCampaignId } = get()
+        const { campaigns, activeCampaignId, currentUserId } = get()
+        const target = campaigns[campaignId]
+        if (!target || target.userId !== currentUserId) return
         const newCampaigns = { ...campaigns }
         delete newCampaigns[campaignId]
-        const remainingKeys = Object.keys(newCampaigns)
+        const remainingUserCamps = Object.values(newCampaigns).filter((c) => c.userId === currentUserId)
         set({
           campaigns: newCampaigns,
-          activeCampaignId: activeCampaignId === campaignId ? (remainingKeys[0] || null) : activeCampaignId
+          activeCampaignId: activeCampaignId === campaignId ? (remainingUserCamps[0]?.id || null) : activeCampaignId
         })
       },
 
@@ -1766,6 +1904,17 @@ export const useCampaignStore = create<CampaignStoreState>()(
             lastSaved: new Date().toISOString()
           };
         })
+
+        // Record User Profile Career Stats for played matches
+        const activeCamp = get().getActiveCampaign();
+        if (activeCamp && resultData) {
+          const playedMatch = (activeCamp.schedule || []).find(f => f.matchNo === matchNo);
+          if (playedMatch && playedMatch.isMyMatch) {
+            const isWin = resultData.winnerTeamId === activeCamp.teamId;
+            const isTitleWin = isWin && (matchNo === 74 || playedMatch.stage === 'Final');
+            get().recordUserMatchStats(isWin, isTitleWin);
+          }
+        }
       },
 
       simulateScheduleMatch: (matchNo) => {
