@@ -155,7 +155,7 @@ export function OnboardingAuthModal({
     e.preventDefault()
     setErrorMsg('')
 
-    const result = registerProfile(gamerTag, selectedAvatar, pin, favTeam)
+    const result = registerProfile(gamerTag, selectedAvatar || '👑', pin, favTeam || 'rcb')
     if (!result.success) {
       setErrorMsg(result.error || 'Failed to create profile.')
       gameAudio.playTradeReject()
@@ -169,6 +169,7 @@ export function OnboardingAuthModal({
     setPin('')
     if (onSuccess) onSuccess()
     onClose()
+    router.push('/select-team')
   }
 
   // Handle Profile Update
@@ -759,96 +760,49 @@ export function OnboardingAuthModal({
             </div>
           )}
 
-          {/* TAB 4: CREATE NEW UNIQUE GM PROFILE */}
+          {/* TAB 4: CREATE NEW UNIQUE GM PROFILE (MINIMAL ONBOARDING) */}
           {mode === 'create' && (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-4 py-1">
               
+              {/* Header Note */}
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
+                <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                  Manager Profile Setup
+                </h3>
+                <p className="text-[11px] text-gray-300 mt-0.5">
+                  Enter your manager name to begin. You will select your IPL franchise on the next screen.
+                </p>
+              </div>
+
               {/* Gamer Tag Input with Suggest Button */}
               <div>
-                <label className="text-[11px] font-bold text-gray-300 block mb-1 uppercase tracking-wider flex items-center justify-between">
-                  <span>Manager / Gamer Tag (Unique Name):</span>
+                <label className="text-[11px] font-bold text-gray-300 block mb-1.5 uppercase tracking-wider flex items-center justify-between">
+                  <span>Manager Name / Gamer Tag:</span>
                   <button
                     type="button"
                     onClick={handleSuggestName}
-                    className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer font-normal"
+                    className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer font-normal transition-colors"
                   >
                     <Dice5 size={12} />
                     <span>Suggest Name</span>
                   </button>
                 </label>
                 <div className="relative">
-                  <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" />
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Aasim The Tactician"
+                    placeholder="e.g. Master Strategist"
                     value={gamerTag}
                     onChange={(e) => setGamerTag(e.target.value)}
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+                    className="w-full bg-slate-900 border border-white/15 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 transition-all placeholder:text-gray-500"
                   />
-                </div>
-              </div>
-
-              {/* Avatar Selection */}
-              <div>
-                <label className="text-[11px] font-bold text-gray-300 block mb-1.5 uppercase tracking-wider">
-                  Choose Avatar Badge:
-                </label>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {AVATAR_OPTIONS.map((av) => {
-                    const isSelected = selectedAvatar === av.emoji
-                    return (
-                      <button
-                        key={av.emoji}
-                        type="button"
-                        onClick={() => setSelectedAvatar(av.emoji)}
-                        className={`p-2 rounded-xl border flex flex-col items-center justify-center cursor-pointer transition-all ${
-                          isSelected
-                            ? 'bg-amber-500/20 border-amber-400 shadow-sm scale-105'
-                            : 'bg-slate-900 border-white/10 hover:border-white/20'
-                        }`}
-                      >
-                        <span className="text-xl">{av.emoji}</span>
-                        <span className="text-[9px] text-gray-400 mt-0.5 truncate max-w-full font-bold">
-                          {av.label}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Favorite Franchise */}
-              <div>
-                <label className="text-[11px] font-bold text-gray-300 block mb-1.5 uppercase tracking-wider">
-                  Preferred IPL Franchise:
-                </label>
-                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
-                  {Object.keys(IPL_FRANCHISES).map((tId) => {
-                    const f = IPL_FRANCHISES[tId]
-                    const isSelected = favTeam === tId
-                    return (
-                      <button
-                        key={tId}
-                        type="button"
-                        onClick={() => setFavTeam(tId)}
-                        className={`px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 cursor-pointer transition-all shrink-0 text-xs font-bold ${
-                          isSelected
-                            ? 'bg-amber-500 text-slate-950 font-black border-amber-400 scale-105'
-                            : 'bg-slate-900 border-white/10 text-gray-300 hover:text-white'
-                        }`}
-                      >
-                        <TeamLogo teamId={tId} size={15} />
-                        <span>{f.short}</span>
-                      </button>
-                    )
-                  })}
                 </div>
               </div>
 
               {/* Optional PIN */}
               <div>
-                <label className="text-[11px] font-bold text-gray-300 block mb-1 uppercase tracking-wider">
+                <label className="text-[11px] font-bold text-gray-300 block mb-1.5 uppercase tracking-wider">
                   Security PIN (Optional):
                 </label>
                 <div className="relative">
@@ -856,23 +810,24 @@ export function OnboardingAuthModal({
                   <input
                     type="password"
                     maxLength={6}
-                    placeholder="Leave empty for instant login"
+                    placeholder="Leave blank for instant 1-tap entry"
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                    className="w-full bg-slate-900 border border-white/15 rounded-xl pl-9 pr-3 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-amber-400 transition-all placeholder:text-gray-500"
                   />
                 </div>
                 <p className="text-[10px] text-gray-400 mt-1">
-                  A PIN keeps your franchise saves private when sharing this mobile device.
+                  Optional PIN keeps your career saves private if multiple people play on this device.
                 </p>
               </div>
 
+              {/* Submit CTA - Direct to Team Selection */}
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-[0.99]"
+                className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-[0.99] mt-2"
               >
-                <Sparkles size={14} />
-                <span>Create Unique Account & Enter War Room</span>
+                <span>Continue to Team Selection</span>
+                <ArrowRight size={14} />
               </button>
             </form>
           )}

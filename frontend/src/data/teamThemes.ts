@@ -244,6 +244,29 @@ export const TEAM_THEMES: Record<string, TeamThemeConfig> = {
   },
 }
 
+export const NEUTRAL_THEME: TeamThemeConfig = {
+  id: 'neutral',
+  name: 'BCCI Auction Stage',
+  short: 'BCCI',
+  primary: '#94A3B8',
+  secondary: '#64748B',
+  accent: '#E2E8F0',
+  contrastText: '#FFFFFF',
+  bgDeep: '#0B1120',
+  bgMid: '#0F172A',
+  bgSurface: '#1E293B',
+  cardBg: 'linear-gradient(180deg, #1E293B 0%, #0F172A 100%)',
+  cardBorder: 'rgba(255, 255, 255, 0.12)',
+  cardGlow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+  pillBg: 'rgba(255, 255, 255, 0.08)',
+  pillText: '#F8FAFC',
+  glowPrimary: 'rgba(148, 163, 184, 0.2)',
+  glowSecondary: 'rgba(100, 116, 139, 0.1)',
+  stadiumName: 'BCCI Auction Arena',
+  city: 'Jeddah',
+  motto: 'BCCI MEGA AUCTION',
+}
+
 export function getTeamTheme(teamId?: string): TeamThemeConfig {
   const normalized = (teamId || 'rcb').toLowerCase().trim()
   return TEAM_THEMES[normalized] || TEAM_THEMES.rcb

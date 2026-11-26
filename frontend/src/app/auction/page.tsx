@@ -43,7 +43,7 @@ import { gameAudio, triggerGameHaptic } from '../../lib/gameAudioAndHaptics'
 import { getFranchiseAI } from '../../data/franchiseAI'
 import TeamLogo from '../../components/TeamLogo'
 import { getDetailedPlayerRole, getCompactRoleBadge } from '../../lib/bowlerClassification'
-import { getTeamTheme } from '../../data/teamThemes'
+import { getTeamTheme, NEUTRAL_THEME } from '../../data/teamThemes'
 const BOT_TEAMS = ['csk', 'mi', 'kkr', 'srh', 'rr', 'dc', 'pbks', 'lsg', 'gt']
 
 export default function MiniAuctionPage() {
@@ -60,12 +60,19 @@ export default function MiniAuctionPage() {
   const [highestBidder, setHighestBidder] = useState<string>('BCCI Auctioneer')
   const [bidHistory, setBidHistory] = useState<Array<{ bidder: string; amount: number; isUser?: boolean }>>([])
 
+  const hasActiveBid = Boolean(
+    highestBidder && 
+    highestBidder !== 'none' && 
+    highestBidder !== 'BCCI Auctioneer' && 
+    bidHistory.length > 0
+  )
+
   const currentBidderTheme = useMemo(() => {
-    if (highestBidder && highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer') {
+    if (hasActiveBid) {
       return getTeamTheme(highestBidder)
     }
-    return myTheme
-  }, [highestBidder, myTheme])
+    return NEUTRAL_THEME
+  }, [hasActiveBid, highestBidder])
   const [timer, setTimer] = useState(10)
   const [gavelPhase, setGavelPhase] = useState<'bidding' | 'going_once' | 'going_twice' | 'sold'>('bidding')
   const [nextLotCountdown, setNextLotCountdown] = useState<number | null>(null)
@@ -963,12 +970,7 @@ export default function MiniAuctionPage() {
           
           {/* Column 1 (Left 7 cols): Live Hammer Stage & Paddle Controls */}
           <div 
-            style={{
-              background: myTheme.cardBg,
-              borderColor: myTheme.cardBorder,
-              boxShadow: myTheme.cardGlow,
-            }}
-            className={`lg:col-span-7 p-3 sm:p-4 rounded-2xl border flex flex-col justify-between shadow-2xl relative overflow-hidden ${auctionView === 'stage' ? 'flex' : 'hidden lg:flex'}`}
+            className={`lg:col-span-7 p-3 sm:p-4 rounded-2xl border border-white/10 bg-slate-950/80 backdrop-blur-md flex flex-col justify-between shadow-2xl relative overflow-hidden ${auctionView === 'stage' ? 'flex' : 'hidden lg:flex'}`}
           >
             
             {/* Dramatic Gavel Slam Strike Animation Overlay */}
@@ -1090,9 +1092,9 @@ export default function MiniAuctionPage() {
                     gameAudio.playUiTap('light');
                   }}
                   style={{
-                    background: currentBidderTheme.cardBg,
-                    borderColor: currentBidderTheme.cardBorder,
-                    boxShadow: currentBidderTheme.cardGlow,
+                    background: hasActiveBid ? currentBidderTheme.cardBg : 'linear-gradient(180deg, #1E293B 0%, #0F172A 100%)',
+                    borderColor: hasActiveBid ? currentBidderTheme.cardBorder : 'rgba(255, 255, 255, 0.12)',
+                    boxShadow: hasActiveBid ? currentBidderTheme.cardGlow : '0 4px 20px rgba(0, 0, 0, 0.4)',
                   }}
                   className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all shadow-xl"
                 >
@@ -1100,9 +1102,9 @@ export default function MiniAuctionPage() {
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div 
                       style={{
-                        backgroundColor: currentBidderTheme.pillBg,
-                        color: currentBidderTheme.pillText,
-                        borderColor: currentBidderTheme.cardBorder,
+                        backgroundColor: hasActiveBid ? currentBidderTheme.pillBg : 'rgba(255, 255, 255, 0.06)',
+                        color: hasActiveBid ? currentBidderTheme.pillText : '#CBD5E1',
+                        borderColor: hasActiveBid ? currentBidderTheme.cardBorder : 'rgba(255, 255, 255, 0.1)',
                       }}
                       className="w-14 h-14 rounded-2xl border flex items-center justify-center text-3xl shadow-xl shrink-0"
                     >
@@ -1112,9 +1114,9 @@ export default function MiniAuctionPage() {
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span 
                           style={{
-                            backgroundColor: `${currentBidderTheme.bgDeep}ee`,
+                            backgroundColor: hasActiveBid ? `${currentBidderTheme.bgDeep}ee` : 'rgba(255, 255, 255, 0.08)',
                             color: '#ffffff',
-                            border: `1px solid ${currentBidderTheme.primary}70`
+                            border: `1px solid ${hasActiveBid ? currentBidderTheme.primary + '70' : 'rgba(255, 255, 255, 0.15)'}`
                           }}
                           className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono"
                         >
@@ -1123,8 +1125,8 @@ export default function MiniAuctionPage() {
                         {currentPlayer.is_overseas && (
                           <span 
                             style={{
-                              backgroundColor: currentBidderTheme.pillBg,
-                              color: currentBidderTheme.pillText,
+                              backgroundColor: hasActiveBid ? currentBidderTheme.pillBg : 'rgba(59, 130, 246, 0.18)',
+                              color: hasActiveBid ? currentBidderTheme.pillText : '#93C5FD',
                             }}
                             className="px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-sm"
                           >
@@ -1132,7 +1134,7 @@ export default function MiniAuctionPage() {
                           </span>
                         )}
                         {currentPlayer.formerTeam && (
-                          <span className="text-[10px] text-gray-200 font-mono">Ex: {currentPlayer.formerTeam}</span>
+                          <span className="text-[10px] text-gray-300 font-mono">Ex: {currentPlayer.formerTeam}</span>
                         )}
                       </div>
 
@@ -1141,8 +1143,8 @@ export default function MiniAuctionPage() {
                       </h2>
                       
                       <div className="flex items-center gap-2 mt-1 text-xs font-mono">
-                        <span className="text-gray-200">Base: <strong className="text-white font-black">₹{currentPlayer.basePrice} Cr</strong></span>
-                        <span className="text-white/80 text-[10px] ml-1 font-bold">{expandedLot ? '▲ Hide Details' : '▼ View Telemetry'}</span>
+                        <span className="text-gray-300">Base: <strong className="text-white font-black">₹{currentPlayer.basePrice} Cr</strong></span>
+                        <span className="text-white/70 text-[10px] ml-1 font-bold">{expandedLot ? '▲ Hide Details' : '▼ View Telemetry'}</span>
                       </div>
                     </div>
                   </div>
@@ -1150,30 +1152,34 @@ export default function MiniAuctionPage() {
                   {/* Current Bid Display */}
                   <div 
                     style={{
-                      background: `${currentBidderTheme.bgDeep}f0`,
-                      borderColor: currentBidderTheme.cardBorder,
-                      boxShadow: `0 0 16px ${currentBidderTheme.primary}50`,
+                      background: hasActiveBid ? `${currentBidderTheme.bgDeep}f0` : 'rgba(15, 23, 42, 0.9)',
+                      borderColor: hasActiveBid ? currentBidderTheme.cardBorder : 'rgba(255, 255, 255, 0.12)',
+                      boxShadow: hasActiveBid ? `0 0 16px ${currentBidderTheme.primary}50` : 'none',
                     }}
                     className="text-center sm:text-right p-3 rounded-2xl border w-full sm:w-auto shadow-2xl shrink-0"
                   >
-                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-300 block mb-0.5">
-                      Top Live Bidder
+                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 block mb-0.5">
+                      {hasActiveBid ? 'Top Live Bidder' : 'Opening Price'}
                     </span>
                     <div 
-                      style={{ color: currentBidderTheme.primary }}
+                      style={{ color: hasActiveBid ? currentBidderTheme.primary : '#94A3B8' }}
                       className="text-xs font-black flex items-center justify-center sm:justify-end gap-1.5"
                     >
-                      {highestBidder !== 'none' && highestBidder !== 'BCCI Auctioneer' && (
-                        <TeamLogo teamId={highestBidder === campaign.teamId ? campaign.teamId : highestBidder} size={18} />
+                      {hasActiveBid ? (
+                        <>
+                          <TeamLogo teamId={highestBidder === campaign.teamId ? campaign.teamId : highestBidder} size={18} />
+                          <span>{isUserHighest ? '👑 YOU HOLD BID' : (getFranchise(highestBidder)?.short || highestBidder.toUpperCase())}</span>
+                        </>
+                      ) : (
+                        <span className="text-gray-400 font-mono tracking-wide">WAITING FOR OPENING BID</span>
                       )}
-                      <span>{isUserHighest ? '👑 YOU HOLD BID' : (getFranchise(highestBidder)?.short || highestBidder.toUpperCase())}</span>
                     </div>
 
                     <div 
-                      style={{ color: currentBidderTheme.primary }}
+                      style={{ color: hasActiveBid ? currentBidderTheme.primary : '#F8FAFC' }}
                       className="text-2xl sm:text-3xl font-black font-mono mt-0.5 drop-shadow-[0_0_12px_rgba(255,255,255,0.25)]"
                     >
-                      ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-300 font-sans">Cr</span>
+                      ₹{currentBid.toFixed(2)} <span className="text-xs text-gray-400 font-sans">Cr</span>
                     </div>
                   </div>
                 </div>

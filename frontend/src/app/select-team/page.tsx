@@ -52,7 +52,7 @@ export default function SelectTeamPage() {
   const activeTeam = teams.find(t => t.id === (hoveredTeam || selectedTeam || theme)) || teams[2]
   const activeStadium = STADIUMS[activeTeam.id] || STADIUMS.rcb
 
-  const { createCampaign, switchCampaign, campaigns } = useCampaignStore()
+  const { createCampaign, switchCampaign, campaigns, currentUserId } = useCampaignStore()
 
   const handleSelect = (teamId: string) => {
     setSelectedTeam(teamId)
@@ -60,8 +60,8 @@ export default function SelectTeamPage() {
     gameAudio.playTradeDealSuccess()
     triggerGameHaptic('heavy')
     
-    // Find existing campaign for this team or create a new one
-    const existing = Object.values(campaigns).find(c => c.teamId === teamId)
+    // Find existing campaign for this team belonging strictly to the active user profile
+    const existing = Object.values(campaigns).find(c => c.teamId === teamId && c.userId === currentUserId)
     if (existing) {
       switchCampaign(existing.id)
     } else {
